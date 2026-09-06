@@ -1,0 +1,56 @@
+name: in_sreerajp_imgvidgal
+description: "Offline-first image and video gallery application for viewing, organizing, and managing local media."
+publish_to: 'none'
+version: 2.3.0+8
+
+environment:
+  sdk: ^3.11.0
+  flutter: ">=3.41.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  intl: ^0.20.2
+  flutter_riverpod: ^2.5.1
+  go_router: ^14.2.0
+  package_info_plus: ^8.0.0
+  sqflite: ^2.3.3+3
+  path: ^1.9.0
+  path_provider: ^2.1.4
+  system_info2: ^4.0.0
+  crypto: ^3.0.3
+  image: ^4.2.0
+  video_player: ^2.9.1
+  pdf: ^3.11.1
+  local_auth: ^2.3.0
+  local_auth_android: ^1.0.0
+  flutter_secure_storage: ^9.2.2
+  # Phase 11 pairing QR: qr_flutter draws it, mobile_scanner reads it.
+  # Both are BSD-3-Clause and neither reaches a network of its own.
+  qr_flutter: ^4.1.0
+  mobile_scanner: ^5.2.3
+  # Phase 12 offline OCR. Wraps Tesseract4Android on the Android side.
+  # BSD-3-Clause, and its only Dart dependencies are flutter, path and
+  # path_provider - no HTTP client. The language files ship as assets in
+  # assets/tessdata/ and are never downloaded. ML Kit was not used: it has no
+  # Malayalam model, and it is a closed-source binary.
+  flutter_tesseract_ocr: ^0.4.31
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+  sqflite_common_ffi: ^2.3.3+1
+
+flutter:
+  uses-material-design: true
+  generate: true
+
+  assets:
+    - assets/config/
+    - assets/tessdata/
+    # The plugin looks for this exact path, so it sits beside the folder
+    # rather than inside it.
+    - assets/tessdata_config.json

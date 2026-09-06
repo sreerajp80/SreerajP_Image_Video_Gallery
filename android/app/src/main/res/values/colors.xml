@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Background of the adaptive launcher icon. -->
+    <color name="ic_launcher_background">#0B2B44</color>
+    <color name="ic_launcher_bg_start">#051522</color>
+    <color name="ic_launcher_bg_end">#0B3A5A</color>
+    <color name="ic_launcher_frame_outer">#0E2E46</color>
+    <color name="ic_launcher_frame_border">#2E8BBF</color>
+    <color name="ic_launcher_frame_highlight">#76D1FF</color>
+    <color name="ic_launcher_sky">#071F32</color>
+    <color name="ic_launcher_sun">#FFA726</color>
+    <color name="ic_launcher_sun_glow">#FFE082</color>
+    <color name="ic_launcher_mountain_back">#1B5B77</color>
+    <color name="ic_launcher_mountain_front_left">#38BDF8</color>
+    <color name="ic_launcher_mountain_front_right">#0284C7</color>
+    <color name="ic_launcher_stream">#67E8F9</color>
+    <color name="ic_launcher_badge_bg">#072236</color>
+    <color name="ic_launcher_badge_ring">#38BDF8</color>
+    <color name="ic_launcher_play_accent">#FFD54F</color>
+</resources>

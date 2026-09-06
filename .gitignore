@@ -1,0 +1,90 @@
+# Miscellaneous
+*.class
+*.log
+*.pyc
+*.swp
+*~
+*.bak
+*.stackdump
+.atom/
+.buildlog/
+.history
+.svn/
+migrate_working_dir/
+
+# IntelliJ / Android Studio
+*.iml
+*.ipr
+*.iws
+.idea/
+out/
+
+# Visual Studio Code
+.vscode/
+
+# Flutter / Dart / Pub
+**/doc/api/
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+
+# Build artifacts
+build/
+**/build/
+*.apk
+*.aab
+*.aar
+*.msix
+*.ipa
+
+# Debug symbols
+build/symbols/
+*.symbols/
+
+# Android build & local configuration
+.gradle/
+**/android/.gradle/
+**/android/.kotlin/
+**/android/captures/
+**/android/local.properties
+**/local.properties
+**/android/.cxx/
+**/android/.externalNativeBuild/
+**/GeneratedPluginRegistrant.java
+**/GeneratedPluginRegistrant.kt
+
+# Android signing & keys — NEVER COMMIT
+*.jks
+*.keystore
+key.properties
+android/key.properties
+**/key.properties
+android/*.jks
+android/*.keystore
+
+# Test coverage
+coverage/
+*.lcov
+
+# OS generated files
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+[Dd]esktop.ini
+$RECYCLE.BIN/
+
+# Project-specific test fixtures — never commit
+photo_vault*.jpg

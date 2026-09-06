@@ -1,0 +1,16 @@
+{
+  "appName": "SreerajP Image Video Gallery",
+  "description": "Offline-first image and video gallery application for viewing, organizing, and managing local media.",
+  "version": "2.3.0",
+  "build": "8",
+  "details": {
+    "Author": "Sreeraj P",
+    "License": "All libraries used are open source.",
+    "IDE Used": "Visual Studio Code / Antigravity",
+    "AI Used": "Anthropic Claude / Google Gemini",
+    "Storage Model": "Scoped Storage and MediaStore API",
+    "Network Policy": "No remote server, no account, no analytics. Internet access is used only to reach another phone on your own Wi-Fi, from the transfer screen.",
+    "Security": "Hardware-backed biometrics and AES-256-GCM",
+    "Languages": "English and Malayalam"
+  }
+}

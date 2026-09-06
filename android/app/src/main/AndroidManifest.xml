@@ -1,0 +1,175 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- Granular media permissions for Android 13+ (API 33+) -->
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
+
+    <!-- Partial access permission for Android 14+ (API 34+) -->
+    <uses-permission android:name="android.permission.READ_MEDIA_VISUAL_USER_SELECTED" />
+
+    <!-- Legacy storage permission for Android 12 and lower (API <= 32) -->
+    <uses-permission
+        android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32" />
+
+    <!-- Biometric authentication for Secure Private Vault -->
+    <uses-permission android:name="android.permission.USE_BIOMETRIC" />
+
+    <!-- The older fingerprint permission, for Android 9 (API 28) and below.
+         androidx.biometric brings this in on its own; it is written out here
+         so the merged manifest holds no permission this file does not name.
+         minSdk is 24, so these devices are in range and really do need it.
+         Both are normal-level permissions, granted at install with no prompt. -->
+    <uses-permission
+        android:name="android.permission.USE_FINGERPRINT"
+        android:maxSdkVersion="28" />
+
+    <!-- Camera, for reading the pairing QR code on the transfer screen.
+         It is used nowhere else: the app never takes a photo of its own. -->
+    <uses-permission android:name="android.permission.CAMERA" />
+
+    <!-- The camera is a convenience, not a requirement. A device with no camera
+         can still pair by typing the code shown on the other phone, so the app
+         must stay installable on one. -->
+    <uses-feature
+        android:name="android.hardware.camera"
+        android:required="false" />
+    <uses-feature
+        android:name="android.hardware.camera.autofocus"
+        android:required="false" />
+
+    <!-- LOCAL NETWORK ONLY. The app never talks to a remote server: no HTTP
+         client, no cloud backend, no analytics, no telemetry, no update check.
+         android.permission.INTERNET is declared for exactly one feature, the
+         device-to-device transfer screen, because Android demands it for ANY
+         socket - including one that only ever reaches another phone on the
+         same Wi-Fi router.
+
+         The narrowing is enforced in code, not just promised here:
+           - LocalAddressRules refuses any address outside 10/8, 172.16/12,
+             192.168/16 and 169.254/16, on both ends, before a socket opens.
+           - The listener binds to the device's own Wi-Fi address, never
+             0.0.0.0, and lives only while the transfer screen is open.
+         See docs/security.md, "Local Peer-to-Peer Transfer". -->
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <!-- Reads the device's own Wi-Fi address so the listener can bind to it and
+         show it in the pairing code. It is not a connectivity check. -->
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
+    <!-- Offers a scanned Wi-Fi code to Android as a network suggestion, on the
+         in-image scanner screen only. A suggestion is the strongest thing an
+         app may do here without holding location permission, and it is the
+         right strength: Android decides, and the user still taps the network
+         themselves. The app never silently joins anything. -->
+    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
+
+    <!-- ExoPlayer declares a wake lock for streaming playback. This app only
+         ever plays local files and holds the screen on with
+         FLAG_KEEP_SCREEN_ON, so the permission is removed from the merge. -->
+    <uses-permission
+        android:name="android.permission.WAKE_LOCK"
+        tools:node="remove" />
+
+    <!-- The apps the in-image scanner may hand a code to. Android 11 and above
+         hides other apps unless they are named here, and startActivity would
+         simply fail without this block.
+
+         This is the whole list, and it matches the permitted schemes in
+         IntentChannelHandler.ALLOWED_SCHEMES and AppConstants
+         .scanLaunchableSchemes. Nothing else is ever launched: a scanned code
+         is untrusted text, so anything not named here is shown as plain text
+         instead. -->
+    <queries>
+        <!-- A web address from a QR code, opened in the user's own browser.
+             The browser makes that connection, not this app. -->
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="https" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="http" />
+        </intent>
+        <!-- A phone number: offered to the dialler, never dialled by the app. -->
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="tel" />
+        </intent>
+        <!-- An email address and a text message. -->
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="mailto" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="sms" />
+        </intent>
+        <!-- A map point from a geo: code. -->
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="geo" />
+        </intent>
+    </queries>
+
+    <application
+        android:label="@string/app_name"
+        android:name="${applicationName}"
+        android:icon="@mipmap/ic_launcher"
+        android:allowBackup="false"
+        android:fullBackupContent="false">
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:launchMode="singleTop"
+            android:taskAffinity=""
+            android:theme="@style/LaunchTheme"
+            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
+            android:hardwareAccelerated="true"
+            android:windowSoftInputMode="adjustResize">
+            <meta-data
+              android:name="io.flutter.embedding.android.NormalTheme"
+              android:resource="@style/NormalTheme"
+              />
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+
+            <!-- Handle image viewing from external apps (Default Gallery) -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="content" />
+                <data android:scheme="file" />
+                <data android:mimeType="image/*" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="image/*" />
+            </intent-filter>
+
+            <!-- Handle video viewing from external apps (Default Video Player) -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="content" />
+                <data android:scheme="file" />
+                <data android:mimeType="video/*" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="video/*" />
+            </intent-filter>
+        </activity>
+        <meta-data
+            android:name="flutterEmbedding"
+            android:value="2" />
+    </application>
+</manifest>

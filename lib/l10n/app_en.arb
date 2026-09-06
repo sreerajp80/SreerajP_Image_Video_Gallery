@@ -1,0 +1,4136 @@
+{
+  "@@locale": "en",
+  "appTitle": "SreerajP Gallery",
+  "@appTitle": {
+    "description": "The title of the gallery application"
+  },
+  "devBanner": "DEV BUILD",
+  "@devBanner": {
+    "description": "Banner text indicating the development flavor"
+  },
+  "settings": "Settings",
+  "@settings": {
+    "description": "Title of the settings screen or section"
+  },
+  "about": "About",
+  "@about": {
+    "description": "Title of the about screen or section"
+  },
+  "theme": "Theme",
+  "@theme": {
+    "description": "Theme selection header"
+  },
+  "themeSystem": "System Default",
+  "@themeSystem": {
+    "description": "System default theme option"
+  },
+  "themeLight": "Light",
+  "@themeLight": {
+    "description": "Light theme option"
+  },
+  "themeDark": "Dark",
+  "@themeDark": {
+    "description": "Dark theme option"
+  },
+  "themeAmoled": "AMOLED True Black",
+  "@themeAmoled": {
+    "description": "AMOLED true black theme option"
+  },
+  "currentFlavor": "Current Flavor",
+  "@currentFlavor": {
+    "description": "Label indicating active build flavor"
+  },
+  "version": "Version",
+  "@version": {
+    "description": "Label for application version"
+  },
+  "offlineStatus": "100% Offline (No Internet)",
+  "@offlineStatus": {
+    "description": "Status text confirming zero network dependencies"
+  },
+  "permissionRequired": "Media access needed",
+  "@permissionRequired": {
+    "description": "Title shown when media permission has not been granted"
+  },
+  "permissionRequiredBody": "Allow access to your photos and videos so the gallery can show them. Nothing ever leaves your device.",
+  "@permissionRequiredBody": {
+    "description": "Explanation of why the app needs media permission"
+  },
+  "grantPermission": "Allow access",
+  "@grantPermission": {
+    "description": "Button that opens the system media permission dialog"
+  },
+  "openSettings": "Open settings",
+  "@openSettings": {
+    "description": "Button that opens app settings when permission was permanently denied"
+  },
+  "permissionPartial": "Only selected media is visible. Allow all media to see everything.",
+  "@permissionPartial": {
+    "description": "Notice shown when the user granted partial photo access"
+  },
+  "scanMedia": "Scan device media",
+  "@scanMedia": {
+    "description": "Button that starts scanning the device for media"
+  },
+  "scanningMedia": "Scanning media...",
+  "@scanningMedia": {
+    "description": "Status text shown while the media scan runs"
+  },
+  "scanProgress": "{scanned} of {total} scanned",
+  "@scanProgress": {
+    "description": "Live count of scanned media items",
+    "placeholders": {
+      "scanned": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "scanComplete": "Scan complete: {count} items indexed",
+  "@scanComplete": {
+    "description": "Message shown when a media scan finishes",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "scanFailed": "Media scan failed",
+  "@scanFailed": {
+    "description": "Message shown when a media scan could not finish"
+  },
+  "indexedItems": "Indexed items: {count}",
+  "@indexedItems": {
+    "description": "Number of media items currently stored in the local index",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "noMediaFound": "No photos or videos found",
+  "@noMediaFound": {
+    "description": "Empty state shown when the device has no readable media"
+  },
+  "mediaUnavailable": "Preview unavailable",
+  "@mediaUnavailable": {
+    "description": "Placeholder label when a thumbnail cannot be generated"
+  },
+  "timelineToday": "Today",
+  "@timelineToday": {
+    "description": "Date header shown above media captured today"
+  },
+  "timelineYesterday": "Yesterday",
+  "@timelineYesterday": {
+    "description": "Date header shown above media captured yesterday"
+  },
+  "timelineTitle": "Timeline",
+  "@timelineTitle": {
+    "description": "Title of the main chronological timeline screen"
+  },
+  "noMediaInTimeline": "Your gallery is empty",
+  "@noMediaInTimeline": {
+    "description": "Empty state shown when no media has been indexed yet"
+  },
+  "pullToScan": "Pull down to scan for new photos and videos.",
+  "@pullToScan": {
+    "description": "Hint telling the user that pull-to-refresh starts a media scan"
+  },
+  "flashbackTitle": "On This Day",
+  "@flashbackTitle": {
+    "description": "Title of the flashback memories carousel"
+  },
+  "flashbackOneYearAgo": "1 year ago",
+  "@flashbackOneYearAgo": {
+    "description": "Caption for a flashback memory from exactly one year ago"
+  },
+  "flashbackYearsAgo": "{years} years ago",
+  "@flashbackYearsAgo": {
+    "description": "Caption for a flashback memory from several years ago",
+    "placeholders": {
+      "years": {
+        "type": "int"
+      }
+    }
+  },
+  "gridColumns": "{count} per row",
+  "@gridColumns": {
+    "description": "Announces the current grid density after a pinch gesture",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "badgeGif": "GIF",
+  "@badgeGif": {
+    "description": "Badge marking an animated GIF tile"
+  },
+  "badgeRaw": "RAW",
+  "@badgeRaw": {
+    "description": "Badge marking a RAW camera image tile"
+  },
+  "badgeHd": "HD",
+  "@badgeHd": {
+    "description": "Badge marking a high resolution media tile"
+  },
+  "badgeVideoDuration": "Video, {duration}",
+  "@badgeVideoDuration": {
+    "description": "Accessibility label for the duration pill on a video tile",
+    "placeholders": {
+      "duration": {
+        "type": "String"
+      }
+    }
+  },
+  "mediaTileLabel": "{name}, {date}",
+  "@mediaTileLabel": {
+    "description": "Accessibility label for a media tile in the grid",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "scrollToDate": "Scroll to date",
+  "@scrollToDate": {
+    "description": "Accessibility label for the fast scroll scrubber handle"
+  },
+  "viewerClose": "Close",
+  "@viewerClose": {
+    "description": "Tooltip for the button that closes the fullscreen viewer"
+  },
+  "viewerRotateLeft": "Rotate left",
+  "@viewerRotateLeft": {
+    "description": "Tooltip for rotating the photo 90 degrees anticlockwise"
+  },
+  "viewerRotateRight": "Rotate right",
+  "@viewerRotateRight": {
+    "description": "Tooltip for rotating the photo 90 degrees clockwise"
+  },
+  "viewerAddFavorite": "Add to favorites",
+  "@viewerAddFavorite": {
+    "description": "Tooltip for marking the open item as a favorite"
+  },
+  "viewerRemoveFavorite": "Remove from favorites",
+  "@viewerRemoveFavorite": {
+    "description": "Tooltip for removing the favorite mark"
+  },
+  "play": "Play",
+  "@play": {
+    "description": "Tooltip for the play button of the video player"
+  },
+  "pause": "Pause",
+  "@pause": {
+    "description": "Tooltip for the pause button of the video player"
+  },
+  "frameForward": "Next frame",
+  "@frameForward": {
+    "description": "Tooltip for stepping the video one frame forward"
+  },
+  "frameBackward": "Previous frame",
+  "@frameBackward": {
+    "description": "Tooltip for stepping the video one frame back"
+  },
+  "skipForward": "Skip forward 10 seconds",
+  "@skipForward": {
+    "description": "Tooltip for skipping the video forward"
+  },
+  "skipBackward": "Skip back 10 seconds",
+  "@skipBackward": {
+    "description": "Tooltip for skipping the video back"
+  },
+  "loopPlayback": "Repeat",
+  "@loopPlayback": {
+    "description": "Tooltip for turning repeat playback on or off"
+  },
+  "playbackSpeed": "Playback speed",
+  "@playbackSpeed": {
+    "description": "Tooltip for the playback speed menu"
+  },
+  "videoCannotPlay": "This video cannot be played.",
+  "@videoCannotPlay": {
+    "description": "Message shown when a video file cannot be opened"
+  },
+  "videoFormatUnsupported": "This device cannot play this video format.",
+  "@videoFormatUnsupported": {
+    "description": "Message shown when the device has no decoder for the video"
+  },
+  "detailsTitle": "Details",
+  "@detailsTitle": {
+    "description": "Title of the media details drawer"
+  },
+  "detailsFileName": "File name",
+  "@detailsFileName": {
+    "description": "Label for the file name row in the details drawer"
+  },
+  "detailsFormat": "Format",
+  "@detailsFormat": {
+    "description": "Label for the file format row in the details drawer"
+  },
+  "detailsSize": "Size",
+  "@detailsSize": {
+    "description": "Label for the file size row in the details drawer"
+  },
+  "detailsDimensions": "Dimensions",
+  "@detailsDimensions": {
+    "description": "Label for the pixel width and height row"
+  },
+  "detailsDuration": "Duration",
+  "@detailsDuration": {
+    "description": "Label for the video length row"
+  },
+  "detailsDateTaken": "Date taken",
+  "@detailsDateTaken": {
+    "description": "Label for the capture date row"
+  },
+  "detailsDateModified": "Last modified",
+  "@detailsDateModified": {
+    "description": "Label for the last modified date row"
+  },
+  "detailsFolder": "Folder",
+  "@detailsFolder": {
+    "description": "Label for the folder path row"
+  },
+  "detailsCameraSection": "Camera and metadata",
+  "@detailsCameraSection": {
+    "description": "Heading of the EXIF section in the details drawer"
+  },
+  "detailsNoMetadata": "No camera metadata was found in this file.",
+  "@detailsNoMetadata": {
+    "description": "Shown when a file carries no readable EXIF data"
+  },
+  "detailsCamera": "Camera",
+  "@detailsCamera": {
+    "description": "Label for the camera make and model row"
+  },
+  "detailsLens": "Lens",
+  "@detailsLens": {
+    "description": "Label for the lens model row"
+  },
+  "detailsAperture": "Aperture",
+  "@detailsAperture": {
+    "description": "Label for the aperture f-number row"
+  },
+  "detailsShutter": "Shutter",
+  "@detailsShutter": {
+    "description": "Label for the shutter speed row"
+  },
+  "detailsIso": "ISO",
+  "@detailsIso": {
+    "description": "Label for the ISO sensitivity row"
+  },
+  "detailsFocalLength": "Focal length",
+  "@detailsFocalLength": {
+    "description": "Label for the focal length row"
+  },
+  "detailsFlash": "Flash",
+  "@detailsFlash": {
+    "description": "Label for the flash state row"
+  },
+  "detailsWhiteBalance": "White balance",
+  "@detailsWhiteBalance": {
+    "description": "Label for the white balance row"
+  },
+  "detailsMeteringMode": "Metering mode",
+  "@detailsMeteringMode": {
+    "description": "Label for the metering mode row"
+  },
+  "detailsColorSpace": "Color space",
+  "@detailsColorSpace": {
+    "description": "Label for the color space row"
+  },
+  "detailsSoftware": "Software",
+  "@detailsSoftware": {
+    "description": "Label for the processing software row"
+  },
+  "detailsLocation": "Location",
+  "@detailsLocation": {
+    "description": "Label for the GPS coordinates row"
+  },
+  "detailsAltitude": "Altitude",
+  "@detailsAltitude": {
+    "description": "Label for the GPS altitude row"
+  },
+  "editorTitle": "Edit",
+  "@editorTitle": {
+    "description": "Title of the image editor screen"
+  },
+  "editorOpen": "Edit",
+  "@editorOpen": {
+    "description": "Viewer button that opens the image editor"
+  },
+  "editorSave": "Save copy",
+  "@editorSave": {
+    "description": "Button that writes the edit as a new file"
+  },
+  "editorSaving": "Saving a copy...",
+  "@editorSaving": {
+    "description": "Shown while the edited copy is being written"
+  },
+  "editorSaved": "Saved a copy: {fileName}",
+  "@editorSaved": {
+    "description": "Message shown after an edited copy is written",
+    "placeholders": {
+      "fileName": {
+        "type": "String",
+        "example": "IMG_0001_edit1.jpg"
+      }
+    }
+  },
+  "editorSaveFailed": "The copy could not be saved",
+  "@editorSaveFailed": {
+    "description": "Message shown when writing the edited copy failed"
+  },
+  "editorOriginalKept": "Your original photo was not changed",
+  "@editorOriginalKept": {
+    "description": "Reassurance shown next to the saved message"
+  },
+  "editorCannotOpen": "This photo cannot be edited",
+  "@editorCannotOpen": {
+    "description": "Shown when the file cannot be decoded or is too large"
+  },
+  "editorTooLarge": "This photo is too large to edit on this device",
+  "@editorTooLarge": {
+    "description": "Shown when the file is above the editable size limit"
+  },
+  "editorLoading": "Preparing the photo...",
+  "@editorLoading": {
+    "description": "Shown while the photo is being loaded into the editor"
+  },
+  "editorPreviewFailed": "The preview could not be drawn",
+  "@editorPreviewFailed": {
+    "description": "Shown when a preview render fails"
+  },
+  "editorUndo": "Undo",
+  "@editorUndo": {
+    "description": "Button that steps one edit back"
+  },
+  "editorRedo": "Redo",
+  "@editorRedo": {
+    "description": "Button that puts back an undone edit"
+  },
+  "editorResetAll": "Reset all",
+  "@editorResetAll": {
+    "description": "Button that clears every edit"
+  },
+  "editorDiscardTitle": "Discard changes?",
+  "@editorDiscardTitle": {
+    "description": "Title of the dialog shown when leaving with unsaved edits"
+  },
+  "editorDiscardMessage": "Your edits have not been saved. Leaving now will lose them.",
+  "@editorDiscardMessage": {
+    "description": "Body of the discard dialog"
+  },
+  "editorDiscard": "Discard",
+  "@editorDiscard": {
+    "description": "Button that leaves the editor and loses the edits"
+  },
+  "editorKeepEditing": "Keep editing",
+  "@editorKeepEditing": {
+    "description": "Button that stays in the editor"
+  },
+  "editorToolCrop": "Crop",
+  "@editorToolCrop": {
+    "description": "Name of the crop and rotate tool"
+  },
+  "editorToolTune": "Tune",
+  "@editorToolTune": {
+    "description": "Name of the light and colour tool"
+  },
+  "editorToolFilters": "Filters",
+  "@editorToolFilters": {
+    "description": "Name of the filter preset tool"
+  },
+  "editorToolMarkup": "Markup",
+  "@editorToolMarkup": {
+    "description": "Name of the drawing and text tool"
+  },
+  "editorToolRedact": "Hide",
+  "@editorToolRedact": {
+    "description": "Name of the privacy redaction tool"
+  },
+  "editorToolWatermark": "Watermark",
+  "@editorToolWatermark": {
+    "description": "Name of the watermark tool"
+  },
+  "cropAspectFree": "Free",
+  "@cropAspectFree": {
+    "description": "Crop shape that can be dragged to any size"
+  },
+  "cropAspectOriginal": "Original",
+  "@cropAspectOriginal": {
+    "description": "Crop shape matching the photo's own shape"
+  },
+  "cropAspectSquare": "Square",
+  "@cropAspectSquare": {
+    "description": "Square crop shape"
+  },
+  "cropAspect4x3": "4:3",
+  "@cropAspect4x3": {
+    "description": "Four by three crop shape"
+  },
+  "cropAspect3x4": "3:4",
+  "@cropAspect3x4": {
+    "description": "Three by four crop shape"
+  },
+  "cropAspect16x9": "16:9",
+  "@cropAspect16x9": {
+    "description": "Sixteen by nine crop shape"
+  },
+  "cropAspect9x16": "9:16",
+  "@cropAspect9x16": {
+    "description": "Nine by sixteen crop shape"
+  },
+  "cropAspect3x2": "3:2",
+  "@cropAspect3x2": {
+    "description": "Three by two crop shape"
+  },
+  "cropAspect2x3": "2:3",
+  "@cropAspect2x3": {
+    "description": "Two by three crop shape"
+  },
+  "cropRotateLeft": "Rotate left",
+  "@cropRotateLeft": {
+    "description": "Button that turns the photo a quarter turn anticlockwise"
+  },
+  "cropRotateRight": "Rotate right",
+  "@cropRotateRight": {
+    "description": "Button that turns the photo a quarter turn clockwise"
+  },
+  "cropFlipHorizontal": "Mirror sideways",
+  "@cropFlipHorizontal": {
+    "description": "Button that mirrors the photo left to right"
+  },
+  "cropFlipVertical": "Mirror upside down",
+  "@cropFlipVertical": {
+    "description": "Button that mirrors the photo top to bottom"
+  },
+  "cropStraighten": "Straighten",
+  "@cropStraighten": {
+    "description": "Label of the fine levelling slider"
+  },
+  "cropPerspectiveVertical": "Vertical tilt",
+  "@cropPerspectiveVertical": {
+    "description": "Label of the vertical perspective slider"
+  },
+  "cropPerspectiveHorizontal": "Horizontal tilt",
+  "@cropPerspectiveHorizontal": {
+    "description": "Label of the horizontal perspective slider"
+  },
+  "cropReset": "Reset crop",
+  "@cropReset": {
+    "description": "Button that clears every geometry change"
+  },
+  "toneExposure": "Exposure",
+  "@toneExposure": {
+    "description": "Label of the brightness slider"
+  },
+  "toneContrast": "Contrast",
+  "@toneContrast": {
+    "description": "Label of the contrast slider"
+  },
+  "toneHighlights": "Highlights",
+  "@toneHighlights": {
+    "description": "Label of the highlights slider"
+  },
+  "toneShadows": "Shadows",
+  "@toneShadows": {
+    "description": "Label of the shadows slider"
+  },
+  "toneTemperature": "Warmth",
+  "@toneTemperature": {
+    "description": "Label of the colour temperature slider"
+  },
+  "toneTint": "Tint",
+  "@toneTint": {
+    "description": "Label of the green and magenta slider"
+  },
+  "toneVibrance": "Vibrance",
+  "@toneVibrance": {
+    "description": "Label of the vibrance slider"
+  },
+  "toneSaturation": "Saturation",
+  "@toneSaturation": {
+    "description": "Label of the saturation slider"
+  },
+  "toneReset": "Reset tune",
+  "@toneReset": {
+    "description": "Button that puts every tone slider back to neutral"
+  },
+  "toneCurves": "Curves",
+  "@toneCurves": {
+    "description": "Header of the RGB curve control"
+  },
+  "curveChannelRgb": "All",
+  "@curveChannelRgb": {
+    "description": "Curve applied to all three channels"
+  },
+  "curveChannelRed": "Red",
+  "@curveChannelRed": {
+    "description": "Red channel curve"
+  },
+  "curveChannelGreen": "Green",
+  "@curveChannelGreen": {
+    "description": "Green channel curve"
+  },
+  "curveChannelBlue": "Blue",
+  "@curveChannelBlue": {
+    "description": "Blue channel curve"
+  },
+  "curveReset": "Reset curve",
+  "@curveReset": {
+    "description": "Button that straightens the shown curve"
+  },
+  "curveHint": "Drag a point to shape the curve",
+  "@curveHint": {
+    "description": "Hint under the curve control"
+  },
+  "filterNone": "Original",
+  "@filterNone": {
+    "description": "Filter preset that changes nothing"
+  },
+  "filterMono": "Mono",
+  "@filterMono": {
+    "description": "Black and white filter preset"
+  },
+  "filterSepia": "Sepia",
+  "@filterSepia": {
+    "description": "Sepia filter preset"
+  },
+  "filterVintage": "Vintage",
+  "@filterVintage": {
+    "description": "Faded warm filter preset"
+  },
+  "filterVivid": "Vivid",
+  "@filterVivid": {
+    "description": "Strong colour filter preset"
+  },
+  "filterCool": "Cool",
+  "@filterCool": {
+    "description": "Cool blue filter preset"
+  },
+  "filterWarm": "Warm",
+  "@filterWarm": {
+    "description": "Warm orange filter preset"
+  },
+  "filterFade": "Fade",
+  "@filterFade": {
+    "description": "Soft low contrast filter preset"
+  },
+  "filterIntensity": "Strength",
+  "@filterIntensity": {
+    "description": "Label of the filter strength slider"
+  },
+  "markupFreehand": "Draw",
+  "@markupFreehand": {
+    "description": "Freehand doodle tool"
+  },
+  "markupRectangle": "Rectangle",
+  "@markupRectangle": {
+    "description": "Rectangle shape tool"
+  },
+  "markupEllipse": "Circle",
+  "@markupEllipse": {
+    "description": "Circle shape tool"
+  },
+  "markupLine": "Line",
+  "@markupLine": {
+    "description": "Line shape tool"
+  },
+  "markupArrow": "Arrow",
+  "@markupArrow": {
+    "description": "Arrow shape tool"
+  },
+  "markupText": "Text",
+  "@markupText": {
+    "description": "Text overlay tool"
+  },
+  "markupColor": "Colour",
+  "@markupColor": {
+    "description": "Label of the markup colour picker"
+  },
+  "markupThickness": "Thickness",
+  "@markupThickness": {
+    "description": "Label of the markup line thickness slider"
+  },
+  "markupFilled": "Fill shape",
+  "@markupFilled": {
+    "description": "Switch that fills the inside of a shape"
+  },
+  "markupUndoLayer": "Remove last",
+  "@markupUndoLayer": {
+    "description": "Button that removes the most recent drawing"
+  },
+  "markupTextTitle": "Add text",
+  "@markupTextTitle": {
+    "description": "Title of the add text dialog"
+  },
+  "markupTextHint": "Type your text",
+  "@markupTextHint": {
+    "description": "Hint inside the add text field"
+  },
+  "markupTextAdd": "Add",
+  "@markupTextAdd": {
+    "description": "Button that adds the typed text to the photo"
+  },
+  "markupHint": "Drag on the photo to draw",
+  "@markupHint": {
+    "description": "Hint shown under the markup tools"
+  },
+  "redactBlur": "Blur",
+  "@redactBlur": {
+    "description": "Redaction that softens the area"
+  },
+  "redactPixelate": "Pixelate",
+  "@redactPixelate": {
+    "description": "Redaction that turns the area into blocks"
+  },
+  "redactBlackout": "Blackout",
+  "@redactBlackout": {
+    "description": "Redaction that paints the area solid"
+  },
+  "redactStrength": "Strength",
+  "@redactStrength": {
+    "description": "Label of the redaction strength slider"
+  },
+  "redactHint": "Drag over anything you want hidden",
+  "@redactHint": {
+    "description": "Hint shown under the redaction tools"
+  },
+  "redactRemoveLast": "Remove last",
+  "@redactRemoveLast": {
+    "description": "Button that removes the most recent hidden area"
+  },
+  "redactCount": "{count} areas hidden",
+  "@redactCount": {
+    "description": "Number of redacted areas on the photo",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "watermarkNone": "None",
+  "@watermarkNone": {
+    "description": "No watermark"
+  },
+  "watermarkText": "Text",
+  "@watermarkText": {
+    "description": "Watermark showing typed text"
+  },
+  "watermarkTimestamp": "Date and time",
+  "@watermarkTimestamp": {
+    "description": "Watermark showing the photo's date"
+  },
+  "watermarkLogo": "Logo",
+  "@watermarkLogo": {
+    "description": "Watermark showing a picture file"
+  },
+  "watermarkTextHint": "Watermark text",
+  "@watermarkTextHint": {
+    "description": "Hint inside the watermark text field"
+  },
+  "watermarkPosition": "Position",
+  "@watermarkPosition": {
+    "description": "Label of the watermark position picker"
+  },
+  "watermarkOpacity": "Opacity",
+  "@watermarkOpacity": {
+    "description": "Label of the watermark opacity slider"
+  },
+  "watermarkSize": "Size",
+  "@watermarkSize": {
+    "description": "Label of the watermark size slider"
+  },
+  "watermarkMargin": "Edge gap",
+  "@watermarkMargin": {
+    "description": "Label of the watermark margin slider"
+  },
+  "watermarkPickLogo": "Choose a logo file",
+  "@watermarkPickLogo": {
+    "description": "Button that picks the watermark picture"
+  },
+  "watermarkNoLogo": "No logo chosen yet",
+  "@watermarkNoLogo": {
+    "description": "Shown when the logo watermark has no file"
+  },
+  "watermarkClearLogo": "Remove logo",
+  "@watermarkClearLogo": {
+    "description": "Button that clears the chosen logo"
+  },
+  "positionTopLeft": "Top left",
+  "@positionTopLeft": {
+    "description": "Watermark corner"
+  },
+  "positionTopCenter": "Top centre",
+  "@positionTopCenter": {
+    "description": "Watermark position"
+  },
+  "positionTopRight": "Top right",
+  "@positionTopRight": {
+    "description": "Watermark corner"
+  },
+  "positionCenterLeft": "Middle left",
+  "@positionCenterLeft": {
+    "description": "Watermark position"
+  },
+  "positionCenter": "Centre",
+  "@positionCenter": {
+    "description": "Watermark position"
+  },
+  "positionCenterRight": "Middle right",
+  "@positionCenterRight": {
+    "description": "Watermark position"
+  },
+  "positionBottomLeft": "Bottom left",
+  "@positionBottomLeft": {
+    "description": "Watermark corner"
+  },
+  "positionBottomCenter": "Bottom centre",
+  "@positionBottomCenter": {
+    "description": "Watermark position"
+  },
+  "positionBottomRight": "Bottom right",
+  "@positionBottomRight": {
+    "description": "Watermark corner"
+  },
+  "convertOpen": "Convert",
+  "@convertOpen": {
+    "description": "Tooltip on the viewer button that opens the converter"
+  },
+  "convertTitle": "Convert and resize",
+  "@convertTitle": {
+    "description": "Title of the converter screen"
+  },
+  "convertCannotOpen": "This file cannot be converted",
+  "@convertCannotOpen": {
+    "description": "Shown when the chosen item is not a still picture"
+  },
+  "convertTooLarge": "This file is too large to convert",
+  "@convertTooLarge": {
+    "description": "Shown when the picture is over the size limit"
+  },
+  "convertUnreadable": "This picture could not be read",
+  "@convertUnreadable": {
+    "description": "Shown when the picture bytes cannot be loaded"
+  },
+  "convertFormatLabel": "Format",
+  "@convertFormatLabel": {
+    "description": "Heading above the output format chips"
+  },
+  "convertQualityLabel": "Quality",
+  "@convertQualityLabel": {
+    "description": "Heading above the quality slider"
+  },
+  "convertResizeLabel": "Size",
+  "@convertResizeLabel": {
+    "description": "Heading above the resize controls"
+  },
+  "convertResizeNone": "Original",
+  "@convertResizeNone": {
+    "description": "Resize choice that keeps the picture size"
+  },
+  "convertResizeLongestSide": "Longest side",
+  "@convertResizeLongestSide": {
+    "description": "Resize choice that fits inside a longest side"
+  },
+  "convertResizePercent": "Percent",
+  "@convertResizePercent": {
+    "description": "Resize choice that scales by a percentage"
+  },
+  "convertResizeExact": "Width and height",
+  "@convertResizeExact": {
+    "description": "Resize choice that uses exact numbers"
+  },
+  "convertKeepAspect": "Keep the shape",
+  "@convertKeepAspect": {
+    "description": "Switch that stops the picture being stretched"
+  },
+  "convertWidth": "Width",
+  "@convertWidth": {
+    "description": "Label of the width box"
+  },
+  "convertHeight": "Height",
+  "@convertHeight": {
+    "description": "Label of the height box"
+  },
+  "convertLongestSideLabel": "Longest side in pixels",
+  "@convertLongestSideLabel": {
+    "description": "Label of the longest side box"
+  },
+  "convertPercentLabel": "Percent of the original",
+  "@convertPercentLabel": {
+    "description": "Label of the percent box"
+  },
+  "convertStripMetadata": "Remove camera details",
+  "@convertStripMetadata": {
+    "description": "Switch that drops EXIF data from the copy"
+  },
+  "convertStripMetadataHint": "Location and camera settings are left out of the copy",
+  "@convertStripMetadataHint": {
+    "description": "Explains what removing camera details does"
+  },
+  "convertOriginalSize": "Original",
+  "@convertOriginalSize": {
+    "description": "Label of the original file size in the size preview"
+  },
+  "convertNewSize": "New copy",
+  "@convertNewSize": {
+    "description": "Label of the new file size in the size preview"
+  },
+  "convertEstimating": "Working out the size",
+  "@convertEstimating": {
+    "description": "Shown while the size preview is being encoded"
+  },
+  "convertNoEstimate": "The size cannot be worked out for this file",
+  "@convertNoEstimate": {
+    "description": "Shown when the size preview fails"
+  },
+  "convertLargerWarning": "The copy is larger than the original",
+  "@convertLargerWarning": {
+    "description": "Warning when the chosen format grows the file"
+  },
+  "convertSave": "Save a copy",
+  "@convertSave": {
+    "description": "Button that writes the converted file"
+  },
+  "convertSaving": "Saving",
+  "@convertSaving": {
+    "description": "Shown while the converted copy is being written"
+  },
+  "convertFailed": "The copy could not be saved",
+  "@convertFailed": {
+    "description": "Shown when the conversion fails"
+  },
+  "convertOriginalKept": "Your original file is not changed",
+  "@convertOriginalKept": {
+    "description": "Reassures the user that nothing is overwritten"
+  },
+  "pdfOpen": "Export as PDF",
+  "@pdfOpen": {
+    "description": "Menu item that opens the PDF export screen"
+  },
+  "pdfExportTitle": "Export as PDF",
+  "@pdfExportTitle": {
+    "description": "Title of the PDF export screen"
+  },
+  "pdfChoosePhotos": "Choose photos",
+  "@pdfChoosePhotos": {
+    "description": "Heading above the photo picker grid"
+  },
+  "pdfNoSelection": "Choose at least one photo",
+  "@pdfNoSelection": {
+    "description": "Shown when nothing is picked yet"
+  },
+  "pdfNoPhotos": "There are no photos to choose from",
+  "@pdfNoPhotos": {
+    "description": "Shown when the library holds no pictures"
+  },
+  "pdfPageSizeLabel": "Page size",
+  "@pdfPageSizeLabel": {
+    "description": "Heading above the page size choices"
+  },
+  "pdfPageA4": "A4",
+  "@pdfPageA4": {
+    "description": "Page size choice"
+  },
+  "pdfPageLetter": "Letter",
+  "@pdfPageLetter": {
+    "description": "Page size choice"
+  },
+  "pdfPageFitImage": "Fit the photo",
+  "@pdfPageFitImage": {
+    "description": "Page size choice that matches each photo"
+  },
+  "pdfOrientationLabel": "Direction",
+  "@pdfOrientationLabel": {
+    "description": "Heading above the page direction choices"
+  },
+  "pdfOrientationPortrait": "Upright",
+  "@pdfOrientationPortrait": {
+    "description": "Page direction choice"
+  },
+  "pdfOrientationLandscape": "Sideways",
+  "@pdfOrientationLandscape": {
+    "description": "Page direction choice"
+  },
+  "pdfOrientationAuto": "Follow the photo",
+  "@pdfOrientationAuto": {
+    "description": "Page direction choice that matches each photo"
+  },
+  "pdfFitLabel": "Placement",
+  "@pdfFitLabel": {
+    "description": "Heading above the photo placement choices"
+  },
+  "pdfFitContain": "Fit the whole photo",
+  "@pdfFitContain": {
+    "description": "Placement choice that shows all of the photo"
+  },
+  "pdfFitFill": "Fill the page",
+  "@pdfFitFill": {
+    "description": "Placement choice that crops the photo"
+  },
+  "pdfMarginLabel": "Border",
+  "@pdfMarginLabel": {
+    "description": "Heading above the page border choices"
+  },
+  "pdfMarginNone": "None",
+  "@pdfMarginNone": {
+    "description": "Page border choice"
+  },
+  "pdfMarginSmall": "Small",
+  "@pdfMarginSmall": {
+    "description": "Page border choice"
+  },
+  "pdfMarginMedium": "Medium",
+  "@pdfMarginMedium": {
+    "description": "Page border choice"
+  },
+  "pdfMarginLarge": "Large",
+  "@pdfMarginLarge": {
+    "description": "Page border choice"
+  },
+  "pdfQualityLabel": "Photo quality",
+  "@pdfQualityLabel": {
+    "description": "Heading above the PDF photo quality slider"
+  },
+  "pdfExportAction": "Create the PDF",
+  "@pdfExportAction": {
+    "description": "Button that builds the document"
+  },
+  "pdfExporting": "Creating the PDF",
+  "@pdfExporting": {
+    "description": "Shown while the document is being built"
+  },
+  "pdfFailed": "The PDF could not be created",
+  "@pdfFailed": {
+    "description": "Shown when the export fails"
+  },
+  "videoToolsOpen": "Video tools",
+  "@videoToolsOpen": {
+    "description": "Tooltip on the viewer button that opens the video tools"
+  },
+  "videoToolsTitle": "Video tools",
+  "@videoToolsTitle": {
+    "description": "Title of the video tools screen"
+  },
+  "videoToolsUnavailable": "This clip could not be read",
+  "@videoToolsUnavailable": {
+    "description": "Shown when the platform cannot open the clip"
+  },
+  "videoTabFrame": "Frame",
+  "@videoTabFrame": {
+    "description": "Tab that grabs a still picture"
+  },
+  "videoTabGif": "GIF",
+  "@videoTabGif": {
+    "description": "Tab that makes an animated GIF"
+  },
+  "videoTabTrim": "Trim",
+  "@videoTabTrim": {
+    "description": "Tab that cuts the clip"
+  },
+  "framePositionLabel": "Position in the clip",
+  "@framePositionLabel": {
+    "description": "Label of the frame position slider"
+  },
+  "frameFormatLabel": "Save as",
+  "@frameFormatLabel": {
+    "description": "Heading above the frame format choices"
+  },
+  "frameSaveAction": "Save this frame",
+  "@frameSaveAction": {
+    "description": "Button that writes the still picture"
+  },
+  "frameUnavailable": "No frame could be read here",
+  "@frameUnavailable": {
+    "description": "Shown when the platform gives no frame"
+  },
+  "gifFrameRateLabel": "Frames per second",
+  "@gifFrameRateLabel": {
+    "description": "Heading above the GIF frame rate choices"
+  },
+  "gifSizeLabel": "Size",
+  "@gifSizeLabel": {
+    "description": "Heading above the GIF size choices"
+  },
+  "gifLoopLabel": "Play on a loop",
+  "@gifLoopLabel": {
+    "description": "Switch that makes the GIF repeat"
+  },
+  "gifCapped": "The GIF is shortened to keep the file small",
+  "@gifCapped": {
+    "description": "Shown when the frame or length cap applies"
+  },
+  "gifExportAction": "Create the GIF",
+  "@gifExportAction": {
+    "description": "Button that writes the GIF"
+  },
+  "gifExporting": "Creating the GIF",
+  "@gifExporting": {
+    "description": "Shown while the GIF is being made"
+  },
+  "trimStartLabel": "Start",
+  "@trimStartLabel": {
+    "description": "Label of the trim start handle"
+  },
+  "trimEndLabel": "End",
+  "@trimEndLabel": {
+    "description": "Label of the trim end handle"
+  },
+  "trimLengthLabel": "Length",
+  "@trimLengthLabel": {
+    "description": "Label of the kept length"
+  },
+  "trimAction": "Save the trimmed clip",
+  "@trimAction": {
+    "description": "Button that writes the trimmed video"
+  },
+  "trimLosslessNote": "Nothing is re-encoded, so no quality is lost. The cut may begin a moment earlier, at the nearest key frame.",
+  "@trimLosslessNote": {
+    "description": "Explains how the lossless trim works"
+  },
+  "trimTooShort": "The chosen part is too short",
+  "@trimTooShort": {
+    "description": "Shown when the trim range is below the minimum"
+  },
+  "videoWorking": "Working",
+  "@videoWorking": {
+    "description": "Shown while a video job is running"
+  },
+  "videoJobFailed": "That could not be finished",
+  "@videoJobFailed": {
+    "description": "Shown when a video job fails"
+  },
+  "convertPixelSize": "{width} by {height} pixels",
+  "@convertPixelSize": {
+    "description": "Pixel size shown in the size preview",
+    "placeholders": {
+      "width": {
+        "type": "int"
+      },
+      "height": {
+        "type": "int"
+      }
+    }
+  },
+  "convertSmallerBy": "{percent} percent smaller",
+  "@convertSmallerBy": {
+    "description": "How much smaller the new copy is",
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "convertSavedAs": "Saved as {name}",
+  "@convertSavedAs": {
+    "description": "Shown after a converted copy is written",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "pdfSelectedCount": "{count} chosen",
+  "@pdfSelectedCount": {
+    "description": "How many photos are picked for the PDF",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "pdfMaxPagesReached": "Only {count} photos fit in one PDF",
+  "@pdfMaxPagesReached": {
+    "description": "Shown when the page cap stops more photos being picked",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "pdfExportedAs": "Saved {name} with {pages} pages",
+  "@pdfExportedAs": {
+    "description": "Shown after a PDF is written",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "pages": {
+        "type": "int"
+      }
+    }
+  },
+  "pdfSkippedCount": "{count} photos could not be read and were left out",
+  "@pdfSkippedCount": {
+    "description": "Shown when some chosen photos were skipped",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "gifFrameCount": "{count} frames",
+  "@gifFrameCount": {
+    "description": "How many frames the GIF will hold",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "videoJobSavedAs": "Saved as {name}",
+  "@videoJobSavedAs": {
+    "description": "Shown after a video job writes a file",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "searchTitle": "Search",
+  "@searchTitle": {
+    "description": "Title of the search screen"
+  },
+  "searchOpen": "Search",
+  "@searchOpen": {
+    "description": "Opens the search screen"
+  },
+  "searchHint": "Search names, tags, notes, places",
+  "@searchHint": {
+    "description": "Placeholder text inside the search box"
+  },
+  "searchClear": "Clear",
+  "@searchClear": {
+    "description": "Clears the search box"
+  },
+  "searchFilters": "Filters",
+  "@searchFilters": {
+    "description": "Opens the search filter sheet"
+  },
+  "searchStartTitle": "Search your library",
+  "@searchStartTitle": {
+    "description": "Shown before anything is typed"
+  },
+  "searchStartBody": "Look through names, tags, notes, camera and place. Start a word with tag:, type:, place:, camera:, before: or after: to narrow the search.",
+  "@searchStartBody": {
+    "description": "Explains what search can do"
+  },
+  "searchNoResultsTitle": "Nothing matched",
+  "@searchNoResultsTitle": {
+    "description": "Shown when a search finds nothing"
+  },
+  "searchNoResultsBody": "Try fewer words, or check the filters.",
+  "@searchNoResultsBody": {
+    "description": "Advice when a search finds nothing"
+  },
+  "searchFailed": "The search could not run",
+  "@searchFailed": {
+    "description": "Shown when a search throws an error"
+  },
+  "searchRecentTitle": "Recent searches",
+  "@searchRecentTitle": {
+    "description": "Heading above the recent search list"
+  },
+  "searchRecentClear": "Clear all",
+  "@searchRecentClear": {
+    "description": "Forgets every recent search"
+  },
+  "searchRecentRemove": "Forget this search",
+  "@searchRecentRemove": {
+    "description": "Forgets one recent search"
+  },
+  "searchResultCount": "{count} results",
+  "@searchResultCount": {
+    "description": "How many items a search found",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "searchMatchedInName": "Matched the file name",
+  "@searchMatchedInName": {
+    "description": "Why a result came back"
+  },
+  "searchMatchedInTags": "Matched a tag",
+  "@searchMatchedInTags": {
+    "description": "Why a result came back"
+  },
+  "searchMatchedInNotes": "Matched a note",
+  "@searchMatchedInNotes": {
+    "description": "Why a result came back"
+  },
+  "searchMatchedInPlace": "Matched a place",
+  "@searchMatchedInPlace": {
+    "description": "Why a result came back"
+  },
+  "searchMatchedInDetails": "Matched the photo details",
+  "@searchMatchedInDetails": {
+    "description": "Why a result came back"
+  },
+  "filterTitle": "Filters",
+  "@filterTitle": {
+    "description": "Title of the filter sheet"
+  },
+  "filterMediaType": "Kind",
+  "@filterMediaType": {
+    "description": "Heading for the media kind filter"
+  },
+  "filterTypeImage": "Photos",
+  "@filterTypeImage": {
+    "description": "Media kind filter chip"
+  },
+  "filterTypeVideo": "Videos",
+  "@filterTypeVideo": {
+    "description": "Media kind filter chip"
+  },
+  "filterTypeGif": "GIFs",
+  "@filterTypeGif": {
+    "description": "Media kind filter chip"
+  },
+  "filterTypeRaw": "RAW",
+  "@filterTypeRaw": {
+    "description": "Media kind filter chip"
+  },
+  "filterTypeSvg": "SVG",
+  "@filterTypeSvg": {
+    "description": "Media kind filter chip"
+  },
+  "filterFavoritesOnly": "Favourites only",
+  "@filterFavoritesOnly": {
+    "description": "Filter switch for favourite items"
+  },
+  "filterHasLocation": "Has a place",
+  "@filterHasLocation": {
+    "description": "Filter switch for items with a GPS fix"
+  },
+  "filterDateRange": "Date range",
+  "@filterDateRange": {
+    "description": "Heading for the date filter"
+  },
+  "filterDateAny": "Any date",
+  "@filterDateAny": {
+    "description": "Shown when no date range is set"
+  },
+  "filterDateChoose": "Choose dates",
+  "@filterDateChoose": {
+    "description": "Opens the date range picker"
+  },
+  "filterDateClear": "Clear dates",
+  "@filterDateClear": {
+    "description": "Removes the date range"
+  },
+  "filterTags": "Tags",
+  "@filterTags": {
+    "description": "Heading for the tag filter"
+  },
+  "filterTagModeAll": "Has all",
+  "@filterTagModeAll": {
+    "description": "Tag filter requiring every chosen tag"
+  },
+  "filterTagModeAny": "Has any",
+  "@filterTagModeAny": {
+    "description": "Tag filter requiring one chosen tag"
+  },
+  "filterNoTags": "No tags yet",
+  "@filterNoTags": {
+    "description": "Shown in the filter sheet when no tag exists"
+  },
+  "filterReset": "Reset",
+  "@filterReset": {
+    "description": "Clears every filter"
+  },
+  "filterApply": "Apply",
+  "@filterApply": {
+    "description": "Closes the filter sheet keeping the choices"
+  },
+  "tagsTitle": "Tags",
+  "@tagsTitle": {
+    "description": "Title of the tag management screen"
+  },
+  "tagsOpen": "Tags",
+  "@tagsOpen": {
+    "description": "Opens the tag screen"
+  },
+  "tagsEmptyTitle": "No tags yet",
+  "@tagsEmptyTitle": {
+    "description": "Shown when no tag has been made"
+  },
+  "tagsEmptyBody": "Make a tag to group photos your own way.",
+  "@tagsEmptyBody": {
+    "description": "Advice when no tag has been made"
+  },
+  "tagNew": "New tag",
+  "@tagNew": {
+    "description": "Starts making a tag"
+  },
+  "tagEditTitle": "Edit tag",
+  "@tagEditTitle": {
+    "description": "Title of the tag edit dialog"
+  },
+  "tagNameLabel": "Tag name",
+  "@tagNameLabel": {
+    "description": "Label of the tag name field"
+  },
+  "tagColorLabel": "Colour",
+  "@tagColorLabel": {
+    "description": "Label of the tag colour picker"
+  },
+  "tagSave": "Save",
+  "@tagSave": {
+    "description": "Saves a tag"
+  },
+  "tagCancel": "Cancel",
+  "@tagCancel": {
+    "description": "Closes a dialog without saving"
+  },
+  "tagDelete": "Delete",
+  "@tagDelete": {
+    "description": "Deletes a tag"
+  },
+  "tagDeleteTitle": "Delete this tag?",
+  "@tagDeleteTitle": {
+    "description": "Title of the delete tag confirmation"
+  },
+  "tagDeleteBody": "The tag comes off every photo that has it. No photo is deleted.",
+  "@tagDeleteBody": {
+    "description": "Explains what deleting a tag does"
+  },
+  "tagItemCount": "{count} items",
+  "@tagItemCount": {
+    "description": "How many items carry a tag",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "tagShowMedia": "Show photos",
+  "@tagShowMedia": {
+    "description": "Opens search filtered to one tag"
+  },
+  "tagErrorEmpty": "A tag needs a name",
+  "@tagErrorEmpty": {
+    "description": "Shown when a tag name is blank"
+  },
+  "tagErrorTooLong": "That name is too long",
+  "@tagErrorTooLong": {
+    "description": "Shown when a tag name is over the limit"
+  },
+  "tagErrorDuplicate": "That tag already exists",
+  "@tagErrorDuplicate": {
+    "description": "Shown when a tag name is taken"
+  },
+  "tagErrorFailed": "The tag could not be saved",
+  "@tagErrorFailed": {
+    "description": "Shown when a tag write fails"
+  },
+  "tagSheetTitle": "Tags on this item",
+  "@tagSheetTitle": {
+    "description": "Title of the tag sheet in the viewer"
+  },
+  "tagSheetNewHint": "Add a new tag",
+  "@tagSheetNewHint": {
+    "description": "Placeholder of the new tag field"
+  },
+  "tagSheetAdd": "Add",
+  "@tagSheetAdd": {
+    "description": "Adds the typed tag"
+  },
+  "tagSheetDone": "Done",
+  "@tagSheetDone": {
+    "description": "Closes the tag sheet"
+  },
+  "tagSheetOpen": "Tags",
+  "@tagSheetOpen": {
+    "description": "Opens the tag sheet from the viewer"
+  },
+  "cleanerTitle": "Duplicate cleaner",
+  "@cleanerTitle": {
+    "description": "Title of the duplicate cleaner screen"
+  },
+  "cleanerOpen": "Duplicate cleaner",
+  "@cleanerOpen": {
+    "description": "Opens the duplicate cleaner"
+  },
+  "cleanerStart": "Find duplicates",
+  "@cleanerStart": {
+    "description": "Starts a duplicate scan"
+  },
+  "cleanerStop": "Stop",
+  "@cleanerStop": {
+    "description": "Stops a running duplicate scan"
+  },
+  "cleanerRescan": "Scan again",
+  "@cleanerRescan": {
+    "description": "Runs the duplicate scan a second time"
+  },
+  "cleanerIdleTitle": "Find duplicate photos",
+  "@cleanerIdleTitle": {
+    "description": "Shown before a duplicate scan is run"
+  },
+  "cleanerIdleBody": "Each file is read once and what was found is remembered, so scanning again later is quick.",
+  "@cleanerIdleBody": {
+    "description": "Explains how the duplicate scan works"
+  },
+  "cleanerScanning": "Checked {processed} of {total}",
+  "@cleanerScanning": {
+    "description": "Live duplicate scan progress",
+    "placeholders": {
+      "processed": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "cleanerGrouping": "Grouping the copies",
+  "@cleanerGrouping": {
+    "description": "Shown while duplicate groups are built"
+  },
+  "cleanerCancelled": "Scan stopped",
+  "@cleanerCancelled": {
+    "description": "Shown when the user stops the scan"
+  },
+  "cleanerFailed": "The scan could not finish",
+  "@cleanerFailed": {
+    "description": "Shown when the duplicate scan fails"
+  },
+  "cleanerNoneTitle": "No duplicates found",
+  "@cleanerNoneTitle": {
+    "description": "Shown when the scan finds no copies"
+  },
+  "cleanerNoneBody": "Nothing in your library looks like a copy of anything else.",
+  "@cleanerNoneBody": {
+    "description": "Explains an empty duplicate result"
+  },
+  "cleanerGroupsFound": "{count} groups of copies",
+  "@cleanerGroupsFound": {
+    "description": "How many duplicate groups were found",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "cleanerReclaimable": "About {size} could be freed",
+  "@cleanerReclaimable": {
+    "description": "How much space the extra copies take",
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "cleanerFailures": "{count} files could not be read and were skipped",
+  "@cleanerFailures": {
+    "description": "How many files the scan could not read",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "cleanerKindExact": "Identical files",
+  "@cleanerKindExact": {
+    "description": "Badge for a byte-identical duplicate group"
+  },
+  "cleanerKindSimilar": "Looks the same",
+  "@cleanerKindSimilar": {
+    "description": "Badge for a visually similar group"
+  },
+  "cleanerMemberCount": "{count} copies",
+  "@cleanerMemberCount": {
+    "description": "How many copies are in a group",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "cleanerCompare": "Compare",
+  "@cleanerCompare": {
+    "description": "Opens the side-by-side comparison"
+  },
+  "compareTitle": "Compare copies",
+  "@compareTitle": {
+    "description": "Title of the comparison screen"
+  },
+  "compareGroupGone": "This group has already been dealt with",
+  "@compareGroupGone": {
+    "description": "Shown when a group no longer exists"
+  },
+  "compareKeepThis": "Keep this one",
+  "@compareKeepThis": {
+    "description": "Chooses which copy to keep"
+  },
+  "compareBestBadge": "Suggested",
+  "@compareBestBadge": {
+    "description": "Marks the copy the app suggests keeping"
+  },
+  "compareKeepAndTrash": "Keep 1, move {count} to trash",
+  "@compareKeepAndTrash": {
+    "description": "The confirm action on the compare screen",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "compareTrashNotice": "Nothing is erased. The other copies move to the trash and can be brought back.",
+  "@compareTrashNotice": {
+    "description": "Explains that files are not deleted"
+  },
+  "compareConfirmTitle": "Move {count} copies to the trash?",
+  "@compareConfirmTitle": {
+    "description": "Title of the trash confirmation",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "compareConfirmBody": "Only the copy you kept stays in the gallery. The files stay on the device and can be brought back.",
+  "@compareConfirmBody": {
+    "description": "Body of the trash confirmation"
+  },
+  "compareConfirm": "Move to trash",
+  "@compareConfirm": {
+    "description": "Confirms moving copies to the trash"
+  },
+  "compareCancel": "Cancel",
+  "@compareCancel": {
+    "description": "Closes the confirmation without acting"
+  },
+  "compareMoved": "{count} copies moved to the trash",
+  "@compareMoved": {
+    "description": "Shown after copies are trashed",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "compareFailed": "The copies could not be moved",
+  "@compareFailed": {
+    "description": "Shown when trashing copies fails"
+  },
+  "compareFieldSize": "Size",
+  "@compareFieldSize": {
+    "description": "Row label on the comparison screen"
+  },
+  "compareFieldPixels": "Pixels",
+  "@compareFieldPixels": {
+    "description": "Row label on the comparison screen"
+  },
+  "compareFieldDate": "Date",
+  "@compareFieldDate": {
+    "description": "Row label on the comparison screen"
+  },
+  "compareFieldCamera": "Camera",
+  "@compareFieldCamera": {
+    "description": "Row label on the comparison screen"
+  },
+  "compareUnknown": "Unknown",
+  "@compareUnknown": {
+    "description": "Shown when a detail is missing"
+  },
+  "albumsTitle": "Albums",
+  "@albumsTitle": {
+    "description": "Title of the albums screen"
+  },
+  "albumsOpen": "Albums",
+  "@albumsOpen": {
+    "description": "Opens the albums screen"
+  },
+  "albumsSectionMine": "My albums",
+  "@albumsSectionMine": {
+    "description": "Heading above the user's own albums"
+  },
+  "albumsSectionSmart": "Smart albums",
+  "@albumsSectionSmart": {
+    "description": "Heading above the automatic albums"
+  },
+  "albumsSectionFolders": "Device folders",
+  "@albumsSectionFolders": {
+    "description": "Heading above the storage folders"
+  },
+  "albumsEmptyTitle": "No albums yet",
+  "@albumsEmptyTitle": {
+    "description": "Shown when the user has made no albums"
+  },
+  "albumsEmptyBody": "Make an album to group photos and videos your own way. The files stay where they are.",
+  "@albumsEmptyBody": {
+    "description": "Explains what an album is"
+  },
+  "albumsFoldersEmpty": "No folders found",
+  "@albumsFoldersEmpty": {
+    "description": "Shown when the device has no indexed folders"
+  },
+  "albumsLoadFailed": "Albums could not be loaded",
+  "@albumsLoadFailed": {
+    "description": "Shown when reading albums fails"
+  },
+  "albumItemCount": "{count, plural, =0{Empty} =1{1 item} other{{count} items}}",
+  "@albumItemCount": {
+    "description": "How many items an album holds",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "smartAlbumFavorites": "Favourites",
+  "@smartAlbumFavorites": {
+    "description": "Name of the starred-items album"
+  },
+  "smartAlbumVideos": "Videos",
+  "@smartAlbumVideos": {
+    "description": "Name of the videos-only album"
+  },
+  "smartAlbumGifs": "Animated & GIFs",
+  "@smartAlbumGifs": {
+    "description": "Name of the animated images album"
+  },
+  "smartAlbumRaw": "RAW captures",
+  "@smartAlbumRaw": {
+    "description": "Name of the raw photos album"
+  },
+  "smartAlbumPanoramas": "Panoramas",
+  "@smartAlbumPanoramas": {
+    "description": "Name of the wide photos album"
+  },
+  "smartAlbumRecent": "Recently added",
+  "@smartAlbumRecent": {
+    "description": "Name of the newest items album"
+  },
+  "smartAlbumTrash": "Trash",
+  "@smartAlbumTrash": {
+    "description": "Name of the trashed items smart album"
+  },
+  "albumNew": "New album",
+  "@albumNew": {
+    "description": "Makes a new album"
+  },
+  "albumCreateTitle": "New album",
+  "@albumCreateTitle": {
+    "description": "Title of the create-album dialog"
+  },
+  "albumRenameTitle": "Rename album",
+  "@albumRenameTitle": {
+    "description": "Title of the rename-album dialog"
+  },
+  "albumNameLabel": "Album name",
+  "@albumNameLabel": {
+    "description": "Label of the album name box"
+  },
+  "albumNameHint": "Holiday 2026",
+  "@albumNameHint": {
+    "description": "Example album name"
+  },
+  "albumSave": "Save",
+  "@albumSave": {
+    "description": "Confirms the album dialog"
+  },
+  "albumCancel": "Cancel",
+  "@albumCancel": {
+    "description": "Closes a dialog without saving"
+  },
+  "albumRename": "Rename",
+  "@albumRename": {
+    "description": "Renames the album"
+  },
+  "albumDelete": "Delete album",
+  "@albumDelete": {
+    "description": "Deletes the album"
+  },
+  "albumChooseCover": "Choose cover",
+  "@albumChooseCover": {
+    "description": "Opens the cover chooser"
+  },
+  "albumReorder": "Change order",
+  "@albumReorder": {
+    "description": "Opens the reorder screen"
+  },
+  "albumAddMedia": "Add photos",
+  "@albumAddMedia": {
+    "description": "Adds media to the album"
+  },
+  "albumRemoveMedia": "Remove from album",
+  "@albumRemoveMedia": {
+    "description": "Takes one item out of the album"
+  },
+  "albumPin": "Pin to top",
+  "@albumPin": {
+    "description": "Pins the album"
+  },
+  "albumUnpin": "Unpin",
+  "@albumUnpin": {
+    "description": "Unpins the album"
+  },
+  "albumErrorEmpty": "An album needs a name",
+  "@albumErrorEmpty": {
+    "description": "Shown when the name box is empty"
+  },
+  "albumErrorTooLong": "That name is too long",
+  "@albumErrorTooLong": {
+    "description": "Shown when the name is over the limit"
+  },
+  "albumErrorDuplicate": "An album with that name already exists",
+  "@albumErrorDuplicate": {
+    "description": "Shown when the name is taken"
+  },
+  "albumErrorFailed": "That change could not be saved",
+  "@albumErrorFailed": {
+    "description": "Shown when an album change fails"
+  },
+  "albumDeleteConfirmTitle": "Delete \"{name}\"?",
+  "@albumDeleteConfirmTitle": {
+    "description": "Title of the delete confirmation",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "albumDeleteConfirmBody": "Only the album goes. Every photo and video stays on the device exactly where it is.",
+  "@albumDeleteConfirmBody": {
+    "description": "Explains that no file is deleted"
+  },
+  "albumDeleteConfirm": "Delete album",
+  "@albumDeleteConfirm": {
+    "description": "Confirms deleting the album"
+  },
+  "albumDeleted": "Album deleted",
+  "@albumDeleted": {
+    "description": "Shown after an album is deleted"
+  },
+  "albumRemovedFromAlbum": "Removed from the album",
+  "@albumRemovedFromAlbum": {
+    "description": "Shown after an item leaves an album"
+  },
+  "albumCoverSet": "Cover updated",
+  "@albumCoverSet": {
+    "description": "Shown after the cover is changed"
+  },
+  "albumOrderSaved": "New order saved",
+  "@albumOrderSaved": {
+    "description": "Shown after a reorder is saved"
+  },
+  "albumEmptyTitle": "This album is empty",
+  "@albumEmptyTitle": {
+    "description": "Shown when an album holds nothing"
+  },
+  "albumEmptyBody": "Add photos and videos from the gallery. They are not moved or copied.",
+  "@albumEmptyBody": {
+    "description": "Explains how to fill an album"
+  },
+  "albumGone": "This album is no longer there",
+  "@albumGone": {
+    "description": "Shown when an album id does not resolve"
+  },
+  "albumReorderTitle": "Change order",
+  "@albumReorderTitle": {
+    "description": "Title of the reorder screen"
+  },
+  "albumReorderHint": "Drag an item to move it. The new order is saved when you tap Save.",
+  "@albumReorderHint": {
+    "description": "Explains how to reorder"
+  },
+  "albumReorderSave": "Save order",
+  "@albumReorderSave": {
+    "description": "Saves the new order"
+  },
+  "albumCoverTitle": "Choose a cover",
+  "@albumCoverTitle": {
+    "description": "Title of the cover chooser"
+  },
+  "albumCoverClear": "Use the newest item",
+  "@albumCoverClear": {
+    "description": "Clears the chosen cover"
+  },
+  "albumPickerTitle": "Add to album",
+  "@albumPickerTitle": {
+    "description": "Title of the add-to-album sheet"
+  },
+  "albumPickerEmpty": "You have no albums yet",
+  "@albumPickerEmpty": {
+    "description": "Shown when there is nothing to tick"
+  },
+  "albumPickerCreate": "New album",
+  "@albumPickerCreate": {
+    "description": "Makes an album from inside the sheet"
+  },
+  "albumPickerDone": "Done",
+  "@albumPickerDone": {
+    "description": "Closes the add-to-album sheet"
+  },
+  "albumPickerSaved": "Albums updated",
+  "@albumPickerSaved": {
+    "description": "Shown after album membership changes"
+  },
+  "folderEmptyTitle": "This folder is empty",
+  "@folderEmptyTitle": {
+    "description": "Shown when a device folder has nothing to show"
+  },
+  "smartAlbumEmptyTitle": "Nothing here yet",
+  "@smartAlbumEmptyTitle": {
+    "description": "Shown when a smart album is empty"
+  },
+  "smartAlbumUnknown": "That album does not exist",
+  "@smartAlbumUnknown": {
+    "description": "Shown for an unknown smart album key"
+  },
+  "filterHasTags": "Tagged only",
+  "@filterHasTags": {
+    "description": "Filter row keeping only items with a tag"
+  },
+  "filterFileSize": "File size",
+  "@filterFileSize": {
+    "description": "Heading of the file size filter"
+  },
+  "filterSizeAny": "Any size",
+  "@filterSizeAny": {
+    "description": "Shown when no size range is set"
+  },
+  "filterSizeSmall": "Under 1 MB",
+  "@filterSizeSmall": {
+    "description": "Small file size choice"
+  },
+  "filterSizeMedium": "1 to 10 MB",
+  "@filterSizeMedium": {
+    "description": "Medium file size choice"
+  },
+  "filterSizeLarge": "Over 10 MB",
+  "@filterSizeLarge": {
+    "description": "Large file size choice"
+  },
+  "filterSortBy": "Sort by",
+  "@filterSortBy": {
+    "description": "Heading of the sort choice"
+  },
+  "filterSortDateTaken": "Date taken",
+  "@filterSortDateTaken": {
+    "description": "Sort choice"
+  },
+  "filterSortDateAdded": "Date added",
+  "@filterSortDateAdded": {
+    "description": "Sort choice"
+  },
+  "filterSortName": "Name",
+  "@filterSortName": {
+    "description": "Sort choice"
+  },
+  "filterSortSize": "Size",
+  "@filterSortSize": {
+    "description": "Sort choice"
+  },
+  "filterSortNewestFirst": "Newest first",
+  "@filterSortNewestFirst": {
+    "description": "Sort direction"
+  },
+  "filterSortOldestFirst": "Oldest first",
+  "@filterSortOldestFirst": {
+    "description": "Sort direction"
+  },
+  "vaultTitle": "Private Vault",
+  "@vaultTitle": {
+    "description": "Title of the private vault"
+  },
+  "vaultMenuLabel": "Private Vault",
+  "@vaultMenuLabel": {
+    "description": "Menu entry that opens the private vault"
+  },
+  "vaultMoveToVault": "Move to vault",
+  "@vaultMoveToVault": {
+    "description": "Viewer action that puts an item in the vault"
+  },
+  "vaultSetUpTitle": "Create your vault",
+  "@vaultSetUpTitle": {
+    "description": "Title of the first-run vault set-up"
+  },
+  "vaultSetUpBody": "Items you move here are encrypted with a key held by this device and hidden from the gallery.",
+  "@vaultSetUpBody": {
+    "description": "Explains what the vault does"
+  },
+  "vaultNoRecoveryWarning": "There is no way to recover a forgotten PIN. Without it nobody can open the vault, not even this app.",
+  "@vaultNoRecoveryWarning": {
+    "description": "Warning shown before a PIN is chosen"
+  },
+  "vaultChoosePin": "Choose a PIN",
+  "@vaultChoosePin": {
+    "description": "Prompt for the first PIN entry"
+  },
+  "vaultConfirmPin": "Enter the PIN again",
+  "@vaultConfirmPin": {
+    "description": "Prompt for the second PIN entry"
+  },
+  "vaultEnterPin": "Enter your PIN",
+  "@vaultEnterPin": {
+    "description": "Prompt on the unlock screen"
+  },
+  "vaultCreate": "Create vault",
+  "@vaultCreate": {
+    "description": "Button that creates the vault"
+  },
+  "vaultUnlock": "Unlock",
+  "@vaultUnlock": {
+    "description": "Button that opens the vault"
+  },
+  "vaultUseBiometrics": "Use fingerprint",
+  "@vaultUseBiometrics": {
+    "description": "Button that starts the biometric prompt"
+  },
+  "vaultUnlockReason": "Unlock your private vault",
+  "@vaultUnlockReason": {
+    "description": "Line Android shows in the biometric prompt"
+  },
+  "vaultLockNow": "Lock now",
+  "@vaultLockNow": {
+    "description": "Action that shuts the vault straight away"
+  },
+  "vaultPinMismatch": "The two PINs are not the same",
+  "@vaultPinMismatch": {
+    "description": "Shown when the confirmation PIN differs"
+  },
+  "vaultWrongPin": "That PIN is not right",
+  "@vaultWrongPin": {
+    "description": "Shown after a wrong PIN"
+  },
+  "vaultAttemptsLeft": "{count, plural, =1{1 try left} other{{count} tries left}}",
+  "@vaultAttemptsLeft": {
+    "description": "How many tries remain before the pad shuts",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "vaultLockedOut": "Too many tries. Wait {seconds} seconds.",
+  "@vaultLockedOut": {
+    "description": "Shown while the pad is shut after repeated wrong PINs",
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "vaultPinTooShort": "A PIN needs at least {count} digits",
+  "@vaultPinTooShort": {
+    "description": "PIN rejected for being too short",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "vaultPinTooLong": "A PIN can have at most {count} digits",
+  "@vaultPinTooLong": {
+    "description": "PIN rejected for being too long",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "vaultPinNotDigits": "A PIN can only have digits",
+  "@vaultPinNotDigits": {
+    "description": "PIN rejected for holding something other than digits"
+  },
+  "vaultPinAllSame": "Do not use the same digit all the way through",
+  "@vaultPinAllSame": {
+    "description": "PIN rejected for being one repeated digit"
+  },
+  "vaultPinSequential": "Do not use digits in a straight run",
+  "@vaultPinSequential": {
+    "description": "PIN rejected for being a sequence"
+  },
+  "vaultBiometricFailed": "Not recognised. Use your PIN.",
+  "@vaultBiometricFailed": {
+    "description": "Shown when the sensor does not recognise the user"
+  },
+  "vaultBiometricUnavailable": "Fingerprint unlock is not available. Use your PIN.",
+  "@vaultBiometricUnavailable": {
+    "description": "Shown when no biometric can be used"
+  },
+  "vaultAuthError": "The vault could not be opened",
+  "@vaultAuthError": {
+    "description": "Shown when unlocking fails for a reason the user cannot act on"
+  },
+  "vaultKeystoreUnavailableTitle": "This device cannot hold the vault key",
+  "@vaultKeystoreUnavailableTitle": {
+    "description": "Title shown when the keystore is unusable"
+  },
+  "vaultKeystoreUnavailableBody": "The vault needs a hardware-backed key store, and this device does not have a working one. Nothing is encrypted without it, so the vault stays shut.",
+  "@vaultKeystoreUnavailableBody": {
+    "description": "Explains why the vault will not open"
+  },
+  "vaultEmptyTitle": "The vault is empty",
+  "@vaultEmptyTitle": {
+    "description": "Title shown when no items are in the vault"
+  },
+  "vaultEmptyBody": "Add photos and videos here to encrypt them and take them out of the gallery.",
+  "@vaultEmptyBody": {
+    "description": "Body shown when no items are in the vault"
+  },
+  "vaultItemCount": "{count, plural, =0{No items} =1{1 item} other{{count} items}}",
+  "@vaultItemCount": {
+    "description": "How many items the vault holds",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "vaultSelectedCount": "{count} selected",
+  "@vaultSelectedCount": {
+    "description": "How many items are selected",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "vaultAddItems": "Add items",
+  "@vaultAddItems": {
+    "description": "Action that opens the import sheet"
+  },
+  "vaultRestore": "Restore to gallery",
+  "@vaultRestore": {
+    "description": "Action that takes items back out of the vault"
+  },
+  "vaultDeleteForever": "Delete for good",
+  "@vaultDeleteForever": {
+    "description": "Action that erases items and their payloads"
+  },
+  "vaultSettingsAction": "Vault settings",
+  "@vaultSettingsAction": {
+    "description": "Action that opens the vault settings"
+  },
+  "vaultWorking": "Working…",
+  "@vaultWorking": {
+    "description": "Shown while a batch runs"
+  },
+  "vaultCancel": "Cancel",
+  "@vaultCancel": {
+    "description": "Dismisses a vault dialog"
+  },
+  "vaultSelectAll": "Select all",
+  "@vaultSelectAll": {
+    "description": "Selects every item in the vault"
+  },
+  "vaultClearSelection": "Clear selection",
+  "@vaultClearSelection": {
+    "description": "Clears the current selection"
+  },
+  "vaultImportTitle": "Move to vault",
+  "@vaultImportTitle": {
+    "description": "Title of the import sheet"
+  },
+  "vaultImportBody": "The items are encrypted and taken out of the gallery. What happens to the originals is up to you.",
+  "@vaultImportBody": {
+    "description": "Explains what an import does"
+  },
+  "vaultImportKeepOriginal": "Keep the originals",
+  "@vaultImportKeepOriginal": {
+    "description": "Import choice that leaves the public files alone"
+  },
+  "vaultImportKeepOriginalBody": "The originals stay where they are. Delete them yourself later if you want to.",
+  "@vaultImportKeepOriginalBody": {
+    "description": "Explains the keep choice"
+  },
+  "vaultImportShredOriginal": "Shred the originals",
+  "@vaultImportShredOriginal": {
+    "description": "Import choice that destroys the public files"
+  },
+  "vaultImportShredOriginalBody": "The original files are overwritten and deleted. This cannot be undone.",
+  "@vaultImportShredOriginalBody": {
+    "description": "Explains the shred choice"
+  },
+  "vaultImportConfirm": "{count, plural, =1{Move 1 item} other{Move {count} items}}",
+  "@vaultImportConfirm": {
+    "description": "Button that starts the import",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "vaultImportNothingSelected": "Nothing is selected",
+  "@vaultImportNothingSelected": {
+    "description": "Shown when the import sheet has no selection"
+  },
+  "vaultShredConfirmTitle": "{count, plural, =1{Destroy 1 original?} other{Destroy {count} originals?}}",
+  "@vaultShredConfirmTitle": {
+    "description": "Title of the shred confirmation",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "vaultShredConfirmBody": "The original files will be overwritten and deleted. There is no undo, and no way to get them back.",
+  "@vaultShredConfirmBody": {
+    "description": "Body of the shred confirmation"
+  },
+  "vaultShredConfirmAction": "Shred them",
+  "@vaultShredConfirmAction": {
+    "description": "Confirms shredding the originals"
+  },
+  "vaultImportDone": "{count, plural, =1{1 item moved to the vault} other{{count} items moved to the vault}}",
+  "@vaultImportDone": {
+    "description": "Shown after a successful import",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "vaultImportPartial": "{moved} moved, {failed} could not be read",
+  "@vaultImportPartial": {
+    "description": "Shown when only some of a batch imported",
+    "placeholders": {
+      "moved": {
+        "type": "int"
+      },
+      "failed": {
+        "type": "int"
+      }
+    }
+  },
+  "vaultImportFailed": "Nothing could be moved to the vault",
+  "@vaultImportFailed": {
+    "description": "Shown when a whole import failed"
+  },
+  "vaultRestoreConfirmTitle": "{count, plural, =1{Restore 1 item?} other{Restore {count} items?}}",
+  "@vaultRestoreConfirmTitle": {
+    "description": "Title of the restore confirmation",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "vaultRestoreConfirmBody": "The items are written back into your gallery folders and taken out of the vault.",
+  "@vaultRestoreConfirmBody": {
+    "description": "Body of the restore confirmation"
+  },
+  "vaultRestoreConfirmAction": "Restore",
+  "@vaultRestoreConfirmAction": {
+    "description": "Confirms restoring items"
+  },
+  "vaultRestoreDone": "{count, plural, =1{1 item restored} other{{count} items restored}}",
+  "@vaultRestoreDone": {
+    "description": "Shown after a successful restore",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "vaultRestoreFailed": "Nothing could be restored",
+  "@vaultRestoreFailed": {
+    "description": "Shown when a whole restore failed"
+  },
+  "vaultDeleteConfirmTitle": "{count, plural, =1{Delete 1 item for good?} other{Delete {count} items for good?}}",
+  "@vaultDeleteConfirmTitle": {
+    "description": "Title of the delete confirmation",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "vaultDeleteConfirmBody": "The encrypted files are overwritten and deleted. There is no undo, and no copy anywhere else.",
+  "@vaultDeleteConfirmBody": {
+    "description": "Body of the delete confirmation"
+  },
+  "vaultDeleteDone": "{count, plural, =1{1 item deleted} other{{count} items deleted}}",
+  "@vaultDeleteDone": {
+    "description": "Shown after a successful delete",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "vaultViewerFailed": "This item could not be opened",
+  "@vaultViewerFailed": {
+    "description": "Shown when a vault item will not decrypt"
+  },
+  "vaultViewerTampered": "This item failed its integrity check and was not opened",
+  "@vaultViewerTampered": {
+    "description": "Shown when a payload fails its authentication tag"
+  },
+  "vaultSettingsTitle": "Vault settings",
+  "@vaultSettingsTitle": {
+    "description": "Title of the vault settings screen"
+  },
+  "vaultAutoLockHeading": "Auto-lock",
+  "@vaultAutoLockHeading": {
+    "description": "Heading of the auto-lock choice"
+  },
+  "vaultAutoLockBody": "The vault always locks when the app leaves the screen. This is how long it waits while you are not touching it.",
+  "@vaultAutoLockBody": {
+    "description": "Explains the auto-lock rules"
+  },
+  "vaultAutoLockSeconds": "{count} seconds",
+  "@vaultAutoLockSeconds": {
+    "description": "An auto-lock choice measured in seconds",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "vaultAutoLockMinutes": "{count, plural, =1{1 minute} other{{count} minutes}}",
+  "@vaultAutoLockMinutes": {
+    "description": "An auto-lock choice measured in minutes",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "vaultBiometricHeading": "Unlock with fingerprint",
+  "@vaultBiometricHeading": {
+    "description": "Heading of the biometric toggle"
+  },
+  "vaultBiometricBody": "A shortcut, not a replacement. Your PIN opens the vault whether this is on or off.",
+  "@vaultBiometricBody": {
+    "description": "Explains the biometric toggle"
+  },
+  "vaultShredHeading": "Shred passes",
+  "@vaultShredHeading": {
+    "description": "Heading of the shred pass choice"
+  },
+  "vaultShredBody": "How many times a file is overwritten before it is deleted. More passes take longer. On flash storage an overwrite is a strong measure, not a guarantee.",
+  "@vaultShredBody": {
+    "description": "Explains shredding and its limits"
+  },
+  "vaultShredPassCount": "{count, plural, =1{1 pass} other{{count} passes}}",
+  "@vaultShredPassCount": {
+    "description": "A shred pass choice",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "vaultShredDefaultHeading": "Shred originals by default",
+  "@vaultShredDefaultHeading": {
+    "description": "Heading of the shred-on-import default"
+  },
+  "vaultShredDefaultBody": "Pre-selects the shred choice when you add items. It still asks you to confirm every time.",
+  "@vaultShredDefaultBody": {
+    "description": "Explains the shred-on-import default"
+  },
+  "vaultChangePin": "Change PIN",
+  "@vaultChangePin": {
+    "description": "Action that opens the change PIN dialog"
+  },
+  "vaultCurrentPin": "Current PIN",
+  "@vaultCurrentPin": {
+    "description": "Field label for the existing PIN"
+  },
+  "vaultNewPin": "New PIN",
+  "@vaultNewPin": {
+    "description": "Field label for the replacement PIN"
+  },
+  "vaultPinChanged": "Your PIN has been changed",
+  "@vaultPinChanged": {
+    "description": "Shown after a successful PIN change"
+  },
+  "vaultSecureScreenHeading": "Screenshots are blocked",
+  "@vaultSecureScreenHeading": {
+    "description": "Heading of the secure window note"
+  },
+  "vaultSecureScreenBody": "While the vault is open, Android blocks screenshots and screen recording, and hides the vault in the app switcher.",
+  "@vaultSecureScreenBody": {
+    "description": "Explains the secure window flag"
+  },
+  "selectionCount": "{count, plural, =1{1 selected} other{{count} selected}}",
+  "@selectionCount": {
+    "description": "Title while items are selected",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "selectionClear": "Clear selection",
+  "@selectionClear": {
+    "description": "Tooltip that unticks everything"
+  },
+  "selectionSelectAll": "Select all",
+  "@selectionSelectAll": {
+    "description": "Tooltip that ticks everything on screen"
+  },
+  "selectionFull": "That is as many as one batch can hold",
+  "@selectionFull": {
+    "description": "Shown when the selection cap is reached"
+  },
+  "batchTitle": "Batch actions",
+  "@batchTitle": {
+    "description": "Title of the batch action sheet"
+  },
+  "batchActionConvert": "Convert",
+  "@batchActionConvert": {
+    "description": "Batch action: change image format"
+  },
+  "batchActionWatermark": "Watermark",
+  "@batchActionWatermark": {
+    "description": "Batch action: stamp the photos"
+  },
+  "batchActionExportPdf": "Make a PDF",
+  "@batchActionExportPdf": {
+    "description": "Batch action: one PDF from many photos"
+  },
+  "batchActionAddTags": "Add tags",
+  "@batchActionAddTags": {
+    "description": "Batch action: tag everything selected"
+  },
+  "batchActionRemoveTags": "Remove tags",
+  "@batchActionRemoveTags": {
+    "description": "Batch action: untag everything selected"
+  },
+  "batchActionAddToAlbum": "Add to album",
+  "@batchActionAddToAlbum": {
+    "description": "Batch action: put everything in an album"
+  },
+  "batchActionFavourite": "Add to favourites",
+  "@batchActionFavourite": {
+    "description": "Batch action: mark as favourite"
+  },
+  "batchActionUnfavourite": "Remove from favourites",
+  "@batchActionUnfavourite": {
+    "description": "Batch action: clear the favourite mark"
+  },
+  "batchActionMoveToVault": "Move to vault",
+  "@batchActionMoveToVault": {
+    "description": "Batch action: encrypt into the private vault"
+  },
+  "batchActionTransfer": "Send to a device",
+  "@batchActionTransfer": {
+    "description": "Batch action: offer the files over local Wi-Fi"
+  },
+  "batchActionMoveToTrash": "Move to trash",
+  "@batchActionMoveToTrash": {
+    "description": "Batch action: flag as trashed"
+  },
+  "batchBlockedEmpty": "Select something first",
+  "@batchBlockedEmpty": {
+    "description": "Why an action is unavailable: nothing selected"
+  },
+  "batchBlockedTooLarge": "Too many items for one batch",
+  "@batchBlockedTooLarge": {
+    "description": "Why an action is unavailable: over the cap"
+  },
+  "batchBlockedUnsupported": "Not available for these files",
+  "@batchBlockedUnsupported": {
+    "description": "Why an action is unavailable: wrong media types"
+  },
+  "batchBlockedMixed": "Videos cannot be included in this action",
+  "@batchBlockedMixed": {
+    "description": "Why an action is unavailable: mixed selection"
+  },
+  "batchWillSkip": "{count, plural, =1{1 file will be skipped} other{{count} files will be skipped}}",
+  "@batchWillSkip": {
+    "description": "Warns that some selected files are not applicable",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "batchRunning": "Working",
+  "@batchRunning": {
+    "description": "Title of the batch progress dialog"
+  },
+  "batchProgress": "{done} of {total}",
+  "@batchProgress": {
+    "description": "Progress line of the batch dialog",
+    "placeholders": {
+      "done": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "batchCancel": "Cancel",
+  "@batchCancel": {
+    "description": "Stops the running batch after the current file"
+  },
+  "batchCancelling": "Stopping after this file",
+  "@batchCancelling": {
+    "description": "Shown once a cancel has been asked for"
+  },
+  "batchDone": "Finished",
+  "@batchDone": {
+    "description": "Title of the batch result sheet"
+  },
+  "batchResultSucceeded": "{count, plural, =1{1 file done} other{{count} files done}}",
+  "@batchResultSucceeded": {
+    "description": "How many files the batch finished",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "batchResultFailed": "{count, plural, =1{1 file could not be done} other{{count} files could not be done}}",
+  "@batchResultFailed": {
+    "description": "How many files the batch could not finish",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "batchResultSkipped": "{count, plural, =1{1 file skipped} other{{count} files skipped}}",
+  "@batchResultSkipped": {
+    "description": "How many files the batch passed over",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "batchConfirmTitle": "Are you sure?",
+  "@batchConfirmTitle": {
+    "description": "Title of the confirmation before a batch that writes files"
+  },
+  "batchConfirmVault": "{count, plural, =1{1 photo will be moved into the vault} other{{count} photos will be moved into the vault}}",
+  "@batchConfirmVault": {
+    "description": "Confirmation body for a vault batch",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "batchConfirmTrash": "{count, plural, =1{1 item will be moved to the trash. Nothing is erased.} other{{count} items will be moved to the trash. Nothing is erased.}}",
+  "@batchConfirmTrash": {
+    "description": "Confirmation body for a trash batch",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "batchConfirmNewFiles": "{count, plural, =1{A new file will be saved beside the original.} other{{count} new files will be saved beside the originals.}}",
+  "@batchConfirmNewFiles": {
+    "description": "Confirmation body for a batch that writes new files",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "batchConfirmContinue": "Continue",
+  "@batchConfirmContinue": {
+    "description": "Confirms and starts the batch"
+  },
+  "batchPickTags": "Choose tags",
+  "@batchPickTags": {
+    "description": "Title of the tag picker used by a batch"
+  },
+  "batchPickAlbum": "Choose an album",
+  "@batchPickAlbum": {
+    "description": "Title of the album picker used by a batch"
+  },
+  "backupTitle": "Backup and restore",
+  "@backupTitle": {
+    "description": "Title of the backup screen"
+  },
+  "backupOpen": "Backup and restore",
+  "@backupOpen": {
+    "description": "Menu entry that opens the backup screen"
+  },
+  "backupCreateTitle": "Create a backup",
+  "@backupCreateTitle": {
+    "description": "Heading of the create half of the backup screen"
+  },
+  "backupCreateBody": "Saves your tags, albums, favourites and notes into one password-protected file. Photos and videos are not included: send those to another device with Transfer.",
+  "@backupCreateBody": {
+    "description": "Explains what a backup does and does not hold"
+  },
+  "backupCreateAction": "Create backup",
+  "@backupCreateAction": {
+    "description": "Button that starts a backup"
+  },
+  "backupRestoreTitle": "Restore a backup",
+  "@backupRestoreTitle": {
+    "description": "Heading of the restore half of the backup screen"
+  },
+  "backupRestoreBody": "Brings back tags, albums, favourites and notes for the photos that are on this device. Nothing on this device is deleted.",
+  "@backupRestoreBody": {
+    "description": "Explains what a restore does"
+  },
+  "backupRestoreAction": "Choose a backup file",
+  "@backupRestoreAction": {
+    "description": "Button that starts a restore"
+  },
+  "backupPasswordTitle": "Backup password",
+  "@backupPasswordTitle": {
+    "description": "Title of the password dialog"
+  },
+  "backupPasswordLabel": "Password",
+  "@backupPasswordLabel": {
+    "description": "Label of the password field"
+  },
+  "backupPasswordConfirmLabel": "Type it again",
+  "@backupPasswordConfirmLabel": {
+    "description": "Label of the confirm password field"
+  },
+  "backupPasswordWarning": "There is no way to recover this password. If you forget it, the backup cannot be opened.",
+  "@backupPasswordWarning": {
+    "description": "Warns that a forgotten password loses the archive"
+  },
+  "backupPasswordTooShort": "At least {count} characters",
+  "@backupPasswordTooShort": {
+    "description": "Validation message for a short password",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "backupPasswordMismatch": "The two do not match",
+  "@backupPasswordMismatch": {
+    "description": "Validation message when the confirm field differs"
+  },
+  "backupStageCollecting": "Reading your library",
+  "@backupStageCollecting": {
+    "description": "Backup progress stage"
+  },
+  "backupStagePacking": "Packing",
+  "@backupStagePacking": {
+    "description": "Backup progress stage"
+  },
+  "backupStageChoosing": "Waiting for you to choose where to save",
+  "@backupStageChoosing": {
+    "description": "Backup progress stage"
+  },
+  "backupStageEncrypting": "Encrypting",
+  "@backupStageEncrypting": {
+    "description": "Backup progress stage"
+  },
+  "backupDone": "Backup saved",
+  "@backupDone": {
+    "description": "Shown after a successful backup"
+  },
+  "backupCancelled": "Backup cancelled",
+  "@backupCancelled": {
+    "description": "Shown when the user backed out of the file picker"
+  },
+  "backupNothingToSave": "There are no tags, albums, notes or favourites to back up yet",
+  "@backupNothingToSave": {
+    "description": "Shown when the library holds nothing worth backing up"
+  },
+  "backupFailed": "The backup could not be saved",
+  "@backupFailed": {
+    "description": "Shown when a backup fails"
+  },
+  "restorePreviewTitle": "What will be restored",
+  "@restorePreviewTitle": {
+    "description": "Title of the restore preview sheet"
+  },
+  "restoreFromBackupDate": "Backup from {date}",
+  "@restoreFromBackupDate": {
+    "description": "Says when the archive was made",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "restorePlanTags": "{count, plural, =0{No new tags} =1{1 new tag} other{{count} new tags}}",
+  "@restorePlanTags": {
+    "description": "How many tags a restore would create",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "restorePlanAlbums": "{count, plural, =0{No new albums} =1{1 new album} other{{count} new albums}}",
+  "@restorePlanAlbums": {
+    "description": "How many albums a restore would create",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "restorePlanLinks": "{count, plural, =0{No tags or album places to add} =1{1 tag or album place to add} other{{count} tags and album places to add}}",
+  "@restorePlanLinks": {
+    "description": "How many links a restore would add",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "restorePlanUpdates": "{count, plural, =0{No photos to update} =1{1 photo to update} other{{count} photos to update}}",
+  "@restorePlanUpdates": {
+    "description": "How many media rows a restore would change",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "restorePlanUnmatched": "{count, plural, =1{1 photo in the backup is not on this device} other{{count} photos in the backup are not on this device}}",
+  "@restorePlanUnmatched": {
+    "description": "How many archive records found no local file",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "restorePlanNothing": "This backup would change nothing on this device",
+  "@restorePlanNothing": {
+    "description": "Shown when the plan is empty"
+  },
+  "restoreApply": "Restore",
+  "@restoreApply": {
+    "description": "Confirms and applies the restore plan"
+  },
+  "restoreDone": "Restore finished",
+  "@restoreDone": {
+    "description": "Shown after a successful restore"
+  },
+  "restoreWrongPassword": "Wrong password, or the file is damaged",
+  "@restoreWrongPassword": {
+    "description": "Shown when the archive will not open"
+  },
+  "restoreNotAnArchive": "That is not a gallery backup file",
+  "@restoreNotAnArchive": {
+    "description": "Shown when the chosen file is the wrong kind"
+  },
+  "restoreTooLarge": "That file is too large to be a gallery backup",
+  "@restoreTooLarge": {
+    "description": "Shown when the chosen file is implausibly large"
+  },
+  "restoreTooNew": "That backup was made by a newer version of the app",
+  "@restoreTooNew": {
+    "description": "Shown when the archive format is from the future"
+  },
+  "restoreFailed": "The backup could not be restored",
+  "@restoreFailed": {
+    "description": "Shown when a restore fails"
+  },
+  "syncTitle": "Transfer",
+  "@syncTitle": {
+    "description": "Title of the transfer screen"
+  },
+  "syncOpen": "Transfer to a device",
+  "@syncOpen": {
+    "description": "Menu entry that opens the transfer screen"
+  },
+  "syncIntro": "Send photos straight to another phone on the same Wi-Fi. Nothing goes to the internet, and no account is needed.",
+  "@syncIntro": {
+    "description": "Explains what the transfer feature does"
+  },
+  "syncPrivacyNote": "Both phones must be on the same Wi-Fi. The connection is refused unless the other device is on your local network, and it is closed as soon as you leave this screen.",
+  "@syncPrivacyNote": {
+    "description": "Explains the local-network-only guarantee"
+  },
+  "syncSend": "Send",
+  "@syncSend": {
+    "description": "Chooses the sending role"
+  },
+  "syncReceive": "Receive",
+  "@syncReceive": {
+    "description": "Chooses the receiving role"
+  },
+  "syncSendBody": "Show a code on this phone, or scan the other one",
+  "@syncSendBody": {
+    "description": "Explains the sending flow"
+  },
+  "syncReceiveBody": "Show a code for the other phone to scan",
+  "@syncReceiveBody": {
+    "description": "Explains the receiving flow"
+  },
+  "syncShowCode": "Show a code",
+  "@syncShowCode": {
+    "description": "Starts listening and shows the pairing code"
+  },
+  "syncScanCode": "Scan a code",
+  "@syncScanCode": {
+    "description": "Opens the camera to read a pairing code"
+  },
+  "syncScanTitle": "Scan the other phone",
+  "@syncScanTitle": {
+    "description": "Title of the scanner screen"
+  },
+  "syncPairingHeading": "Point the other phone at this code",
+  "@syncPairingHeading": {
+    "description": "Heading above the QR code"
+  },
+  "syncManualCodeHeading": "Or type this code",
+  "@syncManualCodeHeading": {
+    "description": "Heading above the typed fallback code"
+  },
+  "syncManualCodeLabel": "Pairing code",
+  "@syncManualCodeLabel": {
+    "description": "Label of the typed code field"
+  },
+  "syncManualCodeInvalid": "That code is not valid",
+  "@syncManualCodeInvalid": {
+    "description": "Shown when a typed code does not check out"
+  },
+  "syncWaiting": "Waiting for the other phone",
+  "@syncWaiting": {
+    "description": "Shown while the listener is open"
+  },
+  "syncPairedWith": "Paired with {name}",
+  "@syncPairedWith": {
+    "description": "Shown once a peer has connected",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "syncTransferring": "Transferring",
+  "@syncTransferring": {
+    "description": "Shown while files are moving"
+  },
+  "syncProgressFiles": "{done} of {total} files",
+  "@syncProgressFiles": {
+    "description": "Per-file progress line",
+    "placeholders": {
+      "done": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "syncNothingSelected": "Choose some photos to send first",
+  "@syncNothingSelected": {
+    "description": "Shown when the sending role has an empty outbox"
+  },
+  "syncOfferHeading": "{count, plural, =1{1 file offered} other{{count} files offered}}",
+  "@syncOfferHeading": {
+    "description": "How many files the peer is offering",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "syncDone": "Transfer finished",
+  "@syncDone": {
+    "description": "Shown when a transfer completes"
+  },
+  "syncResultReceived": "{count, plural, =1{1 file received} other{{count} files received}}",
+  "@syncResultReceived": {
+    "description": "How many files arrived",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "syncResultSent": "{count, plural, =1{1 file sent} other{{count} files sent}}",
+  "@syncResultSent": {
+    "description": "How many files were sent",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "syncResultSkipped": "{count, plural, =1{1 file was already there} other{{count} files were already there}}",
+  "@syncResultSkipped": {
+    "description": "How many files the receiver already had",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "syncResultFailed": "{count, plural, =1{1 file did not arrive} other{{count} files did not arrive}}",
+  "@syncResultFailed": {
+    "description": "How many files failed their checks",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "syncSavedToAppFolder": "On this version of Android the files were saved in the app's own folder rather than your gallery.",
+  "@syncSavedToAppFolder": {
+    "description": "Explains the pre-Android-10 fallback location"
+  },
+  "syncStop": "Stop",
+  "@syncStop": {
+    "description": "Ends the transfer session"
+  },
+  "syncErrorNoNetwork": "This phone is not on a Wi-Fi network",
+  "@syncErrorNoNetwork": {
+    "description": "Transfer failure: no local network"
+  },
+  "syncErrorPairingTimeout": "No device connected in time",
+  "@syncErrorPairingTimeout": {
+    "description": "Transfer failure: nobody paired"
+  },
+  "syncErrorRefused": "That device is not on your local network",
+  "@syncErrorRefused": {
+    "description": "Transfer failure: the peer address was refused"
+  },
+  "syncErrorHandshake": "The other device could not prove it showed that code",
+  "@syncErrorHandshake": {
+    "description": "Transfer failure: the handshake was rejected"
+  },
+  "syncErrorProtocol": "The other device is running a different version of the app",
+  "@syncErrorProtocol": {
+    "description": "Transfer failure: protocol version mismatch"
+  },
+  "syncErrorConnection": "The connection to the other device was lost",
+  "@syncErrorConnection": {
+    "description": "Transfer failure: the socket dropped"
+  },
+  "syncErrorIdle": "The other device stopped responding",
+  "@syncErrorIdle": {
+    "description": "Transfer failure: idle timeout"
+  },
+  "syncErrorCancelled": "The transfer was stopped",
+  "@syncErrorCancelled": {
+    "description": "Transfer failure: cancelled by a user"
+  },
+  "syncErrorUnknown": "The transfer could not be finished",
+  "@syncErrorUnknown": {
+    "description": "Transfer failure: anything else"
+  },
+  "syncCameraPermission": "Camera access is needed to scan the code. You can type the code instead.",
+  "@syncCameraPermission": {
+    "description": "Shown when the camera permission is refused"
+  },
+  "syncTypeCodeInstead": "Type the code instead",
+  "@syncTypeCodeInstead": {
+    "description": "Switches from the scanner to the typed code field"
+  },
+  "viewerMoreActions": "More",
+  "@viewerMoreActions": {
+    "description": "Opens the overflow menu in the fullscreen viewer"
+  },
+  "codeScanOpen": "Scan codes",
+  "@codeScanOpen": {
+    "description": "Viewer menu entry that looks for QR and barcodes in the picture"
+  },
+  "codeScanTitle": "Codes in this picture",
+  "@codeScanTitle": {
+    "description": "Title of the in-image scanner screen"
+  },
+  "codeScanLooking": "Looking for codes",
+  "@codeScanLooking": {
+    "description": "Shown while a picture is being scanned"
+  },
+  "codeScanNoCodes": "No codes were found in this picture",
+  "@codeScanNoCodes": {
+    "description": "Shown when the scan worked but the picture held no codes"
+  },
+  "codeScanFailed": "This picture could not be scanned",
+  "@codeScanFailed": {
+    "description": "Shown when the decoder itself could not run"
+  },
+  "codeScanRetry": "Try again",
+  "@codeScanRetry": {
+    "description": "Runs the scan again"
+  },
+  "codeScanFoundCount": "{count, plural, =1{1 code found} other{{count} codes found}}",
+  "@codeScanFoundCount": {
+    "description": "How many codes the picture held",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "codeScanKindUrl": "Web address",
+  "@codeScanKindUrl": {
+    "description": "Label for a scanned code holding a web address"
+  },
+  "codeScanKindWifi": "Wi-Fi network",
+  "@codeScanKindWifi": {
+    "description": "Label for a scanned Wi-Fi joining code"
+  },
+  "codeScanKindPhone": "Phone number",
+  "@codeScanKindPhone": {
+    "description": "Label for a scanned phone number"
+  },
+  "codeScanKindEmail": "Email address",
+  "@codeScanKindEmail": {
+    "description": "Label for a scanned email address"
+  },
+  "codeScanKindSms": "Text message",
+  "@codeScanKindSms": {
+    "description": "Label for a scanned text message code"
+  },
+  "codeScanKindGeo": "Map point",
+  "@codeScanKindGeo": {
+    "description": "Label for a scanned map location"
+  },
+  "codeScanKindContact": "Contact card",
+  "@codeScanKindContact": {
+    "description": "Label for a scanned vCard or MECARD"
+  },
+  "codeScanKindCalendar": "Calendar entry",
+  "@codeScanKindCalendar": {
+    "description": "Label for a scanned calendar event"
+  },
+  "codeScanKindText": "Text",
+  "@codeScanKindText": {
+    "description": "Label for a scanned code that is just text"
+  },
+  "codeScanActionCopy": "Copy",
+  "@codeScanActionCopy": {
+    "description": "Copies the raw code text to the clipboard"
+  },
+  "codeScanActionOpen": "Open",
+  "@codeScanActionOpen": {
+    "description": "Opens a scanned web address in the browser"
+  },
+  "codeScanActionDial": "Call",
+  "@codeScanActionDial": {
+    "description": "Offers a scanned number to the dialler"
+  },
+  "codeScanActionEmail": "Write email",
+  "@codeScanActionEmail": {
+    "description": "Starts an email to a scanned address"
+  },
+  "codeScanActionSms": "Send message",
+  "@codeScanActionSms": {
+    "description": "Starts a text message to a scanned number"
+  },
+  "codeScanActionMap": "Show on map",
+  "@codeScanActionMap": {
+    "description": "Shows a scanned map point"
+  },
+  "codeScanActionCopyWifiPassword": "Copy password",
+  "@codeScanActionCopyWifiPassword": {
+    "description": "Copies only the Wi-Fi password from a scanned code"
+  },
+  "codeScanActionConnectWifi": "Connect",
+  "@codeScanActionConnectWifi": {
+    "description": "Offers the scanned network to Android and opens the Wi-Fi settings"
+  },
+  "codeScanActionSaveToNotes": "Save to notes",
+  "@codeScanActionSaveToNotes": {
+    "description": "Adds the code text to this item's notes"
+  },
+  "codeScanBlockedScheme": "The app does not open this kind of address",
+  "@codeScanBlockedScheme": {
+    "description": "Why an action is blocked: the scheme is not on the permitted list"
+  },
+  "codeScanBlockedMalformed": "This address could not be read",
+  "@codeScanBlockedMalformed": {
+    "description": "Why an action is blocked: the target is malformed"
+  },
+  "codeScanBlockedIncompleteWifi": "This Wi-Fi code is missing the network name or the password",
+  "@codeScanBlockedIncompleteWifi": {
+    "description": "Why an action is blocked: incomplete Wi-Fi details"
+  },
+  "codeScanBlockedTooLong": "This code is too long to use",
+  "@codeScanBlockedTooLong": {
+    "description": "Why an action is blocked: the payload is past the cap"
+  },
+  "codeScanCopied": "Copied",
+  "@codeScanCopied": {
+    "description": "Confirms the code text went to the clipboard"
+  },
+  "codeScanPasswordCopied": "Password copied",
+  "@codeScanPasswordCopied": {
+    "description": "Confirms the Wi-Fi password went to the clipboard"
+  },
+  "codeScanSavedToNotes": "Saved to notes",
+  "@codeScanSavedToNotes": {
+    "description": "Confirms the code text was added to the notes"
+  },
+  "codeScanOpenFailed": "No app on this device can open it",
+  "@codeScanOpenFailed": {
+    "description": "Shown when no installed app handles the scanned address"
+  },
+  "codeScanWifiSuggested": "The network was offered to Android. Pick it in the Wi-Fi settings.",
+  "@codeScanWifiSuggested": {
+    "description": "Shown after a Wi-Fi suggestion was accepted"
+  },
+  "codeScanWifiManual": "Open the Wi-Fi settings and pick the network yourself.",
+  "@codeScanWifiManual": {
+    "description": "Shown when Android would not take the Wi-Fi suggestion"
+  },
+  "codeScanWifiSecurity": "Security: {security}",
+  "@codeScanWifiSecurity": {
+    "description": "Names how a scanned Wi-Fi network is protected",
+    "placeholders": {
+      "security": {
+        "type": "String"
+      }
+    }
+  },
+  "codeScanWifiHidden": "Hidden network",
+  "@codeScanWifiHidden": {
+    "description": "Marks a scanned Wi-Fi network that hides its name"
+  },
+  "codeScanWifiOpen": "Open network",
+  "@codeScanWifiOpen": {
+    "description": "Marks a scanned Wi-Fi network with no password"
+  },
+  "ocrOpen": "Extract text",
+  "@ocrOpen": {
+    "description": "Viewer menu entry that reads the text out of the picture"
+  },
+  "ocrTitle": "Text in this picture",
+  "@ocrTitle": {
+    "description": "Title of the extracted text screen"
+  },
+  "ocrReading": "Reading the text",
+  "@ocrReading": {
+    "description": "Shown while the reader is running"
+  },
+  "ocrSlowHint": "A large photo can take a few seconds.",
+  "@ocrSlowHint": {
+    "description": "Sets the expectation that OCR is not instant"
+  },
+  "ocrLanguage": "Language",
+  "@ocrLanguage": {
+    "description": "Label of the language chooser on the text screen"
+  },
+  "ocrLanguageEnglish": "English",
+  "@ocrLanguageEnglish": {
+    "description": "OCR language choice: English only"
+  },
+  "ocrLanguageMalayalam": "Malayalam",
+  "@ocrLanguageMalayalam": {
+    "description": "OCR language choice: Malayalam only"
+  },
+  "ocrLanguageBoth": "English and Malayalam",
+  "@ocrLanguageBoth": {
+    "description": "OCR language choice: both at once"
+  },
+  "ocrNoText": "No text was found in this picture",
+  "@ocrNoText": {
+    "description": "Shown when the reader ran but found nothing"
+  },
+  "ocrCopyAll": "Copy all",
+  "@ocrCopyAll": {
+    "description": "Copies the whole extracted text"
+  },
+  "ocrCopied": "Text copied",
+  "@ocrCopied": {
+    "description": "Confirms the extracted text went to the clipboard"
+  },
+  "ocrSaveToNotes": "Save to notes",
+  "@ocrSaveToNotes": {
+    "description": "Adds the extracted text to this item's notes"
+  },
+  "ocrSavedToNotes": "Saved to notes",
+  "@ocrSavedToNotes": {
+    "description": "Confirms the extracted text was added to the notes"
+  },
+  "ocrReadAgain": "Read again",
+  "@ocrReadAgain": {
+    "description": "Runs the reader again, usually after changing the language"
+  },
+  "ocrWordCount": "{count, plural, =1{1 word} other{{count} words}}",
+  "@ocrWordCount": {
+    "description": "How many words were read out of the picture",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "ocrFailedUnreadable": "This picture could not be opened",
+  "@ocrFailedUnreadable": {
+    "description": "OCR failure: the file is missing or unreadable"
+  },
+  "ocrFailedTooLarge": "This picture is too large to read",
+  "@ocrFailedTooLarge": {
+    "description": "OCR failure: the image is past the size cap"
+  },
+  "ocrFailedMissingData": "The language files are missing from this build",
+  "@ocrFailedMissingData": {
+    "description": "OCR failure: the traineddata assets are not present"
+  },
+  "ocrFailedTimeout": "Reading took too long and was stopped",
+  "@ocrFailedTimeout": {
+    "description": "OCR failure: the reader was given up on"
+  },
+  "ocrFailedEngine": "The text could not be read",
+  "@ocrFailedEngine": {
+    "description": "OCR failure: anything else"
+  },
+  "notesOpen": "Notes",
+  "@notesOpen": {
+    "description": "Viewer menu entry that opens the note editor"
+  },
+  "notesTitle": "Notes",
+  "@notesTitle": {
+    "description": "Title of the note editor screen"
+  },
+  "notesWriteTab": "Write",
+  "@notesWriteTab": {
+    "description": "Tab showing the note's markdown source for editing"
+  },
+  "notesPreviewTab": "Preview",
+  "@notesPreviewTab": {
+    "description": "Tab showing the note as formatted text"
+  },
+  "notesHint": "Write a note about this item. Markdown is supported.",
+  "@notesHint": {
+    "description": "Placeholder text of the empty note editor"
+  },
+  "notesEmpty": "No note yet",
+  "@notesEmpty": {
+    "description": "Shown in the preview when nothing has been written"
+  },
+  "notesSave": "Save",
+  "@notesSave": {
+    "description": "Writes the note"
+  },
+  "notesSaved": "Note saved",
+  "@notesSaved": {
+    "description": "Confirms the note was written"
+  },
+  "notesSaveFailed": "The note could not be saved",
+  "@notesSaveFailed": {
+    "description": "Shown when writing the note failed"
+  },
+  "notesDelete": "Delete note",
+  "@notesDelete": {
+    "description": "Removes the note from this item"
+  },
+  "notesDeleteTitle": "Delete this note?",
+  "@notesDeleteTitle": {
+    "description": "Title of the delete confirmation"
+  },
+  "notesDeleteBody": "The note will be removed. The file is not changed.",
+  "@notesDeleteBody": {
+    "description": "Body of the delete confirmation, making clear the media is untouched"
+  },
+  "notesDeleted": "Note deleted",
+  "@notesDeleted": {
+    "description": "Confirms the note was removed"
+  },
+  "notesCancel": "Cancel",
+  "@notesCancel": {
+    "description": "Closes a note dialog without doing anything"
+  },
+  "notesCharacterCount": "{used} of {total} characters",
+  "@notesCharacterCount": {
+    "description": "How much of the note length budget is used",
+    "placeholders": {
+      "used": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "notesTooLong": "This note is too long to save",
+  "@notesTooLong": {
+    "description": "Shown when the note is past the length cap"
+  },
+  "notesDiscardTitle": "Leave without saving?",
+  "@notesDiscardTitle": {
+    "description": "Title of the unsaved changes prompt"
+  },
+  "notesDiscardBody": "Your changes to this note will be lost.",
+  "@notesDiscardBody": {
+    "description": "Body of the unsaved changes prompt"
+  },
+  "notesDiscardLeave": "Leave",
+  "@notesDiscardLeave": {
+    "description": "Leaves the note editor and loses the changes"
+  },
+  "notesDiscardKeep": "Keep writing",
+  "@notesDiscardKeep": {
+    "description": "Stays in the note editor"
+  },
+  "notesLinkBlocked": "The app does not open this kind of link",
+  "@notesLinkBlocked": {
+    "description": "Shown when a link in a note uses a scheme the app will not launch"
+  },
+  "notesDetailsLabel": "Note",
+  "@notesDetailsLabel": {
+    "description": "Label of the note line in the details sheet"
+  },
+  "notesAddFromDetails": "Add a note",
+  "@notesAddFromDetails": {
+    "description": "Details sheet action when the item has no note yet"
+  },
+  "pdfImagesOpen": "Extract images from PDF",
+  "@pdfImagesOpen": {
+    "description": "Home screen entry point for the PDF image tool"
+  },
+  "pdfImagesTitle": "Images in a PDF",
+  "@pdfImagesTitle": {
+    "description": "Title of the PDF image extraction screen"
+  },
+  "pdfImagesPick": "Choose a PDF",
+  "@pdfImagesPick": {
+    "description": "Opens the system file picker for a PDF"
+  },
+  "pdfImagesChooseAnother": "Choose another PDF",
+  "@pdfImagesChooseAnother": {
+    "description": "Picks a different PDF once one has been read"
+  },
+  "pdfImagesReading": "Reading the PDF",
+  "@pdfImagesReading": {
+    "description": "Shown while a PDF is being parsed"
+  },
+  "pdfImagesEmptyTitle": "No PDF chosen yet",
+  "@pdfImagesEmptyTitle": {
+    "description": "Title of the empty state before a PDF is picked"
+  },
+  "pdfImagesEmptyBody": "Pick a PDF and the app will list the pictures inside it. The PDF itself is never changed.",
+  "@pdfImagesEmptyBody": {
+    "description": "Body of the empty state, making clear the source file is untouched"
+  },
+  "pdfImagesNone": "This PDF holds no pictures",
+  "@pdfImagesNone": {
+    "description": "Shown when a PDF was read but had no image objects"
+  },
+  "pdfImagesFound": "{count, plural, =1{1 picture found} other{{count} pictures found}}",
+  "@pdfImagesFound": {
+    "description": "How many pictures the PDF held",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "pdfImagesSkippedCount": "{count, plural, =1{1 could not be read} other{{count} could not be read}}",
+  "@pdfImagesSkippedCount": {
+    "description": "How many pictures were found but cannot be extracted",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "pdfImagesSave": "Save selected",
+  "@pdfImagesSave": {
+    "description": "Writes the ticked pictures into the gallery"
+  },
+  "pdfImagesSaving": "Saving",
+  "@pdfImagesSaving": {
+    "description": "Shown while pictures are being written"
+  },
+  "pdfImagesSavedCount": "{count, plural, =1{1 picture saved to the gallery} other{{count} pictures saved to the gallery}}",
+  "@pdfImagesSavedCount": {
+    "description": "Confirms how many pictures were written",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "pdfImagesSaveFailedCount": "{count, plural, =1{1 could not be saved} other{{count} could not be saved}}",
+  "@pdfImagesSaveFailedCount": {
+    "description": "Reports how many pictures failed to save",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "pdfImagesSelectAll": "Select all",
+  "@pdfImagesSelectAll": {
+    "description": "Ticks every picture that can be saved"
+  },
+  "pdfImagesClearSelection": "Clear",
+  "@pdfImagesClearSelection": {
+    "description": "Unticks every picture"
+  },
+  "pdfImagesNothingSelected": "Tick at least one picture to save",
+  "@pdfImagesNothingSelected": {
+    "description": "Shown when save is tapped with nothing ticked"
+  },
+  "pdfImagesTruncated": "Only the first pictures were read, because this PDF holds a great many.",
+  "@pdfImagesTruncated": {
+    "description": "Warns that the image count cap was reached"
+  },
+  "pdfImagesFallbackDirectory": "Saved to the app folder, because the gallery could not be written to",
+  "@pdfImagesFallbackDirectory": {
+    "description": "Shown when MediaStore was unavailable and a plain folder was used"
+  },
+  "pdfImageSize": "{width} by {height}",
+  "@pdfImageSize": {
+    "description": "Pixel size of one extracted picture",
+    "placeholders": {
+      "width": {
+        "type": "int"
+      },
+      "height": {
+        "type": "int"
+      }
+    }
+  },
+  "pdfRefusedNotPdf": "This file is not a PDF",
+  "@pdfRefusedNotPdf": {
+    "description": "Refusal: the chosen file has no PDF header"
+  },
+  "pdfRefusedEncrypted": "This PDF is password protected, so it cannot be opened",
+  "@pdfRefusedEncrypted": {
+    "description": "Refusal: the PDF is encrypted"
+  },
+  "pdfRefusedTooLarge": "This PDF is too large to open",
+  "@pdfRefusedTooLarge": {
+    "description": "Refusal: the PDF is past the size cap"
+  },
+  "pdfRefusedUnreadable": "This PDF could not be read",
+  "@pdfRefusedUnreadable": {
+    "description": "Refusal: anything else"
+  },
+  "pdfSkipUnsupportedFilter": "Compressed in a way the app cannot read",
+  "@pdfSkipUnsupportedFilter": {
+    "description": "Why one picture was skipped: unsupported filter"
+  },
+  "pdfSkipUnsupportedColor": "Uses a colour space the app cannot read",
+  "@pdfSkipUnsupportedColor": {
+    "description": "Why one picture was skipped: unsupported colour space"
+  },
+  "pdfSkipUnsupportedDepth": "Uses a colour depth the app cannot read",
+  "@pdfSkipUnsupportedDepth": {
+    "description": "Why one picture was skipped: unsupported bit depth"
+  },
+  "pdfSkipTooLarge": "Too large to pull out",
+  "@pdfSkipTooLarge": {
+    "description": "Why one picture was skipped: past the caps"
+  },
+  "pdfSkipMalformed": "The picture data is incomplete",
+  "@pdfSkipMalformed": {
+    "description": "Why one picture was skipped: the stream does not match its size"
+  },
+  "pdfSkipDecodeFailed": "The picture could not be decompressed",
+  "@pdfSkipDecodeFailed": {
+    "description": "Why one picture was skipped: decompression failed"
+  },
+  "settingsAppearance": "Appearance",
+  "@settingsAppearance": {
+    "description": "Heading of the appearance group on the settings screen"
+  },
+  "settingsLanguage": "Language",
+  "@settingsLanguage": {
+    "description": "Heading of the language group on the settings screen"
+  },
+  "settingsSafety": "Safety",
+  "@settingsSafety": {
+    "description": "Heading of the safety group on the settings screen"
+  },
+  "settingsPrivacy": "Storage and privacy",
+  "@settingsPrivacy": {
+    "description": "Heading of the storage and privacy group on the settings screen"
+  },
+  "settingsDeveloper": "Developer",
+  "@settingsDeveloper": {
+    "description": "Heading of the developer-only group, shown on dev builds"
+  },
+  "languageSystem": "System default",
+  "@languageSystem": {
+    "description": "Language choice that follows the phone's own language"
+  },
+  "languageEnglish": "English",
+  "@languageEnglish": {
+    "description": "Name of the English language, written in English"
+  },
+  "languageMalayalam": "മലയാളം",
+  "@languageMalayalam": {
+    "description": "Name of the Malayalam language, written in Malayalam"
+  },
+  "languageSubtitle": "The app changes language at once. No restart is needed.",
+  "@languageSubtitle": {
+    "description": "Note under the language row saying the change is immediate"
+  },
+  "gridDensity": "Grid density",
+  "@gridDensity": {
+    "description": "Label of the grid column count setting"
+  },
+  "gridDensitySubtitle": "How many photos fit across the timeline. Pinching the grid changes it too.",
+  "@gridDensitySubtitle": {
+    "description": "Note under the grid density setting"
+  },
+  "gridDensityValue": "{count} per row",
+  "@gridDensityValue": {
+    "description": "Shows the chosen number of grid columns",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "showFlashbacks": "Show memories",
+  "@showFlashbacks": {
+    "description": "Label of the switch that shows the flashback memories row"
+  },
+  "showFlashbacksSubtitle": "A row of photos from this day in past years, at the top of the timeline.",
+  "@showFlashbacksSubtitle": {
+    "description": "Note under the show memories switch"
+  },
+  "confirmDestructive": "Ask before deleting",
+  "@confirmDestructive": {
+    "description": "Label of the switch that asks again before a destructive action"
+  },
+  "confirmDestructiveSubtitle": "Ask one more time before a delete or an overwrite. Some warnings always appear, whatever this is set to.",
+  "@confirmDestructiveSubtitle": {
+    "description": "Note under the confirm-before-deleting switch"
+  },
+  "privacyNoServer": "No remote server",
+  "@privacyNoServer": {
+    "description": "Title of the privacy summary row on the settings screen"
+  },
+  "privacyNoServerBody": "Your photos, tags and notes stay on this phone. Nothing is uploaded, and there is no account. Internet access is used only by the transfer screen, to reach another phone on your own Wi-Fi.",
+  "@privacyNoServerBody": {
+    "description": "Body of the privacy summary row on the settings screen"
+  },
+  "aboutOpen": "About this app",
+  "@aboutOpen": {
+    "description": "Row that opens the About screen"
+  },
+  "aboutOpenSubtitle": "Version, author and licence",
+  "@aboutOpenSubtitle": {
+    "description": "Note under the row that opens the About screen"
+  },
+  "aboutBuild": "Build {build}",
+  "@aboutBuild": {
+    "description": "Shows the build number beside the version",
+    "placeholders": {
+      "build": {
+        "type": "String"
+      }
+    }
+  },
+  "aboutBuildDate": "Build date",
+  "@aboutBuildDate": {
+    "description": "Label for the build date row on the About screen"
+  },
+  "aboutMailFailed": "No app on this phone can open that address.",
+  "@aboutMailFailed": {
+    "description": "Message when no mail app can open an About screen email row"
+  },
+  "aboutAppName": "App",
+  "@aboutAppName": {
+    "description": "Label of the application name row on the About screen"
+  },
+  "vaultSettingsOpenSubtitle": "Lock timing, PIN and shredding",
+  "@vaultSettingsOpenSubtitle": {
+    "description": "Note under the settings row that opens the vault settings"
+  },
+  "backupOpenSubtitle": "Password-protected backup and restore",
+  "@backupOpenSubtitle": {
+    "description": "Note under the settings row that opens the backup screen"
+  },
+  "settingsResetTitle": "Reset settings",
+  "@settingsResetTitle": {
+    "description": "Title of the reset settings row and dialog"
+  },
+  "settingsResetBody": "Put every setting on this screen back to how it started. Your photos, tags, albums and vault are not touched.",
+  "@settingsResetBody": {
+    "description": "Body of the reset settings confirmation dialog"
+  },
+  "settingsResetDone": "Settings put back to the defaults.",
+  "@settingsResetDone": {
+    "description": "Confirmation shown after the settings are reset"
+  },
+  "settingsCancel": "Cancel",
+  "@settingsCancel": {
+    "description": "Dismisses the settings reset dialog without changing anything"
+  },
+  "settingsResetConfirm": "Reset",
+  "@settingsResetConfirm": {
+    "description": "Confirms the settings reset in the dialog"
+  },
+  "settingsHelp": "Help & Guides",
+  "@settingsHelp": {
+    "description": "Title of the help section on settings screen"
+  },
+  "settingsHelpSubtitle": "Explore guides, pro-tips and offline guarantees for every feature",
+  "@settingsHelpSubtitle": {
+    "description": "Subtitle for the help section on settings screen"
+  },
+  "settingsAbout": "About",
+  "@settingsAbout": {
+    "description": "Header for the about section in settings"
+  },
+  "helpOverview": "Overview",
+  "@helpOverview": {
+    "description": "Header for overview section in help topic"
+  },
+  "helpHowToUse": "How to use",
+  "@helpHowToUse": {
+    "description": "Header for how to use section in help topic"
+  },
+  "helpTips": "Tips & shortcuts",
+  "@helpTips": {
+    "description": "Header for tips and shortcuts section in help topic"
+  },
+  "helpPrivacy": "Privacy & offline guarantee",
+  "@helpPrivacy": {
+    "description": "Header for privacy and offline guarantee in help topic"
+  },
+  "helpBadgeOffline": "100% Offline",
+  "@helpBadgeOffline": {
+    "description": "Badge indicating 100% offline functionality"
+  },
+  "helpBadgeEncrypted": "Hardware Encrypted",
+  "@helpBadgeEncrypted": {
+    "description": "Badge indicating hardware-backed encryption"
+  },
+  "helpBadgeLocal": "Local Wi-Fi Only",
+  "@helpBadgeLocal": {
+    "description": "Badge indicating local network only"
+  },
+  "helpBadgeSafe": "Non-Destructive",
+  "@helpBadgeSafe": {
+    "description": "Badge indicating non-destructive operations"
+  },
+  "helpTopicTimelineTitle": "Timeline & Memories",
+  "@helpTopicTimelineTitle": {
+    "description": "Title of the timeline help topic"
+  },
+  "helpTopicTimelineSummary": "Browse photos by date, pinch to change grid size, and view flashbacks.",
+  "@helpTopicTimelineSummary": {
+    "description": "Summary of timeline help topic"
+  },
+  "helpTopicTimelineOverview": "The timeline organizes all your indexed photos and videos in reverse chronological order with date headers. It includes an 'On This Day' flashback carousel showing photos from today in past years.",
+  "@helpTopicTimelineOverview": {
+    "description": "Overview of timeline help topic"
+  },
+  "helpTopicTimelineSteps": "• Pinch in or out to dynamically switch between 1 and 5 columns.\n• Drag the floating date scrubber on the right to jump quickly through months and years.\n• Tap any photo or video to open it in high resolution.",
+  "@helpTopicTimelineSteps": {
+    "description": "Steps for timeline help topic"
+  },
+  "helpTopicTimelineTips": "• Long-press any photo to enter multi-selection mode for batch actions.\n• You can toggle flashback memories on or off in Settings.",
+  "@helpTopicTimelineTips": {
+    "description": "Tips for timeline help topic"
+  },
+  "helpTopicTimelinePrivacy": "All timeline grouping and date indexing happen strictly on device using local SQLite. No remote server is ever contacted.",
+  "@helpTopicTimelinePrivacy": {
+    "description": "Privacy note for timeline help topic"
+  },
+  "helpTopicViewerTitle": "Fullscreen Viewer & Video Player",
+  "@helpTopicViewerTitle": {
+    "description": "Title of the viewer help topic"
+  },
+  "helpTopicViewerSummary": "High-resolution viewer with gestures, EXIF details, and hardware video playback.",
+  "@helpTopicViewerSummary": {
+    "description": "Summary of viewer help topic"
+  },
+  "helpTopicViewerOverview": "View photos and videos with smooth hardware acceleration. Swipe through your timeline seamlessly with responsive gesture controls.",
+  "@helpTopicViewerOverview": {
+    "description": "Overview of viewer help topic"
+  },
+  "helpTopicViewerSteps": "• Double-tap or pinch to zoom into fine details.\n• Swipe down to dismiss and return to the timeline.\n• Swipe up to view the EXIF metadata drawer (camera, exposure, resolution, location).\n• While watching video: swipe up/down on left for brightness, on right for volume, or swipe horizontally to seek.",
+  "@helpTopicViewerSteps": {
+    "description": "Steps for viewer help topic"
+  },
+  "helpTopicViewerTips": "• Use the video controls to adjust playback speed (0.25x to 2.0x), step frame-by-frame, or repeat video in a loop.\n• Tap the overflow menu for quick access to editing, converting, scanning, and notes.",
+  "@helpTopicViewerTips": {
+    "description": "Tips for viewer help topic"
+  },
+  "helpTopicViewerPrivacy": "EXIF metadata is parsed and cached locally in SQLite. Video decoding is hardware-accelerated without any network streaming components.",
+  "@helpTopicViewerPrivacy": {
+    "description": "Privacy note for viewer help topic"
+  },
+  "helpTopicEditorTitle": "Photo Editor & Markup",
+  "@helpTopicEditorTitle": {
+    "description": "Title of the photo editor help topic"
+  },
+  "helpTopicEditorSummary": "Crop, rotate, adjust colors, apply filters, doodle markup, and redact private areas.",
+  "@helpTopicEditorSummary": {
+    "description": "Summary of photo editor help topic"
+  },
+  "helpTopicEditorOverview": "A full-featured non-destructive photo editor with transformations, color adjustments, artistic filters, freehand markup, privacy redaction, and watermarking.",
+  "@helpTopicEditorOverview": {
+    "description": "Overview of photo editor help topic"
+  },
+  "helpTopicEditorSteps": "• Open any photo and tap the Edit icon in the toolbar.\n• Transform: Crop with standard aspect ratios, rotate quarter turns, flip, or straighten.\n• Adjust: Fine-tune exposure, contrast, highlights, shadows, warmth, and RGB curves.\n• Markup & Redact: Draw shapes, add text, or redact sensitive areas using Gaussian blur, pixelation, or blackout.\n• Tap Save to export.",
+  "@helpTopicEditorSteps": {
+    "description": "Steps for photo editor help topic"
+  },
+  "helpTopicEditorTips": "• Privacy redactions permanently replace underlying pixels in the exported image.\n• Full undo and redo history is available throughout the editing session.",
+  "@helpTopicEditorTips": {
+    "description": "Tips for photo editor help topic"
+  },
+  "helpTopicEditorPrivacy": "All image operations are performed completely offline on a background isolate. Edits are saved as a new version beside the original, never overwriting your original photo without consent.",
+  "@helpTopicEditorPrivacy": {
+    "description": "Privacy note for photo editor help topic"
+  },
+  "helpTopicConverterTitle": "Format Converter & Compression",
+  "@helpTopicConverterTitle": {
+    "description": "Title of format converter help topic"
+  },
+  "helpTopicConverterSummary": "Convert formats (JPEG, PNG, WEBP, BMP), compress file sizes, and trim videos.",
+  "@helpTopicConverterSummary": {
+    "description": "Summary of format converter help topic"
+  },
+  "helpTopicConverterOverview": "Convert photos between popular image formats, compress file sizes with real-time size estimation, extract still frames from video, convert video clips to GIF, and trim videos losslessly.",
+  "@helpTopicConverterOverview": {
+    "description": "Overview of format converter help topic"
+  },
+  "helpTopicConverterSteps": "• Select Convert from the viewer overflow menu.\n• Choose target format (JPEG, PNG, WEBP, BMP) and adjust the quality slider.\n• Set resize mode (percentage, longest side, or custom dimensions) if desired.\n• Tap Convert to generate the optimized file.",
+  "@helpTopicConverterSteps": {
+    "description": "Steps for format converter help topic"
+  },
+  "helpTopicConverterTips": "• In Video Tools: Use lossless trimming to cut sections without re-encoding or quality loss.\n• Create animated GIFs from video clips with custom framerate and loop settings.",
+  "@helpTopicConverterTips": {
+    "description": "Tips for format converter help topic"
+  },
+  "helpTopicConverterPrivacy": "All image and video conversions take place entirely on-device with zero network transmission. Results are saved as new files.",
+  "@helpTopicConverterPrivacy": {
+    "description": "Privacy note for format converter help topic"
+  },
+  "helpTopicPdfTitle": "PDF Export & Image Extraction",
+  "@helpTopicPdfTitle": {
+    "description": "Title of PDF tools help topic"
+  },
+  "helpTopicPdfSummary": "Export multi-image PDF documents and extract embedded pictures from PDFs offline.",
+  "@helpTopicPdfSummary": {
+    "description": "Summary of PDF tools help topic"
+  },
+  "helpTopicPdfOverview": "Create professional PDF documents from selected photos with custom layouts, or extract high-quality images embedded inside PDF documents.",
+  "@helpTopicPdfOverview": {
+    "description": "Overview of PDF tools help topic"
+  },
+  "helpTopicPdfSteps": "• PDF Export: Select photos, choose page size (A4, Letter), orientation, margins, and tap Export.\n• PDF Image Extract: Open the tool from the timeline menu, pick a PDF file, review detected pictures, and tap Save to extract them to your gallery.",
+  "@helpTopicPdfSteps": {
+    "description": "Steps for PDF tools help topic"
+  },
+  "helpTopicPdfTips": "• Reorder photos before PDF export to control page sequence.\n• The PDF extractor walks file objects directly, working even if the PDF's cross-reference table is damaged.",
+  "@helpTopicPdfTips": {
+    "description": "Tips for PDF tools help topic"
+  },
+  "helpTopicPdfPrivacy": "PDF generation and extraction are executed 100% offline using an app-private sandbox. No PDF data is ever uploaded to any cloud service.",
+  "@helpTopicPdfPrivacy": {
+    "description": "Privacy note for PDF tools help topic"
+  },
+  "helpTopicSearchTitle": "Search & Tags",
+  "@helpTopicSearchTitle": {
+    "description": "Title of search and tags help topic"
+  },
+  "helpTopicSearchSummary": "Instant SQLite FTS5 search with query filters and 12-color tag management.",
+  "@helpTopicSearchSummary": {
+    "description": "Summary of search and tags help topic"
+  },
+  "helpTopicSearchOverview": "Locate photos and videos instantly using full-text search across titles, notes, camera models, and tags, with prefix operators and multi-criteria filters.",
+  "@helpTopicSearchOverview": {
+    "description": "Overview of search and tags help topic"
+  },
+  "helpTopicSearchSteps": "• Tap the Search icon on the timeline.\n• Type any search keywords, or use prefixes: 'tag:nature', 'type:video', 'camera:sony', 'place:kochi', 'before:2024-01-01'.\n• Tap the Filter icon to combine date range, media type, favorites, and size filters.\n• To manage tags, visit the Tags screen from the timeline menu.",
+  "@helpTopicSearchSteps": {
+    "description": "Steps for search and tags help topic"
+  },
+  "helpTopicSearchTips": "• Create custom tags with 12 distinct Material colors.\n• Tags update the search index immediately, making photos findable in milliseconds.",
+  "@helpTopicSearchTips": {
+    "description": "Tips for search and tags help topic"
+  },
+  "helpTopicSearchPrivacy": "Search indexes are stored locally in SQLite with FTS5. Your search queries and history remain strictly on your device.",
+  "@helpTopicSearchPrivacy": {
+    "description": "Privacy note for search and tags help topic"
+  },
+  "helpTopicAlbumsTitle": "Albums & Smart Albums",
+  "@helpTopicAlbumsTitle": {
+    "description": "Title of albums help topic"
+  },
+  "helpTopicAlbumsSummary": "Organize into virtual albums, browse device folders, and view smart auto-albums.",
+  "@helpTopicAlbumsSummary": {
+    "description": "Summary of albums help topic"
+  },
+  "helpTopicAlbumsOverview": "Manage your collection with user-created virtual albums, physical device folder browsing, and smart auto-albums that organize media automatically.",
+  "@helpTopicAlbumsOverview": {
+    "description": "Overview of albums help topic"
+  },
+  "helpTopicAlbumsSteps": "• Tap Albums on the timeline app bar.\n• Virtual Albums: Tap '+' to create an album, add media, reorder items, or set a custom cover photo.\n• Smart Albums: Automatically gathers Favorites, Videos, GIFs, RAW photos, Panoramas, and Recently Added.\n• Device Folders: Browse physical folders on your storage (Camera, Screenshots, WhatsApp, Downloads).",
+  "@helpTopicAlbumsSteps": {
+    "description": "Steps for albums help topic"
+  },
+  "helpTopicAlbumsTips": "• Pin favorite albums to keep them at the top of the list.\n• Virtual albums do not duplicate media files on disk, saving storage space.",
+  "@helpTopicAlbumsTips": {
+    "description": "Tips for albums help topic"
+  },
+  "helpTopicAlbumsPrivacy": "Album memberships and metadata are stored in the local database. Device folder scanning adheres to Android scoped storage.",
+  "@helpTopicAlbumsPrivacy": {
+    "description": "Privacy note for albums help topic"
+  },
+  "helpTopicCleanerTitle": "Duplicate Cleaner",
+  "@helpTopicCleanerTitle": {
+    "description": "Title of duplicate cleaner help topic"
+  },
+  "helpTopicCleanerSummary": "Detect exact and visually similar duplicates with side-by-side comparison.",
+  "@helpTopicCleanerSummary": {
+    "description": "Summary of duplicate cleaner help topic"
+  },
+  "helpTopicCleanerOverview": "Free up storage by identifying exact duplicate files (via SHA-256 hash) and visually similar photos (via perceptual pHash and dHash).",
+  "@helpTopicCleanerOverview": {
+    "description": "Overview of duplicate cleaner help topic"
+  },
+  "helpTopicCleanerSteps": "• Open Duplicate Cleaner from the timeline menu.\n• Tap Scan to analyze your library.\n• Review duplicate groups and tap any group for side-by-side comparison.\n• Use 'Keep Best Photo' to automatically pick the highest resolution, sharpest image and move others to trash.",
+  "@helpTopicCleanerSteps": {
+    "description": "Steps for duplicate cleaner help topic"
+  },
+  "helpTopicCleanerTips": "• Perceptual hashing finds photos taken in rapid succession or with minor edits.\n• No file is ever deleted without your confirmation.",
+  "@helpTopicCleanerTips": {
+    "description": "Tips for duplicate cleaner help topic"
+  },
+  "helpTopicCleanerPrivacy": "Hashing runs completely locally. Downsampled 32x32 previews are used for DCT computation and cleared immediately.",
+  "@helpTopicCleanerPrivacy": {
+    "description": "Privacy note for duplicate cleaner help topic"
+  },
+  "helpTopicVaultTitle": "Secure Private Vault",
+  "@helpTopicVaultTitle": {
+    "description": "Title of vault help topic"
+  },
+  "helpTopicVaultSummary": "Hardware-backed AES-256-GCM encryption, biometric & PIN authentication, and shredding.",
+  "@helpTopicVaultSummary": {
+    "description": "Summary of vault help topic"
+  },
+  "helpTopicVaultOverview": "Protect sensitive photos and videos in an encrypted vault. Payloads are encrypted with a 256-bit key protected by the Android Keystore, with biometric unlock and screenshot prevention.",
+  "@helpTopicVaultOverview": {
+    "description": "Overview of vault help topic"
+  },
+  "helpTopicVaultSteps": "• Tap the Vault icon on the timeline to unlock or configure your vault.\n• Set a master PIN (and enable Biometrics for convenient access).\n• Import media from the timeline or viewer. Choose whether to securely shred the original file.\n• View encrypted photos and videos safely inside the vault.",
+  "@helpTopicVaultSteps": {
+    "description": "Steps for vault help topic"
+  },
+  "helpTopicVaultTips": "• Screenshot protection (FLAG_SECURE) is active while inside the vault.\n• The vault locks automatically when the app is switched to the background or after an idle timeout.",
+  "@helpTopicVaultTips": {
+    "description": "Tips for vault help topic"
+  },
+  "helpTopicVaultPrivacy": "Decrypted data is held in memory only. Keys never leave the Android Keystore hardware module, and no plaintext files are left on disk.",
+  "@helpTopicVaultPrivacy": {
+    "description": "Privacy note for vault help topic"
+  },
+  "helpTopicSyncTitle": "Local Wi-Fi Transfer",
+  "@helpTopicSyncTitle": {
+    "description": "Title of local transfer help topic"
+  },
+  "helpTopicSyncSummary": "Direct peer-to-peer transfer between devices on the same Wi-Fi with zero internet.",
+  "@helpTopicSyncSummary": {
+    "description": "Summary of local transfer help topic"
+  },
+  "helpTopicSyncOverview": "Transfer photos and videos directly between two phones on the same local Wi-Fi router. Connections are end-to-end encrypted with an authenticated handshake.",
+  "@helpTopicSyncOverview": {
+    "description": "Overview of local transfer help topic"
+  },
+  "helpTopicSyncSteps": "• On receiving device: Open Transfer > Receive to show the QR pairing code.\n• On sending device: Open Transfer > Send and scan the code (or enter the 6-character code).\n• Select photos or albums to transfer and start the transfer.\n• Received files are verified by SHA-256 digest and published directly to your gallery.",
+  "@helpTopicSyncSteps": {
+    "description": "Steps for local transfer help topic"
+  },
+  "helpTopicSyncTips": "• No internet access or router configuration is needed; devices connect directly over local IP addresses.\n• The transfer socket binds only while the transfer screen is open and shuts down immediately when you leave.",
+  "@helpTopicSyncTips": {
+    "description": "Tips for local transfer help topic"
+  },
+  "helpTopicSyncPrivacy": "Connections to external or public IP addresses are strictly blocked by LocalAddressRules. Zero tracking, zero telemetry, zero cloud intermediary.",
+  "@helpTopicSyncPrivacy": {
+    "description": "Privacy note for local transfer help topic"
+  },
+  "helpTopicBackupTitle": "Backup & Restore",
+  "@helpTopicBackupTitle": {
+    "description": "Title of backup help topic"
+  },
+  "helpTopicBackupSummary": "Create password-protected encrypted .gbak archives and restore safely.",
+  "@helpTopicBackupSummary": {
+    "description": "Summary of backup help topic"
+  },
+  "helpTopicBackupOverview": "Safeguard your tags, album structures, media notes, and user metadata in an encrypted GBAK backup archive protected by AES-256-GCM.",
+  "@helpTopicBackupOverview": {
+    "description": "Overview of backup help topic"
+  },
+  "helpTopicBackupSteps": "• Tap Backup from the timeline menu.\n• Create Backup: Enter a strong password and save the backup file via Android's document picker.\n• Restore: Select a previously exported .gbak file, enter your password, inspect the preview summary, and apply.",
+  "@helpTopicBackupSteps": {
+    "description": "Steps for backup help topic"
+  },
+  "helpTopicBackupTips": "• The restore process is non-destructive: it fills gaps and merges tags and albums without overwriting existing data.\n• Keep a safe record of your backup password; without it, the encrypted archive cannot be recovered.",
+  "@helpTopicBackupTips": {
+    "description": "Tips for backup help topic"
+  },
+  "helpTopicBackupPrivacy": "Backup files are encrypted using PBKDF2-derived keys and AES-256-GCM. Backups are stored wherever you choose on your device or SD card.",
+  "@helpTopicBackupPrivacy": {
+    "description": "Privacy note for backup help topic"
+  },
+  "helpTopicScannerTitle": "QR Scanner & OCR",
+  "@helpTopicScannerTitle": {
+    "description": "Title of scanner and OCR help topic"
+  },
+  "helpTopicScannerSummary": "Scan QR/barcodes from photos with safe schemes, and extract text with offline OCR.",
+  "@helpTopicScannerSummary": {
+    "description": "Summary of scanner and OCR help topic"
+  },
+  "helpTopicScannerOverview": "Analyze existing photos to scan QR codes and barcodes, or run offline Tesseract optical character recognition to extract English and Malayalam text.",
+  "@helpTopicScannerOverview": {
+    "description": "Overview of scanner and OCR help topic"
+  },
+  "helpTopicScannerSteps": "• Open a photo in the viewer and select 'Scan code' or 'Extract text' from the menu.\n• Scanned codes: View detected URL, Wi-Fi credentials, or text. Safe URL schemes (http, https, tel, mailto, sms, geo) can be opened with confirmation.\n• Extracted text: View recognized text, copy it to clipboard, or append it directly to the media item's notes.",
+  "@helpTopicScannerSteps": {
+    "description": "Steps for scanner and OCR help topic"
+  },
+  "helpTopicScannerTips": "• Optical character recognition uses bundled offline language models (English and Malayalam); no internet connection is required.\n• Wi-Fi codes allow copying network credentials securely or suggesting network connection without silent joining.",
+  "@helpTopicScannerTips": {
+    "description": "Tips for scanner and OCR help topic"
+  },
+  "helpTopicScannerPrivacy": "All barcode decoding and OCR processing are executed locally on your device. Untrusted QR payloads are validated before launching external apps.",
+  "@helpTopicScannerPrivacy": {
+    "description": "Privacy note for scanner and OCR help topic"
+  },
+  "settingsDefaultApp": "Default Gallery App",
+  "@settingsDefaultApp": {
+    "description": "Title of the default gallery app settings option"
+  },
+  "settingsDefaultAppSubtitle": "Set as default app for viewing photos and videos",
+  "@settingsDefaultAppSubtitle": {
+    "description": "Subtitle explaining default app settings option"
+  },
+  "defaultAppDialogTitle": "Set as Default Gallery",
+  "@defaultAppDialogTitle": {
+    "description": "Title of dialog explaining how to set default app"
+  },
+  "defaultAppDialogBody": "To make this your default gallery:\n\n1. Open any photo or video on your device (e.g. from Files, Downloads, or messages).\n2. Choose SreerajP Image Video Gallery and tap 'Always'.\n\nYou can also configure defaults in Android Settings.",
+  "@defaultAppDialogBody": {
+    "description": "Instructions explaining how to make the app default in Android"
+  },
+  "defaultAppOpenSettings": "Open Android Settings",
+  "@defaultAppOpenSettings": {
+    "description": "Button to open Android system default apps settings"
+  },
+  "trashTitle": "Trash",
+  "@trashTitle": {
+    "description": "Title of the trash screen"
+  },
+  "trashEmpty": "Trash is empty",
+  "@trashEmpty": {
+    "description": "Shown when the trash holds no items"
+  },
+  "trashEmptySubtitle": "Items you delete are kept here until you empty the trash.",
+  "@trashEmptySubtitle": {
+    "description": "Explanation shown below the empty trash message"
+  },
+  "trashEmptyAction": "Empty trash",
+  "@trashEmptyAction": {
+    "description": "Button that permanently removes all trashed items"
+  },
+  "trashEmptyConfirmTitle": "Empty trash?",
+  "@trashEmptyConfirmTitle": {
+    "description": "Title of the empty trash confirmation dialog"
+  },
+  "trashEmptyConfirmBody": "This removes all trashed items from the gallery. The files stay on your phone.",
+  "@trashEmptyConfirmBody": {
+    "description": "Body of the empty trash confirmation dialog"
+  },
+  "trashRestoreAction": "Restore",
+  "@trashRestoreAction": {
+    "description": "Button that restores items from the trash"
+  },
+  "trashRestoreAllAction": "Restore all",
+  "@trashRestoreAllAction": {
+    "description": "Button that restores every item from the trash"
+  },
+  "trashRestoreAllConfirmBody": "Every item in the trash will be moved back to your library.",
+  "@trashRestoreAllConfirmBody": {
+    "description": "Body of the restore all confirmation dialog"
+  },
+  "trashRestoredSnackbar": "Restored from trash",
+  "@trashRestoredSnackbar": {
+    "description": "Snackbar shown after items are restored from trash"
+  },
+  "trashEmptiedSnackbar": "Trash emptied",
+  "@trashEmptiedSnackbar": {
+    "description": "Snackbar shown after the trash is emptied"
+  },
+  "trashItemCount": "{count, plural, =1{1 item in trash} other{{count} items in trash}}",
+  "@trashItemCount": {
+    "description": "Shows how many items are in the trash",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "settingsAppearanceSubtitle": "Theme, grid density, memories",
+  "@settingsAppearanceSubtitle": {
+    "description": "Subtitle for the appearance card on the settings hub"
+  },
+  "settingsLanguageSubtitle": "System, English, Malayalam",
+  "@settingsLanguageSubtitle": {
+    "description": "Subtitle for the language card on the settings hub"
+  },
+  "settingsSafetySubtitle": "Confirmation before destructive actions",
+  "@settingsSafetySubtitle": {
+    "description": "Subtitle for the safety card on the settings hub"
+  },
+  "settingsDefaultAppCardSubtitle": "Set as default gallery app",
+  "@settingsDefaultAppCardSubtitle": {
+    "description": "Subtitle for the default app card on the settings hub"
+  },
+  "settingsPrivacySubtitle": "Vault, backup, network policy",
+  "@settingsPrivacySubtitle": {
+    "description": "Subtitle for the privacy card on the settings hub"
+  },
+  "settingsHelpCardSubtitle": "Guides and privacy guarantees for every feature",
+  "@settingsHelpCardSubtitle": {
+    "description": "Subtitle for the help card on the settings hub"
+  },
+  "settingsAboutSubtitle": "Version, author and licence",
+  "@settingsAboutSubtitle": {
+    "description": "Subtitle for the about card on the settings hub"
+  },
+  "settingsDeveloperSubtitle": "Media scanner tools",
+  "@settingsDeveloperSubtitle": {
+    "description": "Subtitle for the developer card on the settings hub"
+  },
+  "viewerTrashTooltip": "Move to trash",
+  "@viewerTrashTooltip": {
+    "description": "Tooltip for the trash button in the media viewer"
+  },
+  "viewerTrashConfirmTitle": "Move to trash?",
+  "@viewerTrashConfirmTitle": {
+    "description": "Title of the confirmation dialog before moving an item to trash"
+  },
+  "viewerTrashConfirmBody": "This item will be moved to the trash. You can restore it anytime from the Trash album.",
+  "@viewerTrashConfirmBody": {
+    "description": "Body message of the confirmation dialog before moving an item to trash"
+  },
+  "viewerTrashSuccess": "Moved to trash",
+  "@viewerTrashSuccess": {
+    "description": "Snackbar message shown after moving an item to trash"
+  },
+  "viewerTrashUndo": "Undo",
+  "@viewerTrashUndo": {
+    "description": "Undo action label in the snackbar after trashing an item"
+  },
+  "comparePhotosTitle": "A/B Comparison",
+  "@comparePhotosTitle": {
+    "description": "Title of the A/B photo comparison screen"
+  },
+  "compareModeSplit": "Split View",
+  "@compareModeSplit": {
+    "description": "Label for split screen comparison mode"
+  },
+  "compareModeCurtain": "Sliding Curtain",
+  "@compareModeCurtain": {
+    "description": "Label for sliding curtain comparison mode"
+  },
+  "compareSplitHorizontal": "Side by Side",
+  "@compareSplitHorizontal": {
+    "description": "Label for horizontal split orientation"
+  },
+  "compareSplitVertical": "Top and Bottom",
+  "@compareSplitVertical": {
+    "description": "Label for vertical split orientation"
+  },
+  "compareSyncLocked": "Pan & Zoom Locked",
+  "@compareSyncLocked": {
+    "description": "Status text when pan and zoom are synchronized"
+  },
+  "compareSyncUnlocked": "Independent Pan & Zoom",
+  "@compareSyncUnlocked": {
+    "description": "Status text when pan and zoom can be adjusted independently"
+  },
+  "compareSwap": "Swap Photos",
+  "@compareSwap": {
+    "description": "Tooltip and label to swap Photo A and Photo B positions"
+  },
+  "compareResetZoom": "Reset Zoom",
+  "@compareResetZoom": {
+    "description": "Tooltip and button label to reset zoom back to 1.0x"
+  },
+  "compareDetails": "Compare Details",
+  "@compareDetails": {
+    "description": "Tooltip and label for comparing photo technical metadata"
+  },
+  "comparePickPhoto": "Choose Photo",
+  "@comparePickPhoto": {
+    "description": "Label on photo change button"
+  },
+  "comparePhotoA": "Photo A",
+  "@comparePhotoA": {
+    "description": "Label identifying the first photo"
+  },
+  "comparePhotoB": "Photo B",
+  "@comparePhotoB": {
+    "description": "Label identifying the second photo"
+  },
+  "compareWithPrevious": "Compare with previous photo",
+  "@compareWithPrevious": {
+    "description": "Option in media viewer to compare with previous photo"
+  },
+  "compareWithNext": "Compare with next photo",
+  "@compareWithNext": {
+    "description": "Option in media viewer to compare with next photo"
+  },
+  "compareChooseFromGallery": "Pick photo from gallery",
+  "@compareChooseFromGallery": {
+    "description": "Option in media viewer to choose any photo from gallery to compare"
+  },
+  "compareAction": "Compare",
+  "@compareAction": {
+    "description": "Action label to open comparison from selection"
+  },
+  "compareTooltip": "Compare photos side-by-side",
+  "@compareTooltip": {
+    "description": "Tooltip on the compare button"
+  },
+  "compareSelectSecondPhoto": "Select a photo to compare with",
+  "@compareSelectSecondPhoto": {
+    "description": "Title of the photo picker sheet for comparison"
+  },
+  "compareDimensions": "Dimensions",
+  "@compareDimensions": {
+    "description": "Label for photo dimensions in comparison sheet"
+  },
+  "compareFileSize": "File Size",
+  "@compareFileSize": {
+    "description": "Label for file size in comparison sheet"
+  },
+  "compareDateTaken": "Date Taken",
+  "@compareDateTaken": {
+    "description": "Label for date taken in comparison sheet"
+  },
+  "compareCamera": "Camera",
+  "@compareCamera": {
+    "description": "Label for camera make and model in comparison sheet"
+  },
+  "compareExposure": "Exposure",
+  "@compareExposure": {
+    "description": "Label for exposure settings in comparison sheet"
+  },
+  "compareIso": "ISO",
+  "@compareIso": {
+    "description": "Label for ISO value in comparison sheet"
+  },
+  "compareAperture": "Aperture",
+  "@compareAperture": {
+    "description": "Label for aperture f-number in comparison sheet"
+  },
+  "compareShutterSpeed": "Shutter Speed",
+  "@compareShutterSpeed": {
+    "description": "Label for shutter speed in comparison sheet"
+  },
+  "compareFocalLength": "Focal Length",
+  "@compareFocalLength": {
+    "description": "Label for focal length in comparison sheet"
+  },
+  "compareNoExif": "No EXIF data available",
+  "@compareNoExif": {
+    "description": "Message when no EXIF metadata exists for photo"
+  }
+}
