@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:in_sreerajp_imgvidgal/core/routing/app_router.dart';
 import 'package:in_sreerajp_imgvidgal/l10n/generated/app_localizations.dart';
+import 'package:in_sreerajp_imgvidgal/models/album_summary.dart';
 import 'package:in_sreerajp_imgvidgal/models/batch/batch_action.dart';
 import 'package:in_sreerajp_imgvidgal/providers/album_providers.dart';
 import 'package:in_sreerajp_imgvidgal/providers/batch_providers.dart';
@@ -13,8 +14,10 @@ import 'package:in_sreerajp_imgvidgal/providers/sync_providers.dart';
 import 'package:in_sreerajp_imgvidgal/providers/tag_providers.dart';
 import 'package:in_sreerajp_imgvidgal/services/batch/batch_action_rules.dart';
 import 'package:in_sreerajp_imgvidgal/services/batch/gallery_batch_handler.dart';
+import 'package:in_sreerajp_imgvidgal/widgets/albums/album_edit_dialog.dart';
 import 'package:in_sreerajp_imgvidgal/widgets/batch/batch_progress_dialog.dart';
 import 'package:in_sreerajp_imgvidgal/widgets/batch/batch_result_sheet.dart';
+import 'package:in_sreerajp_imgvidgal/widgets/batch/batch_tag_picker_sheet.dart';
 
 /// The bar of actions shown while items are ticked.
 ///
@@ -132,7 +135,7 @@ class BatchActionBar extends ConsumerWidget {
     switch (action) {
       case BatchAction.addTags:
       case BatchAction.removeTags:
-        final tagIds = await _pickTags(context, ref);
+        final tagIds = await _pickTags(context, ref, action);
         if (tagIds == null || tagIds.isEmpty) return null;
         return BatchOptions(tagIds: tagIds);
 
@@ -149,53 +152,86 @@ class BatchActionBar extends ConsumerWidget {
     }
   }
 
-  Future<Set<String>?> _pickTags(BuildContext context, WidgetRef ref) async {
+  Future<Set<String>?> _pickTags(
+    BuildContext context,
+    WidgetRef ref,
+    BatchAction action,
+  ) async {
     final l10n = AppLocalizations.of(context)!;
-    final tags = await ref.read(allTagsProvider.future);
-    if (!context.mounted || tags.isEmpty) return null;
+    if (action == BatchAction.removeTags) {
+      final tags = await ref.read(allTagsProvider.future);
+      if (!context.mounted) return null;
+      if (tags.isEmpty) {
+        _tell(context, l10n.filterNoTags);
+        return null;
+      }
+    }
 
-    final chosen = <String>{};
-    return showModalBottomSheet<Set<String>>(
+    if (!context.mounted) return null;
+    return BatchTagPickerSheet.show(context, action: action);
+  }
+
+  Future<String?> _pickAlbum(BuildContext context, WidgetRef ref) async {
+    final l10n = AppLocalizations.of(context)!;
+    final albums = await ref.read(virtualAlbumsProvider.future);
+    if (!context.mounted) return null;
+
+    return showModalBottomSheet<String>(
       context: context,
       showDragHandle: true,
-      builder: (sheetContext) => StatefulBuilder(
-        builder: (context, setState) => SafeArea(
+      builder: (sheetContext) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
           child: Column(
             mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Padding(
-                padding: const EdgeInsets.all(16),
-                child: Text(
-                  l10n.batchPickTags,
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      l10n.batchPickAlbum,
+                      style: Theme.of(sheetContext).textTheme.titleMedium,
+                    ),
+                  ),
+                  TextButton.icon(
+                    onPressed: () async {
+                      final createdId = await _createAlbum(sheetContext, ref);
+                      if (createdId != null && sheetContext.mounted) {
+                        Navigator.of(sheetContext).pop(createdId);
+                      }
+                    },
+                    icon: const Icon(Icons.add),
+                    label: Text(l10n.albumPickerCreate),
+                  ),
+                ],
               ),
-              Flexible(
-                child: ListView(
-                  shrinkWrap: true,
-                  children: [
-                    for (final tag in tags)
-                      CheckboxListTile(
-                        value: chosen.contains(tag.id),
-                        title: Text(tag.name),
-                        onChanged: (ticked) => setState(() {
-                          if (ticked ?? false) {
-                            chosen.add(tag.id);
-                          } else {
-                            chosen.remove(tag.id);
-                          }
-                        }),
-                      ),
-                  ],
+              const SizedBox(height: 8),
+              if (albums.isEmpty)
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 24),
+                  child: Center(
+                    child: Text(
+                      l10n.albumPickerEmpty,
+                      style: Theme.of(sheetContext).textTheme.bodyMedium,
+                    ),
+                  ),
+                )
+              else
+                Flexible(
+                  child: ListView(
+                    shrinkWrap: true,
+                    children: [
+                      for (final album in albums)
+                        ListTile(
+                          leading: const Icon(Icons.photo_album_outlined),
+                          title: Text(album.name),
+                          subtitle: Text(l10n.albumItemCount(album.itemCount)),
+                          onTap: () => Navigator.of(sheetContext).pop(album.id),
+                        ),
+                    ],
+                  ),
                 ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(16),
-                child: FilledButton(
-                  onPressed: () => Navigator.of(sheetContext).pop(chosen),
-                  child: Text(l10n.batchConfirmContinue),
-                ),
-              ),
             ],
           ),
         ),
@@ -203,42 +239,20 @@ class BatchActionBar extends ConsumerWidget {
     );
   }
 
-  Future<String?> _pickAlbum(BuildContext context, WidgetRef ref) async {
-    final l10n = AppLocalizations.of(context)!;
-    final albums = await ref.read(virtualAlbumsProvider.future);
-    if (!context.mounted || albums.isEmpty) return null;
-
-    return showModalBottomSheet<String>(
+  Future<String?> _createAlbum(BuildContext context, WidgetRef ref) async {
+    final existing =
+        ref.read(virtualAlbumsProvider).valueOrNull ?? const <AlbumSummary>[];
+    final name = await showDialog<String>(
       context: context,
-      showDragHandle: true,
-      builder: (sheetContext) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Text(
-                l10n.batchPickAlbum,
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
-            ),
-            Flexible(
-              child: ListView(
-                shrinkWrap: true,
-                children: [
-                  for (final album in albums)
-                    ListTile(
-                      leading: const Icon(Icons.photo_album_outlined),
-                      title: Text(album.name),
-                      onTap: () => Navigator.of(sheetContext).pop(album.id),
-                    ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
+      builder: (_) =>
+          AlbumEditDialog(existingNames: existing.map((a) => a.name).toList()),
     );
+    if (name == null || !context.mounted) return null;
+
+    final album = await ref
+        .read(albumEditControllerProvider.notifier)
+        .create(name);
+    return album?.id;
   }
 
   /// The second look before anything is written.

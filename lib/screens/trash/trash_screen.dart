@@ -1,15 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:in_sreerajp_imgvidgal/core/routing/app_router.dart';
 import 'package:in_sreerajp_imgvidgal/l10n/generated/app_localizations.dart';
+import 'package:in_sreerajp_imgvidgal/models/media_item.dart';
+import 'package:in_sreerajp_imgvidgal/providers/media_providers.dart';
 import 'package:in_sreerajp_imgvidgal/providers/trash_providers.dart';
 import 'package:in_sreerajp_imgvidgal/widgets/albums/album_media_grid.dart';
 
 /// Shows every item the user has moved to the trash.
 ///
-/// The app bar offers two bulk actions — restore all and empty trash — and the
-/// grid lets the user browse or select items for per-item restore. Nothing here
-/// touches the original files on disk: "empty trash" removes the rows from the
-/// app's database, and a future scan would index the same files again.
+/// The app bar offers bulk restore and emptying actions. Tapping or long-pressing
+/// an item lets the user restore it or permanently delete it from the device.
 class TrashScreen extends ConsumerWidget {
   const TrashScreen({super.key});
 
@@ -76,6 +78,9 @@ class TrashScreen extends ConsumerWidget {
                   child: AlbumMediaGrid(
                     items: items,
                     emptyTitle: l10n.trashEmpty,
+                    onItemLongPress: (item) =>
+                        _showItemOptions(context, ref, item),
+                    onItemTap: (item) => _showItemOptions(context, ref, item),
                   ),
                 ),
               ],
@@ -84,6 +89,171 @@ class TrashScreen extends ConsumerWidget {
         ),
       ),
     );
+  }
+
+  /// Shows actions for a specific trashed item.
+  Future<void> _showItemOptions(
+    BuildContext context,
+    WidgetRef ref,
+    MediaItem item,
+  ) async {
+    final l10n = AppLocalizations.of(context)!;
+    final thumbnailAsync = ref.read(thumbnailProvider(item));
+    final thumbBytes = thumbnailAsync.valueOrNull;
+
+    await showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      builder: (sheetContext) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+              child: Row(
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: SizedBox(
+                      width: 48,
+                      height: 48,
+                      child: thumbBytes != null
+                          ? Image.memory(thumbBytes, fit: BoxFit.cover)
+                          : Container(
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.surfaceContainerHighest,
+                              child: Icon(
+                                item.isVideo ? Icons.videocam : Icons.photo,
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onSurfaceVariant,
+                              ),
+                            ),
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          item.displayName,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: Theme.of(context).textTheme.titleSmall,
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          _formatSize(item.size),
+                          style: Theme.of(context).textTheme.bodySmall
+                              ?.copyWith(
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onSurfaceVariant,
+                              ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Divider(),
+            ListTile(
+              leading: const Icon(Icons.fullscreen),
+              title: Text(l10n.editorOpen),
+              onTap: () {
+                Navigator.of(sheetContext).pop();
+                context.push(mediaViewerPath(item.id));
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.restore),
+              title: Text(l10n.trashRestoreAction),
+              onTap: () async {
+                Navigator.of(sheetContext).pop();
+                await ref
+                    .read(trashControllerProvider.notifier)
+                    .restoreItem(item.id);
+                if (!context.mounted) return;
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text(l10n.trashRestoredSnackbar)),
+                );
+              },
+            ),
+            ListTile(
+              leading: Icon(
+                Icons.delete_forever,
+                color: Theme.of(context).colorScheme.error,
+              ),
+              title: Text(
+                l10n.trashDeletePermanentlyAction,
+                style: TextStyle(color: Theme.of(context).colorScheme.error),
+              ),
+              onTap: () {
+                Navigator.of(sheetContext).pop();
+                _confirmDeletePermanently(context, ref, item);
+              },
+            ),
+            const SizedBox(height: 8),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Asks before permanently deleting a single item from the phone storage.
+  Future<void> _confirmDeletePermanently(
+    BuildContext context,
+    WidgetRef ref,
+    MediaItem item,
+  ) async {
+    final l10n = AppLocalizations.of(context)!;
+    final messenger = ScaffoldMessenger.of(context);
+
+    final bool? confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        icon: Icon(
+          Icons.delete_forever,
+          color: Theme.of(dialogContext).colorScheme.error,
+        ),
+        title: Text(l10n.trashDeletePermanentlyConfirmTitle),
+        content: Text(l10n.trashDeletePermanentlyConfirmBody),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: Text(l10n.settingsCancel),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(
+              backgroundColor: Theme.of(dialogContext).colorScheme.error,
+            ),
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: Text(l10n.trashDeletePermanentlyAction),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+    final success = await ref
+        .read(trashControllerProvider.notifier)
+        .deletePermanently(item);
+    if (success) {
+      messenger.showSnackBar(
+        SnackBar(content: Text(l10n.trashDeletedPermanentlySnackbar)),
+      );
+    }
+  }
+
+  static String _formatSize(int bytes) {
+    if (bytes <= 0) return '0 B';
+    if (bytes < 1024) return '$bytes B';
+    if (bytes < 1024 * 1024) return '${(bytes / 1024).toStringAsFixed(1)} KB';
+    return '${(bytes / (1024 * 1024)).toStringAsFixed(1)} MB';
   }
 
   /// Asks before restoring every item back to the library.
@@ -118,7 +288,7 @@ class TrashScreen extends ConsumerWidget {
     }
   }
 
-  /// Asks before permanently removing trashed items from the database.
+  /// Asks before permanently removing trashed items from the database and device.
   Future<void> _confirmEmptyTrash(BuildContext context, WidgetRef ref) async {
     final l10n = AppLocalizations.of(context)!;
     final messenger = ScaffoldMessenger.of(context);

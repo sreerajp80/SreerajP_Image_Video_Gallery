@@ -1,7 +1,7 @@
 name: in_sreerajp_imgvidgal
 description: "Offline-first image and video gallery application for viewing, organizing, and managing local media."
 publish_to: 'none'
-version: 2.3.0+8
+version: 2.5.0+13
 
 environment:
   sdk: ^3.11.0

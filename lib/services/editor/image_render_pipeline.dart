@@ -8,8 +8,10 @@ import 'package:in_sreerajp_imgvidgal/models/editor/tone_adjustments.dart';
 import 'package:in_sreerajp_imgvidgal/models/editor/watermark_config.dart';
 import 'package:in_sreerajp_imgvidgal/services/editor/crop_transform_service.dart';
 import 'package:in_sreerajp_imgvidgal/services/editor/filter_preset_service.dart';
+import 'package:in_sreerajp_imgvidgal/services/editor/hsl_service.dart';
 import 'package:in_sreerajp_imgvidgal/services/editor/markup_render_service.dart';
 import 'package:in_sreerajp_imgvidgal/services/editor/redaction_service.dart';
+import 'package:in_sreerajp_imgvidgal/services/editor/selective_mask_service.dart';
 import 'package:in_sreerajp_imgvidgal/services/editor/tone_adjustment_service.dart';
 import 'package:in_sreerajp_imgvidgal/services/editor/watermark_service.dart';
 
@@ -119,6 +121,8 @@ class ImageRenderPipeline {
   final ToneAdjustmentService _toneService;
   final FilterPresetService _filterService;
   final RedactionService _redactionService;
+  final SelectiveMaskService _maskService;
+  final HslService _hslService;
   final MarkupRenderService _markupService;
   final WatermarkService _watermarkService;
 
@@ -127,12 +131,16 @@ class ImageRenderPipeline {
     ToneAdjustmentService toneService = const ToneAdjustmentService(),
     FilterPresetService filterService = const FilterPresetService(),
     RedactionService redactionService = const RedactionService(),
+    SelectiveMaskService maskService = const SelectiveMaskService(),
+    HslService hslService = const HslService(),
     MarkupRenderService markupService = const MarkupRenderService(),
     WatermarkService watermarkService = const WatermarkService(),
   }) : _cropService = cropService,
        _toneService = toneService,
        _filterService = filterService,
        _redactionService = redactionService,
+       _maskService = maskService,
+       _hslService = hslService,
        _markupService = markupService,
        _watermarkService = watermarkService;
 
@@ -156,6 +164,7 @@ class ImageRenderPipeline {
 
     image = applyGeometry(image, session);
     image = _redactionService.applyAll(image, session.redactions);
+    image = _maskService.applyMasks(image, session.selectiveMasks);
     image = applyToneAndFilter(image, session);
     image = _markupService.drawLayers(image, session.markup);
     image = applyWatermark(
@@ -327,6 +336,12 @@ class ImageRenderPipeline {
         ..r = red
         ..g = green
         ..b = blue;
+    }
+
+    // HSL colour tuner runs after the main tone loop so the user's
+    // per-colour adjustments see the already-graded image.
+    if (!combined.hslAdjustments.isNeutral) {
+      image = _hslService.applyHsl(image, combined.hslAdjustments);
     }
 
     return image;

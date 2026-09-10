@@ -28,6 +28,10 @@ const double kTimelineHeaderHeight = 48;
 ///
 /// It reads only providers. Grouping, flashback selection, and scroll-offset
 /// maths all live in the service layer, so this widget stays presentation only.
+///
+/// This screen lives inside [HomeShellScreen] as the first tab. Permission
+/// handling is done by the parent shell, so this widget assumes media access
+/// has already been granted.
 class TimelineScreen extends ConsumerStatefulWidget {
   const TimelineScreen({super.key});
 
@@ -204,11 +208,6 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen> {
                   onPressed: () => context.push(kRouteSearch),
                   icon: const Icon(Icons.search),
                   tooltip: l10n.searchOpen,
-                ),
-                IconButton(
-                  onPressed: () => context.push(kRouteAlbums),
-                  icon: const Icon(Icons.photo_album_outlined),
-                  tooltip: l10n.albumsOpen,
                 ),
                 IconButton(
                   onPressed: () => context.push(kRoutePdfExport),

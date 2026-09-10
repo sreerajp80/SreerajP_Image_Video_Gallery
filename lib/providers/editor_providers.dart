@@ -8,6 +8,7 @@ import 'package:in_sreerajp_imgvidgal/models/editor/edit_session.dart';
 import 'package:in_sreerajp_imgvidgal/models/editor/filter_preset.dart';
 import 'package:in_sreerajp_imgvidgal/models/editor/markup_layer.dart';
 import 'package:in_sreerajp_imgvidgal/models/editor/redaction_region.dart';
+import 'package:in_sreerajp_imgvidgal/models/editor/selective_mask.dart';
 import 'package:in_sreerajp_imgvidgal/models/editor/tone_adjustments.dart';
 import 'package:in_sreerajp_imgvidgal/models/editor/watermark_config.dart';
 import 'package:in_sreerajp_imgvidgal/models/media_item.dart';
@@ -16,10 +17,12 @@ import 'package:in_sreerajp_imgvidgal/repositories/media_repository.dart';
 import 'package:in_sreerajp_imgvidgal/services/editor/crop_transform_service.dart';
 import 'package:in_sreerajp_imgvidgal/services/editor/editor_save_service.dart';
 import 'package:in_sreerajp_imgvidgal/services/editor/filter_preset_service.dart';
+import 'package:in_sreerajp_imgvidgal/services/editor/hsl_service.dart';
 import 'package:in_sreerajp_imgvidgal/services/editor/image_render_pipeline.dart';
 import 'package:in_sreerajp_imgvidgal/services/editor/markup_geometry_service.dart';
 import 'package:in_sreerajp_imgvidgal/services/editor/markup_render_service.dart';
 import 'package:in_sreerajp_imgvidgal/services/editor/redaction_service.dart';
+import 'package:in_sreerajp_imgvidgal/services/editor/selective_mask_service.dart';
 import 'package:in_sreerajp_imgvidgal/services/editor/tone_adjustment_service.dart';
 import 'package:in_sreerajp_imgvidgal/services/editor/tone_curve_service.dart';
 import 'package:in_sreerajp_imgvidgal/services/editor/watermark_service.dart';
@@ -68,6 +71,18 @@ final watermarkServiceProvider = Provider<WatermarkService>((ref) {
   return const WatermarkService();
 });
 
+/// Selective gradient and radial mask maths.
+final selectiveMaskServiceProvider = Provider<SelectiveMaskService>((ref) {
+  return SelectiveMaskService(
+    toneService: ref.watch(toneAdjustmentServiceProvider),
+  );
+});
+
+/// Per-colour-range HSL tuner.
+final hslServiceProvider = Provider<HslService>((ref) {
+  return const HslService();
+});
+
 /// The whole render, from bytes to bytes.
 final imageRenderPipelineProvider = Provider<ImageRenderPipeline>((ref) {
   return ImageRenderPipeline(
@@ -75,6 +90,8 @@ final imageRenderPipelineProvider = Provider<ImageRenderPipeline>((ref) {
     toneService: ref.watch(toneAdjustmentServiceProvider),
     filterService: ref.watch(filterPresetServiceProvider),
     redactionService: ref.watch(redactionServiceProvider),
+    maskService: ref.watch(selectiveMaskServiceProvider),
+    hslService: ref.watch(hslServiceProvider),
     markupService: ref.watch(markupRenderServiceProvider),
     watermarkService: ref.watch(watermarkServiceProvider),
   );
@@ -86,7 +103,7 @@ final editorSaveServiceProvider = Provider<EditorSaveService>((ref) {
 });
 
 /// Which tool panel the editor is showing.
-enum EditorTool { crop, tune, filters, markup, redact, watermark }
+enum EditorTool { crop, tune, masks, filters, markup, redact, watermark }
 
 /// The tool the editor currently has open.
 final editorActiveToolProvider = StateProvider.autoDispose<EditorTool>((ref) {
@@ -326,6 +343,15 @@ class EditSessionNotifier extends StateNotifier<EditSession> {
   /// Replaces the watermark settings.
   void setWatermark(WatermarkConfig config) =>
       _push(state.copyWith(watermark: config));
+
+  /// Adds a selective mask.
+  void addMask(SelectiveMask mask) => _push(state.addMask(mask));
+
+  /// Removes a selective mask by id.
+  void removeMask(String maskId) => _push(state.removeMask(maskId));
+
+  /// Replaces a selective mask (same id) with an updated version.
+  void updateMask(SelectiveMask mask) => _push(state.replaceMask(mask));
 }
 
 /// The edit being built for one media item.

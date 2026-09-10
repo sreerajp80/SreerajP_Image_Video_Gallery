@@ -15,9 +15,11 @@ import android.os.Build
 import android.provider.OpenableColumns
 import android.provider.Settings
 import android.webkit.MimeTypeMap
+import androidx.core.content.FileProvider
 import io.flutter.plugin.common.BinaryMessenger
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
+import java.io.File
 
 /**
  * Hands a scanned code to another app, and refuses to hand over anything else.
@@ -59,6 +61,7 @@ class IntentChannelHandler(
             "copyToClipboard" -> copyToClipboard(call, result)
             "getInitialMediaIntent" -> getInitialMediaIntent(result)
             "openDefaultAppsSettings" -> openDefaultAppsSettings(result)
+            "shareFile" -> shareFile(call, result)
             else -> result.notImplemented()
         }
     }
@@ -298,6 +301,51 @@ class IntentChannelHandler(
             result.success(true)
         } catch (e: Exception) {
             result.error("no_settings", "The settings screen could not be opened", null)
+        }
+    }
+
+    /**
+     * Shares a local file through the Android system share sheet (ACTION_SEND).
+     *
+     * Uses FileProvider to expose a content URI with read grant permissions,
+     * maintaining 100% offline local IPC with zero external network access.
+     */
+    private fun shareFile(call: MethodCall, result: MethodChannel.Result) {
+        val filePath = call.argument<String>("filePath")
+        if (filePath.isNullOrBlank()) {
+            result.error("bad_path", "No file path was given", null)
+            return
+        }
+
+        val file = File(filePath)
+        if (!file.exists()) {
+            result.error("not_found", "The file does not exist", null)
+            return
+        }
+
+        val mimeType = call.argument<String>("mimeType") ?: "image/*"
+        val title = call.argument<String>("title") ?: "Share Media"
+
+        try {
+            val contentUri = FileProvider.getUriForFile(
+                activity,
+                "${activity.packageName}.fileprovider",
+                file
+            )
+
+            val shareIntent = Intent(Intent.ACTION_SEND).apply {
+                type = mimeType
+                putExtra(Intent.EXTRA_STREAM, contentUri)
+                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            }
+
+            val chooser = Intent.createChooser(shareIntent, title).apply {
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            }
+            activity.startActivity(chooser)
+            result.success(true)
+        } catch (e: Exception) {
+            result.error("share_failed", e.message ?: "Failed to share file", null)
         }
     }
 

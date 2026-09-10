@@ -16,6 +16,8 @@ import 'package:in_sreerajp_imgvidgal/widgets/editor/editor_tool_bar.dart';
 import 'package:in_sreerajp_imgvidgal/widgets/editor/filter_preset_strip.dart';
 import 'package:in_sreerajp_imgvidgal/widgets/editor/markup_canvas.dart';
 import 'package:in_sreerajp_imgvidgal/widgets/editor/redaction_panel.dart';
+import 'package:in_sreerajp_imgvidgal/widgets/editor/selective_mask_overlay.dart';
+import 'package:in_sreerajp_imgvidgal/widgets/editor/selective_mask_panel.dart';
 import 'package:in_sreerajp_imgvidgal/widgets/editor/tone_slider_panel.dart';
 import 'package:in_sreerajp_imgvidgal/widgets/editor/watermark_panel.dart';
 import 'package:in_sreerajp_imgvidgal/widgets/media/media_thumbnail.dart';
@@ -41,6 +43,9 @@ class _ImageEditorScreenState extends ConsumerState<ImageEditorScreen> {
   /// The last preview that rendered, kept so the image does not blink white
   /// while the next one is being drawn.
   Uint8List? _lastPreview;
+
+  /// The selective mask currently being tweaked, or null when none is selected.
+  String? _selectedMaskId;
 
   @override
   Widget build(BuildContext context) {
@@ -219,6 +224,12 @@ class _ImageEditorScreenState extends ConsumerState<ImageEditorScreen> {
           settings: ref.watch(redactionToolSettingsProvider),
           onRegionCompleted: notifier.addRedaction,
         );
+      case EditorTool.masks:
+        return SelectiveMaskOverlay(
+          masks: session.selectiveMasks,
+          selectedMaskId: _selectedMaskId,
+          onMaskUpdated: notifier.updateMask,
+        );
       case EditorTool.tune:
       case EditorTool.filters:
       case EditorTool.watermark:
@@ -260,6 +271,24 @@ class _ImageEditorScreenState extends ConsumerState<ImageEditorScreen> {
           onChanged: notifier.setTone,
           onChangeEnd: notifier.setTone,
           onReset: notifier.resetTone,
+        );
+
+      case EditorTool.masks:
+        return SelectiveMaskPanel(
+          masks: session.selectiveMasks,
+          selectedMaskId: _selectedMaskId,
+          onMaskAdded: (mask) {
+            notifier.addMask(mask);
+            setState(() => _selectedMaskId = mask.id);
+          },
+          onMaskUpdated: notifier.updateMask,
+          onMaskRemoved: (id) {
+            notifier.removeMask(id);
+            if (_selectedMaskId == id) {
+              setState(() => _selectedMaskId = null);
+            }
+          },
+          onMaskSelected: (id) => setState(() => _selectedMaskId = id),
         );
 
       case EditorTool.filters:

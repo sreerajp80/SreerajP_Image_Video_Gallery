@@ -618,6 +618,26 @@ class MediaDao {
     }
   }
 
+  /// Permanently removes specific media items by ID from the database.
+  Future<int> deleteMediaItems(List<String> ids) async {
+    if (ids.isEmpty) return 0;
+    try {
+      final db = await _db;
+      final placeholders = List.filled(ids.length, '?').join(', ');
+      return await db.delete(
+        DatabaseConstants.tableMedia,
+        where: '${DatabaseConstants.colId} IN ($placeholders)',
+        whereArgs: ids,
+      );
+    } catch (e, st) {
+      throw StorageException(
+        'Failed to delete media items from database: $e',
+        cause: e,
+        stackTrace: st,
+      );
+    }
+  }
+
   /// Number of items currently sitting in the trash.
   Future<int> getTrashCount() async {
     try {

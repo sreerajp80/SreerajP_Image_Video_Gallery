@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:in_sreerajp_imgvidgal/models/filter_options.dart';
 import 'package:in_sreerajp_imgvidgal/models/media_item.dart';
+import 'package:in_sreerajp_imgvidgal/providers/album_providers.dart';
 import 'package:in_sreerajp_imgvidgal/providers/media_providers.dart';
 
 /// Bumped after every trash change so watching providers refresh together.
@@ -41,6 +42,7 @@ class TrashController extends StateNotifier<AsyncValue<void>> {
       await _ref.read(mediaRepositoryProvider).setTrash(id, false);
       state = const AsyncValue<void>.data(null);
       _ref.read(trashRevisionProvider.notifier).state++;
+      _ref.read(albumRevisionProvider.notifier).state++;
     } catch (e, st) {
       state = AsyncValue<void>.error(e, st);
     }
@@ -55,6 +57,7 @@ class TrashController extends StateNotifier<AsyncValue<void>> {
           .restoreAllFromTrash();
       state = const AsyncValue<void>.data(null);
       _ref.read(trashRevisionProvider.notifier).state++;
+      _ref.read(albumRevisionProvider.notifier).state++;
       return count;
     } catch (e, st) {
       state = AsyncValue<void>.error(e, st);
@@ -62,20 +65,50 @@ class TrashController extends StateNotifier<AsyncValue<void>> {
     }
   }
 
-  /// Permanently removes every trashed row from the gallery database.
-  ///
-  /// The original files stay on the device. A future scan will re-index them,
-  /// so nothing is truly lost from the phone.
+  /// Permanently removes every trashed item from device storage and the gallery.
   Future<int> emptyTrash() async {
     state = const AsyncValue<void>.loading();
     try {
-      final count = await _ref.read(mediaRepositoryProvider).emptyTrash();
+      final items = await _ref
+          .read(mediaRepositoryProvider)
+          .getMediaItems(filter: const FilterOptions(isTrash: true));
+      if (items.isEmpty) {
+        state = const AsyncValue<void>.data(null);
+        return 0;
+      }
+      final success = await _ref
+          .read(mediaRepositoryProvider)
+          .deletePermanently(items);
+      if (!success) {
+        state = const AsyncValue<void>.data(null);
+        return 0;
+      }
       state = const AsyncValue<void>.data(null);
       _ref.read(trashRevisionProvider.notifier).state++;
-      return count;
+      _ref.read(albumRevisionProvider.notifier).state++;
+      return items.length;
     } catch (e, st) {
       state = AsyncValue<void>.error(e, st);
       return 0;
+    }
+  }
+
+  /// Permanently deletes a single item from device storage and the gallery.
+  Future<bool> deletePermanently(MediaItem item) async {
+    state = const AsyncValue<void>.loading();
+    try {
+      final success = await _ref
+          .read(mediaRepositoryProvider)
+          .deletePermanently(<MediaItem>[item]);
+      state = const AsyncValue<void>.data(null);
+      if (success) {
+        _ref.read(trashRevisionProvider.notifier).state++;
+        _ref.read(albumRevisionProvider.notifier).state++;
+      }
+      return success;
+    } catch (e, st) {
+      state = AsyncValue<void>.error(e, st);
+      return false;
     }
   }
 }

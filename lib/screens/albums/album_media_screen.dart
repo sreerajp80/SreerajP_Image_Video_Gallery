@@ -6,11 +6,17 @@ import 'package:in_sreerajp_imgvidgal/l10n/generated/app_localizations.dart';
 import 'package:in_sreerajp_imgvidgal/models/album_summary.dart';
 import 'package:in_sreerajp_imgvidgal/models/media_item.dart';
 import 'package:in_sreerajp_imgvidgal/providers/album_providers.dart';
+import 'package:in_sreerajp_imgvidgal/providers/selection_providers.dart';
 import 'package:in_sreerajp_imgvidgal/widgets/albums/album_cover_picker.dart';
 import 'package:in_sreerajp_imgvidgal/widgets/albums/album_edit_dialog.dart';
 import 'package:in_sreerajp_imgvidgal/widgets/albums/album_media_grid.dart';
+import 'package:in_sreerajp_imgvidgal/widgets/batch/batch_action_bar.dart';
+import 'package:in_sreerajp_imgvidgal/widgets/batch/selection_app_bar.dart';
 
 /// One user-made album at `/albums/:id`.
+///
+/// Supports multi-select and batch actions via [SelectionAppBar] and
+/// [BatchActionBar], the same way the timeline does.
 class AlbumMediaScreen extends ConsumerWidget {
   final String albumId;
 
@@ -21,54 +27,64 @@ class AlbumMediaScreen extends ConsumerWidget {
     final l10n = AppLocalizations.of(context)!;
     final summary = ref.watch(albumSummaryProvider(albumId));
     final media = ref.watch(albumMediaProvider(albumId));
+    final selecting = ref.watch(selectionModeProvider);
+
+    // Build visible ids for the select-all button.
+    final visibleIds =
+        media.valueOrNull?.map((item) => item.id).toList(growable: false) ??
+        const <String>[];
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(summary.valueOrNull?.name ?? l10n.albumsTitle),
-        actions: <Widget>[
-          PopupMenuButton<String>(
-            onSelected: (action) => _onAction(context, ref, action, summary),
-            itemBuilder: (context) => <PopupMenuEntry<String>>[
-              PopupMenuItem<String>(
-                value: 'rename',
-                child: ListTile(
-                  dense: true,
-                  contentPadding: EdgeInsets.zero,
-                  leading: const Icon(Icons.drive_file_rename_outline),
-                  title: Text(l10n.albumRename),
+      appBar: selecting
+          ? SelectionAppBar(visibleIds: visibleIds)
+          : AppBar(
+              title: Text(summary.valueOrNull?.name ?? l10n.albumsTitle),
+              actions: <Widget>[
+                PopupMenuButton<String>(
+                  onSelected: (action) =>
+                      _onAction(context, ref, action, summary),
+                  itemBuilder: (context) => <PopupMenuEntry<String>>[
+                    PopupMenuItem<String>(
+                      value: 'rename',
+                      child: ListTile(
+                        dense: true,
+                        contentPadding: EdgeInsets.zero,
+                        leading: const Icon(Icons.drive_file_rename_outline),
+                        title: Text(l10n.albumRename),
+                      ),
+                    ),
+                    PopupMenuItem<String>(
+                      value: 'cover',
+                      child: ListTile(
+                        dense: true,
+                        contentPadding: EdgeInsets.zero,
+                        leading: const Icon(Icons.image_outlined),
+                        title: Text(l10n.albumChooseCover),
+                      ),
+                    ),
+                    PopupMenuItem<String>(
+                      value: 'reorder',
+                      child: ListTile(
+                        dense: true,
+                        contentPadding: EdgeInsets.zero,
+                        leading: const Icon(Icons.swap_vert),
+                        title: Text(l10n.albumReorder),
+                      ),
+                    ),
+                    PopupMenuItem<String>(
+                      value: 'delete',
+                      child: ListTile(
+                        dense: true,
+                        contentPadding: EdgeInsets.zero,
+                        leading: const Icon(Icons.delete_outline),
+                        title: Text(l10n.albumDelete),
+                      ),
+                    ),
+                  ],
                 ),
-              ),
-              PopupMenuItem<String>(
-                value: 'cover',
-                child: ListTile(
-                  dense: true,
-                  contentPadding: EdgeInsets.zero,
-                  leading: const Icon(Icons.image_outlined),
-                  title: Text(l10n.albumChooseCover),
-                ),
-              ),
-              PopupMenuItem<String>(
-                value: 'reorder',
-                child: ListTile(
-                  dense: true,
-                  contentPadding: EdgeInsets.zero,
-                  leading: const Icon(Icons.swap_vert),
-                  title: Text(l10n.albumReorder),
-                ),
-              ),
-              PopupMenuItem<String>(
-                value: 'delete',
-                child: ListTile(
-                  dense: true,
-                  contentPadding: EdgeInsets.zero,
-                  leading: const Icon(Icons.delete_outline),
-                  title: Text(l10n.albumDelete),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
+              ],
+            ),
+      bottomNavigationBar: selecting ? const BatchActionBar() : null,
       body: SafeArea(
         child: summary.when(
           loading: () => const Center(child: CircularProgressIndicator()),
@@ -82,6 +98,7 @@ class AlbumMediaScreen extends ConsumerWidget {
                 items: items,
                 emptyTitle: l10n.albumEmptyTitle,
                 emptyBody: l10n.albumEmptyBody,
+                selectable: true,
                 onItemLongPress: (item) => _confirmRemove(context, ref, item),
               ),
             );

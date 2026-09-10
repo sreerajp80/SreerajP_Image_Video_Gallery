@@ -165,6 +165,10 @@
   "@editorToolTune": {
     "description": "Name of the light and colour tool"
   },
+  "editorToolMasks": "മാസ്കുകൾ",
+  "@editorToolMasks": {
+    "description": "Name of the selective gradient and radial masks tool"
+  },
   "editorToolFilters": "ഫിൽട്ടറുകൾ",
   "@editorToolFilters": {
     "description": "Name of the filter preset tool"
@@ -312,6 +316,98 @@
   "curveHint": "കർവ് മാറ്റാൻ ഒരു പോയിന്റ് വലിക്കുക",
   "@curveHint": {
     "description": "Hint under the curve control"
+  },
+  "curveAddHint": "പോയിന്റ് ചേർക്കാൻ തൊടുക, മാറ്റാൻ അമർത്തിപ്പിടിക്കുക",
+  "@curveAddHint": {
+    "description": "Hint under the spline curve editor"
+  },
+  "maskShapeLinear": "ലീനിയർ",
+  "@maskShapeLinear": {
+    "description": "Linear gradient mask shape option"
+  },
+  "maskShapeRadial": "റേഡിയൽ",
+  "@maskShapeRadial": {
+    "description": "Radial circular mask shape option"
+  },
+  "maskFeather": "ഫെദർ",
+  "@maskFeather": {
+    "description": "Label of the mask edge feathering slider"
+  },
+  "maskInvert": "വിപരീതം",
+  "@maskInvert": {
+    "description": "Toggle to invert the selective mask area"
+  },
+  "maskBlur": "മങ്ങൽ",
+  "@maskBlur": {
+    "description": "Label of the selective mask blur slider"
+  },
+  "maskAddLinear": "ലീനിയർ ഗ്രേഡിയന്റ് ചേർക്കുക",
+  "@maskAddLinear": {
+    "description": "Tooltip for adding a linear gradient mask"
+  },
+  "maskAddRadial": "റേഡിയൽ മാസ്ക് ചേർക്കുക",
+  "@maskAddRadial": {
+    "description": "Tooltip for adding a radial mask"
+  },
+  "maskRemove": "മാസ്ക് നീക്കംചെയ്യുക",
+  "@maskRemove": {
+    "description": "Tooltip for removing a selective mask"
+  },
+  "maskEmpty": "മാസ്ക് ചേർക്കാൻ + തൊടുക",
+  "@maskEmpty": {
+    "description": "Message displayed when no selective masks exist"
+  },
+  "hslTitle": "എച്ച്.എസ്.എൽ കളർ ട്യൂണർ",
+  "@hslTitle": {
+    "description": "Section header for the 8-channel HSL color tuner"
+  },
+  "hslHue": "നിറം",
+  "@hslHue": {
+    "description": "Label for the HSL hue adjustment slider"
+  },
+  "hslSaturation": "സാന്ദ്രത",
+  "@hslSaturation": {
+    "description": "Label for the HSL saturation adjustment slider"
+  },
+  "hslLuminance": "തെളിച്ചം",
+  "@hslLuminance": {
+    "description": "Label for the HSL luminance adjustment slider"
+  },
+  "hslReset": "എച്ച്.എസ്.എൽ പഴയപടിയാക്കുക",
+  "@hslReset": {
+    "description": "Button to reset HSL color adjustments to neutral"
+  },
+  "hslRangeRed": "ചുവപ്പ്",
+  "@hslRangeRed": {
+    "description": "HSL color range for red tones"
+  },
+  "hslRangeOrange": "ഓറഞ്ച്",
+  "@hslRangeOrange": {
+    "description": "HSL color range for orange tones"
+  },
+  "hslRangeYellow": "മഞ്ഞ",
+  "@hslRangeYellow": {
+    "description": "HSL color range for yellow tones"
+  },
+  "hslRangeGreen": "പച്ച",
+  "@hslRangeGreen": {
+    "description": "HSL color range for green tones"
+  },
+  "hslRangeCyan": "സയൻ",
+  "@hslRangeCyan": {
+    "description": "HSL color range for cyan tones"
+  },
+  "hslRangeBlue": "നീല",
+  "@hslRangeBlue": {
+    "description": "HSL color range for blue tones"
+  },
+  "hslRangePurple": "പർപ്പിൾ",
+  "@hslRangePurple": {
+    "description": "HSL color range for purple tones"
+  },
+  "hslRangeMagenta": "മജന്ത",
+  "@hslRangeMagenta": {
+    "description": "HSL color range for magenta tones"
   },
   "filterNone": "യഥാർഥം",
   "@filterNone": {
@@ -3654,9 +3750,25 @@
   "@trashEmptyConfirmTitle": {
     "description": "Title of the empty trash confirmation dialog"
   },
-  "trashEmptyConfirmBody": "ഇത് ഗാലറിയിൽ നിന്ന് ചവറ്റുകുട്ടയിലെ എല്ലാ ഇനങ്ങളും നീക്കം ചെയ്യും. ഫയലുകൾ നിങ്ങളുടെ ഫോണിൽ നിലനിൽക്കും.",
+  "trashEmptyConfirmBody": "ഇത് നിങ്ങളുടെ ഫോൺ സംഭരണത്തിൽ നിന്ന് എല്ലാ ഇനങ്ങളും ശാശ്വതമായി ഇല്ലാതാക്കും. ഈ പ്രവർത്തനം പഴയപടിയാക്കാൻ കഴിയില്ല.",
   "@trashEmptyConfirmBody": {
     "description": "Body of the empty trash confirmation dialog"
+  },
+  "trashDeletePermanentlyAction": "ശാശ്വതമായി ഇല്ലാതാക്കുക",
+  "@trashDeletePermanentlyAction": {
+    "description": "Button to permanently delete an item from storage"
+  },
+  "trashDeletePermanentlyConfirmTitle": "ശാശ്വതമായി ഇല്ലാതാക്കണോ?",
+  "@trashDeletePermanentlyConfirmTitle": {
+    "description": "Title of permanent deletion confirmation dialog"
+  },
+  "trashDeletePermanentlyConfirmBody": "ഈ ഇനം നിങ്ങളുടെ ഫോൺ സംഭരണത്തിൽ നിന്ന് ശാശ്വതമായി ഇല്ലാതാക്കും. ഈ പ്രവർത്തനം പഴയപടിയാക്കാൻ കഴിയില്ല.",
+  "@trashDeletePermanentlyConfirmBody": {
+    "description": "Body of permanent deletion confirmation dialog"
+  },
+  "trashDeletedPermanentlySnackbar": "ഇനം ശാശ്വതമായി ഇല്ലാതാക്കി",
+  "@trashDeletedPermanentlySnackbar": {
+    "description": "Snackbar shown after an item is permanently deleted"
   },
   "trashRestoreAction": "പുനഃസ്ഥാപിക്കുക",
   "@trashRestoreAction": {
@@ -3767,5 +3879,74 @@
   "compareAperture": "അപ്പർച്ചർ",
   "compareShutterSpeed": "ഷട്ടർ സ്പീഡ്",
   "compareFocalLength": "ഫോക്കൽ ലെങ്ത്",
-  "compareNoExif": "EXIF വിവരങ്ങൾ ലഭ്യമല്ല"
+  "compareNoExif": "EXIF വിവരങ്ങൾ ലഭ്യമല്ല",
+  "privacyScrubberTitle": "മീഡിയ സ്വകാര്യതയും സ്ക്രബ്ബറും",
+  "privacyScrubberSubtitle": "പങ്കുവെക്കുന്നതിന് മുമ്പ് സെൻസിറ്റീവ് EXIF മെറ്റാഡാറ്റ നീക്കം ചെയ്യുകയും GPS സ്ഥാനം മാറ്റുകയും ചെയ്യുക",
+  "privacyScrubberMenu": "സ്വകാര്യതയും EXIF സ്ക്രബ്ബറും",
+  "privacyCardTitle": "മീഡിയ സ്വകാര്യതയും EXIF വിവരങ്ങളും",
+  "privacyCardBody": "ഫോട്ടോ പങ്കിടുന്നതിന് മുമ്പ് കൃത്യമായ GPS ലൊക്കേഷൻ, ക്യാമറ സീരിയൽ നമ്പറുകൾ എന്നിവ നീക്കം ചെയ്ത് സ്വകാര്യത സംരക്ഷിക്കുക.",
+  "privacyOpenScrubber": "സ്വകാര്യതാ ക്രമീകരണങ്ങൾ തുറക്കുക",
+  "privacyTabStripper": "EXIF നീക്കം ചെയ്യൽ",
+  "privacyTabGeofence": "GPS ജിയോഫെൻസ് ഷിഫ്റ്റർ",
+  "privacyStripAndShareAction": "ഒറ്റ ടാപ്പിൽ നീക്കം ചെയ്ത് പങ്കിടുക",
+  "privacySaveSanitizedAction": "നീക്കം ചെയ്ത കോപ്പി ഗാലറിയിൽ സൂക്ഷിക്കുക",
+  "privacyGranularTitle": "തിരഞ്ഞെടുത്ത മെറ്റാഡാറ്റ നീക്കം ചെയ്യൽ",
+  "privacyStripAll": "എല്ലാം നീക്കം ചെയ്യുക",
+  "privacyCustom": "ഇഷ്‌ടാനുസൃതം",
+  "privacyOptionGps": "GPS ലൊക്കേഷനും ഉയരവും നീക്കം ചെയ്യുക",
+  "privacyOptionSerials": "ക്യാമറ, ലെൻസ് സീരിയൽ നമ്പറുകൾ നീക്കം ചെയ്യുക",
+  "privacyOptionTimestamps": "ഫോട്ടോ എടുത്ത തീയതിയും സമയവും നീക്കം ചെയ്യുക",
+  "privacyOptionAuthor": "സോഫ്റ്റ്‌വെയർ, നിർമ്മാതാവിന്റെ വിവരങ്ങൾ നീക്കം ചെയ്യുക",
+  "privacyErrorReadingFile": "ഫയൽ വായിക്കാൻ സാധിച്ചില്ല",
+  "privacyShareTitle": "സുരക്ഷിതമായി മീഡിയ പങ്കിടുക",
+  "privacyShareFailed": "പങ്കിടാൻ സാധിച്ചില്ല",
+  "privacyProcessError": "മെറ്റാഡാറ്റ നീക്കം ചെയ്യുന്നതിൽ പിശക് സംഭവിച്ചു",
+  "privacySavedToGallery": "സുരക്ഷിതമായ കോപ്പി ഗാലറിയിൽ സേവ് ചെയ്തു",
+  "privacySaveFailed": "സേവ് ചെയ്യാൻ സാധിച്ചില്ല",
+  "privacyNoLocation": "ഈ ഫോട്ടോയിൽ GPS വിവരങ്ങൾ കണ്ടെത്തിയില്ല",
+  "geofenceOffsetDistance": "ഷിഫ്റ്റ് ചെയ്യേണ്ട ദൂരം",
+  "geofenceReroll": "പുതിയ റാൻഡം ലൊക്കേഷൻ കണ്ടെത്തുക",
+  "geofenceRandomPreset": "റാൻഡം (2–5 കി.മീ)",
+  "geofenceShiftSummary": "{summary} ലേക്ക് മാറ്റി",
+  "geofenceFuzzedCoordinates": "{lat}, {lon} ലേക്ക് മാറ്റി",
+  "geofenceExplanation": "കൃത്യമായ വീടിന്റെയോ താമസസ്ഥലത്തിന്റെയോ വിലാസം മറച്ചുവെച്ച് നഗരത്തിന്റെ പൊതുവായ ലൊക്കേഷൻ മാത്രം നിലനിർത്തുന്നു.",
+  "geofenceShareTitle": "ലൊക്കേഷൻ മാറ്റിയ ഫോട്ടോ പങ്കിടുക",
+  "geofenceShareAction": "ലൊക്കേഷൻ മാറ്റി പങ്കിടുക",
+  "geofenceSaveAction": "ഗാലറിയിലേക്ക് സേവ് ചെയ്യുക",
+  "geofenceSavedToGallery": "ലൊക്കേഷൻ മാറ്റിയ ഫോട്ടോ ഗാലറിയിൽ സേവ് ചെയ്തു",
+  "geofenceNoCoordinates": "ലൊക്കേഷൻ കണ്ടെത്തിയില്ല",
+  "geofenceNoCoordinatesBody": "ഈ ഫോട്ടോയിൽ മാറ്റാൻ തക്ക GPS വിവരങ്ങൾ അടങ്ങിയിട്ടില്ല.",
+  "privacyAuditSensitiveDetected": "സ്വകാര്യ വിവരങ്ങൾ കണ്ടെത്തി",
+  "privacyAuditClean": "സെൻസിറ്റീവ് വിവരങ്ങൾ ഒന്നുമില്ല",
+  "privacyAuditSensitiveDetails": "അടങ്ങിയിരിക്കുന്നത്: {gps} {camera}",
+  "privacyAuditGps": "GPS ലൊക്കേഷൻ",
+  "privacyAuditCamera": "ഡിവൈസ് വിവരങ്ങൾ",
+  "privacyAuditCleanDetails": "ഈ ഫയലിൽ ലൊക്കേഷനോ സീരിയൽ നമ്പറോ അടങ്ങിയിട്ടില്ല.",
+  "forensicInspectorTitle": "ഫോറൻസിക് ലെൻസ് & സെൻസർ ഇൻസ്പെക്ടർ",
+  "forensicInspectorSubtitle": "വിശദമായ ഒപ്റ്റിക്കൽ, ഹാർഡ്‌വെയർ സാങ്കേതിക വിവരങ്ങൾ",
+  "forensicInspectorButton": "ലെൻസ് & സെൻസർ വിവരങ്ങൾ പരിശോധിക്കുക",
+  "forensicInspectorQuickHint": "സെൻസർ ക്രോപ്പ് ഫാക്ടർ, 35mm തുല്യത, ഷട്ടർ കൗണ്ട്, എക്സ്പോഷർ ബയസ്",
+  "forensicNoData": "ഫോറൻസിക് മെറ്റാഡാറ്റ ലഭ്യമല്ല.",
+  "forensicSectionSensorOptics": "സെൻസർ & ഒപ്റ്റിക്കൽ സവിശേഷതകൾ",
+  "forensicSectionMechanicsColor": "മെക്കാനിക്കൽ റിലീസുകളും കളർ സ്പേസും",
+  "forensicSectionHardwareIdentity": "ഹാർഡ്‌വെയർ & ലെൻസ് തിരിച്ചറിയൽ",
+  "forensicSensorFormat": "സെൻസർ ഫോർമാറ്റ്",
+  "forensicCropFactor": "ക്രോപ്പ് ഫാക്ടർ",
+  "forensicFocal35mm": "35mm തുല്യത",
+  "forensicPhysicalFocalLength": "യഥാർത്ഥ ഫോക്കൽ ലെങ്ത്",
+  "forensicHyperfocalDistance": "ഹൈപ്പർഫോക്കൽ ദൂരം",
+  "forensicExposureBias": "എക്സ്പോഷർ കോമ്പൻസേഷൻ (EV)",
+  "forensicShutterActuations": "ഷട്ടർ ആക്ച്വേഷനുകൾ",
+  "forensicShutterNotReported": "ഇലക്ട്രോണിക് ഷട്ടർ / ലഭ്യമല്ല",
+  "forensicColorProfile": "കളർ സ്പേസ് പ്രൊഫൈൽ",
+  "forensicExposureProgram": "എക്സ്പോഷർ പ്രോഗ്രാം",
+  "forensicMeteringMode": "മീറ്ററിംഗ് മോഡ്",
+  "forensicSensingMethod": "സെൻസിംഗ് രീതി",
+  "forensicSceneCaptureType": "സീൻ ക്യാപ്‌ചർ തരം",
+  "forensicFlashStatus": "ഫ്ലാഷ് നില",
+  "forensicCameraSerial": "ക്യാമറ സീരിയൽ നമ്പർ",
+  "forensicLensModel": "ലെൻസ് മോഡൽ",
+  "forensicLensSpecification": "ലെൻസ് സ്പെസിഫിക്കേഷൻ",
+  "forensicLensSerial": "ലെൻസ് സീരിയൽ നമ്പർ",
+  "forensicSerialNotEmbedded": "രേഖപ്പെടുത്തിയിട്ടില്ല"
 }

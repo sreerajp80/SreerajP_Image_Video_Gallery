@@ -692,6 +692,12 @@ abstract class AppLocalizations {
   /// **'Tune'**
   String get editorToolTune;
 
+  /// Name of the selective gradient and radial masks tool
+  ///
+  /// In en, this message translates to:
+  /// **'Masks'**
+  String get editorToolMasks;
+
   /// Name of the filter preset tool
   ///
   /// In en, this message translates to:
@@ -913,6 +919,144 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Drag a point to shape the curve'**
   String get curveHint;
+
+  /// Hint under the spline curve editor
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to add a point, long-press to remove'**
+  String get curveAddHint;
+
+  /// Linear gradient mask shape option
+  ///
+  /// In en, this message translates to:
+  /// **'Linear'**
+  String get maskShapeLinear;
+
+  /// Radial circular mask shape option
+  ///
+  /// In en, this message translates to:
+  /// **'Radial'**
+  String get maskShapeRadial;
+
+  /// Label of the mask edge feathering slider
+  ///
+  /// In en, this message translates to:
+  /// **'Feather'**
+  String get maskFeather;
+
+  /// Toggle to invert the selective mask area
+  ///
+  /// In en, this message translates to:
+  /// **'Invert'**
+  String get maskInvert;
+
+  /// Label of the selective mask blur slider
+  ///
+  /// In en, this message translates to:
+  /// **'Blur'**
+  String get maskBlur;
+
+  /// Tooltip for adding a linear gradient mask
+  ///
+  /// In en, this message translates to:
+  /// **'Add linear gradient'**
+  String get maskAddLinear;
+
+  /// Tooltip for adding a radial mask
+  ///
+  /// In en, this message translates to:
+  /// **'Add radial mask'**
+  String get maskAddRadial;
+
+  /// Tooltip for removing a selective mask
+  ///
+  /// In en, this message translates to:
+  /// **'Remove mask'**
+  String get maskRemove;
+
+  /// Message displayed when no selective masks exist
+  ///
+  /// In en, this message translates to:
+  /// **'Tap + to add a mask'**
+  String get maskEmpty;
+
+  /// Section header for the 8-channel HSL color tuner
+  ///
+  /// In en, this message translates to:
+  /// **'HSL Color Tuner'**
+  String get hslTitle;
+
+  /// Label for the HSL hue adjustment slider
+  ///
+  /// In en, this message translates to:
+  /// **'Hue'**
+  String get hslHue;
+
+  /// Label for the HSL saturation adjustment slider
+  ///
+  /// In en, this message translates to:
+  /// **'Saturation'**
+  String get hslSaturation;
+
+  /// Label for the HSL luminance adjustment slider
+  ///
+  /// In en, this message translates to:
+  /// **'Luminance'**
+  String get hslLuminance;
+
+  /// Button to reset HSL color adjustments to neutral
+  ///
+  /// In en, this message translates to:
+  /// **'Reset HSL'**
+  String get hslReset;
+
+  /// HSL color range for red tones
+  ///
+  /// In en, this message translates to:
+  /// **'Red'**
+  String get hslRangeRed;
+
+  /// HSL color range for orange tones
+  ///
+  /// In en, this message translates to:
+  /// **'Orange'**
+  String get hslRangeOrange;
+
+  /// HSL color range for yellow tones
+  ///
+  /// In en, this message translates to:
+  /// **'Yellow'**
+  String get hslRangeYellow;
+
+  /// HSL color range for green tones
+  ///
+  /// In en, this message translates to:
+  /// **'Green'**
+  String get hslRangeGreen;
+
+  /// HSL color range for cyan tones
+  ///
+  /// In en, this message translates to:
+  /// **'Cyan'**
+  String get hslRangeCyan;
+
+  /// HSL color range for blue tones
+  ///
+  /// In en, this message translates to:
+  /// **'Blue'**
+  String get hslRangeBlue;
+
+  /// HSL color range for purple tones
+  ///
+  /// In en, this message translates to:
+  /// **'Purple'**
+  String get hslRangePurple;
+
+  /// HSL color range for magenta tones
+  ///
+  /// In en, this message translates to:
+  /// **'Magenta'**
+  String get hslRangeMagenta;
 
   /// Filter preset that changes nothing
   ///
@@ -5345,8 +5489,32 @@ abstract class AppLocalizations {
   /// Body of the empty trash confirmation dialog
   ///
   /// In en, this message translates to:
-  /// **'This removes all trashed items from the gallery. The files stay on your phone.'**
+  /// **'This will permanently delete all trashed items from your device storage. This action cannot be undone.'**
   String get trashEmptyConfirmBody;
+
+  /// Button to permanently delete an item from storage
+  ///
+  /// In en, this message translates to:
+  /// **'Delete permanently'**
+  String get trashDeletePermanentlyAction;
+
+  /// Title of permanent deletion confirmation dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Delete permanently?'**
+  String get trashDeletePermanentlyConfirmTitle;
+
+  /// Body of permanent deletion confirmation dialog
+  ///
+  /// In en, this message translates to:
+  /// **'This item will be permanently deleted from your device storage. This action cannot be undone.'**
+  String get trashDeletePermanentlyConfirmBody;
+
+  /// Snackbar shown after an item is permanently deleted
+  ///
+  /// In en, this message translates to:
+  /// **'Item permanently deleted'**
+  String get trashDeletedPermanentlySnackbar;
 
   /// Button that restores items from the trash
   ///
@@ -5635,6 +5803,462 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No EXIF data available'**
   String get compareNoExif;
+
+  /// Label of the Timeline tab in bottom navigation
+  ///
+  /// In en, this message translates to:
+  /// **'Timeline'**
+  String get tabTimeline;
+
+  /// Label of the Folders tab in bottom navigation
+  ///
+  /// In en, this message translates to:
+  /// **'Folders'**
+  String get tabFolders;
+
+  /// Label of the Albums tab in bottom navigation
+  ///
+  /// In en, this message translates to:
+  /// **'Albums'**
+  String get tabAlbums;
+
+  /// Title of the folders tab screen
+  ///
+  /// In en, this message translates to:
+  /// **'Folders'**
+  String get foldersTitle;
+
+  /// Shown when no device folders have been indexed
+  ///
+  /// In en, this message translates to:
+  /// **'No folders found'**
+  String get foldersEmpty;
+
+  /// Hint shown below the empty folders message
+  ///
+  /// In en, this message translates to:
+  /// **'Pull down to scan for photos and videos on your device.'**
+  String get foldersEmptyBody;
+
+  /// How many items a device folder contains
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{Empty} =1{1 item} other{{count} items}}'**
+  String folderItemCount(int count);
+
+  /// Title of the media privacy and EXIF scrubber tool
+  ///
+  /// In en, this message translates to:
+  /// **'Media Privacy & Scrubber'**
+  String get privacyScrubberTitle;
+
+  /// Subtitle explaining privacy scrubber capabilities
+  ///
+  /// In en, this message translates to:
+  /// **'Strip sensitive EXIF metadata and fuzz GPS coordinates before sharing'**
+  String get privacyScrubberSubtitle;
+
+  /// Overflow menu item for privacy scrubber
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy & EXIF Scrubber'**
+  String get privacyScrubberMenu;
+
+  /// Title of the privacy card in details sheet
+  ///
+  /// In en, this message translates to:
+  /// **'Media Privacy & EXIF'**
+  String get privacyCardTitle;
+
+  /// Body description in the details sheet privacy card
+  ///
+  /// In en, this message translates to:
+  /// **'Protect your privacy by stripping GPS location, camera serial numbers, and device identifiers before sharing.'**
+  String get privacyCardBody;
+
+  /// Button to open privacy scrubber sheet
+  ///
+  /// In en, this message translates to:
+  /// **'Open Privacy Controls'**
+  String get privacyOpenScrubber;
+
+  /// Tab label for EXIF stripper
+  ///
+  /// In en, this message translates to:
+  /// **'EXIF Stripper'**
+  String get privacyTabStripper;
+
+  /// Tab label for GPS geofence shifter
+  ///
+  /// In en, this message translates to:
+  /// **'GPS Geofence Shifter'**
+  String get privacyTabGeofence;
+
+  /// Primary action button to strip metadata and share
+  ///
+  /// In en, this message translates to:
+  /// **'One-Tap Strip & Share'**
+  String get privacyStripAndShareAction;
+
+  /// Button to save stripped copy to gallery
+  ///
+  /// In en, this message translates to:
+  /// **'Save Sanitized Copy to Gallery'**
+  String get privacySaveSanitizedAction;
+
+  /// Title of granular metadata options section
+  ///
+  /// In en, this message translates to:
+  /// **'Selective Metadata Scrubbing'**
+  String get privacyGranularTitle;
+
+  /// Action to reset toggles to strip all metadata
+  ///
+  /// In en, this message translates to:
+  /// **'Strip All'**
+  String get privacyStripAll;
+
+  /// Label indicating custom toggle selection
+  ///
+  /// In en, this message translates to:
+  /// **'Custom'**
+  String get privacyCustom;
+
+  /// Checkbox to strip location coordinates
+  ///
+  /// In en, this message translates to:
+  /// **'Strip GPS Coordinates & Altitude'**
+  String get privacyOptionGps;
+
+  /// Checkbox to strip hardware serial numbers
+  ///
+  /// In en, this message translates to:
+  /// **'Strip Camera & Lens Serial Numbers'**
+  String get privacyOptionSerials;
+
+  /// Checkbox to strip timestamps
+  ///
+  /// In en, this message translates to:
+  /// **'Strip Capture & Digitization Dates'**
+  String get privacyOptionTimestamps;
+
+  /// Checkbox to strip author and software tags
+  ///
+  /// In en, this message translates to:
+  /// **'Strip Author & Software Info'**
+  String get privacyOptionAuthor;
+
+  /// Error when image bytes cannot be read
+  ///
+  /// In en, this message translates to:
+  /// **'Unable to read image data for privacy processing'**
+  String get privacyErrorReadingFile;
+
+  /// Title of share sheet for sanitized media
+  ///
+  /// In en, this message translates to:
+  /// **'Share Sanitized Media'**
+  String get privacyShareTitle;
+
+  /// Error when share sheet launch fails
+  ///
+  /// In en, this message translates to:
+  /// **'Sharing could not be initiated'**
+  String get privacyShareFailed;
+
+  /// General error during sanitization
+  ///
+  /// In en, this message translates to:
+  /// **'An error occurred while sanitizing media'**
+  String get privacyProcessError;
+
+  /// Snackbar confirming sanitized copy saved
+  ///
+  /// In en, this message translates to:
+  /// **'Sanitized copy saved to gallery'**
+  String get privacySavedToGallery;
+
+  /// Error when saving sanitized copy fails
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to save sanitized image'**
+  String get privacySaveFailed;
+
+  /// Message when media has no GPS tags
+  ///
+  /// In en, this message translates to:
+  /// **'No embedded GPS location found in this photo'**
+  String get privacyNoLocation;
+
+  /// Label for geofence distance selector
+  ///
+  /// In en, this message translates to:
+  /// **'Shift Distance Offset'**
+  String get geofenceOffsetDistance;
+
+  /// Tooltip for reroll button
+  ///
+  /// In en, this message translates to:
+  /// **'Reroll random shift'**
+  String get geofenceReroll;
+
+  /// Chip for randomized 2-5 km offset
+  ///
+  /// In en, this message translates to:
+  /// **'Random (2–5 km)'**
+  String get geofenceRandomPreset;
+
+  /// Summary of shift displacement
+  ///
+  /// In en, this message translates to:
+  /// **'Shifted {summary}'**
+  String geofenceShiftSummary(String summary);
+
+  /// New fuzzed latitude and longitude coordinates
+  ///
+  /// In en, this message translates to:
+  /// **'Shifted to {lat}, {lon}'**
+  String geofenceFuzzedCoordinates(String lat, String lon);
+
+  /// Explanation of how location fuzzing protects privacy
+  ///
+  /// In en, this message translates to:
+  /// **'Adds an offset within 2–5 km to preserve general regional travel context while hiding exact residential street coordinates.'**
+  String get geofenceExplanation;
+
+  /// Share sheet title for fuzzed photo
+  ///
+  /// In en, this message translates to:
+  /// **'Share Geofuzzed Photo'**
+  String get geofenceShareTitle;
+
+  /// Action button to fuzz location and share
+  ///
+  /// In en, this message translates to:
+  /// **'Fuzz Location & Share'**
+  String get geofenceShareAction;
+
+  /// Action button to save fuzzed copy
+  ///
+  /// In en, this message translates to:
+  /// **'Save Geofuzzed Copy to Gallery'**
+  String get geofenceSaveAction;
+
+  /// Snackbar confirming fuzzed copy saved
+  ///
+  /// In en, this message translates to:
+  /// **'Geofuzzed copy saved to gallery'**
+  String get geofenceSavedToGallery;
+
+  /// Header when media has no GPS coordinates
+  ///
+  /// In en, this message translates to:
+  /// **'No Location Found'**
+  String get geofenceNoCoordinates;
+
+  /// Explanation when photo has no GPS metadata
+  ///
+  /// In en, this message translates to:
+  /// **'This media item does not have embedded GPS coordinates to shift.'**
+  String get geofenceNoCoordinatesBody;
+
+  /// Audit badge when sensitive EXIF tags are found
+  ///
+  /// In en, this message translates to:
+  /// **'Sensitive Metadata Detected'**
+  String get privacyAuditSensitiveDetected;
+
+  /// Audit badge when no sensitive EXIF tags are found
+  ///
+  /// In en, this message translates to:
+  /// **'No Sensitive Metadata Detected'**
+  String get privacyAuditClean;
+
+  /// Audit details list
+  ///
+  /// In en, this message translates to:
+  /// **'Contains {gps} {camera}'**
+  String privacyAuditSensitiveDetails(String gps, String camera);
+
+  /// Label indicating GPS presence in audit
+  ///
+  /// In en, this message translates to:
+  /// **'GPS Coordinates'**
+  String get privacyAuditGps;
+
+  /// Label indicating camera identifiers in audit
+  ///
+  /// In en, this message translates to:
+  /// **'Device Identifiers'**
+  String get privacyAuditCamera;
+
+  /// Description for clean metadata audit
+  ///
+  /// In en, this message translates to:
+  /// **'This file does not contain embedded location or camera serial identifiers.'**
+  String get privacyAuditCleanDetails;
+
+  /// Title of forensic inspector sheet
+  ///
+  /// In en, this message translates to:
+  /// **'Forensic Lens & Sensor Inspector'**
+  String get forensicInspectorTitle;
+
+  /// Subtitle of forensic inspector
+  ///
+  /// In en, this message translates to:
+  /// **'Deep technical optical and hardware forensic insights'**
+  String get forensicInspectorSubtitle;
+
+  /// Button to launch forensic inspector
+  ///
+  /// In en, this message translates to:
+  /// **'Inspect Lens & Sensor Forensics'**
+  String get forensicInspectorButton;
+
+  /// Quick summary of forensic metrics
+  ///
+  /// In en, this message translates to:
+  /// **'Sensor crop factor, 35mm equivalent, shutter actuation, exposure bias'**
+  String get forensicInspectorQuickHint;
+
+  /// Message when no forensic EXIF tags are present
+  ///
+  /// In en, this message translates to:
+  /// **'No forensic lens or sensor metadata found in this item.'**
+  String get forensicNoData;
+
+  /// Card header for sensor and optics
+  ///
+  /// In en, this message translates to:
+  /// **'Sensor & Optical Characteristics'**
+  String get forensicSectionSensorOptics;
+
+  /// Card header for shutter and color
+  ///
+  /// In en, this message translates to:
+  /// **'Mechanical Actuations & Color Space'**
+  String get forensicSectionMechanicsColor;
+
+  /// Card header for serials and hardware
+  ///
+  /// In en, this message translates to:
+  /// **'Hardware & Lens Serial Identity'**
+  String get forensicSectionHardwareIdentity;
+
+  /// Label for sensor format classification
+  ///
+  /// In en, this message translates to:
+  /// **'Sensor Format'**
+  String get forensicSensorFormat;
+
+  /// Label for sensor crop factor
+  ///
+  /// In en, this message translates to:
+  /// **'Crop Factor'**
+  String get forensicCropFactor;
+
+  /// Label for 35mm equivalent focal length
+  ///
+  /// In en, this message translates to:
+  /// **'35mm Equivalent'**
+  String get forensicFocal35mm;
+
+  /// Label for lens physical focal length
+  ///
+  /// In en, this message translates to:
+  /// **'Physical Focal Length'**
+  String get forensicPhysicalFocalLength;
+
+  /// Label for calculated hyperfocal distance
+  ///
+  /// In en, this message translates to:
+  /// **'Hyperfocal Distance'**
+  String get forensicHyperfocalDistance;
+
+  /// Label for exposure compensation EV
+  ///
+  /// In en, this message translates to:
+  /// **'Exposure Bias (EV)'**
+  String get forensicExposureBias;
+
+  /// Label for shutter actuation count
+  ///
+  /// In en, this message translates to:
+  /// **'Shutter Releases'**
+  String get forensicShutterActuations;
+
+  /// Notice when shutter count is absent
+  ///
+  /// In en, this message translates to:
+  /// **'Electronic shutter / Not reported'**
+  String get forensicShutterNotReported;
+
+  /// Label for color space profile
+  ///
+  /// In en, this message translates to:
+  /// **'Color Space / Profile'**
+  String get forensicColorProfile;
+
+  /// Label for exposure program
+  ///
+  /// In en, this message translates to:
+  /// **'Exposure Program'**
+  String get forensicExposureProgram;
+
+  /// Label for metering mode
+  ///
+  /// In en, this message translates to:
+  /// **'Metering Mode'**
+  String get forensicMeteringMode;
+
+  /// Label for sensor sensing method
+  ///
+  /// In en, this message translates to:
+  /// **'Sensing Method'**
+  String get forensicSensingMethod;
+
+  /// Label for scene capture type
+  ///
+  /// In en, this message translates to:
+  /// **'Scene Capture Type'**
+  String get forensicSceneCaptureType;
+
+  /// Label for flash details
+  ///
+  /// In en, this message translates to:
+  /// **'Flash & Strobe Status'**
+  String get forensicFlashStatus;
+
+  /// Label for camera body serial number
+  ///
+  /// In en, this message translates to:
+  /// **'Camera Serial Number'**
+  String get forensicCameraSerial;
+
+  /// Label for lens model
+  ///
+  /// In en, this message translates to:
+  /// **'Lens Model'**
+  String get forensicLensModel;
+
+  /// Label for lens specification
+  ///
+  /// In en, this message translates to:
+  /// **'Lens Specification'**
+  String get forensicLensSpecification;
+
+  /// Label for lens serial number
+  ///
+  /// In en, this message translates to:
+  /// **'Lens Serial Number'**
+  String get forensicLensSerial;
+
+  /// Notice when hardware serial is not embedded
+  ///
+  /// In en, this message translates to:
+  /// **'Not embedded in headers'**
+  String get forensicSerialNotEmbedded;
 }
 
 class _AppLocalizationsDelegate

@@ -7,6 +7,8 @@ import 'package:in_sreerajp_imgvidgal/models/media_item.dart';
 import 'package:in_sreerajp_imgvidgal/providers/viewer_providers.dart';
 import 'package:intl/intl.dart';
 import 'package:in_sreerajp_imgvidgal/widgets/notes/notes_preview_tile.dart';
+import 'package:in_sreerajp_imgvidgal/widgets/privacy/forensic_inspector_sheet.dart';
+import 'package:in_sreerajp_imgvidgal/widgets/privacy/media_privacy_sheet.dart';
 
 /// Formats a byte count as KB, MB, or GB.
 ///
@@ -113,6 +115,71 @@ class MediaDetailsSheet extends ConsumerWidget {
             ...rows,
             const Divider(height: 24),
             NotesPreviewTile(mediaId: item.id),
+            if (item.isImage) ...[
+              const SizedBox(height: 16),
+              Card(
+                elevation: 0,
+                color: theme.colorScheme.surfaceContainerLow,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  side: BorderSide(
+                    color: theme.colorScheme.outlineVariant.withValues(
+                      alpha: 0.5,
+                    ),
+                  ),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(14),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.shield_outlined,
+                            size: 20,
+                            color: theme.colorScheme.primary,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            l10n.privacyCardTitle,
+                            style: theme.textTheme.titleSmall?.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: theme.colorScheme.primary,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        l10n.privacyCardBody,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: theme.colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: FilledButton.tonalIcon(
+                              onPressed: () {
+                                Navigator.pop(context);
+                                MediaPrivacySheet.show(context, item);
+                              },
+                              icon: const Icon(
+                                Icons.cleaning_services_outlined,
+                                size: 18,
+                              ),
+                              label: Text(l10n.privacyOpenScrubber),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
             const SizedBox(height: 20),
             Text(l10n.detailsCameraSection, style: theme.textTheme.titleMedium),
             const SizedBox(height: 8),
@@ -127,6 +194,21 @@ class MediaDetailsSheet extends ConsumerWidget {
               ),
               data: (data) => _ExifRows(exif: data),
             ),
+            if (item.isImage)
+              Padding(
+                padding: const EdgeInsets.only(top: 12),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton.icon(
+                    onPressed: () {
+                      Navigator.pop(context);
+                      ForensicInspectorSheet.show(context, item);
+                    },
+                    icon: const Icon(Icons.biotech_outlined),
+                    label: Text(l10n.forensicInspectorButton),
+                  ),
+                ),
+              ),
           ],
         );
       },

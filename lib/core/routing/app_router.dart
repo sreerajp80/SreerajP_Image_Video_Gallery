@@ -4,6 +4,7 @@ import 'package:in_sreerajp_imgvidgal/screens/albums/album_reorder_screen.dart';
 import 'package:in_sreerajp_imgvidgal/screens/albums/albums_screen.dart';
 import 'package:in_sreerajp_imgvidgal/screens/backup/backup_screen.dart';
 import 'package:in_sreerajp_imgvidgal/screens/albums/smart_album_screen.dart';
+import 'package:in_sreerajp_imgvidgal/screens/home/home_shell_screen.dart';
 import 'package:in_sreerajp_imgvidgal/screens/cleaner/duplicate_cleaner_screen.dart';
 import 'package:in_sreerajp_imgvidgal/screens/cleaner/duplicate_compare_screen.dart';
 import 'package:in_sreerajp_imgvidgal/screens/compare/photo_compare_screen.dart';
@@ -27,7 +28,6 @@ import 'package:in_sreerajp_imgvidgal/screens/scan/image_scan_screen.dart';
 import 'package:in_sreerajp_imgvidgal/screens/search/search_screen.dart';
 import 'package:in_sreerajp_imgvidgal/screens/tags/tags_screen.dart';
 import 'package:in_sreerajp_imgvidgal/screens/viewer/media_viewer_screen.dart';
-import 'package:in_sreerajp_imgvidgal/screens/timeline/timeline_screen.dart';
 import 'package:in_sreerajp_imgvidgal/screens/vault/vault_gate_screen.dart';
 import 'package:in_sreerajp_imgvidgal/screens/vault/vault_settings_screen.dart';
 import 'package:in_sreerajp_imgvidgal/screens/vault/vault_viewer_screen.dart';
@@ -198,7 +198,7 @@ final GoRouter appRouter = GoRouter(
   routes: <RouteBase>[
     GoRoute(
       path: kRouteTimeline,
-      builder: (context, state) => const TimelineScreen(),
+      builder: (context, state) => const HomeShellScreen(),
       routes: <RouteBase>[
         GoRoute(
           path: 'settings',

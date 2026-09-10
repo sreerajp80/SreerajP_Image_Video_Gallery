@@ -5,6 +5,7 @@ import 'package:in_sreerajp_imgvidgal/models/editor/crop_transform.dart';
 import 'package:in_sreerajp_imgvidgal/models/editor/filter_preset.dart';
 import 'package:in_sreerajp_imgvidgal/models/editor/markup_layer.dart';
 import 'package:in_sreerajp_imgvidgal/models/editor/redaction_region.dart';
+import 'package:in_sreerajp_imgvidgal/models/editor/selective_mask.dart';
 import 'package:in_sreerajp_imgvidgal/models/editor/tone_adjustments.dart';
 import 'package:in_sreerajp_imgvidgal/models/editor/watermark_config.dart';
 
@@ -32,6 +33,9 @@ class EditSession {
   /// image after the crop and rotation have been applied.
   final List<RedactionRegion> redactions;
 
+  /// Selective gradient and radial masks with local adjustments.
+  final List<SelectiveMask> selectiveMasks;
+
   /// Doodles, shapes, and text, drawn in list order.
   final List<MarkupLayer> markup;
 
@@ -44,6 +48,7 @@ class EditSession {
     this.tone = ToneAdjustments.neutral,
     this.filter = FilterPreset.none,
     this.redactions = const <RedactionRegion>[],
+    this.selectiveMasks = const <SelectiveMask>[],
     this.markup = const <MarkupLayer>[],
     this.watermark = WatermarkConfig.none,
   });
@@ -60,6 +65,7 @@ class EditSession {
       !tone.isNeutral ||
       !filter.isNone ||
       redactions.isNotEmpty ||
+      selectiveMasks.isNotEmpty ||
       markup.isNotEmpty ||
       !watermark.isNone;
 
@@ -68,6 +74,7 @@ class EditSession {
   /// Used by the preview to decide whether it can reuse a cached decode.
   bool get hasPixelWork =>
       redactions.isNotEmpty ||
+      selectiveMasks.isNotEmpty ||
       !crop.isIdentity ||
       !tone.isNeutral ||
       !filter.isNone;
@@ -81,6 +88,7 @@ class EditSession {
     ToneAdjustments? tone,
     FilterPreset? filter,
     List<RedactionRegion>? redactions,
+    List<SelectiveMask>? selectiveMasks,
     List<MarkupLayer>? markup,
     WatermarkConfig? watermark,
   }) {
@@ -90,6 +98,7 @@ class EditSession {
       tone: tone ?? this.tone,
       filter: filter ?? this.filter,
       redactions: redactions ?? this.redactions,
+      selectiveMasks: selectiveMasks ?? this.selectiveMasks,
       markup: markup ?? this.markup,
       watermark: watermark ?? this.watermark,
     );
@@ -127,12 +136,31 @@ class EditSession {
         .toList(growable: false),
   );
 
+  /// Returns a copy with one more selective mask.
+  EditSession addMask(SelectiveMask mask) =>
+      copyWith(selectiveMasks: <SelectiveMask>[...selectiveMasks, mask]);
+
+  /// Returns a copy with the mask carrying [maskId] removed.
+  EditSession removeMask(String maskId) => copyWith(
+    selectiveMasks: selectiveMasks
+        .where((mask) => mask.id != maskId)
+        .toList(growable: false),
+  );
+
+  /// Returns a copy where the mask with the same id is swapped for [mask].
+  EditSession replaceMask(SelectiveMask mask) => copyWith(
+    selectiveMasks: selectiveMasks
+        .map((existing) => existing.id == mask.id ? mask : existing)
+        .toList(growable: false),
+  );
+
   Map<String, dynamic> toMap() => <String, dynamic>{
     'mediaId': mediaId,
     'crop': crop.toMap(),
     'tone': tone.toMap(),
     'filter': filter.toMap(),
     'redactions': redactions.map((r) => r.toMap()).toList(),
+    'selectiveMasks': selectiveMasks.map((m) => m.toMap()).toList(),
     'markup': markup.map((m) => m.toMap()).toList(),
     'watermark': watermark.toMap(),
   };
@@ -148,6 +176,7 @@ class EditSession {
     }
 
     final redactionsRaw = map['redactions'];
+    final masksRaw = map['selectiveMasks'];
     final markupRaw = map['markup'];
 
     return EditSession(
@@ -169,6 +198,12 @@ class EditSession {
                 )
                 .toList(growable: false)
           : const <RedactionRegion>[],
+      selectiveMasks: masksRaw is List
+          ? masksRaw
+                .whereType<Map>()
+                .map((e) => SelectiveMask.fromMap(Map<String, dynamic>.from(e)))
+                .toList(growable: false)
+          : const <SelectiveMask>[],
       markup: markupRaw is List
           ? markupRaw
                 .whereType<Map>()
@@ -208,6 +243,7 @@ class EditSession {
           tone == other.tone &&
           filter == other.filter &&
           listEquals(redactions, other.redactions) &&
+          listEquals(selectiveMasks, other.selectiveMasks) &&
           listEquals(markup, other.markup) &&
           watermark == other.watermark;
 
@@ -218,6 +254,7 @@ class EditSession {
     tone,
     filter,
     Object.hashAll(redactions),
+    Object.hashAll(selectiveMasks),
     Object.hashAll(markup),
     watermark,
   );

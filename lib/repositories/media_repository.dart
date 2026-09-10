@@ -119,6 +119,29 @@ class MediaRepository {
     return _mediaDao.deleteAllTrashed();
   }
 
+  /// Permanently deletes [items] from both the device storage and database.
+  ///
+  /// Returns true if deletion was confirmed and executed, false if cancelled.
+  Future<bool> deletePermanently(List<MediaItem> items) async {
+    if (items.isEmpty) return true;
+    final channel = _channel;
+    if (channel != null) {
+      final uris = items
+          .map((e) => e.uri)
+          .whereType<String>()
+          .where((u) => u.isNotEmpty)
+          .toList();
+      final paths = items
+          .map((e) => e.path)
+          .where((p) => p.isNotEmpty)
+          .toList();
+      final success = await channel.deleteMedia(uris: uris, paths: paths);
+      if (!success) return false;
+    }
+    await _mediaDao.deleteMediaItems(items.map((e) => e.id).toList());
+    return true;
+  }
+
   /// Number of items currently sitting in the trash.
   Future<int> getTrashCount() {
     return _mediaDao.getTrashCount();

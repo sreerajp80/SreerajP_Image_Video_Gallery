@@ -443,6 +443,10 @@
   "@editorToolTune": {
     "description": "Name of the light and colour tool"
   },
+  "editorToolMasks": "Masks",
+  "@editorToolMasks": {
+    "description": "Name of the selective gradient and radial masks tool"
+  },
   "editorToolFilters": "Filters",
   "@editorToolFilters": {
     "description": "Name of the filter preset tool"
@@ -590,6 +594,98 @@
   "curveHint": "Drag a point to shape the curve",
   "@curveHint": {
     "description": "Hint under the curve control"
+  },
+  "curveAddHint": "Tap to add a point, long-press to remove",
+  "@curveAddHint": {
+    "description": "Hint under the spline curve editor"
+  },
+  "maskShapeLinear": "Linear",
+  "@maskShapeLinear": {
+    "description": "Linear gradient mask shape option"
+  },
+  "maskShapeRadial": "Radial",
+  "@maskShapeRadial": {
+    "description": "Radial circular mask shape option"
+  },
+  "maskFeather": "Feather",
+  "@maskFeather": {
+    "description": "Label of the mask edge feathering slider"
+  },
+  "maskInvert": "Invert",
+  "@maskInvert": {
+    "description": "Toggle to invert the selective mask area"
+  },
+  "maskBlur": "Blur",
+  "@maskBlur": {
+    "description": "Label of the selective mask blur slider"
+  },
+  "maskAddLinear": "Add linear gradient",
+  "@maskAddLinear": {
+    "description": "Tooltip for adding a linear gradient mask"
+  },
+  "maskAddRadial": "Add radial mask",
+  "@maskAddRadial": {
+    "description": "Tooltip for adding a radial mask"
+  },
+  "maskRemove": "Remove mask",
+  "@maskRemove": {
+    "description": "Tooltip for removing a selective mask"
+  },
+  "maskEmpty": "Tap + to add a mask",
+  "@maskEmpty": {
+    "description": "Message displayed when no selective masks exist"
+  },
+  "hslTitle": "HSL Color Tuner",
+  "@hslTitle": {
+    "description": "Section header for the 8-channel HSL color tuner"
+  },
+  "hslHue": "Hue",
+  "@hslHue": {
+    "description": "Label for the HSL hue adjustment slider"
+  },
+  "hslSaturation": "Saturation",
+  "@hslSaturation": {
+    "description": "Label for the HSL saturation adjustment slider"
+  },
+  "hslLuminance": "Luminance",
+  "@hslLuminance": {
+    "description": "Label for the HSL luminance adjustment slider"
+  },
+  "hslReset": "Reset HSL",
+  "@hslReset": {
+    "description": "Button to reset HSL color adjustments to neutral"
+  },
+  "hslRangeRed": "Red",
+  "@hslRangeRed": {
+    "description": "HSL color range for red tones"
+  },
+  "hslRangeOrange": "Orange",
+  "@hslRangeOrange": {
+    "description": "HSL color range for orange tones"
+  },
+  "hslRangeYellow": "Yellow",
+  "@hslRangeYellow": {
+    "description": "HSL color range for yellow tones"
+  },
+  "hslRangeGreen": "Green",
+  "@hslRangeGreen": {
+    "description": "HSL color range for green tones"
+  },
+  "hslRangeCyan": "Cyan",
+  "@hslRangeCyan": {
+    "description": "HSL color range for cyan tones"
+  },
+  "hslRangeBlue": "Blue",
+  "@hslRangeBlue": {
+    "description": "HSL color range for blue tones"
+  },
+  "hslRangePurple": "Purple",
+  "@hslRangePurple": {
+    "description": "HSL color range for purple tones"
+  },
+  "hslRangeMagenta": "Magenta",
+  "@hslRangeMagenta": {
+    "description": "HSL color range for magenta tones"
   },
   "filterNone": "Original",
   "@filterNone": {
@@ -3932,9 +4028,25 @@
   "@trashEmptyConfirmTitle": {
     "description": "Title of the empty trash confirmation dialog"
   },
-  "trashEmptyConfirmBody": "This removes all trashed items from the gallery. The files stay on your phone.",
+  "trashEmptyConfirmBody": "This will permanently delete all trashed items from your device storage. This action cannot be undone.",
   "@trashEmptyConfirmBody": {
     "description": "Body of the empty trash confirmation dialog"
+  },
+  "trashDeletePermanentlyAction": "Delete permanently",
+  "@trashDeletePermanentlyAction": {
+    "description": "Button to permanently delete an item from storage"
+  },
+  "trashDeletePermanentlyConfirmTitle": "Delete permanently?",
+  "@trashDeletePermanentlyConfirmTitle": {
+    "description": "Title of permanent deletion confirmation dialog"
+  },
+  "trashDeletePermanentlyConfirmBody": "This item will be permanently deleted from your device storage. This action cannot be undone.",
+  "@trashDeletePermanentlyConfirmBody": {
+    "description": "Body of permanent deletion confirmation dialog"
+  },
+  "trashDeletedPermanentlySnackbar": "Item permanently deleted",
+  "@trashDeletedPermanentlySnackbar": {
+    "description": "Snackbar shown after an item is permanently deleted"
   },
   "trashRestoreAction": "Restore",
   "@trashRestoreAction": {
@@ -4132,5 +4244,335 @@
   "compareNoExif": "No EXIF data available",
   "@compareNoExif": {
     "description": "Message when no EXIF metadata exists for photo"
+  },
+  "tabTimeline": "Timeline",
+  "@tabTimeline": {
+    "description": "Label of the Timeline tab in bottom navigation"
+  },
+  "tabFolders": "Folders",
+  "@tabFolders": {
+    "description": "Label of the Folders tab in bottom navigation"
+  },
+  "tabAlbums": "Albums",
+  "@tabAlbums": {
+    "description": "Label of the Albums tab in bottom navigation"
+  },
+  "foldersTitle": "Folders",
+  "@foldersTitle": {
+    "description": "Title of the folders tab screen"
+  },
+  "foldersEmpty": "No folders found",
+  "@foldersEmpty": {
+    "description": "Shown when no device folders have been indexed"
+  },
+  "foldersEmptyBody": "Pull down to scan for photos and videos on your device.",
+  "@foldersEmptyBody": {
+    "description": "Hint shown below the empty folders message"
+  },
+  "folderItemCount": "{count, plural, =0{Empty} =1{1 item} other{{count} items}}",
+  "@folderItemCount": {
+    "description": "How many items a device folder contains",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "privacyScrubberTitle": "Media Privacy & Scrubber",
+  "@privacyScrubberTitle": {
+    "description": "Title of the media privacy and EXIF scrubber tool"
+  },
+  "privacyScrubberSubtitle": "Strip sensitive EXIF metadata and fuzz GPS coordinates before sharing",
+  "@privacyScrubberSubtitle": {
+    "description": "Subtitle explaining privacy scrubber capabilities"
+  },
+  "privacyScrubberMenu": "Privacy & EXIF Scrubber",
+  "@privacyScrubberMenu": {
+    "description": "Overflow menu item for privacy scrubber"
+  },
+  "privacyCardTitle": "Media Privacy & EXIF",
+  "@privacyCardTitle": {
+    "description": "Title of the privacy card in details sheet"
+  },
+  "privacyCardBody": "Protect your privacy by stripping GPS location, camera serial numbers, and device identifiers before sharing.",
+  "@privacyCardBody": {
+    "description": "Body description in the details sheet privacy card"
+  },
+  "privacyOpenScrubber": "Open Privacy Controls",
+  "@privacyOpenScrubber": {
+    "description": "Button to open privacy scrubber sheet"
+  },
+  "privacyTabStripper": "EXIF Stripper",
+  "@privacyTabStripper": {
+    "description": "Tab label for EXIF stripper"
+  },
+  "privacyTabGeofence": "GPS Geofence Shifter",
+  "@privacyTabGeofence": {
+    "description": "Tab label for GPS geofence shifter"
+  },
+  "privacyStripAndShareAction": "One-Tap Strip & Share",
+  "@privacyStripAndShareAction": {
+    "description": "Primary action button to strip metadata and share"
+  },
+  "privacySaveSanitizedAction": "Save Sanitized Copy to Gallery",
+  "@privacySaveSanitizedAction": {
+    "description": "Button to save stripped copy to gallery"
+  },
+  "privacyGranularTitle": "Selective Metadata Scrubbing",
+  "@privacyGranularTitle": {
+    "description": "Title of granular metadata options section"
+  },
+  "privacyStripAll": "Strip All",
+  "@privacyStripAll": {
+    "description": "Action to reset toggles to strip all metadata"
+  },
+  "privacyCustom": "Custom",
+  "@privacyCustom": {
+    "description": "Label indicating custom toggle selection"
+  },
+  "privacyOptionGps": "Strip GPS Coordinates & Altitude",
+  "@privacyOptionGps": {
+    "description": "Checkbox to strip location coordinates"
+  },
+  "privacyOptionSerials": "Strip Camera & Lens Serial Numbers",
+  "@privacyOptionSerials": {
+    "description": "Checkbox to strip hardware serial numbers"
+  },
+  "privacyOptionTimestamps": "Strip Capture & Digitization Dates",
+  "@privacyOptionTimestamps": {
+    "description": "Checkbox to strip timestamps"
+  },
+  "privacyOptionAuthor": "Strip Author & Software Info",
+  "@privacyOptionAuthor": {
+    "description": "Checkbox to strip author and software tags"
+  },
+  "privacyErrorReadingFile": "Unable to read image data for privacy processing",
+  "@privacyErrorReadingFile": {
+    "description": "Error when image bytes cannot be read"
+  },
+  "privacyShareTitle": "Share Sanitized Media",
+  "@privacyShareTitle": {
+    "description": "Title of share sheet for sanitized media"
+  },
+  "privacyShareFailed": "Sharing could not be initiated",
+  "@privacyShareFailed": {
+    "description": "Error when share sheet launch fails"
+  },
+  "privacyProcessError": "An error occurred while sanitizing media",
+  "@privacyProcessError": {
+    "description": "General error during sanitization"
+  },
+  "privacySavedToGallery": "Sanitized copy saved to gallery",
+  "@privacySavedToGallery": {
+    "description": "Snackbar confirming sanitized copy saved"
+  },
+  "privacySaveFailed": "Failed to save sanitized image",
+  "@privacySaveFailed": {
+    "description": "Error when saving sanitized copy fails"
+  },
+  "privacyNoLocation": "No embedded GPS location found in this photo",
+  "@privacyNoLocation": {
+    "description": "Message when media has no GPS tags"
+  },
+  "geofenceOffsetDistance": "Shift Distance Offset",
+  "@geofenceOffsetDistance": {
+    "description": "Label for geofence distance selector"
+  },
+  "geofenceReroll": "Reroll random shift",
+  "@geofenceReroll": {
+    "description": "Tooltip for reroll button"
+  },
+  "geofenceRandomPreset": "Random (2–5 km)",
+  "@geofenceRandomPreset": {
+    "description": "Chip for randomized 2-5 km offset"
+  },
+  "geofenceShiftSummary": "Shifted {summary}",
+  "@geofenceShiftSummary": {
+    "description": "Summary of shift displacement",
+    "placeholders": {
+      "summary": {
+        "type": "String"
+      }
+    }
+  },
+  "geofenceFuzzedCoordinates": "Shifted to {lat}, {lon}",
+  "@geofenceFuzzedCoordinates": {
+    "description": "New fuzzed latitude and longitude coordinates",
+    "placeholders": {
+      "lat": {
+        "type": "String"
+      },
+      "lon": {
+        "type": "String"
+      }
+    }
+  },
+  "geofenceExplanation": "Adds an offset within 2–5 km to preserve general regional travel context while hiding exact residential street coordinates.",
+  "@geofenceExplanation": {
+    "description": "Explanation of how location fuzzing protects privacy"
+  },
+  "geofenceShareTitle": "Share Geofuzzed Photo",
+  "@geofenceShareTitle": {
+    "description": "Share sheet title for fuzzed photo"
+  },
+  "geofenceShareAction": "Fuzz Location & Share",
+  "@geofenceShareAction": {
+    "description": "Action button to fuzz location and share"
+  },
+  "geofenceSaveAction": "Save Geofuzzed Copy to Gallery",
+  "@geofenceSaveAction": {
+    "description": "Action button to save fuzzed copy"
+  },
+  "geofenceSavedToGallery": "Geofuzzed copy saved to gallery",
+  "@geofenceSavedToGallery": {
+    "description": "Snackbar confirming fuzzed copy saved"
+  },
+  "geofenceNoCoordinates": "No Location Found",
+  "@geofenceNoCoordinates": {
+    "description": "Header when media has no GPS coordinates"
+  },
+  "geofenceNoCoordinatesBody": "This media item does not have embedded GPS coordinates to shift.",
+  "@geofenceNoCoordinatesBody": {
+    "description": "Explanation when photo has no GPS metadata"
+  },
+  "privacyAuditSensitiveDetected": "Sensitive Metadata Detected",
+  "@privacyAuditSensitiveDetected": {
+    "description": "Audit badge when sensitive EXIF tags are found"
+  },
+  "privacyAuditClean": "No Sensitive Metadata Detected",
+  "@privacyAuditClean": {
+    "description": "Audit badge when no sensitive EXIF tags are found"
+  },
+  "privacyAuditSensitiveDetails": "Contains {gps} {camera}",
+  "@privacyAuditSensitiveDetails": {
+    "description": "Audit details list",
+    "placeholders": {
+      "gps": {
+        "type": "String"
+      },
+      "camera": {
+        "type": "String"
+      }
+    }
+  },
+  "privacyAuditGps": "GPS Coordinates",
+  "@privacyAuditGps": {
+    "description": "Label indicating GPS presence in audit"
+  },
+  "privacyAuditCamera": "Device Identifiers",
+  "@privacyAuditCamera": {
+    "description": "Label indicating camera identifiers in audit"
+  },
+  "privacyAuditCleanDetails": "This file does not contain embedded location or camera serial identifiers.",
+  "@privacyAuditCleanDetails": {
+    "description": "Description for clean metadata audit"
+  },
+  "forensicInspectorTitle": "Forensic Lens & Sensor Inspector",
+  "@forensicInspectorTitle": {
+    "description": "Title of forensic inspector sheet"
+  },
+  "forensicInspectorSubtitle": "Deep technical optical and hardware forensic insights",
+  "@forensicInspectorSubtitle": {
+    "description": "Subtitle of forensic inspector"
+  },
+  "forensicInspectorButton": "Inspect Lens & Sensor Forensics",
+  "@forensicInspectorButton": {
+    "description": "Button to launch forensic inspector"
+  },
+  "forensicInspectorQuickHint": "Sensor crop factor, 35mm equivalent, shutter actuation, exposure bias",
+  "@forensicInspectorQuickHint": {
+    "description": "Quick summary of forensic metrics"
+  },
+  "forensicNoData": "No forensic lens or sensor metadata found in this item.",
+  "@forensicNoData": {
+    "description": "Message when no forensic EXIF tags are present"
+  },
+  "forensicSectionSensorOptics": "Sensor & Optical Characteristics",
+  "@forensicSectionSensorOptics": {
+    "description": "Card header for sensor and optics"
+  },
+  "forensicSectionMechanicsColor": "Mechanical Actuations & Color Space",
+  "@forensicSectionMechanicsColor": {
+    "description": "Card header for shutter and color"
+  },
+  "forensicSectionHardwareIdentity": "Hardware & Lens Serial Identity",
+  "@forensicSectionHardwareIdentity": {
+    "description": "Card header for serials and hardware"
+  },
+  "forensicSensorFormat": "Sensor Format",
+  "@forensicSensorFormat": {
+    "description": "Label for sensor format classification"
+  },
+  "forensicCropFactor": "Crop Factor",
+  "@forensicCropFactor": {
+    "description": "Label for sensor crop factor"
+  },
+  "forensicFocal35mm": "35mm Equivalent",
+  "@forensicFocal35mm": {
+    "description": "Label for 35mm equivalent focal length"
+  },
+  "forensicPhysicalFocalLength": "Physical Focal Length",
+  "@forensicPhysicalFocalLength": {
+    "description": "Label for lens physical focal length"
+  },
+  "forensicHyperfocalDistance": "Hyperfocal Distance",
+  "@forensicHyperfocalDistance": {
+    "description": "Label for calculated hyperfocal distance"
+  },
+  "forensicExposureBias": "Exposure Bias (EV)",
+  "@forensicExposureBias": {
+    "description": "Label for exposure compensation EV"
+  },
+  "forensicShutterActuations": "Shutter Releases",
+  "@forensicShutterActuations": {
+    "description": "Label for shutter actuation count"
+  },
+  "forensicShutterNotReported": "Electronic shutter / Not reported",
+  "@forensicShutterNotReported": {
+    "description": "Notice when shutter count is absent"
+  },
+  "forensicColorProfile": "Color Space / Profile",
+  "@forensicColorProfile": {
+    "description": "Label for color space profile"
+  },
+  "forensicExposureProgram": "Exposure Program",
+  "@forensicExposureProgram": {
+    "description": "Label for exposure program"
+  },
+  "forensicMeteringMode": "Metering Mode",
+  "@forensicMeteringMode": {
+    "description": "Label for metering mode"
+  },
+  "forensicSensingMethod": "Sensing Method",
+  "@forensicSensingMethod": {
+    "description": "Label for sensor sensing method"
+  },
+  "forensicSceneCaptureType": "Scene Capture Type",
+  "@forensicSceneCaptureType": {
+    "description": "Label for scene capture type"
+  },
+  "forensicFlashStatus": "Flash & Strobe Status",
+  "@forensicFlashStatus": {
+    "description": "Label for flash details"
+  },
+  "forensicCameraSerial": "Camera Serial Number",
+  "@forensicCameraSerial": {
+    "description": "Label for camera body serial number"
+  },
+  "forensicLensModel": "Lens Model",
+  "@forensicLensModel": {
+    "description": "Label for lens model"
+  },
+  "forensicLensSpecification": "Lens Specification",
+  "@forensicLensSpecification": {
+    "description": "Label for lens specification"
+  },
+  "forensicLensSerial": "Lens Serial Number",
+  "@forensicLensSerial": {
+    "description": "Label for lens serial number"
+  },
+  "forensicSerialNotEmbedded": "Not embedded in headers",
+  "@forensicSerialNotEmbedded": {
+    "description": "Notice when hardware serial is not embedded"
   }
 }

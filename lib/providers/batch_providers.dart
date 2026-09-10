@@ -8,6 +8,7 @@ import 'package:in_sreerajp_imgvidgal/providers/convert_providers.dart';
 import 'package:in_sreerajp_imgvidgal/providers/media_providers.dart';
 import 'package:in_sreerajp_imgvidgal/providers/selection_providers.dart';
 import 'package:in_sreerajp_imgvidgal/providers/tag_providers.dart';
+import 'package:in_sreerajp_imgvidgal/providers/trash_providers.dart';
 import 'package:in_sreerajp_imgvidgal/providers/vault_providers.dart';
 import 'package:in_sreerajp_imgvidgal/services/batch/batch_action_rules.dart';
 import 'package:in_sreerajp_imgvidgal/services/batch/batch_runner_service.dart';
@@ -125,10 +126,11 @@ class BatchController extends StateNotifier<AsyncValue<BatchOutcome?>> {
 
       case BatchAction.favourite:
       case BatchAction.unfavourite:
+        _ref.invalidate(mediaItemsProvider);
+
       case BatchAction.moveToTrash:
-        // The media list has no revision dial of its own; the viewer
-        // invalidates it directly after a favourite, and this follows suit
-        // rather than adding a second mechanism beside it.
+        _bump(trashRevisionProvider);
+        _bump(albumRevisionProvider);
         _ref.invalidate(mediaItemsProvider);
 
       case BatchAction.convert:

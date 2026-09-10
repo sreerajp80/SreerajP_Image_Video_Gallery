@@ -24,6 +24,7 @@ class EditorToolBar extends StatelessWidget {
     final entries = <(EditorTool, IconData, String)>[
       (EditorTool.crop, Icons.crop_rotate, l10n.editorToolCrop),
       (EditorTool.tune, Icons.tune, l10n.editorToolTune),
+      (EditorTool.masks, Icons.gradient, l10n.editorToolMasks),
       (
         EditorTool.filters,
         Icons.filter_vintage_outlined,

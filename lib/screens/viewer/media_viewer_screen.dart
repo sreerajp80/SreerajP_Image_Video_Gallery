@@ -12,7 +12,9 @@ import 'package:in_sreerajp_imgvidgal/models/media_item.dart';
 import 'package:in_sreerajp_imgvidgal/models/viewer_transform.dart';
 import 'package:in_sreerajp_imgvidgal/providers/media_intent_providers.dart';
 import 'package:in_sreerajp_imgvidgal/providers/media_providers.dart';
+import 'package:in_sreerajp_imgvidgal/providers/album_providers.dart';
 import 'package:in_sreerajp_imgvidgal/providers/timeline_providers.dart';
+import 'package:in_sreerajp_imgvidgal/providers/trash_providers.dart';
 import 'package:in_sreerajp_imgvidgal/providers/vault_providers.dart';
 import 'package:in_sreerajp_imgvidgal/providers/viewer_providers.dart';
 import 'package:in_sreerajp_imgvidgal/widgets/viewer/interactive_image_view.dart';
@@ -21,6 +23,7 @@ import 'package:in_sreerajp_imgvidgal/widgets/compare/photo_selector_sheet.dart'
 import 'package:in_sreerajp_imgvidgal/widgets/tags/media_tag_sheet.dart';
 import 'package:in_sreerajp_imgvidgal/widgets/viewer/media_details_sheet.dart';
 import 'package:in_sreerajp_imgvidgal/widgets/viewer/video_player_view.dart';
+import 'package:in_sreerajp_imgvidgal/widgets/privacy/media_privacy_sheet.dart';
 
 /// The fullscreen viewer, opened by tapping a tile in the timeline.
 ///
@@ -49,6 +52,12 @@ class _MediaViewerScreenState extends ConsumerState<MediaViewerScreen> {
 
   /// Zoom, rotation, and dismiss state of the page in view.
   ViewerTransform _transform = ViewerTransform.initial;
+
+  /// How many fingers are currently touching the screen.
+  ///
+  /// Dismiss is only allowed with exactly one pointer. A second finger means
+  /// the user is pinching to zoom, not swiping to close.
+  int _activePointers = 0;
 
   /// Where the current dismiss drag started, and when it last moved.
   Offset? _dismissStart;
@@ -172,6 +181,8 @@ class _MediaViewerScreenState extends ConsumerState<MediaViewerScreen> {
 
     final repo = ref.read(mediaRepositoryProvider);
     await repo.setTrash(item.id, true);
+    ref.read(trashRevisionProvider.notifier).state++;
+    ref.read(albumRevisionProvider.notifier).state++;
     ref.invalidate(mediaItemsProvider);
 
     if (!mounted) return;
@@ -182,6 +193,8 @@ class _MediaViewerScreenState extends ConsumerState<MediaViewerScreen> {
           label: l10n.viewerTrashUndo,
           onPressed: () async {
             await repo.setTrash(item.id, false);
+            ref.read(trashRevisionProvider.notifier).state++;
+            ref.read(albumRevisionProvider.notifier).state++;
             ref.invalidate(mediaItemsProvider);
           },
         ),
@@ -190,6 +203,62 @@ class _MediaViewerScreenState extends ConsumerState<MediaViewerScreen> {
 
     if (Navigator.of(context).canPop()) {
       Navigator.of(context).pop();
+    }
+  }
+
+  /// Restores a trashed item back to the main library.
+  Future<void> _restoreFromTrash(MediaItem item) async {
+    final l10n = AppLocalizations.of(context)!;
+    await ref.read(trashControllerProvider.notifier).restoreItem(item.id);
+    if (!mounted) return;
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(l10n.trashRestoredSnackbar)));
+    if (Navigator.of(context).canPop()) {
+      Navigator.of(context).pop();
+    }
+  }
+
+  /// Permanently removes this trashed item from device storage and the gallery.
+  Future<void> _deletePermanently(MediaItem item) async {
+    final l10n = AppLocalizations.of(context)!;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        icon: Icon(
+          Icons.delete_forever,
+          color: Theme.of(dialogContext).colorScheme.error,
+        ),
+        title: Text(l10n.trashDeletePermanentlyConfirmTitle),
+        content: Text(l10n.trashDeletePermanentlyConfirmBody),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: Text(l10n.settingsCancel),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(
+              backgroundColor: Theme.of(dialogContext).colorScheme.error,
+            ),
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: Text(l10n.trashDeletePermanentlyAction),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+
+    final success = await ref
+        .read(trashControllerProvider.notifier)
+        .deletePermanently(item);
+    if (!mounted) return;
+    if (success) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.trashDeletedPermanentlySnackbar)),
+      );
+      if (Navigator.of(context).canPop()) {
+        Navigator.of(context).pop();
+      }
     }
   }
 
@@ -337,6 +406,19 @@ class _MediaViewerScreenState extends ConsumerState<MediaViewerScreen> {
   bool _canDismiss(MediaItem item) => item.isImage && _transform.isAtRest;
 
   void _onPointerDown(PointerDownEvent event, MediaItem item) {
+    _activePointers++;
+
+    // A second finger landing while a dismiss is in progress means the user
+    // switched to a pinch-to-zoom. Cancel the dismiss immediately so the
+    // page snaps back and InteractiveViewer can take over cleanly.
+    if (_activePointers >= 2) {
+      if (_transform.isDismissing) {
+        setState(() => _transform = _transform.copyWith(dismissOffset: 0));
+      }
+      _dismissStart = null;
+      return;
+    }
+
     if (!_canDismiss(item)) return;
     _dismissStart = event.position;
     _lastMoveTime = event.timeStamp;
@@ -345,6 +427,9 @@ class _MediaViewerScreenState extends ConsumerState<MediaViewerScreen> {
   }
 
   void _onPointerMove(PointerMoveEvent event, MediaItem item) {
+    // More than one finger on the screen means a pinch-to-zoom, not a dismiss.
+    if (_activePointers >= 2) return;
+
     final start = _dismissStart;
     if (start == null || !_canDismiss(item)) return;
 
@@ -373,6 +458,8 @@ class _MediaViewerScreenState extends ConsumerState<MediaViewerScreen> {
   }
 
   void _onPointerUp(PointerUpEvent event, MediaItem item) {
+    _activePointers = (_activePointers - 1).clamp(0, 99);
+
     final service = ref.read(viewerTransformServiceProvider);
     final shouldClose = service.shouldDismissOnRelease(
       dismissOffset: _transform.dismissOffset,
@@ -391,6 +478,13 @@ class _MediaViewerScreenState extends ConsumerState<MediaViewerScreen> {
       }
       return;
     }
+    if (_transform.isDismissing) {
+      setState(() => _transform = _transform.copyWith(dismissOffset: 0));
+    }
+  }
+
+  void _onPointerCancel(PointerCancelEvent event, MediaItem item) {
+    _activePointers = (_activePointers - 1).clamp(0, 99);
     if (_transform.isDismissing) {
       setState(() => _transform = _transform.copyWith(dismissOffset: 0));
     }
@@ -468,6 +562,7 @@ class _MediaViewerScreenState extends ConsumerState<MediaViewerScreen> {
         onPointerDown: (event) => _onPointerDown(event, currentItem),
         onPointerMove: (event) => _onPointerMove(event, currentItem),
         onPointerUp: (event) => _onPointerUp(event, currentItem),
+        onPointerCancel: (event) => _onPointerCancel(event, currentItem),
         child: Stack(
           children: [
             Transform.translate(
@@ -541,11 +636,13 @@ class _MediaViewerScreenState extends ConsumerState<MediaViewerScreen> {
                         context.push(extractedTextPath(currentItem.id)),
                     onOpenNotes: () =>
                         context.push(mediaNotesPath(currentItem.id)),
+                    onPrivacyScrubber: () =>
+                        MediaPrivacySheet.show(context, currentItem),
                   ),
                 ),
               ),
             ),
-            if (currentItem.isImage)
+            if (currentItem.isImage || currentItem.isTrash)
               AnimatedPositioned(
                 duration: const Duration(milliseconds: 200),
                 curve: Curves.easeInOut,
@@ -566,6 +663,9 @@ class _MediaViewerScreenState extends ConsumerState<MediaViewerScreen> {
                       onShowDetails: () =>
                           MediaDetailsSheet.show(context, currentItem),
                       onMoveToTrash: () => _moveToTrash(currentItem),
+                      onRestore: () => _restoreFromTrash(currentItem),
+                      onDeletePermanently: () =>
+                          _deletePermanently(currentItem),
                     ),
                   ),
                 ),
@@ -593,6 +693,7 @@ class _ViewerAppBar extends StatelessWidget {
   final VoidCallback onScanCodes;
   final VoidCallback onExtractText;
   final VoidCallback onOpenNotes;
+  final VoidCallback onPrivacyScrubber;
 
   const _ViewerAppBar({
     required this.item,
@@ -609,6 +710,7 @@ class _ViewerAppBar extends StatelessWidget {
     required this.onScanCodes,
     required this.onExtractText,
     required this.onOpenNotes,
+    required this.onPrivacyScrubber,
   });
 
   @override
@@ -663,158 +765,187 @@ class _ViewerAppBar extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 4),
-                _ViewerCircleButton(
-                  icon: item.isFavorite ? Icons.star : Icons.star_border,
-                  color: item.isFavorite ? Colors.amber : Colors.white,
-                  tooltip: item.isFavorite
-                      ? l10n.viewerRemoveFavorite
-                      : l10n.viewerAddFavorite,
-                  onPressed: onToggleFavorite,
-                ),
-                Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 4),
-                  decoration: const BoxDecoration(
-                    color: Colors.black38,
-                    shape: BoxShape.circle,
+                if (item.isTrash)
+                  _ViewerCircleButton(
+                    icon: Icons.info_outline,
+                    tooltip: l10n.detailsTitle,
+                    onPressed: onShowDetails,
+                  )
+                else ...[
+                  _ViewerCircleButton(
+                    icon: item.isFavorite ? Icons.star : Icons.star_border,
+                    color: item.isFavorite ? Colors.amber : Colors.white,
+                    tooltip: item.isFavorite
+                        ? l10n.viewerRemoveFavorite
+                        : l10n.viewerAddFavorite,
+                    onPressed: onToggleFavorite,
                   ),
-                  child: PopupMenuButton<_ViewerMenuAction>(
-                    icon: const Icon(Icons.more_vert, color: Colors.white),
-                    tooltip: l10n.viewerMoreActions,
-                    onSelected: (action) {
-                      switch (action) {
-                        case _ViewerMenuAction.edit:
-                          onEdit();
-                        case _ViewerMenuAction.compare:
-                          onCompare();
-                        case _ViewerMenuAction.scanCodes:
-                          onScanCodes();
-                        case _ViewerMenuAction.extractText:
-                          onExtractText();
-                        case _ViewerMenuAction.notes:
-                          onOpenNotes();
-                        case _ViewerMenuAction.convert:
-                          onConvert();
-                        case _ViewerMenuAction.videoTools:
-                          onVideoTools();
-                        case _ViewerMenuAction.editTags:
-                          onEditTags();
-                        case _ViewerMenuAction.addToAlbum:
-                          onAddToAlbum();
-                        case _ViewerMenuAction.moveToVault:
-                          onMoveToVault();
-                        case _ViewerMenuAction.details:
-                          onShowDetails();
-                        case _ViewerMenuAction.trash:
-                          onMoveToTrash();
-                      }
-                    },
-                    itemBuilder: (context) =>
-                        <PopupMenuEntry<_ViewerMenuAction>>[
-                          if (item.isVideo)
+                  _ViewerCircleButton(
+                    icon: Icons.shield_outlined,
+                    tooltip: l10n.privacyScrubberTitle,
+                    onPressed: onPrivacyScrubber,
+                  ),
+                  Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 4),
+                    decoration: const BoxDecoration(
+                      color: Colors.black38,
+                      shape: BoxShape.circle,
+                    ),
+                    child: PopupMenuButton<_ViewerMenuAction>(
+                      icon: const Icon(Icons.more_vert, color: Colors.white),
+                      tooltip: l10n.viewerMoreActions,
+                      onSelected: (action) {
+                        switch (action) {
+                          case _ViewerMenuAction.edit:
+                            onEdit();
+                          case _ViewerMenuAction.compare:
+                            onCompare();
+                          case _ViewerMenuAction.scanCodes:
+                            onScanCodes();
+                          case _ViewerMenuAction.extractText:
+                            onExtractText();
+                          case _ViewerMenuAction.notes:
+                            onOpenNotes();
+                          case _ViewerMenuAction.convert:
+                            onConvert();
+                          case _ViewerMenuAction.videoTools:
+                            onVideoTools();
+                          case _ViewerMenuAction.editTags:
+                            onEditTags();
+                          case _ViewerMenuAction.addToAlbum:
+                            onAddToAlbum();
+                          case _ViewerMenuAction.moveToVault:
+                            onMoveToVault();
+                          case _ViewerMenuAction.privacyScrubber:
+                            onPrivacyScrubber();
+                          case _ViewerMenuAction.details:
+                            onShowDetails();
+                          case _ViewerMenuAction.trash:
+                            onMoveToTrash();
+                        }
+                      },
+                      itemBuilder: (context) =>
+                          <PopupMenuEntry<_ViewerMenuAction>>[
                             PopupMenuItem<_ViewerMenuAction>(
-                              value: _ViewerMenuAction.videoTools,
+                              value: _ViewerMenuAction.privacyScrubber,
+                              child: ListTile(
+                                contentPadding: EdgeInsets.zero,
+                                leading: const Icon(Icons.shield_outlined),
+                                title: Text(l10n.privacyScrubberMenu),
+                              ),
+                            ),
+                            if (item.isVideo)
+                              PopupMenuItem<_ViewerMenuAction>(
+                                value: _ViewerMenuAction.videoTools,
+                                child: ListTile(
+                                  contentPadding: EdgeInsets.zero,
+                                  leading: const Icon(
+                                    Icons.movie_filter_outlined,
+                                  ),
+                                  title: Text(l10n.videoToolsOpen),
+                                ),
+                              ),
+                            PopupMenuItem<_ViewerMenuAction>(
+                              value: _ViewerMenuAction.addToAlbum,
+                              child: ListTile(
+                                contentPadding: EdgeInsets.zero,
+                                leading: const Icon(Icons.photo_album_outlined),
+                                title: Text(l10n.albumPickerTitle),
+                              ),
+                            ),
+                            PopupMenuItem<_ViewerMenuAction>(
+                              value: _ViewerMenuAction.editTags,
+                              child: ListTile(
+                                contentPadding: EdgeInsets.zero,
+                                leading: const Icon(Icons.label_outline),
+                                title: Text(l10n.tagSheetOpen),
+                              ),
+                            ),
+                            PopupMenuItem<_ViewerMenuAction>(
+                              value: _ViewerMenuAction.moveToVault,
+                              child: ListTile(
+                                contentPadding: EdgeInsets.zero,
+                                leading: const Icon(Icons.lock_outline),
+                                title: Text(l10n.vaultMoveToVault),
+                              ),
+                            ),
+                            if (item.isImage) ...<
+                              PopupMenuEntry<_ViewerMenuAction>
+                            >[
+                              PopupMenuItem<_ViewerMenuAction>(
+                                value: _ViewerMenuAction.compare,
+                                child: ListTile(
+                                  contentPadding: EdgeInsets.zero,
+                                  leading: const Icon(Icons.compare_arrows),
+                                  title: Text(l10n.comparePhotosTitle),
+                                ),
+                              ),
+                              PopupMenuItem<_ViewerMenuAction>(
+                                value: _ViewerMenuAction.convert,
+                                child: ListTile(
+                                  contentPadding: EdgeInsets.zero,
+                                  leading: const Icon(Icons.transform),
+                                  title: Text(l10n.convertOpen),
+                                ),
+                              ),
+                            ],
+                            if (item.isImage) ...<
+                              PopupMenuEntry<_ViewerMenuAction>
+                            >[
+                              PopupMenuItem<_ViewerMenuAction>(
+                                value: _ViewerMenuAction.scanCodes,
+                                child: ListTile(
+                                  contentPadding: EdgeInsets.zero,
+                                  leading: const Icon(
+                                    Icons.qr_code_scanner_outlined,
+                                  ),
+                                  title: Text(l10n.codeScanOpen),
+                                ),
+                              ),
+                              PopupMenuItem<_ViewerMenuAction>(
+                                value: _ViewerMenuAction.extractText,
+                                child: ListTile(
+                                  contentPadding: EdgeInsets.zero,
+                                  leading: const Icon(
+                                    Icons.text_fields_outlined,
+                                  ),
+                                  title: Text(l10n.ocrOpen),
+                                ),
+                              ),
+                            ],
+                            PopupMenuItem<_ViewerMenuAction>(
+                              value: _ViewerMenuAction.notes,
                               child: ListTile(
                                 contentPadding: EdgeInsets.zero,
                                 leading: const Icon(
-                                  Icons.movie_filter_outlined,
+                                  Icons.sticky_note_2_outlined,
                                 ),
-                                title: Text(l10n.videoToolsOpen),
+                                title: Text(l10n.notesOpen),
                               ),
                             ),
-                          PopupMenuItem<_ViewerMenuAction>(
-                            value: _ViewerMenuAction.addToAlbum,
-                            child: ListTile(
-                              contentPadding: EdgeInsets.zero,
-                              leading: const Icon(Icons.photo_album_outlined),
-                              title: Text(l10n.albumPickerTitle),
-                            ),
-                          ),
-                          PopupMenuItem<_ViewerMenuAction>(
-                            value: _ViewerMenuAction.editTags,
-                            child: ListTile(
-                              contentPadding: EdgeInsets.zero,
-                              leading: const Icon(Icons.label_outline),
-                              title: Text(l10n.tagSheetOpen),
-                            ),
-                          ),
-                          PopupMenuItem<_ViewerMenuAction>(
-                            value: _ViewerMenuAction.moveToVault,
-                            child: ListTile(
-                              contentPadding: EdgeInsets.zero,
-                              leading: const Icon(Icons.lock_outline),
-                              title: Text(l10n.vaultMoveToVault),
-                            ),
-                          ),
-                          if (item
-                              .isImage) ...<PopupMenuEntry<_ViewerMenuAction>>[
-                            PopupMenuItem<_ViewerMenuAction>(
-                              value: _ViewerMenuAction.compare,
-                              child: ListTile(
-                                contentPadding: EdgeInsets.zero,
-                                leading: const Icon(Icons.compare_arrows),
-                                title: Text(l10n.comparePhotosTitle),
-                              ),
-                            ),
-                            PopupMenuItem<_ViewerMenuAction>(
-                              value: _ViewerMenuAction.convert,
-                              child: ListTile(
-                                contentPadding: EdgeInsets.zero,
-                                leading: const Icon(Icons.transform),
-                                title: Text(l10n.convertOpen),
-                              ),
-                            ),
-                          ],
-                          if (item
-                              .isImage) ...<PopupMenuEntry<_ViewerMenuAction>>[
-                            PopupMenuItem<_ViewerMenuAction>(
-                              value: _ViewerMenuAction.scanCodes,
-                              child: ListTile(
-                                contentPadding: EdgeInsets.zero,
-                                leading: const Icon(
-                                  Icons.qr_code_scanner_outlined,
+                            if (item.isVideo) ...[
+                              const PopupMenuDivider(),
+                              PopupMenuItem<_ViewerMenuAction>(
+                                value: _ViewerMenuAction.details,
+                                child: ListTile(
+                                  contentPadding: EdgeInsets.zero,
+                                  leading: const Icon(Icons.info_outline),
+                                  title: Text(l10n.detailsTitle),
                                 ),
-                                title: Text(l10n.codeScanOpen),
                               ),
-                            ),
-                            PopupMenuItem<_ViewerMenuAction>(
-                              value: _ViewerMenuAction.extractText,
-                              child: ListTile(
-                                contentPadding: EdgeInsets.zero,
-                                leading: const Icon(Icons.text_fields_outlined),
-                                title: Text(l10n.ocrOpen),
+                              PopupMenuItem<_ViewerMenuAction>(
+                                value: _ViewerMenuAction.trash,
+                                child: ListTile(
+                                  contentPadding: EdgeInsets.zero,
+                                  leading: const Icon(Icons.delete_outline),
+                                  title: Text(l10n.batchActionMoveToTrash),
+                                ),
                               ),
-                            ),
+                            ],
                           ],
-                          PopupMenuItem<_ViewerMenuAction>(
-                            value: _ViewerMenuAction.notes,
-                            child: ListTile(
-                              contentPadding: EdgeInsets.zero,
-                              leading: const Icon(Icons.sticky_note_2_outlined),
-                              title: Text(l10n.notesOpen),
-                            ),
-                          ),
-                          if (item.isVideo) ...[
-                            const PopupMenuDivider(),
-                            PopupMenuItem<_ViewerMenuAction>(
-                              value: _ViewerMenuAction.details,
-                              child: ListTile(
-                                contentPadding: EdgeInsets.zero,
-                                leading: const Icon(Icons.info_outline),
-                                title: Text(l10n.detailsTitle),
-                              ),
-                            ),
-                            PopupMenuItem<_ViewerMenuAction>(
-                              value: _ViewerMenuAction.trash,
-                              child: ListTile(
-                                contentPadding: EdgeInsets.zero,
-                                leading: const Icon(Icons.delete_outline),
-                                title: Text(l10n.batchActionMoveToTrash),
-                              ),
-                            ),
-                          ],
-                        ],
+                    ),
                   ),
-                ),
+                ],
               ],
             ),
           ),
@@ -863,6 +994,8 @@ class _ImageViewerBottomBar extends StatelessWidget {
   final VoidCallback onRotateRight;
   final VoidCallback onShowDetails;
   final VoidCallback onMoveToTrash;
+  final VoidCallback? onRestore;
+  final VoidCallback? onDeletePermanently;
 
   const _ImageViewerBottomBar({
     required this.item,
@@ -871,11 +1004,64 @@ class _ImageViewerBottomBar extends StatelessWidget {
     required this.onRotateRight,
     required this.onShowDetails,
     required this.onMoveToTrash,
+    this.onRestore,
+    this.onDeletePermanently,
   });
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+
+    if (item.isTrash) {
+      return Align(
+        alignment: Alignment.bottomCenter,
+        child: DecoratedBox(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.bottomCenter,
+              end: Alignment.topCenter,
+              colors: [Colors.black87, Colors.black54, Colors.transparent],
+              stops: [0.0, 0.7, 1.0],
+            ),
+          ),
+          child: SafeArea(
+            top: false,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: Colors.white,
+                        side: const BorderSide(color: Colors.white70),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                      ),
+                      icon: const Icon(Icons.restore),
+                      label: Text(l10n.trashRestoreAction),
+                      onPressed: onRestore,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: FilledButton.icon(
+                      style: FilledButton.styleFrom(
+                        backgroundColor: Theme.of(context).colorScheme.error,
+                        foregroundColor: Theme.of(context).colorScheme.onError,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                      ),
+                      icon: const Icon(Icons.delete_forever),
+                      label: Text(l10n.trashDeletePermanentlyAction),
+                      onPressed: onDeletePermanently,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+    }
 
     return Align(
       alignment: Alignment.bottomCenter,
@@ -988,6 +1174,7 @@ enum _ViewerMenuAction {
   editTags,
   addToAlbum,
   moveToVault,
+  privacyScrubber,
   details,
   trash,
 }

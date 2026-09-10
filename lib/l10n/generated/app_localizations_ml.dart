@@ -328,6 +328,9 @@ class AppLocalizationsMl extends AppLocalizations {
   String get editorToolTune => 'വെളിച്ചം';
 
   @override
+  String get editorToolMasks => 'മാസ്കുകൾ';
+
+  @override
   String get editorToolFilters => 'ഫിൽട്ടറുകൾ';
 
   @override
@@ -437,6 +440,76 @@ class AppLocalizationsMl extends AppLocalizations {
 
   @override
   String get curveHint => 'കർവ് മാറ്റാൻ ഒരു പോയിന്റ് വലിക്കുക';
+
+  @override
+  String get curveAddHint =>
+      'പോയിന്റ് ചേർക്കാൻ തൊടുക, മാറ്റാൻ അമർത്തിപ്പിടിക്കുക';
+
+  @override
+  String get maskShapeLinear => 'ലീനിയർ';
+
+  @override
+  String get maskShapeRadial => 'റേഡിയൽ';
+
+  @override
+  String get maskFeather => 'ഫെദർ';
+
+  @override
+  String get maskInvert => 'വിപരീതം';
+
+  @override
+  String get maskBlur => 'മങ്ങൽ';
+
+  @override
+  String get maskAddLinear => 'ലീനിയർ ഗ്രേഡിയന്റ് ചേർക്കുക';
+
+  @override
+  String get maskAddRadial => 'റേഡിയൽ മാസ്ക് ചേർക്കുക';
+
+  @override
+  String get maskRemove => 'മാസ്ക് നീക്കംചെയ്യുക';
+
+  @override
+  String get maskEmpty => 'മാസ്ക് ചേർക്കാൻ + തൊടുക';
+
+  @override
+  String get hslTitle => 'എച്ച്.എസ്.എൽ കളർ ട്യൂണർ';
+
+  @override
+  String get hslHue => 'നിറം';
+
+  @override
+  String get hslSaturation => 'സാന്ദ്രത';
+
+  @override
+  String get hslLuminance => 'തെളിച്ചം';
+
+  @override
+  String get hslReset => 'എച്ച്.എസ്.എൽ പഴയപടിയാക്കുക';
+
+  @override
+  String get hslRangeRed => 'ചുവപ്പ്';
+
+  @override
+  String get hslRangeOrange => 'ഓറഞ്ച്';
+
+  @override
+  String get hslRangeYellow => 'മഞ്ഞ';
+
+  @override
+  String get hslRangeGreen => 'പച്ച';
+
+  @override
+  String get hslRangeCyan => 'സയൻ';
+
+  @override
+  String get hslRangeBlue => 'നീല';
+
+  @override
+  String get hslRangePurple => 'പർപ്പിൾ';
+
+  @override
+  String get hslRangeMagenta => 'മജന്ത';
 
   @override
   String get filterNone => 'യഥാർഥം';
@@ -3159,7 +3232,20 @@ class AppLocalizationsMl extends AppLocalizations {
 
   @override
   String get trashEmptyConfirmBody =>
-      'ഇത് ഗാലറിയിൽ നിന്ന് ചവറ്റുകുട്ടയിലെ എല്ലാ ഇനങ്ങളും നീക്കം ചെയ്യും. ഫയലുകൾ നിങ്ങളുടെ ഫോണിൽ നിലനിൽക്കും.';
+      'ഇത് നിങ്ങളുടെ ഫോൺ സംഭരണത്തിൽ നിന്ന് എല്ലാ ഇനങ്ങളും ശാശ്വതമായി ഇല്ലാതാക്കും. ഈ പ്രവർത്തനം പഴയപടിയാക്കാൻ കഴിയില്ല.';
+
+  @override
+  String get trashDeletePermanentlyAction => 'ശാശ്വതമായി ഇല്ലാതാക്കുക';
+
+  @override
+  String get trashDeletePermanentlyConfirmTitle => 'ശാശ്വതമായി ഇല്ലാതാക്കണോ?';
+
+  @override
+  String get trashDeletePermanentlyConfirmBody =>
+      'ഈ ഇനം നിങ്ങളുടെ ഫോൺ സംഭരണത്തിൽ നിന്ന് ശാശ്വതമായി ഇല്ലാതാക്കും. ഈ പ്രവർത്തനം പഴയപടിയാക്കാൻ കഴിയില്ല.';
+
+  @override
+  String get trashDeletedPermanentlySnackbar => 'ഇനം ശാശ്വതമായി ഇല്ലാതാക്കി';
 
   @override
   String get trashRestoreAction => 'പുനഃസ്ഥാപിക്കുക';
@@ -3317,4 +3403,264 @@ class AppLocalizationsMl extends AppLocalizations {
 
   @override
   String get compareNoExif => 'EXIF വിവരങ്ങൾ ലഭ്യമല്ല';
+
+  @override
+  String get tabTimeline => 'Timeline';
+
+  @override
+  String get tabFolders => 'Folders';
+
+  @override
+  String get tabAlbums => 'Albums';
+
+  @override
+  String get foldersTitle => 'Folders';
+
+  @override
+  String get foldersEmpty => 'No folders found';
+
+  @override
+  String get foldersEmptyBody =>
+      'Pull down to scan for photos and videos on your device.';
+
+  @override
+  String folderItemCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count items',
+      one: '1 item',
+      zero: 'Empty',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get privacyScrubberTitle => 'മീഡിയ സ്വകാര്യതയും സ്ക്രബ്ബറും';
+
+  @override
+  String get privacyScrubberSubtitle =>
+      'പങ്കുവെക്കുന്നതിന് മുമ്പ് സെൻസിറ്റീവ് EXIF മെറ്റാഡാറ്റ നീക്കം ചെയ്യുകയും GPS സ്ഥാനം മാറ്റുകയും ചെയ്യുക';
+
+  @override
+  String get privacyScrubberMenu => 'സ്വകാര്യതയും EXIF സ്ക്രബ്ബറും';
+
+  @override
+  String get privacyCardTitle => 'മീഡിയ സ്വകാര്യതയും EXIF വിവരങ്ങളും';
+
+  @override
+  String get privacyCardBody =>
+      'ഫോട്ടോ പങ്കിടുന്നതിന് മുമ്പ് കൃത്യമായ GPS ലൊക്കേഷൻ, ക്യാമറ സീരിയൽ നമ്പറുകൾ എന്നിവ നീക്കം ചെയ്ത് സ്വകാര്യത സംരക്ഷിക്കുക.';
+
+  @override
+  String get privacyOpenScrubber => 'സ്വകാര്യതാ ക്രമീകരണങ്ങൾ തുറക്കുക';
+
+  @override
+  String get privacyTabStripper => 'EXIF നീക്കം ചെയ്യൽ';
+
+  @override
+  String get privacyTabGeofence => 'GPS ജിയോഫെൻസ് ഷിഫ്റ്റർ';
+
+  @override
+  String get privacyStripAndShareAction =>
+      'ഒറ്റ ടാപ്പിൽ നീക്കം ചെയ്ത് പങ്കിടുക';
+
+  @override
+  String get privacySaveSanitizedAction =>
+      'നീക്കം ചെയ്ത കോപ്പി ഗാലറിയിൽ സൂക്ഷിക്കുക';
+
+  @override
+  String get privacyGranularTitle => 'തിരഞ്ഞെടുത്ത മെറ്റാഡാറ്റ നീക്കം ചെയ്യൽ';
+
+  @override
+  String get privacyStripAll => 'എല്ലാം നീക്കം ചെയ്യുക';
+
+  @override
+  String get privacyCustom => 'ഇഷ്‌ടാനുസൃതം';
+
+  @override
+  String get privacyOptionGps => 'GPS ലൊക്കേഷനും ഉയരവും നീക്കം ചെയ്യുക';
+
+  @override
+  String get privacyOptionSerials =>
+      'ക്യാമറ, ലെൻസ് സീരിയൽ നമ്പറുകൾ നീക്കം ചെയ്യുക';
+
+  @override
+  String get privacyOptionTimestamps =>
+      'ഫോട്ടോ എടുത്ത തീയതിയും സമയവും നീക്കം ചെയ്യുക';
+
+  @override
+  String get privacyOptionAuthor =>
+      'സോഫ്റ്റ്‌വെയർ, നിർമ്മാതാവിന്റെ വിവരങ്ങൾ നീക്കം ചെയ്യുക';
+
+  @override
+  String get privacyErrorReadingFile => 'ഫയൽ വായിക്കാൻ സാധിച്ചില്ല';
+
+  @override
+  String get privacyShareTitle => 'സുരക്ഷിതമായി മീഡിയ പങ്കിടുക';
+
+  @override
+  String get privacyShareFailed => 'പങ്കിടാൻ സാധിച്ചില്ല';
+
+  @override
+  String get privacyProcessError =>
+      'മെറ്റാഡാറ്റ നീക്കം ചെയ്യുന്നതിൽ പിശക് സംഭവിച്ചു';
+
+  @override
+  String get privacySavedToGallery => 'സുരക്ഷിതമായ കോപ്പി ഗാലറിയിൽ സേവ് ചെയ്തു';
+
+  @override
+  String get privacySaveFailed => 'സേവ് ചെയ്യാൻ സാധിച്ചില്ല';
+
+  @override
+  String get privacyNoLocation => 'ഈ ഫോട്ടോയിൽ GPS വിവരങ്ങൾ കണ്ടെത്തിയില്ല';
+
+  @override
+  String get geofenceOffsetDistance => 'ഷിഫ്റ്റ് ചെയ്യേണ്ട ദൂരം';
+
+  @override
+  String get geofenceReroll => 'പുതിയ റാൻഡം ലൊക്കേഷൻ കണ്ടെത്തുക';
+
+  @override
+  String get geofenceRandomPreset => 'റാൻഡം (2–5 കി.മീ)';
+
+  @override
+  String geofenceShiftSummary(String summary) {
+    return '$summary ലേക്ക് മാറ്റി';
+  }
+
+  @override
+  String geofenceFuzzedCoordinates(String lat, String lon) {
+    return '$lat, $lon ലേക്ക് മാറ്റി';
+  }
+
+  @override
+  String get geofenceExplanation =>
+      'കൃത്യമായ വീടിന്റെയോ താമസസ്ഥലത്തിന്റെയോ വിലാസം മറച്ചുവെച്ച് നഗരത്തിന്റെ പൊതുവായ ലൊക്കേഷൻ മാത്രം നിലനിർത്തുന്നു.';
+
+  @override
+  String get geofenceShareTitle => 'ലൊക്കേഷൻ മാറ്റിയ ഫോട്ടോ പങ്കിടുക';
+
+  @override
+  String get geofenceShareAction => 'ലൊക്കേഷൻ മാറ്റി പങ്കിടുക';
+
+  @override
+  String get geofenceSaveAction => 'ഗാലറിയിലേക്ക് സേവ് ചെയ്യുക';
+
+  @override
+  String get geofenceSavedToGallery =>
+      'ലൊക്കേഷൻ മാറ്റിയ ഫോട്ടോ ഗാലറിയിൽ സേവ് ചെയ്തു';
+
+  @override
+  String get geofenceNoCoordinates => 'ലൊക്കേഷൻ കണ്ടെത്തിയില്ല';
+
+  @override
+  String get geofenceNoCoordinatesBody =>
+      'ഈ ഫോട്ടോയിൽ മാറ്റാൻ തക്ക GPS വിവരങ്ങൾ അടങ്ങിയിട്ടില്ല.';
+
+  @override
+  String get privacyAuditSensitiveDetected => 'സ്വകാര്യ വിവരങ്ങൾ കണ്ടെത്തി';
+
+  @override
+  String get privacyAuditClean => 'സെൻസിറ്റീവ് വിവരങ്ങൾ ഒന്നുമില്ല';
+
+  @override
+  String privacyAuditSensitiveDetails(String gps, String camera) {
+    return 'അടങ്ങിയിരിക്കുന്നത്: $gps $camera';
+  }
+
+  @override
+  String get privacyAuditGps => 'GPS ലൊക്കേഷൻ';
+
+  @override
+  String get privacyAuditCamera => 'ഡിവൈസ് വിവരങ്ങൾ';
+
+  @override
+  String get privacyAuditCleanDetails =>
+      'ഈ ഫയലിൽ ലൊക്കേഷനോ സീരിയൽ നമ്പറോ അടങ്ങിയിട്ടില്ല.';
+
+  @override
+  String get forensicInspectorTitle => 'ഫോറൻസിക് ലെൻസ് & സെൻസർ ഇൻസ്പെക്ടർ';
+
+  @override
+  String get forensicInspectorSubtitle =>
+      'വിശദമായ ഒപ്റ്റിക്കൽ, ഹാർഡ്‌വെയർ സാങ്കേതിക വിവരങ്ങൾ';
+
+  @override
+  String get forensicInspectorButton => 'ലെൻസ് & സെൻസർ വിവരങ്ങൾ പരിശോധിക്കുക';
+
+  @override
+  String get forensicInspectorQuickHint =>
+      'സെൻസർ ക്രോപ്പ് ഫാക്ടർ, 35mm തുല്യത, ഷട്ടർ കൗണ്ട്, എക്സ്പോഷർ ബയസ്';
+
+  @override
+  String get forensicNoData => 'ഫോറൻസിക് മെറ്റാഡാറ്റ ലഭ്യമല്ല.';
+
+  @override
+  String get forensicSectionSensorOptics => 'സെൻസർ & ഒപ്റ്റിക്കൽ സവിശേഷതകൾ';
+
+  @override
+  String get forensicSectionMechanicsColor =>
+      'മെക്കാനിക്കൽ റിലീസുകളും കളർ സ്പേസും';
+
+  @override
+  String get forensicSectionHardwareIdentity =>
+      'ഹാർഡ്‌വെയർ & ലെൻസ് തിരിച്ചറിയൽ';
+
+  @override
+  String get forensicSensorFormat => 'സെൻസർ ഫോർമാറ്റ്';
+
+  @override
+  String get forensicCropFactor => 'ക്രോപ്പ് ഫാക്ടർ';
+
+  @override
+  String get forensicFocal35mm => '35mm തുല്യത';
+
+  @override
+  String get forensicPhysicalFocalLength => 'യഥാർത്ഥ ഫോക്കൽ ലെങ്ത്';
+
+  @override
+  String get forensicHyperfocalDistance => 'ഹൈപ്പർഫോക്കൽ ദൂരം';
+
+  @override
+  String get forensicExposureBias => 'എക്സ്പോഷർ കോമ്പൻസേഷൻ (EV)';
+
+  @override
+  String get forensicShutterActuations => 'ഷട്ടർ ആക്ച്വേഷനുകൾ';
+
+  @override
+  String get forensicShutterNotReported => 'ഇലക്ട്രോണിക് ഷട്ടർ / ലഭ്യമല്ല';
+
+  @override
+  String get forensicColorProfile => 'കളർ സ്പേസ് പ്രൊഫൈൽ';
+
+  @override
+  String get forensicExposureProgram => 'എക്സ്പോഷർ പ്രോഗ്രാം';
+
+  @override
+  String get forensicMeteringMode => 'മീറ്ററിംഗ് മോഡ്';
+
+  @override
+  String get forensicSensingMethod => 'സെൻസിംഗ് രീതി';
+
+  @override
+  String get forensicSceneCaptureType => 'സീൻ ക്യാപ്‌ചർ തരം';
+
+  @override
+  String get forensicFlashStatus => 'ഫ്ലാഷ് നില';
+
+  @override
+  String get forensicCameraSerial => 'ക്യാമറ സീരിയൽ നമ്പർ';
+
+  @override
+  String get forensicLensModel => 'ലെൻസ് മോഡൽ';
+
+  @override
+  String get forensicLensSpecification => 'ലെൻസ് സ്പെസിഫിക്കേഷൻ';
+
+  @override
+  String get forensicLensSerial => 'ലെൻസ് സീരിയൽ നമ്പർ';
+
+  @override
+  String get forensicSerialNotEmbedded => 'രേഖപ്പെടുത്തിയിട്ടില്ല';
 }

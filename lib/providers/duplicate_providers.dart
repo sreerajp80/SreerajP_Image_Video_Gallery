@@ -1,7 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:in_sreerajp_imgvidgal/models/duplicate/duplicate_group.dart';
 import 'package:in_sreerajp_imgvidgal/models/duplicate/duplicate_scan_state.dart';
+import 'package:in_sreerajp_imgvidgal/providers/album_providers.dart';
 import 'package:in_sreerajp_imgvidgal/providers/media_providers.dart';
+import 'package:in_sreerajp_imgvidgal/providers/trash_providers.dart';
 import 'package:in_sreerajp_imgvidgal/repositories/media_repository.dart';
 import 'package:in_sreerajp_imgvidgal/services/duplicates/best_photo_service.dart';
 import 'package:in_sreerajp_imgvidgal/services/duplicates/content_hash_service.dart';
@@ -162,6 +164,10 @@ class DuplicateCleanupController extends StateNotifier<AsyncValue<int>> {
         moved++;
       }
       state = AsyncValue<int>.data(moved);
+      if (moved > 0) {
+        _ref.read(trashRevisionProvider.notifier).state++;
+        _ref.read(albumRevisionProvider.notifier).state++;
+      }
       _ref
           .read(duplicateScanControllerProvider.notifier)
           .dismissGroup(group.id);

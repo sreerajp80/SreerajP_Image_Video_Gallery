@@ -7,12 +7,16 @@ import 'package:in_sreerajp_imgvidgal/services/editor/tone_curve_service.dart';
 /// Which curve the editor is showing.
 enum CurveChannel { rgb, red, green, blue }
 
-/// The RGB curve control.
+/// The RGB curve control with free-point placement and cubic spline.
 ///
-/// The user drags three handles: the dark end, the middle, and the light end.
-/// Three is enough to shape a photo and keeps the control usable with a
-/// finger, where a free-point curve would be fiddly. The maths of turning
-/// those points into a table lives in [ToneCurveService].
+/// The user can:
+/// - **Tap** on the curve area to add a new control point.
+/// - **Drag** any point to reshape the curve.
+/// - **Long-press** a point to delete it (end-points cannot be removed,
+///   and at least 2 points must remain).
+///
+/// The maths of turning the points into a table lives in [ToneCurveService],
+/// which now uses natural cubic spline interpolation.
 class CurveEditor extends StatefulWidget {
   final ToneAdjustments adjustments;
 
@@ -32,6 +36,12 @@ class CurveEditor extends StatefulWidget {
 class _CurveEditorState extends State<CurveEditor> {
   static const ToneCurveService _service = ToneCurveService();
 
+  /// Hit radius for detecting a tap or drag near a point.
+  static const double _hitRadius = 20;
+
+  /// The maximum number of user-placed control points.
+  static const int _maxPoints = 10;
+
   CurveChannel _channel = CurveChannel.rgb;
 
   /// The handle currently under the finger, or null between drags.
@@ -50,15 +60,11 @@ class _CurveEditorState extends State<CurveEditor> {
     }
   }
 
-  /// The three handles for the shown channel, filled in for a straight curve.
-  List<CurvePoint> get _handles {
+  /// The control points for the shown channel.
+  List<CurvePoint> get _points {
     final points = _service.sanitize(_curve.points);
-    if (points.length >= 3) return points;
-    return const <CurvePoint>[
-      CurvePoint(0, 0),
-      CurvePoint(128, 128),
-      CurvePoint(255, 255),
-    ];
+    if (points.length >= 2) return points;
+    return const <CurvePoint>[CurvePoint(0, 0), CurvePoint(255, 255)];
   }
 
   ToneAdjustments _withCurve(ToneCurve curve) {
@@ -74,49 +80,99 @@ class _CurveEditorState extends State<CurveEditor> {
     }
   }
 
-  /// Moves the handle nearest [local] to where the finger is.
-  ///
-  /// The two end handles keep their input value, so the curve always covers
-  /// the whole range and cannot be dragged into a fold.
-  void _moveHandle(Offset local, Size size, {required bool isEnd}) {
-    if (size.width <= 0 || size.height <= 0) return;
+  Offset _pointToLocal(CurvePoint point, Size size) {
+    return Offset(
+      point.input / 255 * size.width,
+      (1 - point.output / 255) * size.height,
+    );
+  }
 
-    final points = List<CurvePoint>.from(_handles);
-    final x = (local.dx / size.width * 255).clamp(0.0, 255.0);
-    final y = ((1 - local.dy / size.height) * 255).clamp(0.0, 255.0);
+  CurvePoint _localToPoint(Offset local, Size size) {
+    return CurvePoint(
+      (local.dx / size.width * 255).clamp(0.0, 255.0),
+      ((1 - local.dy / size.height) * 255).clamp(0.0, 255.0),
+    );
+  }
 
-    var index = _draggingIndex;
-    if (index == null) {
-      var best = 0;
-      var bestDistance = double.infinity;
-      for (var i = 0; i < points.length; i++) {
-        final distance = (points[i].input - x).abs();
-        if (distance < bestDistance) {
-          bestDistance = distance;
-          best = i;
-        }
+  int? _findNearestPoint(Offset local, Size size) {
+    final points = _points;
+    int? best;
+    var bestDist = double.infinity;
+    for (var i = 0; i < points.length; i++) {
+      final pos = _pointToLocal(points[i], size);
+      final dist = (pos - local).distance;
+      if (dist < _hitRadius && dist < bestDist) {
+        bestDist = dist;
+        best = i;
       }
-      index = best;
-      _draggingIndex = best;
     }
+    return best;
+  }
 
-    final current = points[index];
-    // Only the middle handle may slide sideways.
-    final nextInput = (index == 0 || index == points.length - 1)
-        ? current.input
-        : x.clamp(points[index - 1].input + 1, points[index + 1].input - 1);
-    points[index] = CurvePoint(nextInput, y);
+  void _onPanStart(DragStartDetails details, Size size) {
+    final index = _findNearestPoint(details.localPosition, size);
+    _draggingIndex = index;
+    if (index != null) {
+      setState(() {});
+    }
+  }
+
+  void _onPanUpdate(DragUpdateDetails details, Size size) {
+    if (_draggingIndex == null) return;
+
+    final points = List<CurvePoint>.from(_points);
+    final index = _draggingIndex!;
+    if (index >= points.length) return;
+
+    final newPoint = _localToPoint(details.localPosition, size);
+
+    // End points keep their input value locked.
+    final isEndpoint = index == 0 || index == points.length - 1;
+    final input = isEndpoint
+        ? points[index].input
+        : newPoint.input.clamp(
+            points[index - 1].input + 1,
+            points[index + 1].input - 1,
+          );
+
+    points[index] = CurvePoint(input, newPoint.output);
 
     final updated = _withCurve(ToneCurve(points));
     setState(() {});
-    if (isEnd) {
-      _draggingIndex = null;
-      widget.onChanged(updated);
-    } else {
-      // Live feedback while dragging goes through the same call; the screen
-      // decides whether that lands in undo.
-      widget.onChanged(updated);
-    }
+    widget.onChanged(updated);
+  }
+
+  void _onPanEnd(DragEndDetails _) {
+    _draggingIndex = null;
+    setState(() {});
+  }
+
+  void _onTapUp(TapUpDetails details, Size size) {
+    final points = _points;
+    // If tapped near an existing point, do nothing (drag handles it).
+    if (_findNearestPoint(details.localPosition, size) != null) return;
+
+    // Max point limit.
+    if (points.length >= _maxPoints) return;
+
+    // Add a new point at the tap location.
+    final newPoint = _localToPoint(details.localPosition, size);
+    final updated = _withCurve(_curve.withPoint(newPoint));
+    widget.onChanged(updated);
+  }
+
+  void _onLongPress(LongPressStartDetails details, Size size) {
+    final points = _points;
+    final index = _findNearestPoint(details.localPosition, size);
+    if (index == null) return;
+
+    // Cannot remove end points, and must keep at least 2 points.
+    if (index == 0 || index == points.length - 1) return;
+    if (points.length <= 2) return;
+
+    final remaining = List<CurvePoint>.from(points)..removeAt(index);
+    final updated = _withCurve(ToneCurve(remaining));
+    widget.onChanged(updated);
   }
 
   void _resetCurve() {
@@ -160,20 +216,20 @@ class _CurveEditorState extends State<CurveEditor> {
               builder: (context, constraints) {
                 final size = Size(constraints.maxWidth, constraints.maxHeight);
                 return GestureDetector(
-                  onPanUpdate: (details) =>
-                      _moveHandle(details.localPosition, size, isEnd: false),
-                  onPanEnd: (_) {
-                    _draggingIndex = null;
-                    setState(() {});
-                  },
+                  onPanStart: (d) => _onPanStart(d, size),
+                  onPanUpdate: (d) => _onPanUpdate(d, size),
+                  onPanEnd: _onPanEnd,
+                  onTapUp: (d) => _onTapUp(d, size),
+                  onLongPressStart: (d) => _onLongPress(d, size),
                   child: CustomPaint(
                     painter: _CurvePainter(
-                      points: _handles,
+                      points: _points,
                       service: _service,
                       lineColor: _channelColor(theme),
                       gridColor: theme.colorScheme.outlineVariant,
                       backgroundColor:
                           theme.colorScheme.surfaceContainerHighest,
+                      draggingIndex: _draggingIndex,
                     ),
                     size: size,
                   ),
@@ -187,7 +243,7 @@ class _CurveEditorState extends State<CurveEditor> {
             children: [
               Flexible(
                 child: Text(
-                  l10n.curveHint,
+                  l10n.curveAddHint,
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: theme.colorScheme.onSurfaceVariant,
                   ),
@@ -215,13 +271,14 @@ class _CurveEditorState extends State<CurveEditor> {
   }
 }
 
-/// Draws the curve, its grid, and the draggable handles.
+/// Draws the curve, its grid, the identity reference line, and the handles.
 class _CurvePainter extends CustomPainter {
   final List<CurvePoint> points;
   final ToneCurveService service;
   final Color lineColor;
   final Color gridColor;
   final Color backgroundColor;
+  final int? draggingIndex;
 
   const _CurvePainter({
     required this.points,
@@ -229,6 +286,7 @@ class _CurvePainter extends CustomPainter {
     required this.lineColor,
     required this.gridColor,
     required this.backgroundColor,
+    this.draggingIndex,
   });
 
   @override
@@ -240,6 +298,7 @@ class _CurvePainter extends CustomPainter {
       background,
     );
 
+    // Grid lines.
     final grid = Paint()
       ..color = gridColor
       ..strokeWidth = 1;
@@ -250,14 +309,27 @@ class _CurvePainter extends CustomPainter {
       canvas.drawLine(Offset(0, dy), Offset(size.width, dy), grid);
     }
 
-    final line = Paint()
+    // Identity reference line (diagonal).
+    final identityPaint = Paint()
+      ..color = gridColor.withValues(alpha: 0.5)
+      ..strokeWidth = 1
+      ..style = PaintingStyle.stroke;
+    canvas.drawLine(
+      Offset(0, size.height),
+      Offset(size.width, 0),
+      identityPaint,
+    );
+
+    // The spline curve, sampled at 128 steps for smoothness.
+    final linePaint = Paint()
       ..color = lineColor
-      ..strokeWidth = 2
+      ..strokeWidth = 2.5
       ..style = PaintingStyle.stroke;
 
     final path = Path();
-    for (var i = 0; i <= 64; i++) {
-      final input = i / 64 * 255;
+    const steps = 128;
+    for (var i = 0; i <= steps; i++) {
+      final input = i / steps * 255;
       final output = service.evaluate(points, input);
       final x = input / 255 * size.width;
       final y = (1 - output / 255) * size.height;
@@ -267,22 +339,29 @@ class _CurvePainter extends CustomPainter {
         path.lineTo(x, y);
       }
     }
-    canvas.drawPath(path, line);
+    canvas.drawPath(path, linePaint);
 
-    final handle = Paint()..color = lineColor;
-    for (final point in points) {
-      canvas.drawCircle(
-        Offset(
-          point.input / 255 * size.width,
-          (1 - point.output / 255) * size.height,
-        ),
-        6,
-        handle,
+    // Control point handles.
+    final handleFill = Paint()..color = lineColor;
+    final handleStroke = Paint()
+      ..color = Colors.white
+      ..strokeWidth = 2
+      ..style = PaintingStyle.stroke;
+
+    for (var i = 0; i < points.length; i++) {
+      final centre = Offset(
+        points[i].input / 255 * size.width,
+        (1 - points[i].output / 255) * size.height,
       );
+      final radius = i == draggingIndex ? 9.0 : 6.0;
+      canvas.drawCircle(centre, radius, handleFill);
+      canvas.drawCircle(centre, radius, handleStroke);
     }
   }
 
   @override
   bool shouldRepaint(covariant _CurvePainter oldDelegate) =>
-      oldDelegate.points != points || oldDelegate.lineColor != lineColor;
+      oldDelegate.points != points ||
+      oldDelegate.lineColor != lineColor ||
+      oldDelegate.draggingIndex != draggingIndex;
 }

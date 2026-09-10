@@ -79,7 +79,7 @@ The following subsections outline high-impact, actionable engineering improvemen
 | Enhancement | Description & Implementation Details | User Value |
 |---|---|---|
 | **Picture-in-Picture (PiP) Mode** | Native Android PiP integration (`enterPictureInPictureMode`) tied to video playback state, enabling resizable floating playback with play/pause and skip controls. | Seamless multitasking: watch video clips or tutorials while taking notes or organizing files. |
-| **Synchronized A/B Comparison** <br>*(Implemented)* | A split-screen or sliding curtain comparison view allowing two photos to be compared side-by-side with locked, synchronized pan and pinch-to-zoom. Fully implemented in `PhotoCompareScreen` (`/compare`) with `CurtainComparisonView`, `SplitComparisonView` (horizontal and vertical), lock/unlock sync, swap, in-place gallery photo selector sheet, side-by-side EXIF metadata sheet, multi-selection app bar compare action, and fullscreen viewer overflow menu integration. | Indispensable for photographers evaluating burst shots, focus sharpness, or editing before-and-after results. |
+| **Synchronized A/B Comparison** <br>✅ *(Completed)* | A split-screen or sliding curtain comparison view allowing two photos to be compared side-by-side with locked, synchronized pan and pinch-to-zoom. Fully implemented in `PhotoCompareScreen` (`/compare`) with `CurtainComparisonView`, `SplitComparisonView` (horizontal and vertical), lock/unlock sync, swap, in-place gallery photo selector sheet, side-by-side EXIF metadata sheet, multi-selection app bar compare action, and fullscreen viewer overflow menu integration. | Indispensable for photographers evaluating burst shots, focus sharpness, or editing before-and-after results. |
 | **Pixel Inspection Magnifier (200%–800%)** | A circular inspection loupe widget that pops up on long-press, rendering a sub-region of the original high-resolution bitmap at 200% to 800% magnification. | Instantly verify critical focus, sharpness, and sensor noise without losing navigation context. |
 | **Multi-Track Audio & Subtitle Switcher** | Detect, parse, and switch between multiple audio streams and embedded soft-subtitles (`.srt`, `.vtt`, `.ass`) inside MKV, MP4, and WebM containers. | Complete offline media viewing experience for lectures, foreign films, and tutorials without external players. |
 | **Background Audio Playback Mode** | An audio-only background service toggle utilizing `MediaSessionCompat` to keep video sound playing with screen locked or app backgrounded. | Converts recorded speeches, concerts, podcasts, and interviews into audio-first listening experiences. |
@@ -89,9 +89,9 @@ The following subsections outline high-impact, actionable engineering improvemen
 
 | Enhancement | Description & Implementation Details | User Value |
 |---|---|---|
-| **Spline RGB & Tone Curves** | Full-featured composite RGB and individual Red, Green, and Blue tone curve editor with interactive control points and cubic spline interpolation. | Professional exposure, shadow, and color grading capabilities matching desktop editing software. |
-| **Selective Gradient & Radial Masks** | Apply exposure, contrast, temperature, or blur selectively within a linear gradient or circular radial mask instead of globally. | Enables advanced landscape balancing (darkening an overexposed sky) and portrait subject isolation. |
-| **8-Channel HSL Color Tuner** | Dedicated Hue, Saturation, and Luminance sliders for 8 discrete color ranges (Red, Orange, Yellow, Green, Cyan, Blue, Purple, Magenta). | Precise creative control over specific scene colors (e.g., boosting foliage greens or tuning skin tones). |
+| **Spline RGB & Tone Curves** <br>✅ *(Completed)* | Full-featured composite RGB and individual Red, Green, and Blue tone curve editor with interactive control points (tap to add, drag to move, long-press to delete, up to 10 points), diagonal identity reference, and natural cubic spline interpolation via tridiagonal matrix solver. | Professional exposure, shadow, and color grading capabilities matching desktop editing software. |
+| **Selective Gradient & Radial Masks** <br>✅ *(Completed)* | Apply exposure, contrast, temperature, or blur selectively within a linear gradient or circular radial mask instead of globally, with on-screen interactive drag handles, edge feathering, and invert toggle. | Enables advanced landscape balancing (darkening an overexposed sky) and portrait subject isolation. |
+| **8-Channel HSL Color Tuner** <br>✅ *(Completed)* | Dedicated Hue, Saturation, and Luminance sliders for 8 discrete color ranges (Red, Orange, Yellow, Green, Cyan, Blue, Purple, Magenta) with smoothstep boundary blending and achromatic pixel protection. | Precise creative control over specific scene colors (e.g., boosting foliage greens or tuning skin tones). |
 | **Custom Edit Preset Recipes** | Save any combination of tone adjustments, curves, and filters into a named recipe with export/import support (`.recipe.json`). | Allows photographers to define signature looks and reuse them across multiple shoots. |
 | **Batch Apply Recipe** | Copy the edit recipe of any edited photo and apply it in a background isolate across dozens of selected gallery items. | Saves hours of repetitive work when processing photos taken under identical lighting conditions. |
 | **Press-to-Compare Original** | A hold gesture or quick toggle on the editor canvas that temporarily displays the unedited original photo. | Immediate visual feedback to prevent over-processing and maintain natural tones. |
@@ -152,9 +152,9 @@ The following subsections outline high-impact, actionable engineering improvemen
 
 | Enhancement | Description & Implementation Details | User Value |
 |---|---|---|
-| **One-Tap EXIF Metadata Stripper** | Strip GPS coordinates, camera serial numbers, lens specifications, and date stamps before sharing or exporting. | Protects residential location privacy and personal device identifiers when posting to public channels. |
-| **GPS Geofence Shifter (Location Fuzzing)** | An innovative privacy control that adds a randomized 2–5 km offset to embedded GPS coordinates within the same city or region. | Preserves general regional travel context while obfuscating exact home or hotel street coordinates. |
-| **Forensic Lens & Sensor Inspector** | Detailed metadata inspector displaying sensor crop factor, focal length 35mm equivalent, shutter actuation, exposure bias, and color profile. | Deep technical insights for enthusiast photographers and archivists. |
+| **One-Tap EXIF Metadata Stripper** <br>✅ *(Completed)* | Zero-loss and pure Dart byte-stream metadata scrubber for JPEG (lossless marker parser removing APP1/Exif/XMP, APP13/Photoshop, and COM comments while retaining APP2 ICC color profiles and scan data), PNG (ancillary chunk stripper removing `eXIf`, `tEXt`, `zTXt`, `iTXt`), and WebP (RIFF chunk filter removing `EXIF` and `XMP `), plus selective tag redaction. Integrated with modal privacy sheet (`MediaPrivacySheet`), quick-action top-bar shield, and native Android offline sharing (`FileProvider` / `ACTION_SEND`). | Protects residential location privacy and personal device identifiers when posting to public channels. |
+| **GPS Geofence Shifter (Location Fuzzing)** <br>✅ *(Completed)* | Spherical geodesy location fuzzing engine that calculates randomized 2–5 km (or custom 1–10 km) geographical displacement vectors using haversine destination formulas, bearing calculation, and compass cardinal direction mapping. Rewrites EXIF GPS IFD tags (`GPSLatitudeRef`, `GPSLatitude`, `GPSLongitudeRef`, `GPSLongitude`, `GPSDateStamp`, `GPSTimeStamp`) with zero re-encoding artifacts. Live preview card and 1-tap "Fuzz & Share" or "Save to Gallery" workflows. | Preserves general regional travel context while obfuscating exact home or hotel street coordinates. |
+| **Forensic Lens & Sensor Inspector** <br>✅ *(Completed)* | Advanced optical and hardware metadata analyzer extracting sensor crop factor, 35mm equivalent focal length, sensor format classification (Full Frame, APS-C, Micro Four Thirds, 1-inch, smartphone), signed rational EV exposure bias, shutter actuations from MakerNotes, hyperfocal distance calculation, and hardware serial numbers. Displayed in a modal inspection sheet (`ForensicInspectorSheet`) accessible from media details and viewer overflow. | Deep technical insights for enthusiast photographers and archivists. |
 
 ---
 
@@ -272,6 +272,12 @@ The matrix below organizes all proposed enhancements into prioritized implementa
 | Feature / Enhancement | Module | Complexity | User Impact | Target Milestone |
 |---|---|---|---|---|
 | **A/B Synchronized Photo Comparison** | Fullscreen Viewer | Low | High | ✅ **Completed** (v1.1.0) |
+| **Spline RGB & Tone Curves** | Photo Editor | Medium | High | ✅ **Completed** (v1.1.0) |
+| **Selective Gradient & Radial Masks** | Photo Editor | Medium | High | ✅ **Completed** (v1.1.0) |
+| **8-Channel HSL Color Tuner** | Photo Editor | Medium | High | ✅ **Completed** (v1.1.0) |
+| **One-Tap EXIF Metadata Stripper** | Privacy / EXIF | Low | High | ✅ **Completed** (v1.1.0) |
+| **GPS Geofence Shifter (Location Fuzzing)** | Privacy / EXIF | Low | High | ✅ **Completed** (v1.1.0) |
+| **Forensic Lens & Sensor Inspector** | Privacy / EXIF | Medium | High | ✅ **Completed** (v1.1.0) |
 | **Contextual Timeline Filter Chips** | Timeline Grid | Low | High | **v1.1.0** |
 | **Video Audio Muter / Track Stripper** | Video Utilities | Low | High | **v1.1.0** |
 | **Press-to-Compare Original Toggle** | Photo Editor | Low | Medium | **v1.1.0** |
@@ -284,7 +290,6 @@ The matrix below organizes all proposed enhancements into prioritized implementa
 | **K-Means Color Palette Visual Search** | Search Engine | Medium | High | **v1.3.0** |
 | **On-Device SQLite FTS5 OCR Indexing** | Search / OCR | High | Very High | **v1.3.0** |
 | **Motion Photo / Live Photo Extractor** | Viewer / Tools | High | High | **v1.3.0** |
-| **GPS Geofence Shifter (Location Fuzzer)** | Privacy / EXIF | Low | High | **v1.3.0** |
 | **AirQR Optical Data Streaming Protocol** | Local Sync | Medium | High | **v1.4.0** |
 | **Incremental Differential Backups** | Backup Engine | Medium | High | **v1.4.0** |
 | **Document Perspective Rectification** | Photo Editor | High | High | **v1.4.0** |

@@ -202,6 +202,15 @@ abstract class MediaStoreChannel {
     required bool isVideo,
     String relativeDir,
   });
+
+  /// Permanently deletes media items from Android storage via MediaStore.
+  ///
+  /// On Android 11+ this presents the system confirmation dialog. Returns true
+  /// when the deletion succeeded, false when cancelled or rejected.
+  Future<bool> deleteMedia({
+    required List<String> uris,
+    required List<String> paths,
+  });
 }
 
 /// Real [MediaStoreChannel] backed by the Android platform channel.
@@ -318,6 +327,18 @@ class PlatformMediaStoreChannel implements MediaStoreChannel {
       path: result['path'] as String?,
       usedMediaStore: result['usedMediaStore'] as bool? ?? false,
     );
+  }
+
+  @override
+  Future<bool> deleteMedia({
+    required List<String> uris,
+    required List<String> paths,
+  }) async {
+    final result = await _invoke<bool>('deleteMedia', <String, Object?>{
+      'uris': uris,
+      'paths': paths,
+    });
+    return result ?? false;
   }
 
   Future<T?> _invoke<T>(

@@ -4,6 +4,7 @@ import 'package:in_sreerajp_imgvidgal/models/album_summary.dart';
 import 'package:in_sreerajp_imgvidgal/models/filter_options.dart';
 import 'package:in_sreerajp_imgvidgal/models/media_item.dart';
 import 'package:in_sreerajp_imgvidgal/providers/media_providers.dart';
+import 'package:in_sreerajp_imgvidgal/providers/trash_providers.dart';
 import 'package:in_sreerajp_imgvidgal/repositories/album_repository.dart';
 import 'package:in_sreerajp_imgvidgal/repositories/database/album_dao.dart';
 
@@ -50,6 +51,7 @@ final deviceFolderAlbumsProvider = FutureProvider<List<AlbumSummary>>((
 final smartAlbumsProvider = FutureProvider<List<AlbumSummary>>((ref) async {
   ref.watch(mediaScanControllerProvider);
   ref.watch(albumRevisionProvider);
+  ref.watch(trashRevisionProvider);
   return ref.watch(albumRepositoryProvider).getSmartAlbums();
 });
 
@@ -91,6 +93,7 @@ final smartAlbumMediaProvider = FutureProvider.family<List<MediaItem>?, String>(
   (ref, key) async {
     ref.watch(mediaScanControllerProvider);
     ref.watch(albumRevisionProvider);
+    ref.watch(trashRevisionProvider);
     return ref
         .watch(albumRepositoryProvider)
         .getSmartAlbumMediaByKey(key, filter: ref.watch(albumFilterProvider));

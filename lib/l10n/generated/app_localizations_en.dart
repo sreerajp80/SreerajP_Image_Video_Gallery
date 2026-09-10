@@ -326,6 +326,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get editorToolTune => 'Tune';
 
   @override
+  String get editorToolMasks => 'Masks';
+
+  @override
   String get editorToolFilters => 'Filters';
 
   @override
@@ -435,6 +438,75 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get curveHint => 'Drag a point to shape the curve';
+
+  @override
+  String get curveAddHint => 'Tap to add a point, long-press to remove';
+
+  @override
+  String get maskShapeLinear => 'Linear';
+
+  @override
+  String get maskShapeRadial => 'Radial';
+
+  @override
+  String get maskFeather => 'Feather';
+
+  @override
+  String get maskInvert => 'Invert';
+
+  @override
+  String get maskBlur => 'Blur';
+
+  @override
+  String get maskAddLinear => 'Add linear gradient';
+
+  @override
+  String get maskAddRadial => 'Add radial mask';
+
+  @override
+  String get maskRemove => 'Remove mask';
+
+  @override
+  String get maskEmpty => 'Tap + to add a mask';
+
+  @override
+  String get hslTitle => 'HSL Color Tuner';
+
+  @override
+  String get hslHue => 'Hue';
+
+  @override
+  String get hslSaturation => 'Saturation';
+
+  @override
+  String get hslLuminance => 'Luminance';
+
+  @override
+  String get hslReset => 'Reset HSL';
+
+  @override
+  String get hslRangeRed => 'Red';
+
+  @override
+  String get hslRangeOrange => 'Orange';
+
+  @override
+  String get hslRangeYellow => 'Yellow';
+
+  @override
+  String get hslRangeGreen => 'Green';
+
+  @override
+  String get hslRangeCyan => 'Cyan';
+
+  @override
+  String get hslRangeBlue => 'Blue';
+
+  @override
+  String get hslRangePurple => 'Purple';
+
+  @override
+  String get hslRangeMagenta => 'Magenta';
 
   @override
   String get filterNone => 'Original';
@@ -3147,7 +3219,20 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get trashEmptyConfirmBody =>
-      'This removes all trashed items from the gallery. The files stay on your phone.';
+      'This will permanently delete all trashed items from your device storage. This action cannot be undone.';
+
+  @override
+  String get trashDeletePermanentlyAction => 'Delete permanently';
+
+  @override
+  String get trashDeletePermanentlyConfirmTitle => 'Delete permanently?';
+
+  @override
+  String get trashDeletePermanentlyConfirmBody =>
+      'This item will be permanently deleted from your device storage. This action cannot be undone.';
+
+  @override
+  String get trashDeletedPermanentlySnackbar => 'Item permanently deleted';
 
   @override
   String get trashRestoreAction => 'Restore';
@@ -3304,4 +3389,260 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get compareNoExif => 'No EXIF data available';
+
+  @override
+  String get tabTimeline => 'Timeline';
+
+  @override
+  String get tabFolders => 'Folders';
+
+  @override
+  String get tabAlbums => 'Albums';
+
+  @override
+  String get foldersTitle => 'Folders';
+
+  @override
+  String get foldersEmpty => 'No folders found';
+
+  @override
+  String get foldersEmptyBody =>
+      'Pull down to scan for photos and videos on your device.';
+
+  @override
+  String folderItemCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count items',
+      one: '1 item',
+      zero: 'Empty',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get privacyScrubberTitle => 'Media Privacy & Scrubber';
+
+  @override
+  String get privacyScrubberSubtitle =>
+      'Strip sensitive EXIF metadata and fuzz GPS coordinates before sharing';
+
+  @override
+  String get privacyScrubberMenu => 'Privacy & EXIF Scrubber';
+
+  @override
+  String get privacyCardTitle => 'Media Privacy & EXIF';
+
+  @override
+  String get privacyCardBody =>
+      'Protect your privacy by stripping GPS location, camera serial numbers, and device identifiers before sharing.';
+
+  @override
+  String get privacyOpenScrubber => 'Open Privacy Controls';
+
+  @override
+  String get privacyTabStripper => 'EXIF Stripper';
+
+  @override
+  String get privacyTabGeofence => 'GPS Geofence Shifter';
+
+  @override
+  String get privacyStripAndShareAction => 'One-Tap Strip & Share';
+
+  @override
+  String get privacySaveSanitizedAction => 'Save Sanitized Copy to Gallery';
+
+  @override
+  String get privacyGranularTitle => 'Selective Metadata Scrubbing';
+
+  @override
+  String get privacyStripAll => 'Strip All';
+
+  @override
+  String get privacyCustom => 'Custom';
+
+  @override
+  String get privacyOptionGps => 'Strip GPS Coordinates & Altitude';
+
+  @override
+  String get privacyOptionSerials => 'Strip Camera & Lens Serial Numbers';
+
+  @override
+  String get privacyOptionTimestamps => 'Strip Capture & Digitization Dates';
+
+  @override
+  String get privacyOptionAuthor => 'Strip Author & Software Info';
+
+  @override
+  String get privacyErrorReadingFile =>
+      'Unable to read image data for privacy processing';
+
+  @override
+  String get privacyShareTitle => 'Share Sanitized Media';
+
+  @override
+  String get privacyShareFailed => 'Sharing could not be initiated';
+
+  @override
+  String get privacyProcessError => 'An error occurred while sanitizing media';
+
+  @override
+  String get privacySavedToGallery => 'Sanitized copy saved to gallery';
+
+  @override
+  String get privacySaveFailed => 'Failed to save sanitized image';
+
+  @override
+  String get privacyNoLocation =>
+      'No embedded GPS location found in this photo';
+
+  @override
+  String get geofenceOffsetDistance => 'Shift Distance Offset';
+
+  @override
+  String get geofenceReroll => 'Reroll random shift';
+
+  @override
+  String get geofenceRandomPreset => 'Random (2–5 km)';
+
+  @override
+  String geofenceShiftSummary(String summary) {
+    return 'Shifted $summary';
+  }
+
+  @override
+  String geofenceFuzzedCoordinates(String lat, String lon) {
+    return 'Shifted to $lat, $lon';
+  }
+
+  @override
+  String get geofenceExplanation =>
+      'Adds an offset within 2–5 km to preserve general regional travel context while hiding exact residential street coordinates.';
+
+  @override
+  String get geofenceShareTitle => 'Share Geofuzzed Photo';
+
+  @override
+  String get geofenceShareAction => 'Fuzz Location & Share';
+
+  @override
+  String get geofenceSaveAction => 'Save Geofuzzed Copy to Gallery';
+
+  @override
+  String get geofenceSavedToGallery => 'Geofuzzed copy saved to gallery';
+
+  @override
+  String get geofenceNoCoordinates => 'No Location Found';
+
+  @override
+  String get geofenceNoCoordinatesBody =>
+      'This media item does not have embedded GPS coordinates to shift.';
+
+  @override
+  String get privacyAuditSensitiveDetected => 'Sensitive Metadata Detected';
+
+  @override
+  String get privacyAuditClean => 'No Sensitive Metadata Detected';
+
+  @override
+  String privacyAuditSensitiveDetails(String gps, String camera) {
+    return 'Contains $gps $camera';
+  }
+
+  @override
+  String get privacyAuditGps => 'GPS Coordinates';
+
+  @override
+  String get privacyAuditCamera => 'Device Identifiers';
+
+  @override
+  String get privacyAuditCleanDetails =>
+      'This file does not contain embedded location or camera serial identifiers.';
+
+  @override
+  String get forensicInspectorTitle => 'Forensic Lens & Sensor Inspector';
+
+  @override
+  String get forensicInspectorSubtitle =>
+      'Deep technical optical and hardware forensic insights';
+
+  @override
+  String get forensicInspectorButton => 'Inspect Lens & Sensor Forensics';
+
+  @override
+  String get forensicInspectorQuickHint =>
+      'Sensor crop factor, 35mm equivalent, shutter actuation, exposure bias';
+
+  @override
+  String get forensicNoData =>
+      'No forensic lens or sensor metadata found in this item.';
+
+  @override
+  String get forensicSectionSensorOptics => 'Sensor & Optical Characteristics';
+
+  @override
+  String get forensicSectionMechanicsColor =>
+      'Mechanical Actuations & Color Space';
+
+  @override
+  String get forensicSectionHardwareIdentity =>
+      'Hardware & Lens Serial Identity';
+
+  @override
+  String get forensicSensorFormat => 'Sensor Format';
+
+  @override
+  String get forensicCropFactor => 'Crop Factor';
+
+  @override
+  String get forensicFocal35mm => '35mm Equivalent';
+
+  @override
+  String get forensicPhysicalFocalLength => 'Physical Focal Length';
+
+  @override
+  String get forensicHyperfocalDistance => 'Hyperfocal Distance';
+
+  @override
+  String get forensicExposureBias => 'Exposure Bias (EV)';
+
+  @override
+  String get forensicShutterActuations => 'Shutter Releases';
+
+  @override
+  String get forensicShutterNotReported => 'Electronic shutter / Not reported';
+
+  @override
+  String get forensicColorProfile => 'Color Space / Profile';
+
+  @override
+  String get forensicExposureProgram => 'Exposure Program';
+
+  @override
+  String get forensicMeteringMode => 'Metering Mode';
+
+  @override
+  String get forensicSensingMethod => 'Sensing Method';
+
+  @override
+  String get forensicSceneCaptureType => 'Scene Capture Type';
+
+  @override
+  String get forensicFlashStatus => 'Flash & Strobe Status';
+
+  @override
+  String get forensicCameraSerial => 'Camera Serial Number';
+
+  @override
+  String get forensicLensModel => 'Lens Model';
+
+  @override
+  String get forensicLensSpecification => 'Lens Specification';
+
+  @override
+  String get forensicLensSerial => 'Lens Serial Number';
+
+  @override
+  String get forensicSerialNotEmbedded => 'Not embedded in headers';
 }

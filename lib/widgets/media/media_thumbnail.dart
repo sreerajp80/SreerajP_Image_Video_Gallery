@@ -12,8 +12,8 @@ import 'package:in_sreerajp_imgvidgal/providers/media_providers.dart';
 class MediaThumbnail extends ConsumerWidget {
   final MediaItem item;
 
-  /// Side length of the square tile.
-  final double size;
+  /// Side length of the square tile, or null to fill parent constraints.
+  final double? size;
 
   /// Corner radius of the tile.
   final double borderRadius;
@@ -21,7 +21,7 @@ class MediaThumbnail extends ConsumerWidget {
   const MediaThumbnail({
     super.key,
     required this.item,
-    this.size = 96,
+    this.size,
     this.borderRadius = 8,
   });
 
@@ -30,50 +30,52 @@ class MediaThumbnail extends ConsumerWidget {
     final thumbnail = ref.watch(thumbnailProvider(item));
     final colorScheme = Theme.of(context).colorScheme;
 
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(borderRadius),
-      child: SizedBox(
-        width: size,
-        height: size,
-        child: thumbnail.when(
-          data: (bytes) {
-            if (bytes == null || bytes.isEmpty) {
-              return _Placeholder(
-                icon: Icons.broken_image_outlined,
-                colorScheme: colorScheme,
-                label: AppLocalizations.of(context)!.mediaUnavailable,
-              );
-            }
-            return Image.memory(
-              bytes,
-              width: size,
-              height: size,
-              fit: BoxFit.cover,
-              gaplessPlayback: true,
-              errorBuilder: (context, error, stackTrace) => _Placeholder(
-                icon: Icons.broken_image_outlined,
-                colorScheme: colorScheme,
-                label: AppLocalizations.of(context)!.mediaUnavailable,
-              ),
-            );
-          },
-          loading: () => ColoredBox(
-            color: colorScheme.surfaceContainerHighest,
-            child: const Center(
-              child: SizedBox(
-                width: 18,
-                height: 18,
-                child: CircularProgressIndicator(strokeWidth: 2),
-              ),
-            ),
-          ),
-          error: (error, stackTrace) => _Placeholder(
+    Widget child = thumbnail.when(
+      data: (bytes) {
+        if (bytes == null || bytes.isEmpty) {
+          return _Placeholder(
+            icon: Icons.broken_image_outlined,
+            colorScheme: colorScheme,
+            label: AppLocalizations.of(context)!.mediaUnavailable,
+          );
+        }
+        return Image.memory(
+          bytes,
+          width: size,
+          height: size,
+          fit: BoxFit.cover,
+          gaplessPlayback: true,
+          errorBuilder: (context, error, stackTrace) => _Placeholder(
             icon: Icons.broken_image_outlined,
             colorScheme: colorScheme,
             label: AppLocalizations.of(context)!.mediaUnavailable,
           ),
+        );
+      },
+      loading: () => ColoredBox(
+        color: colorScheme.surfaceContainerHighest,
+        child: const Center(
+          child: SizedBox(
+            width: 18,
+            height: 18,
+            child: CircularProgressIndicator(strokeWidth: 2),
+          ),
         ),
       ),
+      error: (error, stackTrace) => _Placeholder(
+        icon: Icons.broken_image_outlined,
+        colorScheme: colorScheme,
+        label: AppLocalizations.of(context)!.mediaUnavailable,
+      ),
+    );
+
+    if (size != null) {
+      child = SizedBox(width: size, height: size, child: child);
+    }
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(borderRadius),
+      child: child,
     );
   }
 }

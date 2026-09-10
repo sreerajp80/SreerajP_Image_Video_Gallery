@@ -2,6 +2,7 @@ package `in`.sreerajp.imgvidgal.media
 
 import android.Manifest
 import android.app.Activity
+import android.app.RecoverableSecurityException
 import android.content.ContentResolver
 import android.content.ContentUris
 import android.content.Context
@@ -41,6 +42,7 @@ class MediaStoreChannelHandler(
     companion object {
         const val CHANNEL_NAME = "in.sreerajp.imgvidgal/mediastore"
         private const val PERMISSION_REQUEST_CODE = 4711
+        private const val DELETE_REQUEST_CODE = 4712
 
         private const val STATUS_GRANTED = "granted"
         private const val STATUS_PARTIAL = "partial"
@@ -62,6 +64,7 @@ class MediaStoreChannelHandler(
     private val mainHandler = Handler(Looper.getMainLooper())
 
     private var pendingPermissionResult: MethodChannel.Result? = null
+    private var pendingDeleteResult: MethodChannel.Result? = null
 
     init {
         channel.setMethodCallHandler(this)
@@ -70,7 +73,23 @@ class MediaStoreChannelHandler(
     /** Detaches the channel; called when the activity goes away. */
     fun dispose() {
         channel.setMethodCallHandler(null)
+        pendingPermissionResult = null
+        pendingDeleteResult = null
         worker.shutdown()
+    }
+
+    fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?): Boolean {
+        if (requestCode == DELETE_REQUEST_CODE) {
+            val res = pendingDeleteResult
+            pendingDeleteResult = null
+            if (res != null) {
+                mainHandler.post {
+                    res.success(resultCode == Activity.RESULT_OK)
+                }
+            }
+            return true
+        }
+        return false
     }
 
     override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
@@ -82,6 +101,7 @@ class MediaStoreChannelHandler(
             "loadThumbnail" -> handleLoadThumbnail(call, result)
             "readBytes" -> handleReadBytes(call, result)
             "publishFile" -> handlePublishFile(call, result)
+            "deleteMedia" -> handleDeleteMedia(call, result)
             "openAppSettings" -> {
                 openAppSettings()
                 result.success(null)
@@ -654,5 +674,107 @@ class MediaStoreChannelHandler(
     private fun Cursor.getIntOrNull(column: String): Int? {
         val index = getColumnIndex(column)
         return if (index < 0 || isNull(index)) null else getInt(index)
+    }
+
+    private fun handleDeleteMedia(call: MethodCall, result: MethodChannel.Result) {
+        val uris = call.argument<List<String>>("uris") ?: emptyList()
+        val paths = call.argument<List<String>>("paths") ?: emptyList()
+
+        if (uris.isEmpty() && paths.isEmpty()) {
+            result.success(true)
+            return
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            val contentUris = uris.filter { it.isNotEmpty() }.map { Uri.parse(it) }
+            if (contentUris.isNotEmpty()) {
+                try {
+                    val pendingIntent = MediaStore.createDeleteRequest(activity.contentResolver, contentUris)
+                    pendingDeleteResult = result
+                    activity.startIntentSenderForResult(
+                        pendingIntent.intentSender,
+                        DELETE_REQUEST_CODE,
+                        null,
+                        0,
+                        0,
+                        0
+                    )
+                    return
+                } catch (_: Exception) {
+                    // Fall back to direct delete
+                }
+            }
+            worker.execute {
+                var success = true
+                for (u in contentUris) {
+                    try {
+                        val deleted = activity.contentResolver.delete(u, null, null)
+                        if (deleted <= 0) success = false
+                    } catch (_: Exception) {
+                        success = false
+                    }
+                }
+                for (p in paths) {
+                    try {
+                        val f = java.io.File(p)
+                        if (f.exists()) f.delete()
+                    } catch (_: Exception) {}
+                }
+                mainHandler.post { result.success(success) }
+            }
+        } else if (Build.VERSION.SDK_INT == Build.VERSION_CODES.Q) {
+            worker.execute {
+                val contentUris = uris.filter { it.isNotEmpty() }.map { Uri.parse(it) }
+                var secException: RecoverableSecurityException? = null
+                for (u in contentUris) {
+                    try {
+                        activity.contentResolver.delete(u, null, null)
+                    } catch (sec: RecoverableSecurityException) {
+                        if (secException == null) secException = sec
+                    } catch (_: Exception) {}
+                }
+                for (p in paths) {
+                    try {
+                        val f = java.io.File(p)
+                        if (f.exists()) f.delete()
+                    } catch (_: Exception) {}
+                }
+                if (secException != null) {
+                    pendingDeleteResult = result
+                    mainHandler.post {
+                        try {
+                            activity.startIntentSenderForResult(
+                                secException.userAction.actionIntent.intentSender,
+                                DELETE_REQUEST_CODE,
+                                null,
+                                0,
+                                0,
+                                0
+                            )
+                        } catch (_: Exception) {
+                            pendingDeleteResult = null
+                            result.success(false)
+                        }
+                    }
+                } else {
+                    mainHandler.post { result.success(true) }
+                }
+            }
+        } else {
+            worker.execute {
+                for (u in uris) {
+                    try {
+                        activity.contentResolver.delete(Uri.parse(u), null, null)
+                    } catch (_: Exception) {}
+                }
+                for (p in paths) {
+                    try {
+                        val f = java.io.File(p)
+                        if (f.exists()) f.delete()
+                    } catch (_: Exception) {}
+                }
+                mainHandler.post { result.success(true) }
+            }
+        }
     }
 }

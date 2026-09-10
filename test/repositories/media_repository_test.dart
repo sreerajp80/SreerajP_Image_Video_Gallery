@@ -35,7 +35,11 @@ void main() {
         mediaDao: mediaDao,
         batchSize: 10,
       );
-      repository = MediaRepository(mediaDao: mediaDao, scanner: scanner);
+      repository = MediaRepository(
+        mediaDao: mediaDao,
+        scanner: scanner,
+        channel: channel,
+      );
     });
 
     tearDown(() async {
@@ -173,5 +177,44 @@ void main() {
 
       expect(phases.last, ScanPhase.completed);
     });
+
+    test(
+      'deletePermanently deletes files via channel and removes rows from db',
+      () async {
+        channel.entries = <MediaStoreEntry>[
+          buildEntry(id: 'del1', path: '/storage/emulated/0/DCIM/del1.jpg'),
+          buildEntry(id: 'del2', path: '/storage/emulated/0/DCIM/del2.jpg'),
+        ];
+        await repository.scanDevice();
+        expect(await repository.getTotalCount(), 2);
+
+        final items = await repository.getMediaItems();
+        expect(items.length, 2);
+
+        final success = await repository.deletePermanently([items.first]);
+        expect(success, isTrue);
+        expect(channel.deletedUris, contains(items.first.uri));
+        expect(await repository.getTotalCount(), 1);
+
+        final remaining = await repository.getMediaItems();
+        expect(remaining.single.id, 'del2');
+      },
+    );
+
+    test(
+      'deletePermanently aborts and preserves db if channel refuses deletion',
+      () async {
+        channel.entries = <MediaStoreEntry>[
+          buildEntry(id: 'safe1', path: '/storage/emulated/0/DCIM/safe1.jpg'),
+        ];
+        await repository.scanDevice();
+        channel.deleteSucceeds = false;
+
+        final items = await repository.getMediaItems();
+        final success = await repository.deletePermanently([items.first]);
+        expect(success, isFalse);
+        expect(await repository.getTotalCount(), 1);
+      },
+    );
   });
 }

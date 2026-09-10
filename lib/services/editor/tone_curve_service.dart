@@ -58,32 +58,102 @@ class ToneCurveService {
     return unique;
   }
 
-  /// The output value for [input], reading straight from the curve.
+  /// The output value for [input] using natural cubic spline interpolation.
   ///
   /// Values before the first point and after the last one are held flat, so
   /// a curve the user only shaped in the middle still covers the full range.
   double evaluate(List<CurvePoint> points, double input) {
     final sanitized = sanitize(points);
     final x = input.clamp(0.0, 255.0);
+    final n = sanitized.length;
 
     if (x <= sanitized.first.input) return sanitized.first.output;
     if (x >= sanitized.last.input) return sanitized.last.output;
+    if (n == 2) {
+      // Two points: linear interpolation is exact.
+      final a = sanitized[0];
+      final b = sanitized[1];
+      final span = b.input - a.input;
+      if (span.abs() < 0.0001) return b.output;
+      final t = (x - a.input) / span;
+      return a.output + (b.output - a.output) * t;
+    }
 
-    for (var i = 0; i < sanitized.length - 1; i++) {
-      final a = sanitized[i];
-      final b = sanitized[i + 1];
-      if (x >= a.input && x <= b.input) {
-        final span = b.input - a.input;
-        if (span.abs() < 0.0001) return b.output;
-        final t = (x - a.input) / span;
-        // Smoothstep instead of a straight line, so a dragged handle gives a
-        // soft bend rather than a visible kink.
-        final eased = t * t * (3 - 2 * t);
-        return a.output + (b.output - a.output) * eased;
+    final coeffs = _cubicSplineCoefficients(sanitized);
+    return _evaluateSpline(sanitized, coeffs, x);
+  }
+
+  /// Computes second derivatives for natural cubic spline (zero second
+  /// derivative at the two endpoints).
+  ///
+  /// Uses the tridiagonal algorithm, which is O(n) and stable for the
+  /// monotonic inputs we have after sanitizing.
+  List<double> _cubicSplineCoefficients(List<CurvePoint> points) {
+    final n = points.length;
+    final m2 = List<double>.filled(n, 0); // second derivatives
+
+    if (n <= 2) return m2;
+
+    // Forward sweep of the tridiagonal system.
+    final h = List<double>.filled(n - 1, 0);
+    for (var i = 0; i < n - 1; i++) {
+      h[i] = points[i + 1].input - points[i].input;
+    }
+
+    final alpha = List<double>.filled(n, 0);
+    for (var i = 1; i < n - 1; i++) {
+      alpha[i] =
+          3 / h[i] * (points[i + 1].output - points[i].output) -
+          3 / h[i - 1] * (points[i].output - points[i - 1].output);
+    }
+
+    final l = List<double>.filled(n, 1);
+    final mu = List<double>.filled(n, 0);
+    final z = List<double>.filled(n, 0);
+
+    for (var i = 1; i < n - 1; i++) {
+      l[i] =
+          2 * (points[i + 1].input - points[i - 1].input) -
+          h[i - 1] * mu[i - 1];
+      if (l[i].abs() < 1e-12) l[i] = 1e-12; // guard against division by zero
+      mu[i] = h[i] / l[i];
+      z[i] = (alpha[i] - h[i - 1] * z[i - 1]) / l[i];
+    }
+
+    // Back substitution.
+    for (var j = n - 2; j > 0; j--) {
+      m2[j] = z[j] - mu[j] * m2[j + 1];
+    }
+
+    return m2;
+  }
+
+  /// Evaluates the cubic spline at position [x], given precomputed second
+  /// derivatives [m2].
+  double _evaluateSpline(List<CurvePoint> points, List<double> m2, double x) {
+    // Find the segment.
+    var seg = 0;
+    for (var i = 0; i < points.length - 1; i++) {
+      if (x <= points[i + 1].input) {
+        seg = i;
+        break;
       }
     }
 
-    return sanitized.last.output;
+    final h = points[seg + 1].input - points[seg].input;
+    if (h.abs() < 0.0001) return points[seg + 1].output;
+
+    final a = (points[seg + 1].input - x) / h;
+    final b = (x - points[seg].input) / h;
+
+    final value =
+        a * points[seg].output +
+        b * points[seg + 1].output +
+        ((a * a * a - a) * m2[seg] + (b * b * b - b) * m2[seg + 1]) *
+            (h * h) /
+            6;
+
+    return value.clamp(0.0, 255.0);
   }
 
   /// Builds the full 256 entry table for [curve].

@@ -36,8 +36,9 @@ String albumDisplayName(AppLocalizations l10n, AlbumSummary summary) {
 class AlbumCard extends StatelessWidget {
   final AlbumSummary summary;
 
-  /// Side length of the square cover.
-  final double size;
+  /// Side length of the square cover. When null or non-finite, the cover fills
+  /// the available width with a 1:1 aspect ratio, ideal for grid layouts.
+  final double? size;
 
   final VoidCallback? onTap;
 
@@ -59,6 +60,22 @@ class AlbumCard extends StatelessWidget {
     final name = albumDisplayName(l10n, summary);
     final cover = summary.coverItem;
 
+    final hasFiniteSize = size != null && size!.isFinite;
+    final coverWidget = hasFiniteSize
+        ? SizedBox(
+            width: size,
+            height: size,
+            child: cover == null
+                ? _EmptyCover(size: size, albumType: summary.albumType)
+                : MediaThumbnail(item: cover, size: size, borderRadius: 12),
+          )
+        : AspectRatio(
+            aspectRatio: 1.0,
+            child: cover == null
+                ? _EmptyCover(albumType: summary.albumType)
+                : MediaThumbnail(item: cover, borderRadius: 12),
+          );
+
     return Semantics(
       button: onTap != null,
       label: '$name, ${l10n.albumItemCount(summary.itemCount)}',
@@ -72,13 +89,7 @@ class AlbumCard extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              SizedBox(
-                width: size,
-                height: size,
-                child: cover == null
-                    ? _EmptyCover(size: size, albumType: summary.albumType)
-                    : MediaThumbnail(item: cover, size: size, borderRadius: 12),
-              ),
+              coverWidget,
               const SizedBox(height: 6),
               // A user-made album carries whatever name was typed, and a
               // folder album carries a name off the file system. Either can
@@ -110,26 +121,34 @@ class AlbumCard extends StatelessWidget {
 
 /// What an album with nothing in it shows instead of a cover.
 class _EmptyCover extends StatelessWidget {
-  final double size;
+  final double? size;
   final AlbumType albumType;
 
-  const _EmptyCover({required this.size, required this.albumType});
+  const _EmptyCover({this.size, required this.albumType});
 
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final hasFiniteSize = size != null && size!.isFinite;
 
     return Container(
-      width: size,
-      height: size,
+      width: hasFiniteSize ? size : null,
+      height: hasFiniteSize ? size : null,
       decoration: BoxDecoration(
         color: colorScheme.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(12),
       ),
-      child: Icon(
-        _iconFor(albumType),
-        size: size * 0.35,
-        color: colorScheme.onSurfaceVariant,
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final iconDimension = hasFiniteSize
+              ? size!
+              : (constraints.maxWidth.isFinite ? constraints.maxWidth : 120.0);
+          return Icon(
+            _iconFor(albumType),
+            size: iconDimension * 0.35,
+            color: colorScheme.onSurfaceVariant,
+          );
+        },
       ),
     );
   }

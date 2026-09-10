@@ -111,6 +111,23 @@ class FakeMediaStoreChannel implements MediaStoreChannel {
       path: '/storage/emulated/0/Pictures/$relativeDir/$displayName',
     );
   }
+
+  /// Whether [deleteMedia] should succeed.
+  bool deleteSucceeds = true;
+
+  /// URIs passed to [deleteMedia].
+  final List<String> deletedUris = <String>[];
+
+  @override
+  Future<bool> deleteMedia({
+    required List<String> uris,
+    required List<String> paths,
+  }) async {
+    if (!deleteSucceeds) return false;
+    deletedUris.addAll(uris);
+    entries.removeWhere((e) => uris.contains(e.uri) || paths.contains(e.path));
+    return true;
+  }
 }
 
 /// Builds a MediaStore row with sensible defaults for tests.

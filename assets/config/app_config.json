@@ -1,8 +1,8 @@
 {
   "appName": "SreerajP Image Video Gallery",
   "description": "Offline-first image and video gallery application for viewing, organizing, and managing local media.",
-  "version": "2.3.0",
-  "build": "8",
+  "version": "2.5.0",
+  "build": "13",
   "details": {
     "Author": "Sreeraj P",
     "License": "All libraries used are open source.",

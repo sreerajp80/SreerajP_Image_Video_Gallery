@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:in_sreerajp_imgvidgal/l10n/generated/app_localizations.dart';
+import 'package:in_sreerajp_imgvidgal/models/editor/hsl_adjustments.dart';
 import 'package:in_sreerajp_imgvidgal/models/editor/tone_adjustments.dart';
 import 'package:in_sreerajp_imgvidgal/widgets/editor/curve_editor.dart';
 import 'package:in_sreerajp_imgvidgal/widgets/editor/editor_slider_row.dart';
+import 'package:in_sreerajp_imgvidgal/widgets/editor/hsl_panel.dart';
 
-/// The light and colour panel: eight sliders plus the RGB curves.
+/// The light and colour panel: eight sliders, the RGB curves, and the
+/// 8-channel HSL colour tuner.
 ///
 /// It never edits pixels. Every move produces a new [ToneAdjustments] and
 /// hands it back, and the screen decides what to do with it.
@@ -89,6 +92,15 @@ class ToneSliderPanel extends StatelessWidget {
         ),
         const Divider(height: 24),
         CurveEditor(adjustments: adjustments, onChanged: onChangeEnd),
+        const Divider(height: 24),
+        HslPanel(
+          adjustments: adjustments,
+          onChanged: onChanged,
+          onChangeEnd: onChangeEnd,
+          onReset: () => onChangeEnd(
+            adjustments.copyWith(hslAdjustments: HslAdjustments.neutral),
+          ),
+        ),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           child: Align(

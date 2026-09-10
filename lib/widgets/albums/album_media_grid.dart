@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:in_sreerajp_imgvidgal/core/routing/app_router.dart';
 import 'package:in_sreerajp_imgvidgal/l10n/generated/app_localizations.dart';
 import 'package:in_sreerajp_imgvidgal/models/media_item.dart';
+import 'package:in_sreerajp_imgvidgal/providers/selection_providers.dart';
 import 'package:in_sreerajp_imgvidgal/providers/timeline_providers.dart';
 import 'package:in_sreerajp_imgvidgal/widgets/media/media_grid_tile.dart';
 
@@ -12,6 +13,10 @@ import 'package:in_sreerajp_imgvidgal/widgets/media/media_grid_tile.dart';
 /// All three show the same thing — a grid of items that opens the viewer — and
 /// differ only in where the list comes from and what the app bar offers. Only
 /// the list is passed in.
+///
+/// When [selectable] is true the grid supports the same multi-select
+/// behaviour as the timeline: long-press to start selecting, taps toggle
+/// during selection mode, and every tile shows a check mark when ticked.
 class AlbumMediaGrid extends ConsumerWidget {
   final List<MediaItem> items;
 
@@ -22,7 +27,16 @@ class AlbumMediaGrid extends ConsumerWidget {
   final String? emptyBody;
 
   /// Called when a tile is held, used by the album screen for its item menu.
+  ///
+  /// Ignored when [selectable] is true and the grid is in selection mode —
+  /// long-press then toggles selection instead.
   final void Function(MediaItem item)? onItemLongPress;
+
+  /// Called when a tile is tapped. When null, opens the media viewer.
+  final void Function(MediaItem item)? onItemTap;
+
+  /// Whether the grid supports multi-select and batch actions.
+  final bool selectable;
 
   const AlbumMediaGrid({
     super.key,
@@ -30,6 +44,8 @@ class AlbumMediaGrid extends ConsumerWidget {
     required this.emptyTitle,
     this.emptyBody,
     this.onItemLongPress,
+    this.onItemTap,
+    this.selectable = false,
   });
 
   @override
@@ -41,6 +57,10 @@ class AlbumMediaGrid extends ConsumerWidget {
     // The same column count the timeline uses, so the whole app keeps one grid
     // density rather than each screen picking its own.
     final columns = ref.watch(gridColumnCountProvider);
+    final selected = selectable
+        ? ref.watch(selectionProvider)
+        : const <String>{};
+    final selecting = selected.isNotEmpty;
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -58,16 +78,40 @@ class AlbumMediaGrid extends ConsumerWidget {
           itemCount: items.length,
           itemBuilder: (context, index) {
             final item = items[index];
-            return GestureDetector(
-              onLongPress: onItemLongPress == null
-                  ? null
-                  : () => onItemLongPress!(item),
-              child: MediaGridTile(
-                item: item,
-                size: tileSize,
-                semanticLabel: item.displayName,
-                onTap: (tapped) => context.push(mediaViewerPath(tapped.id)),
-              ),
+            return MediaGridTile(
+              item: item,
+              size: tileSize,
+              semanticLabel: item.displayName,
+              isSelected: selectable ? selected.contains(item.id) : false,
+              selectionMode: selectable ? selecting : false,
+              onTap: (tapped) {
+                if (selectable && selecting) {
+                  ref.read(selectionProvider.notifier).toggle(tapped.id);
+                  return;
+                }
+                if (onItemTap != null) {
+                  onItemTap!(tapped);
+                } else {
+                  context.push(mediaViewerPath(tapped.id));
+                }
+              },
+              onLongPress: (tapped) {
+                if (selectable) {
+                  final selection = ref.read(selectionProvider.notifier);
+                  if (!selection.contains(tapped.id) && selection.isFull) {
+                    final l10n = AppLocalizations.of(context)!;
+                    ScaffoldMessenger.of(
+                      context,
+                    ).showSnackBar(SnackBar(content: Text(l10n.selectionFull)));
+                    return;
+                  }
+                  selection.toggle(tapped.id);
+                  return;
+                }
+                if (onItemLongPress != null) {
+                  onItemLongPress!(tapped);
+                }
+              },
             );
           },
         );

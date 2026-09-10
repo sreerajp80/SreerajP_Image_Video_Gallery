@@ -72,6 +72,13 @@ class MainActivity : FlutterFragmentActivity() {
      * still reaches the rest of the app untouched.
      */
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        val handledMedia = mediaStoreHandler?.onActivityResult(
+            requestCode,
+            resultCode,
+            data
+        ) ?: false
+        if (handledMedia) return
+
         val handled = documentPickerHandler?.onActivityResult(
             requestCode,
             resultCode,

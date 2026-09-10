@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:in_sreerajp_imgvidgal/models/editor/hsl_adjustments.dart';
 import 'package:in_sreerajp_imgvidgal/models/editor/tone_curve.dart';
 
 /// Every light and colour slider in the editor, as one immutable value.
@@ -44,6 +45,9 @@ class ToneAdjustments {
   /// Curve applied to all three channels together.
   final ToneCurve rgbCurve;
 
+  /// Per-colour-range hue, saturation, and luminance shifts.
+  final HslAdjustments hslAdjustments;
+
   const ToneAdjustments({
     this.exposure = 0,
     this.contrast = 0,
@@ -57,6 +61,7 @@ class ToneAdjustments {
     this.greenCurve = ToneCurve.linear,
     this.blueCurve = ToneCurve.linear,
     this.rgbCurve = ToneCurve.linear,
+    this.hslAdjustments = HslAdjustments.neutral,
   });
 
   /// Nothing changed.
@@ -75,7 +80,8 @@ class ToneAdjustments {
       redCurve.isLinear &&
       greenCurve.isLinear &&
       blueCurve.isLinear &&
-      rgbCurve.isLinear;
+      rgbCurve.isLinear &&
+      hslAdjustments.isNeutral;
 
   /// Whether any of the four curves was edited.
   bool get hasCurves =>
@@ -97,6 +103,7 @@ class ToneAdjustments {
     ToneCurve? greenCurve,
     ToneCurve? blueCurve,
     ToneCurve? rgbCurve,
+    HslAdjustments? hslAdjustments,
   }) {
     return ToneAdjustments(
       exposure: exposure ?? this.exposure,
@@ -111,6 +118,7 @@ class ToneAdjustments {
       greenCurve: greenCurve ?? this.greenCurve,
       blueCurve: blueCurve ?? this.blueCurve,
       rgbCurve: rgbCurve ?? this.rgbCurve,
+      hslAdjustments: hslAdjustments ?? this.hslAdjustments,
     );
   }
 
@@ -127,6 +135,7 @@ class ToneAdjustments {
     'greenCurve': greenCurve.toMap(),
     'blueCurve': blueCurve.toMap(),
     'rgbCurve': rgbCurve.toMap(),
+    'hslAdjustments': hslAdjustments.toMap(),
   };
 
   factory ToneAdjustments.fromMap(Map<String, dynamic> map) {
@@ -151,7 +160,16 @@ class ToneAdjustments {
       greenCurve: readCurve('greenCurve'),
       blueCurve: readCurve('blueCurve'),
       rgbCurve: readCurve('rgbCurve'),
+      hslAdjustments: _readHsl(map),
     );
+  }
+
+  static HslAdjustments _readHsl(Map<String, dynamic> map) {
+    final raw = map['hslAdjustments'];
+    if (raw is Map) {
+      return HslAdjustments.fromMap(Map<String, dynamic>.from(raw));
+    }
+    return HslAdjustments.neutral;
   }
 
   @override
@@ -170,7 +188,8 @@ class ToneAdjustments {
           redCurve == other.redCurve &&
           greenCurve == other.greenCurve &&
           blueCurve == other.blueCurve &&
-          rgbCurve == other.rgbCurve;
+          rgbCurve == other.rgbCurve &&
+          hslAdjustments == other.hslAdjustments;
 
   @override
   int get hashCode => Object.hash(
@@ -186,6 +205,7 @@ class ToneAdjustments {
     greenCurve,
     blueCurve,
     rgbCurve,
+    hslAdjustments,
   );
 
   @override
