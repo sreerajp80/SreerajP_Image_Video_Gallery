@@ -23,22 +23,28 @@ void main() {
     dateModified: DateTime(2026, 9, 6),
   );
 
-  Widget createViewerWidget({required MediaItem item}) {
+  Widget createMultiViewerWidget({required List<MediaItem> items}) {
     return ProviderScope(
       overrides: [
-        timelineItemsProvider.overrideWith((ref) => [item]),
-        mediaItemProvider(item.id).overrideWith((ref) => item),
-        externalMediaItemProvider(item.id).overrideWith((ref) => null),
-        fullImageBytesProvider(item).overrideWith((ref) => Uint8List(0)),
-        thumbnailProvider(item).overrideWith((ref) => Uint8List(0)),
+        timelineItemsProvider.overrideWith((ref) => items),
+        for (final item in items) ...[
+          mediaItemProvider(item.id).overrideWith((ref) => item),
+          externalMediaItemProvider(item.id).overrideWith((ref) => null),
+          fullImageBytesProvider(item).overrideWith((ref) => Uint8List(0)),
+          thumbnailProvider(item).overrideWith((ref) => Uint8List(0)),
+        ],
         viewerPageIndexProvider.overrideWith((ref) => 0),
       ],
       child: MaterialApp(
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
-        home: MediaViewerScreen(mediaId: item.id),
+        home: MediaViewerScreen(mediaId: items.first.id),
       ),
     );
+  }
+
+  Widget createViewerWidget({required MediaItem item}) {
+    return createMultiViewerWidget(items: [item]);
   }
 
   testWidgets(
@@ -109,6 +115,137 @@ void main() {
         ),
       );
       expect(bottomPosShown.bottom, equals(0));
+    },
+  );
+
+  testWidgets(
+    'Rotating an image updates RotatedBox and allows zoom in and out',
+    (tester) async {
+      tester.view.physicalSize = const Size(1080, 2400);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.reset);
+
+      await tester.pumpWidget(createViewerWidget(item: testImage));
+      await tester.pumpAndSettle();
+
+      // Starts unrotated
+      expect(find.byType(RotatedBox), findsOneWidget);
+      var rotatedBox = tester.widget<RotatedBox>(find.byType(RotatedBox));
+      expect(rotatedBox.quarterTurns, equals(0));
+
+      // Rotate clockwise (right)
+      await tester.tap(find.byIcon(Icons.rotate_right));
+      await tester.pumpAndSettle();
+
+      rotatedBox = tester.widget<RotatedBox>(find.byType(RotatedBox));
+      expect(rotatedBox.quarterTurns, equals(1));
+
+      // Double tap to zoom in on the rotated image
+      final ivFinder = find.byType(InteractiveViewer);
+      final center = tester.getCenter(ivFinder);
+      await tester.tapAt(center);
+      await tester.pump(const Duration(milliseconds: 50));
+      await tester.tapAt(center);
+      await tester.pump(const Duration(milliseconds: 300));
+      await tester.pumpAndSettle();
+
+      var iv = tester.widget<InteractiveViewer>(ivFinder);
+      expect(
+        iv.transformationController?.value.getMaxScaleOnAxis(),
+        closeTo(2.5, 0.01),
+      );
+
+      // Rotating again resets scale to 1.0 cleanly
+      await tester.tap(find.byIcon(Icons.rotate_right));
+      await tester.pumpAndSettle();
+
+      rotatedBox = tester.widget<RotatedBox>(find.byType(RotatedBox));
+      expect(rotatedBox.quarterTurns, equals(2));
+
+      iv = tester.widget<InteractiveViewer>(ivFinder);
+      expect(
+        iv.transformationController?.value.getMaxScaleOnAxis(),
+        closeTo(1.0, 0.01),
+      );
+
+      // Double tap to zoom in again
+      await tester.tapAt(center);
+      await tester.pump(const Duration(milliseconds: 50));
+      await tester.tapAt(center);
+      await tester.pump(const Duration(milliseconds: 300));
+      await tester.pumpAndSettle();
+
+      iv = tester.widget<InteractiveViewer>(ivFinder);
+      expect(
+        iv.transformationController?.value.getMaxScaleOnAxis(),
+        closeTo(2.5, 0.01),
+      );
+
+      // Double tap to zoom out back to fitted view
+      await tester.tapAt(center);
+      await tester.pump(const Duration(milliseconds: 50));
+      await tester.tapAt(center);
+      await tester.pump(const Duration(milliseconds: 300));
+      await tester.pumpAndSettle();
+
+      iv = tester.widget<InteractiveViewer>(ivFinder);
+      expect(
+        iv.transformationController?.value.getMaxScaleOnAxis(),
+        closeTo(1.0, 0.01),
+      );
+    },
+  );
+
+  testWidgets(
+    'Double finger horizontal swipe does not page, only single finger horizontal swipe does',
+    (tester) async {
+      tester.view.physicalSize = const Size(1080, 2400);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.reset);
+
+      final secondImage = testImage.copyWith(
+        id: 'test_img_2',
+        displayName: 'Second_Photo.jpg',
+      );
+
+      await tester.pumpWidget(
+        createMultiViewerWidget(items: [testImage, secondImage]),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('Beautiful_Sunset.jpg'), findsOneWidget);
+
+      final center = tester.getCenter(find.byType(InteractiveViewer));
+
+      // Two fingers swipe horizontally to the left
+      final touch1 = await tester.startGesture(center.translate(-50, 0));
+      final touch2 = await tester.startGesture(center.translate(50, 0));
+      await tester.pump();
+
+      for (int i = 0; i < 8; i++) {
+        await touch1.moveBy(const Offset(-40, 0));
+        await touch2.moveBy(const Offset(-40, 0));
+        await tester.pump(const Duration(milliseconds: 20));
+      }
+
+      await touch1.up();
+      await touch2.up();
+      await tester.pumpAndSettle();
+
+      // Must remain on first image!
+      expect(find.text('Beautiful_Sunset.jpg'), findsOneWidget);
+      expect(find.text('Second_Photo.jpg'), findsNothing);
+
+      // Now single finger fling to the left
+      await tester.fling(
+        find.byType(InteractiveViewer),
+        const Offset(-500, 0),
+        1000,
+      );
+      await tester.pumpAndSettle();
+
+      // Now it navigated to second image!
+      expect(find.text('Second_Photo.jpg'), findsOneWidget);
     },
   );
 }

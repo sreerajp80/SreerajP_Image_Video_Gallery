@@ -96,6 +96,15 @@ void main() {
       expect(service.isQuarterTurned(0), isFalse);
       expect(service.isQuarterTurned(180), isFalse);
     });
+
+    test('quarterTurns returns 0, 1, 2, or 3 clockwise turns', () {
+      expect(service.quarterTurns(0), 0);
+      expect(service.quarterTurns(90), 1);
+      expect(service.quarterTurns(180), 2);
+      expect(service.quarterTurns(270), 3);
+      expect(service.quarterTurns(360), 0);
+      expect(service.quarterTurns(-90), 3);
+    });
   });
 
   group('dismiss', () {

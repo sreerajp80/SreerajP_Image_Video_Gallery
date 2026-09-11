@@ -27,12 +27,20 @@ class InteractiveImageView extends ConsumerStatefulWidget {
   /// Called on a single tap, which shows or hides the viewer chrome.
   final VoidCallback onTap;
 
+  /// Called when a multi-pointer interaction starts.
+  final VoidCallback? onInteractionStart;
+
+  /// Called when a multi-pointer interaction ends.
+  final VoidCallback? onInteractionEnd;
+
   const InteractiveImageView({
     super.key,
     required this.item,
     required this.rotationDegrees,
     required this.onScaleChanged,
     required this.onTap,
+    this.onInteractionStart,
+    this.onInteractionEnd,
   });
 
   @override
@@ -59,6 +67,14 @@ class _InteractiveImageViewState extends ConsumerState<InteractiveImageView>
       duration: const Duration(milliseconds: 220),
     )..addListener(_applyZoomAnimation);
     _transformationController.addListener(_reportScale);
+  }
+
+  @override
+  void didUpdateWidget(InteractiveImageView oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.rotationDegrees != widget.rotationDegrees) {
+      _transformationController.value = Matrix4.identity();
+    }
   }
 
   @override
@@ -152,9 +168,17 @@ class _InteractiveImageViewState extends ConsumerState<InteractiveImageView>
         minScale: ViewerTransformService.minScale,
         maxScale: ViewerTransformService.maxScale,
         clipBehavior: Clip.none,
+        onInteractionStart: (details) {
+          if (details.pointerCount > 1) {
+            widget.onInteractionStart?.call();
+          }
+        },
+        onInteractionEnd: (details) {
+          widget.onInteractionEnd?.call();
+        },
         child: Center(
-          child: Transform.rotate(
-            angle: service.rotationRadians(widget.rotationDegrees),
+          child: RotatedBox(
+            quarterTurns: service.quarterTurns(widget.rotationDegrees),
             child: content,
           ),
         ),

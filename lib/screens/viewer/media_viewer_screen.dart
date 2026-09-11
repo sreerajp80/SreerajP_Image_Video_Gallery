@@ -59,6 +59,13 @@ class _MediaViewerScreenState extends ConsumerState<MediaViewerScreen> {
   /// the user is pinching to zoom, not swiping to close.
   int _activePointers = 0;
 
+  /// Whether two or more fingers are touching the screen.
+  ///
+  /// PageView navigation is disabled while multi-touch is active, so two-finger
+  /// swipes or pinch gestures never navigate to adjacent items. Only single-finger
+  /// horizontal swipes change pages.
+  bool _isMultiTouch = false;
+
   /// Where the current dismiss drag started, and when it last moved.
   Offset? _dismissStart;
   Duration? _lastMoveTime;
@@ -143,7 +150,9 @@ class _MediaViewerScreenState extends ConsumerState<MediaViewerScreen> {
     final next = clockwise
         ? service.rotateRight(_transform.rotationDegrees)
         : service.rotateLeft(_transform.rotationDegrees);
-    setState(() => _transform = _transform.copyWith(rotationDegrees: next));
+    setState(
+      () => _transform = _transform.copyWith(rotationDegrees: next, scale: 1.0),
+    );
   }
 
   Future<void> _toggleFavorite(MediaItem item) async {
@@ -408,12 +417,17 @@ class _MediaViewerScreenState extends ConsumerState<MediaViewerScreen> {
   void _onPointerDown(PointerDownEvent event, MediaItem item) {
     _activePointers++;
 
-    // A second finger landing while a dismiss is in progress means the user
-    // switched to a pinch-to-zoom. Cancel the dismiss immediately so the
-    // page snaps back and InteractiveViewer can take over cleanly.
+    // Two or more fingers touching: multi-touch gesture (pinch zoom or 2-finger touch).
+    // Disable PageView scrolling immediately so horizontal pinch or two-finger
+    // swipes never scroll to the next image.
     if (_activePointers >= 2) {
-      if (_transform.isDismissing) {
-        setState(() => _transform = _transform.copyWith(dismissOffset: 0));
+      if (!_isMultiTouch) {
+        setState(() {
+          _isMultiTouch = true;
+          if (_transform.isDismissing) {
+            _transform = _transform.copyWith(dismissOffset: 0);
+          }
+        });
       }
       _dismissStart = null;
       return;
@@ -459,6 +473,9 @@ class _MediaViewerScreenState extends ConsumerState<MediaViewerScreen> {
 
   void _onPointerUp(PointerUpEvent event, MediaItem item) {
     _activePointers = (_activePointers - 1).clamp(0, 99);
+    if (_activePointers == 0 && _isMultiTouch) {
+      setState(() => _isMultiTouch = false);
+    }
 
     final service = ref.read(viewerTransformServiceProvider);
     final shouldClose = service.shouldDismissOnRelease(
@@ -485,6 +502,9 @@ class _MediaViewerScreenState extends ConsumerState<MediaViewerScreen> {
 
   void _onPointerCancel(PointerCancelEvent event, MediaItem item) {
     _activePointers = (_activePointers - 1).clamp(0, 99);
+    if (_activePointers == 0 && _isMultiTouch) {
+      setState(() => _isMultiTouch = false);
+    }
     if (_transform.isDismissing) {
       setState(() => _transform = _transform.copyWith(dismissOffset: 0));
     }
@@ -572,9 +592,9 @@ class _MediaViewerScreenState extends ConsumerState<MediaViewerScreen> {
                 child: PageView.builder(
                   controller: controller,
                   onPageChanged: (index) => _onPageChanged(index, list),
-                  // Paging is locked while the photo is zoomed in, so a
-                  // pan never jumps to the next item.
-                  physics: _transform.isAtRest
+                  // Paging is locked while the photo is zoomed in or during multi-touch
+                  // gestures, so pinch-to-zoom and two-finger swipes never jump to the next item.
+                  physics: (_transform.isAtRest && !_isMultiTouch)
                       ? const PageScrollPhysics()
                       : const NeverScrollableScrollPhysics(),
                   itemCount: list.length,
@@ -597,6 +617,16 @@ class _MediaViewerScreenState extends ConsumerState<MediaViewerScreen> {
                           : 0,
                       onScaleChanged: _onScaleChanged,
                       onTap: () => _toggleChrome(item),
+                      onInteractionStart: () {
+                        if (!_isMultiTouch) {
+                          setState(() => _isMultiTouch = true);
+                        }
+                      },
+                      onInteractionEnd: () {
+                        if (_activePointers == 0 && _isMultiTouch) {
+                          setState(() => _isMultiTouch = false);
+                        }
+                      },
                     );
                   },
                 ),

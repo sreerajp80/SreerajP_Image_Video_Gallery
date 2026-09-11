@@ -91,6 +91,10 @@ class ViewerTransformService {
     return normalized == 90 || normalized == 270;
   }
 
+  /// How many 90-degree clockwise quarter turns this rotation represents,
+  /// ready for a [RotatedBox].
+  int quarterTurns(int degrees) => (normalizeRotation(degrees) ~/ 90) % 4;
+
   /// Whether a drag may start closing the viewer.
   ///
   /// Only a downward drag on an unzoomed page counts. While zoomed in, the same
