@@ -1,7 +1,8 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:in_sreerajp_imgvidgal/l10n/generated/app_localizations.dart';
 import 'package:in_sreerajp_imgvidgal/models/timeline_group.dart';
 import 'package:intl/intl.dart';
+import 'package:in_sreerajp_imgvidgal/core/l10n/formatting_locale.dart';
 
 /// Turns a header kind and date into localized text.
 ///
@@ -18,12 +19,12 @@ String formatTimelineDate(
 
   switch (kind) {
     case TimelineHeaderKind.today:
-      return l10n.timelineToday;
+      return l10n.labelTimelineToday;
     case TimelineHeaderKind.yesterday:
-      return l10n.timelineYesterday;
+      return l10n.labelTimelineYesterday;
     case TimelineHeaderKind.dayThisYear:
     case TimelineHeaderKind.dayEarlierYear:
-      final locale = Localizations.localeOf(context).toString();
+      final locale = formattingLocale(Localizations.localeOf(context));
       try {
         final format = kind == TimelineHeaderKind.dayThisYear
             ? DateFormat.MMMMd(locale)
@@ -73,10 +74,22 @@ class TimelineDateHeader extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 8),
-          Text(
-            '$itemCount',
-            style: theme.textTheme.labelSmall?.copyWith(
-              color: theme.colorScheme.onSurfaceVariant,
+          // A filled pill in theme colours, so the count stays readable on
+          // both light and dark backgrounds.
+          DecoratedBox(
+            decoration: ShapeDecoration(
+              color: theme.colorScheme.secondaryContainer,
+              shape: const StadiumBorder(),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+              child: Text(
+                '$itemCount',
+                style: theme.textTheme.labelMedium?.copyWith(
+                  fontWeight: FontWeight.w600,
+                  color: theme.colorScheme.onSecondaryContainer,
+                ),
+              ),
             ),
           ),
         ],

@@ -211,7 +211,7 @@ void main() {
       // because something else should have checked it is a parser that stops
       // being safe the day the something else moves.
       final bytes = BackupFormat.encodeHeader(_header());
-      final offset = BackupFormat.magicBytes + 2 + AppConstants.backupSaltBytes;
+      const offset = BackupFormat.magicBytes + 2 + AppConstants.backupSaltBytes;
       for (var i = 0; i < 4; i++) {
         bytes[offset + i] = 0;
       }

@@ -3,6 +3,7 @@ import 'package:in_sreerajp_imgvidgal/models/filter_options.dart';
 import 'package:in_sreerajp_imgvidgal/models/media_item.dart';
 import 'package:in_sreerajp_imgvidgal/providers/album_providers.dart';
 import 'package:in_sreerajp_imgvidgal/providers/media_providers.dart';
+import 'package:flutter_riverpod/legacy.dart';
 
 /// Bumped after every trash change so watching providers refresh together.
 final trashRevisionProvider = StateProvider<int>((ref) => 0);

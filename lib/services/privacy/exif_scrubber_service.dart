@@ -2,7 +2,18 @@ import 'dart:isolate';
 import 'dart:typed_data';
 
 import 'package:image/image.dart' as img;
+import 'package:in_sreerajp_imgvidgal/core/errors/app_exception.dart';
+import 'package:in_sreerajp_imgvidgal/core/logging/app_logger.dart';
 import 'package:in_sreerajp_imgvidgal/models/privacy/privacy_scrub_options.dart';
+
+/// Thrown when metadata could not be removed from, or GPS could not be moved
+/// in, a picture.
+///
+/// Never answered by handing back the original: a "clean" copy that still
+/// carries the GPS position is worse than no copy at all.
+final class PrivacyProcessingException extends FeatureException {
+  const PrivacyProcessingException(super.message, {super.cause});
+}
 
 /// Provides lossless and selective metadata stripping for images.
 ///
@@ -17,6 +28,9 @@ class ExifScrubberService {
   ///
   /// For large inputs (> 512 KB), processing runs on a background isolate
   /// to avoid UI frame drops. Returns sanitized image bytes.
+  ///
+  /// Throws [PrivacyProcessingException] when the picture cannot be cleaned.
+  /// It never returns the original in place of a clean copy.
   Future<Uint8List> scrubBytes(
     Uint8List bytes, {
     PrivacyScrubOptions options = PrivacyScrubOptions.fullScrub,
@@ -28,9 +42,15 @@ class ExifScrubberService {
         return scrubBytesSync(bytes, options: options);
       }
       return await Isolate.run(() => scrubBytesSync(bytes, options: options));
-    } catch (_) {
-      // Fallback: if byte manipulation fails on corrupt input, return original safely.
-      return bytes;
+    } on PrivacyProcessingException {
+      AppLogger.warning('Removing metadata failed');
+      rethrow;
+    } catch (error) {
+      AppLogger.warning('Removing metadata failed', error: error);
+      throw PrivacyProcessingException(
+        'Metadata could not be removed',
+        cause: error,
+      );
     }
   }
 
@@ -261,10 +281,24 @@ class ExifScrubberService {
     Uint8List bytes,
     PrivacyScrubOptions options,
   ) {
+    final img.Image? decoded;
     try {
-      final decoded = img.decodeImage(bytes);
-      if (decoded == null) return bytes;
+      decoded = img.decodeImage(bytes);
+    } catch (error) {
+      throw PrivacyProcessingException(
+        'The picture could not be read to remove metadata',
+        cause: error,
+      );
+    }
+    // A picture this build cannot decode cannot be cleaned either. Handing it
+    // back unchanged would share its metadata under a "clean" name.
+    if (decoded == null) {
+      throw const PrivacyProcessingException(
+        'The picture could not be read to remove metadata',
+      );
+    }
 
+    try {
       if (options.stripAllExif) {
         // Encode clean JPEG with no metadata attached
         return Uint8List.fromList(img.encodeJpg(decoded, quality: 92));
@@ -313,8 +347,11 @@ class ExifScrubberService {
 
       decoded.exif = exif;
       return Uint8List.fromList(img.encodeJpg(decoded, quality: 92));
-    } catch (_) {
-      return bytes;
+    } catch (error) {
+      throw PrivacyProcessingException(
+        'Metadata could not be removed',
+        cause: error,
+      );
     }
   }
 }

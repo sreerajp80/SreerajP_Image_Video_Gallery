@@ -11,8 +11,8 @@ MediaItem _item(String id, {MediaType type = MediaType.image}) => MediaItem(
   mediaType: type,
   mimeType: type == MediaType.video ? 'video/mp4' : 'image/jpeg',
   size: 1000,
-  dateAdded: DateTime(2026, 1, 1),
-  dateModified: DateTime(2026, 1, 1),
+  dateAdded: DateTime(2026),
+  dateModified: DateTime(2026),
 );
 
 List<MediaItem> _items(int count) =>

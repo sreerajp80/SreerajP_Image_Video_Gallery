@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:in_sreerajp_imgvidgal/l10n/generated/app_localizations.dart';
 import 'package:in_sreerajp_imgvidgal/models/scan/scan_action.dart';
 import 'package:in_sreerajp_imgvidgal/models/scan/scanned_code.dart';
@@ -127,12 +127,12 @@ class ScannedCodeCard extends StatelessWidget {
       children: <Widget>[
         Text(
           wifi.security.needsPassword
-              ? l10n.codeScanWifiSecurity(wifi.security.name.toUpperCase())
-              : l10n.codeScanWifiOpen,
+              ? l10n.bodyCodeScanWifiSecurity(wifi.security.name.toUpperCase())
+              : l10n.labelCodeScanWifiOpen,
           style: theme.textTheme.bodySmall,
         ),
         if (wifi.isHidden)
-          Text(l10n.codeScanWifiHidden, style: theme.textTheme.bodySmall),
+          Text(l10n.labelCodeScanWifiHidden, style: theme.textTheme.bodySmall),
       ],
     );
   }
@@ -166,15 +166,15 @@ class ScannedCodeCard extends StatelessWidget {
 
   String _kindLabel(AppLocalizations l10n, ScannedCodeKind kind) {
     return switch (kind) {
-      ScannedCodeKind.url => l10n.codeScanKindUrl,
-      ScannedCodeKind.wifi => l10n.codeScanKindWifi,
-      ScannedCodeKind.phone => l10n.codeScanKindPhone,
-      ScannedCodeKind.email => l10n.codeScanKindEmail,
-      ScannedCodeKind.sms => l10n.codeScanKindSms,
-      ScannedCodeKind.geo => l10n.codeScanKindGeo,
-      ScannedCodeKind.contact => l10n.codeScanKindContact,
-      ScannedCodeKind.calendar => l10n.codeScanKindCalendar,
-      ScannedCodeKind.text => l10n.codeScanKindText,
+      ScannedCodeKind.url => l10n.labelCodeScanKindUrl,
+      ScannedCodeKind.wifi => l10n.labelCodeScanKindWifi,
+      ScannedCodeKind.phone => l10n.labelCodeScanKindPhone,
+      ScannedCodeKind.email => l10n.labelCodeScanKindEmail,
+      ScannedCodeKind.sms => l10n.labelCodeScanKindSms,
+      ScannedCodeKind.geo => l10n.labelCodeScanKindGeo,
+      ScannedCodeKind.contact => l10n.labelCodeScanKindContact,
+      ScannedCodeKind.calendar => l10n.labelCodeScanKindCalendar,
+      ScannedCodeKind.text => l10n.labelCodeScanKindText,
     };
   }
 
@@ -194,24 +194,25 @@ class ScannedCodeCard extends StatelessWidget {
 
   String _actionLabel(AppLocalizations l10n, ScanActionType type) {
     return switch (type) {
-      ScanActionType.copy => l10n.codeScanActionCopy,
-      ScanActionType.openUrl => l10n.codeScanActionOpen,
-      ScanActionType.dial => l10n.codeScanActionDial,
-      ScanActionType.email => l10n.codeScanActionEmail,
-      ScanActionType.sms => l10n.codeScanActionSms,
-      ScanActionType.showOnMap => l10n.codeScanActionMap,
-      ScanActionType.copyWifiPassword => l10n.codeScanActionCopyWifiPassword,
-      ScanActionType.connectWifi => l10n.codeScanActionConnectWifi,
-      ScanActionType.saveToNotes => l10n.codeScanActionSaveToNotes,
+      ScanActionType.copy => l10n.labelCodeScanActionCopy,
+      ScanActionType.openUrl => l10n.labelCodeScanActionOpen,
+      ScanActionType.dial => l10n.labelCodeScanActionDial,
+      ScanActionType.email => l10n.labelCodeScanActionEmail,
+      ScanActionType.sms => l10n.labelCodeScanActionSms,
+      ScanActionType.showOnMap => l10n.labelCodeScanActionMap,
+      ScanActionType.copyWifiPassword =>
+        l10n.labelCodeScanActionCopyWifiPassword,
+      ScanActionType.connectWifi => l10n.labelCodeScanActionConnectWifi,
+      ScanActionType.saveToNotes => l10n.labelCodeScanActionSaveToNotes,
     };
   }
 
   String _blockReason(AppLocalizations l10n, ScanBlockReason reason) {
     return switch (reason) {
-      ScanBlockReason.unsupportedScheme => l10n.codeScanBlockedScheme,
-      ScanBlockReason.malformedTarget => l10n.codeScanBlockedMalformed,
-      ScanBlockReason.incompleteWifi => l10n.codeScanBlockedIncompleteWifi,
-      ScanBlockReason.payloadTooLong => l10n.codeScanBlockedTooLong,
+      ScanBlockReason.unsupportedScheme => l10n.bodyCodeScanBlockedScheme,
+      ScanBlockReason.malformedTarget => l10n.bodyCodeScanBlockedMalformed,
+      ScanBlockReason.incompleteWifi => l10n.bodyCodeScanBlockedIncompleteWifi,
+      ScanBlockReason.payloadTooLong => l10n.bodyCodeScanBlockedTooLong,
     };
   }
 }

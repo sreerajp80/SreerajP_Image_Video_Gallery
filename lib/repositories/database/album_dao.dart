@@ -123,17 +123,13 @@ class AlbumDao {
       final db = await _db;
       await db.transaction((txn) async {
         final at = position ?? await _nextPosition(txn, albumId);
-        await txn.insert(
-          DatabaseConstants.tableAlbumMedia,
-          {
-            DatabaseConstants.colAlbumMediaAlbumId: albumId,
-            DatabaseConstants.colAlbumMediaMediaId: mediaId,
-            DatabaseConstants.colAlbumMediaPosition: at,
-            DatabaseConstants.colAlbumMediaDateAdded:
-                DateTime.now().millisecondsSinceEpoch,
-          },
-          conflictAlgorithm: ConflictAlgorithm.replace,
-        );
+        await txn.insert(DatabaseConstants.tableAlbumMedia, {
+          DatabaseConstants.colAlbumMediaAlbumId: albumId,
+          DatabaseConstants.colAlbumMediaMediaId: mediaId,
+          DatabaseConstants.colAlbumMediaPosition: at,
+          DatabaseConstants.colAlbumMediaDateAdded:
+              DateTime.now().millisecondsSinceEpoch,
+        }, conflictAlgorithm: ConflictAlgorithm.replace);
         await _refreshCount(txn, albumId);
       });
     } catch (e, st) {
@@ -159,20 +155,16 @@ class AlbumDao {
       final db = await _db;
       await db.transaction((txn) async {
         for (final albumId in ids) {
-          await txn.insert(
-            DatabaseConstants.tableAlbumMedia,
-            {
-              DatabaseConstants.colAlbumMediaAlbumId: albumId,
-              DatabaseConstants.colAlbumMediaMediaId: mediaId,
-              DatabaseConstants.colAlbumMediaPosition: await _nextPosition(
-                txn,
-                albumId,
-              ),
-              DatabaseConstants.colAlbumMediaDateAdded:
-                  DateTime.now().millisecondsSinceEpoch,
-            },
-            conflictAlgorithm: ConflictAlgorithm.replace,
-          );
+          await txn.insert(DatabaseConstants.tableAlbumMedia, {
+            DatabaseConstants.colAlbumMediaAlbumId: albumId,
+            DatabaseConstants.colAlbumMediaMediaId: mediaId,
+            DatabaseConstants.colAlbumMediaPosition: await _nextPosition(
+              txn,
+              albumId,
+            ),
+            DatabaseConstants.colAlbumMediaDateAdded:
+                DateTime.now().millisecondsSinceEpoch,
+          }, conflictAlgorithm: ConflictAlgorithm.replace);
           await _refreshCount(txn, albumId);
         }
       });

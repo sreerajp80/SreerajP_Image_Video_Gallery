@@ -3,7 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:in_sreerajp_imgvidgal/models/media_item.dart';
 import 'package:in_sreerajp_imgvidgal/models/timeline_group.dart';
 import 'package:in_sreerajp_imgvidgal/providers/timeline_providers.dart';
-import 'package:in_sreerajp_imgvidgal/services/timeline/timeline_grouping_service.dart';
+import 'package:in_sreerajp_imgvidgal/core/domain/timeline/timeline_grouping_service.dart';
 
 MediaItem itemAt(String id, DateTime taken) {
   return MediaItem(

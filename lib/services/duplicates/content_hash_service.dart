@@ -7,6 +7,7 @@ import 'package:in_sreerajp_imgvidgal/models/media_item.dart';
 import 'package:in_sreerajp_imgvidgal/repositories/database/media_dao.dart';
 import 'package:in_sreerajp_imgvidgal/services/duplicates/hash_tools_channel.dart';
 import 'package:in_sreerajp_imgvidgal/services/duplicates/perceptual_hash_service.dart';
+import 'package:in_sreerajp_imgvidgal/core/logging/app_logger.dart';
 
 /// Loads a small preview of an item, used only as a fallback.
 typedef ThumbnailLoader = Future<Uint8List?> Function(MediaItem item);
@@ -80,6 +81,8 @@ class ContentHashService {
           perceptual = _perceptualHash.computePHash(grid);
           difference = _perceptualHash.computeDHash(grid);
         } catch (_) {
+          // Safe to ignore: a broken grid means this item has no perceptual
+          // hash; the scan goes on.
           // A grid of the wrong length means the decode went wrong; the item
           // simply has no perceptual hash.
           perceptual = null;
@@ -109,7 +112,8 @@ class ContentHashService {
         sha256: hashes.sha256,
         pHash: hashes.encodedPerceptual,
       );
-    } catch (_) {
+    } catch (error) {
+      AppLogger.warning('Saving content hashes failed', error: error);
       // The hash is a cache. Failing to save it costs time on the next scan
       // and nothing else, so it must not end this one.
     }
@@ -130,7 +134,8 @@ class ContentHashService {
       final digest = await _channel.sha256(uri);
       if (digest == null || digest.isEmpty) return null;
       return digest.toLowerCase();
-    } catch (_) {
+    } catch (error) {
+      AppLogger.debug('Reading a content digest failed for one item');
       return null;
     }
   }
@@ -150,7 +155,7 @@ class ContentHashService {
         final grid = await _channel.grayscale(uri, size: size);
         if (grid != null) return grid;
       } catch (_) {
-        // Fall through to the thumbnail.
+        // Safe to ignore: the thumbnail just below is tried next.
       }
     }
 
@@ -160,7 +165,8 @@ class ContentHashService {
       final bytes = await loader(item);
       if (bytes == null || bytes.isEmpty) return null;
       return grayscaleFromEncodedImage(bytes, size);
-    } catch (_) {
+    } catch (error) {
+      AppLogger.debug('Reading a grayscale grid failed for one item');
       return null;
     }
   }
@@ -174,6 +180,8 @@ class ContentHashService {
     try {
       decoded = img.decodeImage(bytes);
     } catch (_) {
+      // Safe to ignore: a picture that will not decode has no grid; the caller
+      // treats it as not comparable (hard rule 5).
       return null;
     }
     if (decoded == null || decoded.width <= 0 || decoded.height <= 0) {

@@ -18,6 +18,7 @@ import 'package:in_sreerajp_imgvidgal/services/convert/image_resize_service.dart
 import 'package:in_sreerajp_imgvidgal/services/convert/output_naming_service.dart';
 import 'package:in_sreerajp_imgvidgal/services/convert/pdf_export_service.dart';
 import 'package:in_sreerajp_imgvidgal/services/convert/pdf_layout_service.dart';
+import 'package:flutter_riverpod/legacy.dart';
 
 /// Pure resize maths.
 final imageResizeServiceProvider = Provider<ImageResizeService>((ref) {
@@ -218,6 +219,8 @@ final conversionEstimateProvider = FutureProvider.autoDispose
               originalBytes: key.item.size,
             );
       } catch (_) {
+        // Safe to ignore: a picture the decoder cannot read has no estimate,
+        // and the screen copes with that.
         // A file the decoder cannot read, or a device with no WEBP encoder.
         // The screen already copes with a missing estimate.
         return null;

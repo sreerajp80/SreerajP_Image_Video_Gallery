@@ -1,18 +1,17 @@
-import 'dart:io';
-
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:in_sreerajp_imgvidgal/core/l10n/formatting_locale.dart';
 import 'package:in_sreerajp_imgvidgal/l10n/generated/app_localizations.dart';
 import 'package:in_sreerajp_imgvidgal/models/exif_data.dart';
 import 'package:in_sreerajp_imgvidgal/models/media_item.dart';
 import 'package:in_sreerajp_imgvidgal/models/privacy/gps_fuzz_result.dart';
 import 'package:in_sreerajp_imgvidgal/models/privacy/privacy_scrub_options.dart';
-import 'package:in_sreerajp_imgvidgal/providers/media_providers.dart';
 import 'package:in_sreerajp_imgvidgal/providers/privacy_providers.dart';
 import 'package:in_sreerajp_imgvidgal/providers/viewer_providers.dart';
+import 'package:in_sreerajp_imgvidgal/models/privacy/privacy_export_result.dart';
 import 'package:in_sreerajp_imgvidgal/widgets/privacy/forensic_inspector_sheet.dart';
-import 'package:path/path.dart' as p;
-import 'package:path_provider/path_provider.dart';
+import 'package:intl/intl.dart';
+import 'package:in_sreerajp_imgvidgal/widgets/privacy/privacy_audit_card.dart';
 
 /// Modal sheet for EXIF metadata stripping, GPS geofence shifting, and privacy controls.
 class MediaPrivacySheet extends ConsumerStatefulWidget {
@@ -109,212 +108,98 @@ class _MediaPrivacyBodyState extends ConsumerState<_MediaPrivacyBody>
     });
   }
 
-  Future<void> _handleStripAndShare() async {
+  PrivacyScrubOptions get _scrubOptions => PrivacyScrubOptions(
+    stripAllExif: _stripAll,
+    stripLocation: _stripLocation,
+    stripCameraAndLensSerials: _stripSerials,
+    stripTimestamps: _stripTimestamps,
+    stripAuthorAndSoftware: _stripAuthor,
+  );
+
+  /// Runs one export (through `privacyExportServiceProvider`) and reports
+  /// the result.
+  ///
+  /// [doneMessage] is shown only for saves; a finished share needs no
+  /// message because the share sheet itself was the feedback.
+  Future<void> _export({
+    required Future<PrivacyExportResult> Function() action,
+    required bool isSave,
+    String? doneMessage,
+  }) async {
     setState(() => _isProcessing = true);
     final l10n = AppLocalizations.of(context)!;
     final messenger = ScaffoldMessenger.of(context);
 
-    try {
-      final repository = ref.read(mediaRepositoryProvider);
-      final rawBytes = await repository.readOriginalBytes(widget.item);
-      if (rawBytes == null) {
-        messenger.showSnackBar(
-          SnackBar(content: Text(l10n.privacyErrorReadingFile)),
-        );
-        return;
-      }
+    final result = await action();
+    if (!mounted) return;
+    setState(() => _isProcessing = false);
 
-      final options = PrivacyScrubOptions(
-        stripAllExif: _stripAll,
-        stripLocation: _stripLocation,
-        stripCameraAndLensSerials: _stripSerials,
-        stripTimestamps: _stripTimestamps,
-        stripAuthorAndSoftware: _stripAuthor,
-      );
-
-      final scrubber = ref.read(exifScrubberServiceProvider);
-      final sanitizedBytes = await scrubber.scrubBytes(
-        rawBytes,
-        options: options,
-      );
-
-      final shareService = ref.read(shareServiceProvider);
-      final filename = 'scrubbed_${widget.item.displayName}';
-      final ok = await shareService.shareBytes(
-        bytes: sanitizedBytes,
-        filename: filename,
-        mimeType: widget.item.mimeType,
-        title: l10n.privacyShareTitle,
-      );
-
-      if (!ok && mounted) {
-        messenger.showSnackBar(
-          SnackBar(content: Text(l10n.privacyShareFailed)),
-        );
-      }
-    } catch (_) {
-      if (mounted) {
-        messenger.showSnackBar(
-          SnackBar(content: Text(l10n.privacyProcessError)),
-        );
-      }
-    } finally {
-      if (mounted) setState(() => _isProcessing = false);
+    final message = switch (result) {
+      PrivacyExportResult.done => doneMessage,
+      PrivacyExportResult.unreadable => l10n.bodyPrivacyErrorReadingFile,
+      PrivacyExportResult.shareFailed => l10n.errorPrivacyShareFailed,
+      PrivacyExportResult.failed =>
+        isSave ? l10n.errorPrivacySaveFailed : l10n.errorPrivacyProcess,
+    };
+    if (message != null) {
+      messenger.showSnackBar(SnackBar(content: Text(message)));
     }
   }
 
-  Future<void> _handleSaveSanitizedCopy() async {
-    setState(() => _isProcessing = true);
+  Future<void> _handleStripAndShare() {
     final l10n = AppLocalizations.of(context)!;
-    final messenger = ScaffoldMessenger.of(context);
+    return _export(
+      isSave: false,
+      action: () => ref
+          .read(privacyExportServiceProvider)
+          .shareScrubbed(
+            widget.item,
+            _scrubOptions,
+            shareTitle: l10n.titlePrivacyShare,
+          ),
+    );
+  }
 
-    try {
-      final repository = ref.read(mediaRepositoryProvider);
-      final rawBytes = await repository.readOriginalBytes(widget.item);
-      if (rawBytes == null) {
-        messenger.showSnackBar(
-          SnackBar(content: Text(l10n.privacyErrorReadingFile)),
-        );
-        return;
-      }
-
-      final options = PrivacyScrubOptions(
-        stripAllExif: _stripAll,
-        stripLocation: _stripLocation,
-        stripCameraAndLensSerials: _stripSerials,
-        stripTimestamps: _stripTimestamps,
-        stripAuthorAndSoftware: _stripAuthor,
-      );
-
-      final scrubber = ref.read(exifScrubberServiceProvider);
-      final sanitizedBytes = await scrubber.scrubBytes(
-        rawBytes,
-        options: options,
-      );
-
-      final tempDir = await getTemporaryDirectory();
-      final sanitizedFilename =
-          'clean_${DateTime.now().millisecondsSinceEpoch}_${widget.item.displayName}';
-      final tempFile = File(p.join(tempDir.path, sanitizedFilename));
-      await tempFile.writeAsBytes(sanitizedBytes, flush: true);
-
-      final channel = ref.read(mediaStoreChannelProvider);
-      await channel.publishFile(
-        sourcePath: tempFile.path,
-        displayName: sanitizedFilename,
-        mimeType: widget.item.mimeType,
-        isVideo: false,
-      );
-
-      if (mounted) {
-        messenger.showSnackBar(
-          SnackBar(content: Text(l10n.privacySavedToGallery)),
-        );
-      }
-    } catch (_) {
-      if (mounted) {
-        messenger.showSnackBar(SnackBar(content: Text(l10n.privacySaveFailed)));
-      }
-    } finally {
-      if (mounted) setState(() => _isProcessing = false);
-    }
+  Future<void> _handleSaveSanitizedCopy() {
+    final l10n = AppLocalizations.of(context)!;
+    return _export(
+      isSave: true,
+      doneMessage: l10n.bodyPrivacySavedToGallery,
+      action: () => ref
+          .read(privacyExportServiceProvider)
+          .saveScrubbed(widget.item, _scrubOptions),
+    );
   }
 
   Future<void> _handleFuzzAndShare() async {
-    if (_fuzzResult == null) return;
-    setState(() => _isProcessing = true);
+    final fuzz = _fuzzResult;
+    if (fuzz == null) return;
     final l10n = AppLocalizations.of(context)!;
-    final messenger = ScaffoldMessenger.of(context);
-
-    try {
-      final repository = ref.read(mediaRepositoryProvider);
-      final rawBytes = await repository.readOriginalBytes(widget.item);
-      if (rawBytes == null) {
-        messenger.showSnackBar(
-          SnackBar(content: Text(l10n.privacyErrorReadingFile)),
-        );
-        return;
-      }
-
-      final geofenceService = ref.read(gpsGeofenceServiceProvider);
-      final fuzzedBytes = geofenceService.applyFuzzToImageBytes(
-        bytes: rawBytes,
-        fuzzResult: _fuzzResult!,
-      );
-
-      final shareService = ref.read(shareServiceProvider);
-      final filename = 'geofuzzed_${widget.item.displayName}';
-      final ok = await shareService.shareBytes(
-        bytes: fuzzedBytes,
-        filename: filename,
-        mimeType: widget.item.mimeType,
-        title: l10n.geofenceShareTitle,
-      );
-
-      if (!ok && mounted) {
-        messenger.showSnackBar(
-          SnackBar(content: Text(l10n.privacyShareFailed)),
-        );
-      }
-    } catch (_) {
-      if (mounted) {
-        messenger.showSnackBar(
-          SnackBar(content: Text(l10n.privacyProcessError)),
-        );
-      }
-    } finally {
-      if (mounted) setState(() => _isProcessing = false);
-    }
+    return _export(
+      isSave: false,
+      action: () => ref
+          .read(privacyExportServiceProvider)
+          .shareFuzzed(widget.item, fuzz, shareTitle: l10n.titleGeofenceShare),
+    );
   }
 
   Future<void> _handleSaveFuzzedCopy() async {
-    if (_fuzzResult == null) return;
-    setState(() => _isProcessing = true);
+    final fuzz = _fuzzResult;
+    if (fuzz == null) return;
     final l10n = AppLocalizations.of(context)!;
-    final messenger = ScaffoldMessenger.of(context);
+    return _export(
+      isSave: true,
+      doneMessage: l10n.bodyGeofenceSavedToGallery,
+      action: () =>
+          ref.read(privacyExportServiceProvider).saveFuzzed(widget.item, fuzz),
+    );
+  }
 
-    try {
-      final repository = ref.read(mediaRepositoryProvider);
-      final rawBytes = await repository.readOriginalBytes(widget.item);
-      if (rawBytes == null) {
-        messenger.showSnackBar(
-          SnackBar(content: Text(l10n.privacyErrorReadingFile)),
-        );
-        return;
-      }
-
-      final geofenceService = ref.read(gpsGeofenceServiceProvider);
-      final fuzzedBytes = geofenceService.applyFuzzToImageBytes(
-        bytes: rawBytes,
-        fuzzResult: _fuzzResult!,
-      );
-
-      final tempDir = await getTemporaryDirectory();
-      final fuzzedFilename =
-          'fuzzed_${DateTime.now().millisecondsSinceEpoch}_${widget.item.displayName}';
-      final tempFile = File(p.join(tempDir.path, fuzzedFilename));
-      await tempFile.writeAsBytes(fuzzedBytes, flush: true);
-
-      final channel = ref.read(mediaStoreChannelProvider);
-      await channel.publishFile(
-        sourcePath: tempFile.path,
-        displayName: fuzzedFilename,
-        mimeType: widget.item.mimeType,
-        isVideo: false,
-      );
-
-      if (mounted) {
-        messenger.showSnackBar(
-          SnackBar(content: Text(l10n.geofenceSavedToGallery)),
-        );
-      }
-    } catch (_) {
-      if (mounted) {
-        messenger.showSnackBar(SnackBar(content: Text(l10n.privacySaveFailed)));
-      }
-    } finally {
-      if (mounted) setState(() => _isProcessing = false);
-    }
+  /// A fixed-distance chip label, with the number in the user's locale.
+  String _distanceLabel(BuildContext context, double km) {
+    final locale = formattingLocale(Localizations.localeOf(context));
+    final number = NumberFormat('0.0', locale).format(km);
+    return AppLocalizations.of(context)!.labelDistanceKm(number);
   }
 
   @override
@@ -347,13 +232,13 @@ class _MediaPrivacyBodyState extends ConsumerState<_MediaPrivacyBody>
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    l10n.privacyScrubberTitle,
+                    l10n.tooltipPrivacyScrubberTitle,
                     style: theme.textTheme.titleLarge?.copyWith(
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                   Text(
-                    l10n.privacyScrubberSubtitle,
+                    l10n.descPrivacyScrubberSubtitle,
                     style: theme.textTheme.bodySmall?.copyWith(
                       color: theme.colorScheme.onSurfaceVariant,
                     ),
@@ -368,8 +253,8 @@ class _MediaPrivacyBodyState extends ConsumerState<_MediaPrivacyBody>
         // Privacy Audit Banner
         exifAsync.when(
           loading: () => const LinearProgressIndicator(),
-          error: (_, __) => const SizedBox.shrink(),
-          data: (exif) => _PrivacyAuditCard(exif: exif),
+          error: (_, _) => const SizedBox.shrink(),
+          data: (exif) => PrivacyAuditCard(exif: exif),
         ),
         const SizedBox(height: 16),
 
@@ -382,11 +267,11 @@ class _MediaPrivacyBodyState extends ConsumerState<_MediaPrivacyBody>
           tabs: [
             Tab(
               icon: const Icon(Icons.cleaning_services_outlined),
-              text: l10n.privacyTabStripper,
+              text: l10n.labelPrivacyTabStripper,
             ),
             Tab(
               icon: const Icon(Icons.share_location_outlined),
-              text: l10n.privacyTabGeofence,
+              text: l10n.labelPrivacyTabGeofence,
             ),
           ],
         ),
@@ -403,7 +288,8 @@ class _MediaPrivacyBodyState extends ConsumerState<_MediaPrivacyBody>
               // Tab 2: GPS Geofence Shifter
               exifAsync.when(
                 loading: () => const Center(child: CircularProgressIndicator()),
-                error: (_, __) => Center(child: Text(l10n.privacyNoLocation)),
+                error: (_, _) =>
+                    Center(child: Text(l10n.bodyPrivacyNoLocation)),
                 data: (exif) => _buildGeofenceTab(context, exif),
               ),
             ],
@@ -420,10 +306,10 @@ class _MediaPrivacyBodyState extends ConsumerState<_MediaPrivacyBody>
             color: theme.colorScheme.primary,
           ),
           title: Text(
-            l10n.forensicInspectorTitle,
+            l10n.titleForensicInspector,
             style: const TextStyle(fontWeight: FontWeight.w600),
           ),
-          subtitle: Text(l10n.forensicInspectorQuickHint),
+          subtitle: Text(l10n.helpForensicInspectorQuickHint),
           trailing: const Icon(Icons.chevron_right),
           onTap: () {
             Navigator.pop(context);
@@ -459,7 +345,7 @@ class _MediaPrivacyBodyState extends ConsumerState<_MediaPrivacyBody>
                   ),
                 )
               : const Icon(Icons.send_outlined),
-          label: Text(l10n.privacyStripAndShareAction),
+          label: Text(l10n.actionPrivacyStripAndShare),
         ),
         const SizedBox(height: 10),
 
@@ -473,7 +359,7 @@ class _MediaPrivacyBodyState extends ConsumerState<_MediaPrivacyBody>
             ),
           ),
           icon: const Icon(Icons.save_alt_outlined),
-          label: Text(l10n.privacySaveSanitizedAction),
+          label: Text(l10n.actionPrivacySaveSanitized),
         ),
         const SizedBox(height: 16),
 
@@ -493,7 +379,7 @@ class _MediaPrivacyBodyState extends ConsumerState<_MediaPrivacyBody>
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      l10n.privacyGranularTitle,
+                      l10n.titlePrivacyGranular,
                       style: theme.textTheme.titleSmall?.copyWith(
                         fontWeight: FontWeight.bold,
                       ),
@@ -511,7 +397,9 @@ class _MediaPrivacyBodyState extends ConsumerState<_MediaPrivacyBody>
                         });
                       },
                       child: Text(
-                        _stripAll ? l10n.privacyCustom : l10n.privacyStripAll,
+                        _stripAll
+                            ? l10n.labelPrivacyCustom
+                            : l10n.labelPrivacyStripAll,
                       ),
                     ),
                   ],
@@ -519,7 +407,7 @@ class _MediaPrivacyBodyState extends ConsumerState<_MediaPrivacyBody>
                 CheckboxListTile(
                   dense: true,
                   contentPadding: EdgeInsets.zero,
-                  title: Text(l10n.privacyOptionGps),
+                  title: Text(l10n.titlePrivacyOptionGps),
                   value: _stripLocation,
                   onChanged: (val) => setState(() {
                     _stripLocation = val ?? true;
@@ -529,7 +417,7 @@ class _MediaPrivacyBodyState extends ConsumerState<_MediaPrivacyBody>
                 CheckboxListTile(
                   dense: true,
                   contentPadding: EdgeInsets.zero,
-                  title: Text(l10n.privacyOptionSerials),
+                  title: Text(l10n.titlePrivacyOptionSerials),
                   value: _stripSerials,
                   onChanged: (val) => setState(() {
                     _stripSerials = val ?? true;
@@ -539,7 +427,7 @@ class _MediaPrivacyBodyState extends ConsumerState<_MediaPrivacyBody>
                 CheckboxListTile(
                   dense: true,
                   contentPadding: EdgeInsets.zero,
-                  title: Text(l10n.privacyOptionTimestamps),
+                  title: Text(l10n.titlePrivacyOptionTimestamps),
                   value: _stripTimestamps,
                   onChanged: (val) => setState(() {
                     _stripTimestamps = val ?? true;
@@ -549,7 +437,7 @@ class _MediaPrivacyBodyState extends ConsumerState<_MediaPrivacyBody>
                 CheckboxListTile(
                   dense: true,
                   contentPadding: EdgeInsets.zero,
-                  title: Text(l10n.privacyOptionAuthor),
+                  title: Text(l10n.titlePrivacyOptionAuthor),
                   value: _stripAuthor,
                   onChanged: (val) => setState(() {
                     _stripAuthor = val ?? true;
@@ -582,13 +470,13 @@ class _MediaPrivacyBodyState extends ConsumerState<_MediaPrivacyBody>
               ),
               const SizedBox(height: 12),
               Text(
-                l10n.geofenceNoCoordinates,
+                l10n.labelGeofenceNoCoordinates,
                 style: theme.textTheme.titleMedium,
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 6),
               Text(
-                l10n.geofenceNoCoordinatesBody,
+                l10n.bodyGeofenceNoCoordinates,
                 style: theme.textTheme.bodySmall?.copyWith(
                   color: theme.colorScheme.onSurfaceVariant,
                 ),
@@ -611,13 +499,13 @@ class _MediaPrivacyBodyState extends ConsumerState<_MediaPrivacyBody>
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              l10n.geofenceOffsetDistance,
+              l10n.bodyGeofenceOffsetDistance,
               style: theme.textTheme.titleSmall?.copyWith(
                 fontWeight: FontWeight.bold,
               ),
             ),
             IconButton(
-              tooltip: l10n.geofenceReroll,
+              tooltip: l10n.tooltipGeofenceReroll,
               icon: const Icon(Icons.refresh),
               onPressed: () => _generateFuzz(exif!),
             ),
@@ -627,7 +515,7 @@ class _MediaPrivacyBodyState extends ConsumerState<_MediaPrivacyBody>
           spacing: 8,
           children: [
             ChoiceChip(
-              label: Text(l10n.geofenceRandomPreset),
+              label: Text(l10n.labelGeofenceRandomPreset),
               selected: _isRandomDistance,
               onSelected: (val) {
                 if (val) {
@@ -637,7 +525,7 @@ class _MediaPrivacyBodyState extends ConsumerState<_MediaPrivacyBody>
               },
             ),
             ChoiceChip(
-              label: const Text('2.0 km'),
+              label: Text(_distanceLabel(context, 2.0)),
               selected: !_isRandomDistance && _fuzzDistanceKm == 2.0,
               onSelected: (val) {
                 if (val) {
@@ -650,7 +538,7 @@ class _MediaPrivacyBodyState extends ConsumerState<_MediaPrivacyBody>
               },
             ),
             ChoiceChip(
-              label: const Text('3.5 km'),
+              label: Text(_distanceLabel(context, 3.5)),
               selected: !_isRandomDistance && _fuzzDistanceKm == 3.5,
               onSelected: (val) {
                 if (val) {
@@ -663,7 +551,7 @@ class _MediaPrivacyBodyState extends ConsumerState<_MediaPrivacyBody>
               },
             ),
             ChoiceChip(
-              label: const Text('5.0 km'),
+              label: Text(_distanceLabel(context, 5.0)),
               selected: !_isRandomDistance && _fuzzDistanceKm == 5.0,
               onSelected: (val) {
                 if (val) {
@@ -704,7 +592,7 @@ class _MediaPrivacyBodyState extends ConsumerState<_MediaPrivacyBody>
                       ),
                       const SizedBox(width: 8),
                       Text(
-                        l10n.geofenceShiftSummary(_fuzzResult!.summary),
+                        l10n.bodyGeofenceShiftSummary(_fuzzResult!.summary),
                         style: theme.textTheme.titleSmall?.copyWith(
                           fontWeight: FontWeight.bold,
                           color: theme.colorScheme.primary,
@@ -714,7 +602,7 @@ class _MediaPrivacyBodyState extends ConsumerState<_MediaPrivacyBody>
                   ),
                   const SizedBox(height: 10),
                   Text(
-                    l10n.geofenceFuzzedCoordinates(
+                    l10n.bodyGeofenceFuzzedCoordinates(
                       _fuzzResult!.fuzzedLatitude.toStringAsFixed(4),
                       _fuzzResult!.fuzzedLongitude.toStringAsFixed(4),
                     ),
@@ -724,7 +612,7 @@ class _MediaPrivacyBodyState extends ConsumerState<_MediaPrivacyBody>
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    l10n.geofenceExplanation,
+                    l10n.descGeofenceExplanation,
                     style: theme.textTheme.bodySmall?.copyWith(
                       color: theme.colorScheme.onSurfaceVariant,
                     ),
@@ -745,7 +633,7 @@ class _MediaPrivacyBodyState extends ConsumerState<_MediaPrivacyBody>
             ),
           ),
           icon: const Icon(Icons.share_outlined),
-          label: Text(l10n.geofenceShareAction),
+          label: Text(l10n.actionGeofenceShare),
         ),
         const SizedBox(height: 10),
         OutlinedButton.icon(
@@ -757,84 +645,9 @@ class _MediaPrivacyBodyState extends ConsumerState<_MediaPrivacyBody>
             ),
           ),
           icon: const Icon(Icons.save_alt_outlined),
-          label: Text(l10n.geofenceSaveAction),
+          label: Text(l10n.actionGeofenceSave),
         ),
       ],
-    );
-  }
-}
-
-class _PrivacyAuditCard extends StatelessWidget {
-  final ExifData? exif;
-
-  const _PrivacyAuditCard({required this.exif});
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    final theme = Theme.of(context);
-
-    final hasLocation = exif?.latitude != null && exif?.longitude != null;
-    final hasCamera = exif?.make != null || exif?.model != null;
-    final hasDate = exif?.dateTimeOriginal != null;
-
-    final hasAnySensitive = hasLocation || hasCamera || hasDate;
-
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: hasAnySensitive
-            ? theme.colorScheme.errorContainer.withValues(alpha: 0.4)
-            : theme.colorScheme.primaryContainer.withValues(alpha: 0.4),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: hasAnySensitive
-              ? theme.colorScheme.error.withValues(alpha: 0.3)
-              : theme.colorScheme.primary.withValues(alpha: 0.3),
-        ),
-      ),
-      child: Row(
-        children: [
-          Icon(
-            hasAnySensitive
-                ? Icons.warning_amber_rounded
-                : Icons.check_circle_outline,
-            color: hasAnySensitive
-                ? theme.colorScheme.error
-                : theme.colorScheme.primary,
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  hasAnySensitive
-                      ? l10n.privacyAuditSensitiveDetected
-                      : l10n.privacyAuditClean,
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: hasAnySensitive
-                        ? theme.colorScheme.error
-                        : theme.colorScheme.primary,
-                  ),
-                ),
-                Text(
-                  hasAnySensitive
-                      ? l10n.privacyAuditSensitiveDetails(
-                          hasLocation ? l10n.privacyAuditGps : '',
-                          hasCamera ? l10n.privacyAuditCamera : '',
-                        )
-                      : l10n.privacyAuditCleanDetails,
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: theme.colorScheme.onSurfaceVariant,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
     );
   }
 }

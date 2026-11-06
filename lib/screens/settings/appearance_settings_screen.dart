@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:in_sreerajp_imgvidgal/core/constants/app_constants.dart';
 import 'package:in_sreerajp_imgvidgal/l10n/generated/app_localizations.dart';
@@ -16,36 +16,38 @@ class AppearanceSettingsScreen extends ConsumerWidget {
     final settings = ref.watch(appSettingsProvider);
 
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.settingsAppearance)),
-      body: ListView(
-        padding: const EdgeInsets.fromLTRB(16, 12, 16, 32),
-        children: <Widget>[
-          Card(
-            margin: EdgeInsets.zero,
-            clipBehavior: Clip.antiAlias,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                _ThemeSection(settings: settings),
-                const Divider(height: 1, indent: 16, endIndent: 16),
-                _GridDensitySection(settings: settings),
-                const Divider(height: 1, indent: 16, endIndent: 16),
-                SwitchListTile(
-                  secondary: const Icon(Icons.auto_awesome_outlined),
-                  title: Text(
-                    l10n.showFlashbacks,
-                    style: const TextStyle(fontWeight: FontWeight.w600),
+      appBar: AppBar(title: Text(l10n.titleSettingsAppearance)),
+      body: SafeArea(
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 32),
+          children: <Widget>[
+            Card(
+              margin: EdgeInsets.zero,
+              clipBehavior: Clip.antiAlias,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  _ThemeSection(settings: settings),
+                  const Divider(height: 1, indent: 16, endIndent: 16),
+                  _GridDensitySection(settings: settings),
+                  const Divider(height: 1, indent: 16, endIndent: 16),
+                  SwitchListTile(
+                    secondary: const Icon(Icons.auto_awesome_outlined),
+                    title: Text(
+                      l10n.titleShowFlashbacks,
+                      style: const TextStyle(fontWeight: FontWeight.w600),
+                    ),
+                    subtitle: Text(l10n.descShowFlashbacksSubtitle),
+                    value: settings.showFlashbacks,
+                    onChanged: (value) => ref
+                        .read(appSettingsProvider.notifier)
+                        .setShowFlashbacks(value),
                   ),
-                  subtitle: Text(l10n.showFlashbacksSubtitle),
-                  value: settings.showFlashbacks,
-                  onChanged: (value) => ref
-                      .read(appSettingsProvider.notifier)
-                      .setShowFlashbacks(value),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -67,7 +69,7 @@ class _ThemeSection extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
           Text(
-            l10n.theme,
+            l10n.labelTheme,
             style: theme.textTheme.titleMedium?.copyWith(
               fontWeight: FontWeight.w600,
             ),
@@ -80,22 +82,22 @@ class _ThemeSection extends ConsumerWidget {
               segments: <ButtonSegment<ThemePreference>>[
                 ButtonSegment<ThemePreference>(
                   value: ThemePreference.system,
-                  label: Text(l10n.themeSystem),
+                  label: Text(l10n.actionThemeSystem),
                   icon: const Icon(Icons.brightness_auto),
                 ),
                 ButtonSegment<ThemePreference>(
                   value: ThemePreference.light,
-                  label: Text(l10n.themeLight),
+                  label: Text(l10n.actionThemeLight),
                   icon: const Icon(Icons.light_mode),
                 ),
                 ButtonSegment<ThemePreference>(
                   value: ThemePreference.dark,
-                  label: Text(l10n.themeDark),
+                  label: Text(l10n.actionThemeDark),
                   icon: const Icon(Icons.dark_mode),
                 ),
                 ButtonSegment<ThemePreference>(
                   value: ThemePreference.amoled,
-                  label: Text(l10n.themeAmoled),
+                  label: Text(l10n.actionThemeAmoled),
                   icon: const Icon(Icons.contrast),
                 ),
               ],
@@ -132,13 +134,13 @@ class _GridDensitySection extends ConsumerWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: <Widget>[
               Text(
-                l10n.gridDensity,
+                l10n.labelGridDensity,
                 style: theme.textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.w600,
                 ),
               ),
               Text(
-                l10n.gridDensityValue(settings.gridColumns),
+                l10n.labelGridDensityValue(settings.gridColumns),
                 style: theme.textTheme.bodyMedium?.copyWith(
                   color: theme.colorScheme.primary,
                   fontWeight: FontWeight.w600,
@@ -152,7 +154,7 @@ class _GridDensitySection extends ConsumerWidget {
             max: AppConstants.maxGridColumns.toDouble(),
             divisions:
                 AppConstants.maxGridColumns - AppConstants.minGridColumns,
-            label: l10n.gridDensityValue(settings.gridColumns),
+            label: l10n.labelGridDensityValue(settings.gridColumns),
             onChanged: (value) => ref
                 .read(appSettingsProvider.notifier)
                 .setGridColumns(value.round()),
@@ -160,7 +162,7 @@ class _GridDensitySection extends ConsumerWidget {
           Padding(
             padding: const EdgeInsets.only(bottom: 2),
             child: Text(
-              l10n.gridDensitySubtitle,
+              l10n.descGridDensitySubtitle,
               style: theme.textTheme.bodySmall,
             ),
           ),

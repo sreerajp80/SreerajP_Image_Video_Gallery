@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:in_sreerajp_imgvidgal/core/routing/app_router.dart';
@@ -32,15 +32,15 @@ class SelectionAppBar extends ConsumerWidget implements PreferredSizeWidget {
     return AppBar(
       leading: IconButton(
         icon: const Icon(Icons.close),
-        tooltip: l10n.selectionClear,
+        tooltip: l10n.tooltipSelectionClear,
         onPressed: selection.clear,
       ),
-      title: Text(l10n.selectionCount(count)),
+      title: Text(l10n.bodySelectionCount(count)),
       actions: [
         if (count == 2)
           IconButton(
             icon: const Icon(Icons.compare_arrows),
-            tooltip: l10n.compareTooltip,
+            tooltip: l10n.tooltipCompare,
             onPressed: () {
               final selectedIds = ref.read(selectionProvider).toList();
               if (selectedIds.length == 2) {
@@ -51,7 +51,7 @@ class SelectionAppBar extends ConsumerWidget implements PreferredSizeWidget {
         if (visibleIds.isNotEmpty)
           IconButton(
             icon: const Icon(Icons.select_all),
-            tooltip: l10n.selectionSelectAll,
+            tooltip: l10n.tooltipSelectionSelectAll,
             onPressed: () => selection.selectAll(visibleIds),
           ),
       ],

@@ -13,7 +13,7 @@ import 'fake_video_tools_channel.dart';
 
 /// A small solid picture, encoded as JPEG, standing in for a real frame.
 Uint8List sampleJpeg() {
-  final image = img.Image(width: 32, height: 18, numChannels: 3);
+  final image = img.Image(width: 32, height: 18);
   img.fill(image, color: img.ColorRgb8(10, 120, 200));
   return img.encodeJpg(image, quality: 90);
 }
@@ -74,7 +74,6 @@ void main() {
       final result = await service.saveFrame(
         sourcePath: source,
         positionMs: 2000,
-        format: ImageOutputFormat.jpeg,
       );
 
       expect(p.basename(result.path), 'CLIP_3_frame1.jpg');

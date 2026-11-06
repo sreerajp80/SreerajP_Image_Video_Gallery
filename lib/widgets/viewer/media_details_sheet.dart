@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:in_sreerajp_imgvidgal/l10n/generated/app_localizations.dart';
 import 'package:in_sreerajp_imgvidgal/widgets/common/adaptive_directionality.dart';
@@ -9,29 +9,15 @@ import 'package:intl/intl.dart';
 import 'package:in_sreerajp_imgvidgal/widgets/notes/notes_preview_tile.dart';
 import 'package:in_sreerajp_imgvidgal/widgets/privacy/forensic_inspector_sheet.dart';
 import 'package:in_sreerajp_imgvidgal/widgets/privacy/media_privacy_sheet.dart';
-
-/// Formats a byte count as KB, MB, or GB.
-///
-/// The unit is a symbol rather than a translated word, and the number is
-/// formatted for the current locale by the caller's `Intl` setup.
-String formatFileSize(int bytes) {
-  if (bytes < 1024) return '$bytes B';
-  const units = <String>['KB', 'MB', 'GB', 'TB'];
-  var value = bytes / 1024;
-  var unitIndex = 0;
-  while (value >= 1024 && unitIndex < units.length - 1) {
-    value /= 1024;
-    unitIndex++;
-  }
-  return '${value.toStringAsFixed(value >= 10 ? 0 : 1)} ${units[unitIndex]}';
-}
+import 'package:in_sreerajp_imgvidgal/core/l10n/formatting_locale.dart';
+import 'package:in_sreerajp_imgvidgal/widgets/common/unit_format_context.dart';
 
 /// Formats a date and time for the details sheet.
 ///
 /// Falls back to a plain ISO-style date when the locale has no patterns, so a
 /// missing locale never breaks the sheet.
 String formatDetailDate(BuildContext context, DateTime date) {
-  final locale = Localizations.localeOf(context).toString();
+  final locale = formattingLocale(Localizations.localeOf(context));
   try {
     return '${DateFormat.yMMMd(locale).format(date)} '
         '${DateFormat.Hm(locale).format(date)}';
@@ -81,36 +67,36 @@ class MediaDetailsSheet extends ConsumerWidget {
         final gestures = ref.watch(videoGestureServiceProvider);
 
         final rows = <_DetailRow>[
-          _DetailRow(l10n.detailsFileName, item.displayName),
-          _DetailRow(l10n.detailsFormat, item.mimeType),
-          _DetailRow(l10n.detailsSize, formatFileSize(item.size)),
+          _DetailRow(l10n.labelDetailsFileName, item.displayName),
+          _DetailRow(l10n.labelDetailsFormat, item.mimeType),
+          _DetailRow(l10n.labelDetailsSize, context.units.bytes(item.size)),
           if (item.width != null && item.height != null)
             _DetailRow(
-              l10n.detailsDimensions,
+              l10n.labelDetailsDimensions,
               '${item.width} x ${item.height}',
             ),
           if (item.durationMs != null && item.durationMs! > 0)
             _DetailRow(
-              l10n.detailsDuration,
+              l10n.labelDetailsDuration,
               gestures.formatDuration(Duration(milliseconds: item.durationMs!)),
             ),
           _DetailRow(
-            l10n.detailsDateTaken,
+            l10n.labelDetailsDateTaken,
             formatDetailDate(context, item.effectiveDate),
           ),
           _DetailRow(
-            l10n.detailsDateModified,
+            l10n.labelDetailsDateModified,
             formatDetailDate(context, item.dateModified),
           ),
           if (item.path.isNotEmpty)
-            _DetailRow(l10n.detailsFolder, _folderOf(item.path)),
+            _DetailRow(l10n.labelDetailsFolder, _folderOf(item.path)),
         ];
 
         return ListView(
           controller: scrollController,
           padding: const EdgeInsets.fromLTRB(20, 0, 20, 32),
           children: [
-            Text(l10n.detailsTitle, style: theme.textTheme.titleLarge),
+            Text(l10n.tooltipDetailsTitle, style: theme.textTheme.titleLarge),
             const SizedBox(height: 16),
             ...rows,
             const Divider(height: 24),
@@ -142,7 +128,7 @@ class MediaDetailsSheet extends ConsumerWidget {
                           ),
                           const SizedBox(width: 8),
                           Text(
-                            l10n.privacyCardTitle,
+                            l10n.titlePrivacyCard,
                             style: theme.textTheme.titleSmall?.copyWith(
                               fontWeight: FontWeight.bold,
                               color: theme.colorScheme.primary,
@@ -152,7 +138,7 @@ class MediaDetailsSheet extends ConsumerWidget {
                       ),
                       const SizedBox(height: 6),
                       Text(
-                        l10n.privacyCardBody,
+                        l10n.bodyPrivacyCard,
                         style: theme.textTheme.bodySmall?.copyWith(
                           color: theme.colorScheme.onSurfaceVariant,
                         ),
@@ -170,7 +156,7 @@ class MediaDetailsSheet extends ConsumerWidget {
                                 Icons.cleaning_services_outlined,
                                 size: 18,
                               ),
-                              label: Text(l10n.privacyOpenScrubber),
+                              label: Text(l10n.bodyPrivacyOpenScrubber),
                             ),
                           ),
                         ],
@@ -181,7 +167,10 @@ class MediaDetailsSheet extends ConsumerWidget {
               ),
             ],
             const SizedBox(height: 20),
-            Text(l10n.detailsCameraSection, style: theme.textTheme.titleMedium),
+            Text(
+              l10n.labelDetailsCameraSection,
+              style: theme.textTheme.titleMedium,
+            ),
             const SizedBox(height: 8),
             exif.when(
               loading: () => const Padding(
@@ -189,7 +178,7 @@ class MediaDetailsSheet extends ConsumerWidget {
                 child: LinearProgressIndicator(),
               ),
               error: (error, _) => Text(
-                l10n.detailsNoMetadata,
+                l10n.bodyDetailsNoMetadata,
                 style: theme.textTheme.bodyMedium,
               ),
               data: (data) => _ExifRows(exif: data),
@@ -205,7 +194,7 @@ class MediaDetailsSheet extends ConsumerWidget {
                       ForensicInspectorSheet.show(context, item);
                     },
                     icon: const Icon(Icons.biotech_outlined),
-                    label: Text(l10n.forensicInspectorButton),
+                    label: Text(l10n.actionForensicInspector),
                   ),
                 ),
               ),
@@ -236,7 +225,7 @@ class _ExifRows extends StatelessWidget {
 
     if (data == null) {
       return Text(
-        l10n.detailsNoMetadata,
+        l10n.bodyDetailsNoMetadata,
         style: Theme.of(context).textTheme.bodyMedium,
       );
     }
@@ -244,48 +233,50 @@ class _ExifRows extends StatelessWidget {
     final rows = <_DetailRow>[
       if (data.make != null || data.model != null)
         _DetailRow(
-          l10n.detailsCamera,
+          l10n.labelDetailsCamera,
           [data.make, data.model].whereType<String>().join(' '),
         ),
-      if (data.lensModel != null) _DetailRow(l10n.detailsLens, data.lensModel!),
+      if (data.lensModel != null)
+        _DetailRow(l10n.labelDetailsLens, data.lensModel!),
       if (data.fNumber != null)
         _DetailRow(
-          l10n.detailsAperture,
+          l10n.labelDetailsAperture,
           'f/${data.fNumber!.toStringAsFixed(1)}',
         ),
       if (data.exposureTime != null)
-        _DetailRow(l10n.detailsShutter, data.exposureTime!),
-      if (data.iso != null) _DetailRow(l10n.detailsIso, 'ISO ${data.iso}'),
+        _DetailRow(l10n.labelDetailsShutter, data.exposureTime!),
+      if (data.iso != null)
+        _DetailRow(l10n.labelDetailsIso, context.units.iso(data.iso!)),
       if (data.focalLength != null)
         _DetailRow(
-          l10n.detailsFocalLength,
-          '${data.focalLength!.toStringAsFixed(0)} mm',
+          l10n.labelDetailsFocalLength,
+          context.units.millimetres(data.focalLength!),
         ),
-      if (data.flash != null) _DetailRow(l10n.detailsFlash, data.flash!),
+      if (data.flash != null) _DetailRow(l10n.labelDetailsFlash, data.flash!),
       if (data.whiteBalance != null)
-        _DetailRow(l10n.detailsWhiteBalance, data.whiteBalance!),
+        _DetailRow(l10n.labelDetailsWhiteBalance, data.whiteBalance!),
       if (data.meteringMode != null)
-        _DetailRow(l10n.detailsMeteringMode, data.meteringMode!),
+        _DetailRow(l10n.labelDetailsMeteringMode, data.meteringMode!),
       if (data.colorSpace != null)
-        _DetailRow(l10n.detailsColorSpace, data.colorSpace!),
+        _DetailRow(l10n.labelDetailsColorSpace, data.colorSpace!),
       if (data.software != null)
-        _DetailRow(l10n.detailsSoftware, data.software!),
+        _DetailRow(l10n.labelDetailsSoftware, data.software!),
       if (data.latitude != null && data.longitude != null)
         _DetailRow(
-          l10n.detailsLocation,
+          l10n.labelDetailsLocation,
           '${data.latitude!.toStringAsFixed(5)}, '
           '${data.longitude!.toStringAsFixed(5)}',
         ),
       if (data.altitude != null)
         _DetailRow(
-          l10n.detailsAltitude,
+          l10n.labelDetailsAltitude,
           '${data.altitude!.toStringAsFixed(0)} m',
         ),
     ];
 
     if (rows.isEmpty) {
       return Text(
-        l10n.detailsNoMetadata,
+        l10n.bodyDetailsNoMetadata,
         style: Theme.of(context).textTheme.bodyMedium,
       );
     }

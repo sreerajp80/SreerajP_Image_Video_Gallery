@@ -2,12 +2,19 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:in_sreerajp_imgvidgal/models/scan/scan_action.dart';
 import 'package:in_sreerajp_imgvidgal/models/scan/scanned_code.dart';
 import 'package:in_sreerajp_imgvidgal/models/scan/wifi_credentials.dart';
+import 'package:in_sreerajp_imgvidgal/services/scan/barcode_channel.dart';
 import 'package:in_sreerajp_imgvidgal/services/scan/barcode_payload_parser.dart';
 import 'package:in_sreerajp_imgvidgal/services/scan/image_scan_service.dart';
 import 'package:in_sreerajp_imgvidgal/services/scan/intent_channel.dart';
 import 'package:in_sreerajp_imgvidgal/services/scan/scan_action_resolver.dart';
+import 'package:flutter_riverpod/legacy.dart';
 
 /// Reads a payload and says what it is.
+/// The ZXing barcode reader in Kotlin, for still pictures and camera frames.
+final barcodeChannelProvider = Provider<BarcodeChannel>((ref) {
+  return const BarcodeChannel();
+});
+
 final barcodePayloadParserProvider = Provider<BarcodePayloadParser>((ref) {
   return const BarcodePayloadParser();
 });
@@ -25,7 +32,7 @@ final intentChannelProvider = Provider<IntentChannel>((ref) {
 /// Reads codes out of a still picture, with no camera involved.
 final imageScanServiceProvider = Provider<ImageScanService>((ref) {
   return ImageScanService(
-    decoder: const MobileScannerImageDecoder(),
+    decoder: ZxingImageDecoder(channel: ref.watch(barcodeChannelProvider)),
     parser: ref.watch(barcodePayloadParserProvider),
   );
 });

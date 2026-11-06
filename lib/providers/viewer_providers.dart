@@ -4,14 +4,18 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:in_sreerajp_imgvidgal/models/exif_data.dart';
 import 'package:in_sreerajp_imgvidgal/models/media_item.dart';
 import 'package:in_sreerajp_imgvidgal/models/playback_state.dart';
+import 'package:in_sreerajp_imgvidgal/providers/album_providers.dart';
 import 'package:in_sreerajp_imgvidgal/providers/media_providers.dart';
+import 'package:in_sreerajp_imgvidgal/providers/trash_providers.dart';
 import 'package:in_sreerajp_imgvidgal/services/device/screen_settings_service.dart';
 import 'package:in_sreerajp_imgvidgal/services/media/exif_reader_service.dart';
 import 'package:in_sreerajp_imgvidgal/services/video/frame_step_service.dart';
-import 'package:in_sreerajp_imgvidgal/services/video/playback_speed_service.dart';
-import 'package:in_sreerajp_imgvidgal/services/video/video_gesture_service.dart';
-import 'package:in_sreerajp_imgvidgal/services/viewer/viewer_transform_service.dart';
+import 'package:in_sreerajp_imgvidgal/core/domain/video/playback_speed_service.dart';
+import 'package:in_sreerajp_imgvidgal/core/domain/video/video_gesture_service.dart';
+import 'package:in_sreerajp_imgvidgal/core/domain/viewer/viewer_transform_service.dart';
 import 'package:video_player/video_player.dart';
+import 'package:in_sreerajp_imgvidgal/core/logging/app_logger.dart';
+import 'package:flutter_riverpod/legacy.dart';
 
 /// Zoom, rotation, and dismiss maths for the image viewer.
 final viewerTransformServiceProvider = Provider<ViewerTransformService>((ref) {
@@ -43,6 +47,38 @@ final screenSettingsServiceProvider = Provider<ScreenSettingsService>((ref) {
   return PlatformScreenSettingsService();
 });
 
+/// Library changes the viewer makes to the item it shows.
+///
+/// The screen calls these rather than the repository, and each one refreshes
+/// every list that could show the change.
+class ViewerActions {
+  final Ref _ref;
+
+  ViewerActions(this._ref);
+
+  /// Stars or un-stars an item.
+  Future<void> toggleFavorite(String id) async {
+    await _ref.read(mediaRepositoryProvider).toggleFavorite(id);
+    // Reload the list so the star in the app bar and the grid agree.
+    _ref.invalidate(mediaItemsProvider);
+  }
+
+  /// Moves an item to the trash. Nothing is deleted from the device.
+  Future<void> moveToTrash(String id) => _setTrash(id, true);
+
+  /// Takes an item back out of the trash (the snackbar's undo).
+  Future<void> restoreFromTrash(String id) => _setTrash(id, false);
+
+  Future<void> _setTrash(String id, bool trashed) async {
+    await _ref.read(mediaRepositoryProvider).setTrash(id, trashed);
+    _ref.read(trashRevisionProvider.notifier).state++;
+    _ref.read(albumRevisionProvider.notifier).state++;
+    _ref.invalidate(mediaItemsProvider);
+  }
+}
+
+final viewerActionsProvider = Provider<ViewerActions>(ViewerActions.new);
+
 /// Page the viewer is currently showing.
 ///
 /// It is set when the viewer opens and updated as the user swipes, so the
@@ -67,26 +103,28 @@ final fullImageBytesProvider = FutureProvider.autoDispose
 /// Already indexed metadata is returned straight away. Otherwise the bytes are
 /// read, parsed off the UI thread, and written back through the repository so
 /// the next open costs nothing. Videos and unreadable files return null.
-final mediaExifProvider = FutureProvider.autoDispose
-    .family<ExifData?, MediaItem>((ref, item) async {
-      if (item.exifData != null) return item.exifData;
-      if (!item.isImage) return null;
+final mediaExifProvider = FutureProvider.autoDispose.family<ExifData?, MediaItem>((
+  ref,
+  item,
+) async {
+  if (item.exifData != null) return item.exifData;
+  if (!item.isImage) return null;
 
-      final repository = ref.watch(mediaRepositoryProvider);
-      final bytes = await repository.readOriginalBytes(item);
-      if (bytes == null) return null;
+  final repository = ref.watch(mediaRepositoryProvider);
+  final bytes = await repository.readOriginalBytes(item);
+  if (bytes == null) return null;
 
-      final exif = await ref.watch(exifReaderServiceProvider).read(bytes);
-      if (exif == null) return null;
+  final exif = await ref.watch(exifReaderServiceProvider).read(bytes);
+  if (exif == null) return null;
 
-      try {
-        await repository.saveExif(item.id, exif);
-      } catch (_) {
-        // Caching is an optimisation. Failing to store it must not stop the
-        // details sheet from showing what was just parsed.
-      }
-      return exif;
-    });
+  try {
+    await repository.saveExif(item.id, exif);
+  } catch (_) {
+    // Safe to ignore: caching EXIF is an optimisation; the details sheet still
+    // shows what was parsed.
+  }
+  return exif;
+});
 
 /// Drives one video clip and publishes an immutable [PlaybackState].
 ///
@@ -146,7 +184,8 @@ class VideoPlaybackController extends StateNotifier<PlaybackState> {
       );
 
       if (autoPlay) await controller.play();
-    } catch (_) {
+    } catch (error) {
+      AppLogger.warning('Video playback could not start', error: error);
       state = state.copyWith(error: PlaybackError.unsupportedFormat);
     }
   }

@@ -1,8 +1,8 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:in_sreerajp_imgvidgal/l10n/generated/app_localizations.dart';
 import 'package:in_sreerajp_imgvidgal/models/duplicate/duplicate_group.dart';
 import 'package:in_sreerajp_imgvidgal/widgets/media/media_thumbnail.dart';
-import 'package:in_sreerajp_imgvidgal/widgets/viewer/media_details_sheet.dart';
+import 'package:in_sreerajp_imgvidgal/widgets/common/unit_format_context.dart';
 
 /// One duplicate group in the cleaner list.
 class DuplicateGroupCard extends StatelessWidget {
@@ -46,12 +46,14 @@ class DuplicateGroupCard extends StatelessWidget {
                   ),
                   const SizedBox(width: 6),
                   Text(
-                    isExact ? l10n.cleanerKindExact : l10n.cleanerKindSimilar,
+                    isExact
+                        ? l10n.labelCleanerKindExact
+                        : l10n.labelCleanerKindSimilar,
                     style: theme.textTheme.labelLarge,
                   ),
                   const Spacer(),
                   Text(
-                    l10n.cleanerMemberCount(group.memberCount),
+                    l10n.bodyCleanerMemberCount(group.memberCount),
                     style: theme.textTheme.labelMedium,
                   ),
                 ],
@@ -66,7 +68,6 @@ class DuplicateGroupCard extends StatelessWidget {
                   itemBuilder: (context, index) => MediaThumbnail(
                     item: group.items[index],
                     size: previewSize,
-                    borderRadius: 8,
                   ),
                 ),
               ),
@@ -75,15 +76,15 @@ class DuplicateGroupCard extends StatelessWidget {
                 children: <Widget>[
                   Expanded(
                     child: Text(
-                      l10n.cleanerReclaimable(
-                        formatFileSize(group.reclaimableBytes),
+                      l10n.bodyCleanerReclaimable(
+                        context.units.bytes(group.reclaimableBytes),
                       ),
                       style: theme.textTheme.bodySmall,
                     ),
                   ),
                   TextButton(
                     onPressed: onCompare,
-                    child: Text(l10n.cleanerCompare),
+                    child: Text(l10n.actionCleanerCompare),
                   ),
                 ],
               ),

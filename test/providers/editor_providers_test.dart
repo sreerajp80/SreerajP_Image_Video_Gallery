@@ -7,7 +7,7 @@ import 'package:in_sreerajp_imgvidgal/models/editor/redaction_region.dart';
 import 'package:in_sreerajp_imgvidgal/models/editor/tone_adjustments.dart';
 import 'package:in_sreerajp_imgvidgal/models/editor/watermark_config.dart';
 import 'package:in_sreerajp_imgvidgal/providers/editor_providers.dart';
-import 'package:in_sreerajp_imgvidgal/services/editor/crop_transform_service.dart';
+import 'package:in_sreerajp_imgvidgal/core/domain/editor/crop_transform_service.dart';
 
 EditSessionNotifier buildNotifier() => EditSessionNotifier(
   mediaId: 'media-1',

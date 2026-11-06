@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:in_sreerajp_imgvidgal/l10n/generated/app_localizations.dart';
 import 'package:in_sreerajp_imgvidgal/models/pdf/pdf_extraction_result.dart';
@@ -29,22 +29,22 @@ class _PdfImageExtractScreenState extends ConsumerState<PdfImageExtractScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(pdfName.isEmpty ? l10n.pdfImagesTitle : pdfName),
+        title: Text(pdfName.isEmpty ? l10n.titlePdfImages : pdfName),
         actions: <Widget>[
           if (state.value != null && !state.value!.isRefused)
             IconButton(
               onPressed: _pick,
               icon: const Icon(Icons.folder_open_outlined),
-              tooltip: l10n.pdfImagesChooseAnother,
+              tooltip: l10n.tooltipPdfImagesChooseAnother,
             ),
         ],
       ),
       body: state.when(
-        loading: () => _busy(l10n.pdfImagesReading),
-        error: (_, __) => _message(
+        loading: () => _busy(l10n.labelPdfImagesReading),
+        error: (_, _) => _message(
           context,
           icon: Icons.error_outline,
-          title: l10n.pdfRefusedUnreadable,
+          title: l10n.bodyPdfRefusedUnreadable,
         ),
         data: (result) {
           if (result == null) return _empty(context, l10n);
@@ -53,15 +53,15 @@ class _PdfImageExtractScreenState extends ConsumerState<PdfImageExtractScreen> {
               context,
               icon: Icons.picture_as_pdf_outlined,
               title: _refusalText(l10n, result.refusal!),
-              action: l10n.pdfImagesPick,
+              action: l10n.actionPdfImagesPick,
             );
           }
           if (result.isEmpty) {
             return _message(
               context,
               icon: Icons.image_not_supported_outlined,
-              title: l10n.pdfImagesNone,
-              action: l10n.pdfImagesChooseAnother,
+              title: l10n.bodyPdfImagesNone,
+              action: l10n.tooltipPdfImagesChooseAnother,
             );
           }
           return _list(context, l10n, result);
@@ -85,16 +85,16 @@ class _PdfImageExtractScreenState extends ConsumerState<PdfImageExtractScreen> {
             ),
             const SizedBox(height: 16),
             Text(
-              l10n.pdfImagesEmptyTitle,
+              l10n.titlePdfImagesEmpty,
               style: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: 8),
-            Text(l10n.pdfImagesEmptyBody, textAlign: TextAlign.center),
+            Text(l10n.bodyPdfImagesEmpty, textAlign: TextAlign.center),
             const SizedBox(height: 24),
             FilledButton.icon(
               onPressed: _pick,
               icon: const Icon(Icons.folder_open_outlined),
-              label: Text(l10n.pdfImagesPick),
+              label: Text(l10n.actionPdfImagesPick),
             ),
           ],
         ),
@@ -118,17 +118,17 @@ class _PdfImageExtractScreenState extends ConsumerState<PdfImageExtractScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              Text(l10n.pdfImagesFound(result.extractable.length)),
+              Text(l10n.bodyPdfImagesFound(result.extractable.length)),
               if (skipped > 0)
                 Text(
-                  l10n.pdfImagesSkippedCount(skipped),
+                  l10n.bodyPdfImagesSkippedCount(skipped),
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
               if (result.wasTruncated)
                 Padding(
                   padding: const EdgeInsets.only(top: 4),
                   child: Text(
-                    l10n.pdfImagesTruncated,
+                    l10n.bodyPdfImagesTruncated,
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
                       color: Theme.of(context).colorScheme.error,
                     ),
@@ -143,13 +143,13 @@ class _PdfImageExtractScreenState extends ConsumerState<PdfImageExtractScreen> {
             children: <Widget>[
               TextButton(
                 onPressed: () => _selectAll(result),
-                child: Text(l10n.pdfImagesSelectAll),
+                child: Text(l10n.actionPdfImagesSelectAll),
               ),
               TextButton(
                 onPressed: () =>
                     ref.read(selectedPdfImagesProvider.notifier).state =
                         <int>{},
-                child: Text(l10n.pdfImagesClearSelection),
+                child: Text(l10n.labelPdfImagesClearSelection),
               ),
             ],
           ),
@@ -191,8 +191,8 @@ class _PdfImageExtractScreenState extends ConsumerState<PdfImageExtractScreen> {
               : const Icon(Icons.save_alt_outlined),
           label: Text(
             _saving
-                ? l10n.pdfImagesSaving
-                : '${l10n.pdfImagesSave} (${selected.length})',
+                ? l10n.labelPdfImagesSaving
+                : '${l10n.labelPdfImagesSave} (${selected.length})',
           ),
         ),
       ),
@@ -255,7 +255,7 @@ class _PdfImageExtractScreenState extends ConsumerState<PdfImageExtractScreen> {
     final l10n = AppLocalizations.of(context)!;
 
     if (ref.read(selectedPdfImagesProvider).isEmpty) {
-      _say(l10n.pdfImagesNothingSelected);
+      _say(l10n.bodyPdfImagesNothingSelected);
       return;
     }
 
@@ -268,10 +268,10 @@ class _PdfImageExtractScreenState extends ConsumerState<PdfImageExtractScreen> {
       if (!mounted || summary == null) return;
 
       final parts = <String>[
-        l10n.pdfImagesSavedCount(summary.savedCount),
+        l10n.bodyPdfImagesSavedCount(summary.savedCount),
         if (summary.failedCount > 0)
-          l10n.pdfImagesSaveFailedCount(summary.failedCount),
-        if (summary.usedFallbackDirectory) l10n.pdfImagesFallbackDirectory,
+          l10n.bodyPdfImagesSaveFailedCount(summary.failedCount),
+        if (summary.usedFallbackDirectory) l10n.bodyPdfImagesFallbackDirectory,
       ];
       _say(parts.join('. '));
     } finally {
@@ -288,10 +288,10 @@ class _PdfImageExtractScreenState extends ConsumerState<PdfImageExtractScreen> {
 
   String _refusalText(AppLocalizations l10n, PdfRefusalReason reason) {
     return switch (reason) {
-      PdfRefusalReason.notAPdf => l10n.pdfRefusedNotPdf,
-      PdfRefusalReason.encrypted => l10n.pdfRefusedEncrypted,
-      PdfRefusalReason.fileTooLarge => l10n.pdfRefusedTooLarge,
-      PdfRefusalReason.unreadable => l10n.pdfRefusedUnreadable,
+      PdfRefusalReason.notAPdf => l10n.bodyPdfRefusedNotPdf,
+      PdfRefusalReason.encrypted => l10n.bodyPdfRefusedEncrypted,
+      PdfRefusalReason.fileTooLarge => l10n.bodyPdfRefusedTooLarge,
+      PdfRefusalReason.unreadable => l10n.bodyPdfRefusedUnreadable,
     };
   }
 }

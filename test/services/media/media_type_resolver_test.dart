@@ -32,10 +32,7 @@ void main() {
         MediaTypeResolver.resolve(mimeType: 'image/svg+xml', fileName: 'a.svg'),
         MediaType.svg,
       );
-      expect(
-        MediaTypeResolver.resolve(mimeType: null, fileName: 'logo.svg'),
-        MediaType.svg,
-      );
+      expect(MediaTypeResolver.resolve(fileName: 'logo.svg'), MediaType.svg);
     });
 
     test('detects every supported RAW extension', () {

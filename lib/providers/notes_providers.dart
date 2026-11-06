@@ -1,8 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:in_sreerajp_imgvidgal/models/notes/media_note.dart';
 import 'package:in_sreerajp_imgvidgal/providers/media_providers.dart';
-import 'package:in_sreerajp_imgvidgal/services/notes/markdown_parser.dart';
+import 'package:in_sreerajp_imgvidgal/core/domain/notes/markdown_parser.dart';
 import 'package:in_sreerajp_imgvidgal/services/notes/media_notes_service.dart';
+import 'package:flutter_riverpod/legacy.dart';
 
 /// Reads note text into blocks the view can draw.
 final markdownParserProvider = Provider<MarkdownParser>((ref) {

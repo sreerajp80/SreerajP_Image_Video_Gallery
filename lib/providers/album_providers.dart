@@ -7,6 +7,7 @@ import 'package:in_sreerajp_imgvidgal/providers/media_providers.dart';
 import 'package:in_sreerajp_imgvidgal/providers/trash_providers.dart';
 import 'package:in_sreerajp_imgvidgal/repositories/album_repository.dart';
 import 'package:in_sreerajp_imgvidgal/repositories/database/album_dao.dart';
+import 'package:flutter_riverpod/legacy.dart';
 
 /// Data access object over the album tables.
 final albumDaoProvider = Provider<AlbumDao>((ref) => AlbumDao());

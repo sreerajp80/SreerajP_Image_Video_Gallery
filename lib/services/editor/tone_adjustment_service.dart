@@ -2,7 +2,7 @@ import 'dart:math' as math;
 import 'dart:typed_data';
 
 import 'package:in_sreerajp_imgvidgal/models/editor/tone_adjustments.dart';
-import 'package:in_sreerajp_imgvidgal/services/editor/tone_curve_service.dart';
+import 'package:in_sreerajp_imgvidgal/core/domain/editor/tone_curve_service.dart';
 
 /// One lookup table per channel, plus the two settings that cannot be baked
 /// into a table.

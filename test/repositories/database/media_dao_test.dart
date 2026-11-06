@@ -16,7 +16,7 @@ void main() {
     late DatabaseHelper dbHelper;
     late MediaDao mediaDao;
 
-    final baseDate = DateTime(2026, 8, 29, 10, 0, 0);
+    final baseDate = DateTime(2026, 8, 29, 10);
 
     final item1 = MediaItem(
       id: 'm1',
@@ -45,7 +45,6 @@ void main() {
       dateAdded: baseDate.add(const Duration(hours: 1)),
       dateModified: baseDate.add(const Duration(hours: 1)),
       dateTaken: baseDate.add(const Duration(hours: 1)),
-      isFavorite: false,
       userNotes: 'Beach drone footage',
       latitude: 9.9312,
       longitude: 76.2673,
@@ -148,7 +147,7 @@ void main() {
         expect(activeItems.length, 1);
         expect(activeItems.first.id, 'm2');
 
-        var trashItems = await mediaDao.getMediaItems(
+        final trashItems = await mediaDao.getMediaItems(
           filter: const FilterOptions(isTrash: true),
         );
         expect(trashItems.length, 1);

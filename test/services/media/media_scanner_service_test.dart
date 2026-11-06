@@ -169,13 +169,85 @@ void main() {
       expect(await mediaDao.getMediaItemById('delete_me'), isNull);
     });
 
-    test('keeps existing rows during an incremental scan', () async {
+    test('a quick scan with matching counts skips the full pass', () async {
+      channel.entries = <MediaStoreEntry>[
+        buildEntry(id: 'a', dateModifiedMs: 1000),
+        buildEntry(id: 'b', dateModifiedMs: 2000),
+      ];
+      await scanner.scan();
+      channel.receivedSinceValues.clear();
+
+      final result = await scanner.scan(incremental: true);
+
+      expect(channel.receivedSinceValues, <int?>[2000]);
+      expect(result.removed, 0);
+      expect(await mediaDao.getTotalCount(), 2);
+    });
+
+    test('a quick scan falls back to a full pass after a deletion', () async {
       channel.entries = <MediaStoreEntry>[
         buildEntry(id: 'a', dateModifiedMs: 1000),
         buildEntry(id: 'b', dateModifiedMs: 2000),
       ];
       await scanner.scan();
 
+      channel.entries = <MediaStoreEntry>[
+        buildEntry(id: 'b', dateModifiedMs: 2000),
+      ];
+      final result = await scanner.scan(incremental: true);
+
+      expect(result.removed, 1);
+      expect(await mediaDao.getTotalCount(), 1);
+      expect(await mediaDao.getMediaItemById('a'), isNull);
+    });
+
+    test('a quick scan picks up a file with an old date', () async {
+      channel.entries = <MediaStoreEntry>[
+        buildEntry(id: 'b', dateModifiedMs: 2000),
+      ];
+      await scanner.scan();
+
+      channel.entries = <MediaStoreEntry>[
+        buildEntry(id: 'old', dateModifiedMs: 500),
+        buildEntry(id: 'b', dateModifiedMs: 2000),
+      ];
+      await scanner.scan(incremental: true);
+
+      expect(await mediaDao.getMediaItemById('old'), isNotNull);
+    });
+
+    test('a quick scan allows for rows the full pass skipped', () async {
+      channel.entries = <MediaStoreEntry>[
+        buildEntry(id: 'good', dateModifiedMs: 2000),
+        const MediaStoreEntry(
+          id: '',
+          path: '',
+          uri: 'content://media/external/images/media/bad',
+          displayName: 'bad.jpg',
+          mimeType: 'image/jpeg',
+          size: 10,
+          dateAddedMs: 1,
+          dateModifiedMs: 1,
+        ),
+      ];
+      await scanner.scan();
+      channel.receivedSinceValues.clear();
+
+      await scanner.scan(incremental: true);
+
+      // Only the quick pass ran: one bad row must not force a full pass
+      // on every resume.
+      expect(channel.receivedSinceValues, <int?>[2000]);
+    });
+
+    test('a quick scan never removes rows with partial access', () async {
+      channel.entries = <MediaStoreEntry>[
+        buildEntry(id: 'a', dateModifiedMs: 1000),
+        buildEntry(id: 'b', dateModifiedMs: 2000),
+      ];
+      await scanner.scan();
+
+      channel.permissionStatus = MediaPermissionStatus.partial;
       channel.entries = <MediaStoreEntry>[
         buildEntry(id: 'b', dateModifiedMs: 2000),
       ];

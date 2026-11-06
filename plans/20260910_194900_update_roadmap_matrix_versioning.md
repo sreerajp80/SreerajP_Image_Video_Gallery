@@ -1,6 +1,8 @@
 # Plan: Update Roadmap Matrix Versioning to Match App Version 2.4.1
 
-**Status:** Pending Approval
+**Status:** dropped
+
+**Why dropped (2026-11-05):** never carried out. A later note in the same doc (the "§7 roadmap" row of its gaps table) says to read the version labels as priority order only, which replaced this plan.
 
 ## Summary
 

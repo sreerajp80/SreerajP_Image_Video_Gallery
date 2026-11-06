@@ -4,6 +4,7 @@ import 'package:in_sreerajp_imgvidgal/models/ocr/ocr_result.dart';
 import 'package:in_sreerajp_imgvidgal/services/ocr/ocr_engine.dart';
 import 'package:in_sreerajp_imgvidgal/services/ocr/ocr_service.dart';
 import 'package:in_sreerajp_imgvidgal/services/ocr/ocr_text_cleaner.dart';
+import 'package:flutter_riverpod/legacy.dart';
 
 /// The on-device text reader.
 final ocrEngineProvider = Provider<OcrEngine>((ref) {

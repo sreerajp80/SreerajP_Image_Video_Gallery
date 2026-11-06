@@ -10,6 +10,7 @@ import 'package:in_sreerajp_imgvidgal/services/settings/app_settings_service.dar
 import 'package:in_sreerajp_imgvidgal/theme/app_theme.dart';
 
 import '../helpers/recording_settings_service.dart';
+import 'package:flutter_riverpod/misc.dart';
 
 void main() {
   late RecordingSettingsService service;

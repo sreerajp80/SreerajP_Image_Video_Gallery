@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:in_sreerajp_imgvidgal/core/routing/app_router.dart';
@@ -12,8 +12,8 @@ import 'package:in_sreerajp_imgvidgal/providers/batch_providers.dart';
 import 'package:in_sreerajp_imgvidgal/providers/selection_providers.dart';
 import 'package:in_sreerajp_imgvidgal/providers/sync_providers.dart';
 import 'package:in_sreerajp_imgvidgal/providers/tag_providers.dart';
-import 'package:in_sreerajp_imgvidgal/services/batch/batch_action_rules.dart';
-import 'package:in_sreerajp_imgvidgal/services/batch/gallery_batch_handler.dart';
+import 'package:in_sreerajp_imgvidgal/core/domain/batch/batch_action_rules.dart';
+import 'package:in_sreerajp_imgvidgal/models/batch/batch_options.dart';
 import 'package:in_sreerajp_imgvidgal/widgets/albums/album_edit_dialog.dart';
 import 'package:in_sreerajp_imgvidgal/widgets/batch/batch_progress_dialog.dart';
 import 'package:in_sreerajp_imgvidgal/widgets/batch/batch_result_sheet.dart';
@@ -36,10 +36,14 @@ class BatchActionBar extends ConsumerWidget {
     final availability = ref.watch(batchAvailabilityProvider);
     final theme = Theme.of(context);
 
-    final entries = availability.valueOrNull;
+    final entries = availability.value;
     if (entries == null || entries.isEmpty) {
       return const SizedBox.shrink();
     }
+
+    // A fixed row, not a scrolling one: whatever scrolls off the edge is as
+    // good as hidden, and Trash and Transfer are what people came here for.
+    final quick = BatchActionRules.pick(entries, BatchActionRules.quickActions);
 
     return Material(
       elevation: 3,
@@ -48,19 +52,95 @@ class BatchActionBar extends ConsumerWidget {
         top: false,
         child: SizedBox(
           height: 88,
-          child: ListView.separated(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            itemCount: entries.length,
-            separatorBuilder: (_, __) => const SizedBox(width: 4),
-            itemBuilder: (context, index) => _ActionButton(
-              availability: entries[index],
-              onPressed: () => _start(context, ref, entries[index]),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+            child: Row(
+              children: [
+                for (final entry in quick)
+                  Expanded(
+                    child: _ActionButton(
+                      availability: entry,
+                      onPressed: () => _start(context, ref, entry),
+                    ),
+                  ),
+                Expanded(
+                  child: _MoreButton(
+                    onPressed: () => _openMore(context, ref, entries),
+                  ),
+                ),
+              ],
             ),
           ),
         ),
       ),
     );
+  }
+
+  /// Shows the less common actions in a sheet, grouped.
+  ///
+  /// The sheet closes before the action starts, so any picker or confirm
+  /// dialog the action opens sits on the screen, not on top of the sheet.
+  Future<void> _openMore(
+    BuildContext context,
+    WidgetRef ref,
+    List<BatchActionAvailability> entries,
+  ) async {
+    final groups = [
+      for (final group in BatchActionRules.moreActionGroups)
+        BatchActionRules.pick(entries, group),
+    ].where((group) => group.isNotEmpty).toList(growable: false);
+
+    final chosen = await showModalBottomSheet<BatchActionAvailability>(
+      context: context,
+      showDragHandle: true,
+      isScrollControlled: true,
+      builder: (sheetContext) {
+        final l10n = AppLocalizations.of(sheetContext)!;
+        final theme = Theme.of(sheetContext);
+        return SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                for (var i = 0; i < groups.length; i++) ...[
+                  if (i > 0) const Divider(height: 16),
+                  for (final entry in groups[i])
+                    ListTile(
+                      leading: Icon(
+                        _ActionButton._icon(entry.action),
+                        color: entry.isAllowed
+                            ? null
+                            : theme.colorScheme.onSurface.withValues(
+                                alpha: 0.38,
+                              ),
+                      ),
+                      title: Text(
+                        _ActionButton._label(l10n, entry.action),
+                        style: entry.isAllowed
+                            ? null
+                            : TextStyle(
+                                color: theme.colorScheme.onSurface.withValues(
+                                  alpha: 0.38,
+                                ),
+                              ),
+                      ),
+                      // Says why it is greyed out, right where it is greyed.
+                      subtitle: entry.isAllowed
+                          ? null
+                          : Text(_blockedReason(l10n, entry)),
+                      onTap: () => Navigator.of(sheetContext).pop(entry),
+                    ),
+                ],
+              ],
+            ),
+          ),
+        );
+      },
+    );
+
+    if (chosen == null || !context.mounted) return;
+    await _start(context, ref, chosen);
   }
 
   /// Gathers whatever the action needs, confirms, then runs it.
@@ -77,7 +157,7 @@ class BatchActionBar extends ConsumerWidget {
       return;
     }
 
-    final items = ref.read(selectedMediaProvider).valueOrNull;
+    final items = ref.read(selectedMediaProvider).value;
     if (items == null || items.isEmpty) return;
 
     // Transfer is not a batch at all: it hands the selection to the screen
@@ -162,7 +242,7 @@ class BatchActionBar extends ConsumerWidget {
       final tags = await ref.read(allTagsProvider.future);
       if (!context.mounted) return null;
       if (tags.isEmpty) {
-        _tell(context, l10n.filterNoTags);
+        _tell(context, l10n.labelFilterNoTags);
         return null;
       }
     }
@@ -190,7 +270,7 @@ class BatchActionBar extends ConsumerWidget {
                 children: [
                   Expanded(
                     child: Text(
-                      l10n.batchPickAlbum,
+                      l10n.labelBatchPickAlbum,
                       style: Theme.of(sheetContext).textTheme.titleMedium,
                     ),
                   ),
@@ -202,7 +282,7 @@ class BatchActionBar extends ConsumerWidget {
                       }
                     },
                     icon: const Icon(Icons.add),
-                    label: Text(l10n.albumPickerCreate),
+                    label: Text(l10n.actionAlbumPickerCreate),
                   ),
                 ],
               ),
@@ -212,7 +292,7 @@ class BatchActionBar extends ConsumerWidget {
                   padding: const EdgeInsets.symmetric(vertical: 24),
                   child: Center(
                     child: Text(
-                      l10n.albumPickerEmpty,
+                      l10n.emptyAlbumPicker,
                       style: Theme.of(sheetContext).textTheme.bodyMedium,
                     ),
                   ),
@@ -226,7 +306,9 @@ class BatchActionBar extends ConsumerWidget {
                         ListTile(
                           leading: const Icon(Icons.photo_album_outlined),
                           title: Text(album.name),
-                          subtitle: Text(l10n.albumItemCount(album.itemCount)),
+                          subtitle: Text(
+                            l10n.descAlbumItemCount(album.itemCount),
+                          ),
                           onTap: () => Navigator.of(sheetContext).pop(album.id),
                         ),
                     ],
@@ -241,7 +323,7 @@ class BatchActionBar extends ConsumerWidget {
 
   Future<String?> _createAlbum(BuildContext context, WidgetRef ref) async {
     final existing =
-        ref.read(virtualAlbumsProvider).valueOrNull ?? const <AlbumSummary>[];
+        ref.read(virtualAlbumsProvider).value ?? const <AlbumSummary>[];
     final name = await showDialog<String>(
       context: context,
       builder: (_) =>
@@ -265,17 +347,17 @@ class BatchActionBar extends ConsumerWidget {
     final String body;
     switch (action) {
       case BatchAction.moveToVault:
-        body = l10n.batchConfirmVault(count);
+        body = l10n.bodyBatchConfirmVault(count);
       case BatchAction.moveToTrash:
-        body = l10n.batchConfirmTrash(count);
+        body = l10n.bodyBatchConfirmTrash(count);
       default:
-        body = l10n.batchConfirmNewFiles(count);
+        body = l10n.bodyBatchConfirmNewFiles(count);
     }
 
     return showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: Text(l10n.batchConfirmTitle),
+        title: Text(l10n.titleBatchConfirm),
         content: Text(body),
         actions: [
           TextButton(
@@ -284,7 +366,7 @@ class BatchActionBar extends ConsumerWidget {
           ),
           FilledButton(
             onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: Text(l10n.batchConfirmContinue),
+            child: Text(l10n.actionBatchConfirmContinue),
           ),
         ],
       ),
@@ -297,15 +379,15 @@ class BatchActionBar extends ConsumerWidget {
   ) {
     switch (availability.blockReason) {
       case BatchBlockReason.emptySelection:
-        return l10n.batchBlockedEmpty;
+        return l10n.emptyBatchBlocked;
       case BatchBlockReason.selectionTooLarge:
-        return l10n.batchBlockedTooLarge;
+        return l10n.bodyBatchBlockedTooLarge;
       case BatchBlockReason.noSupportedItems:
-        return l10n.batchBlockedUnsupported;
+        return l10n.bodyBatchBlockedUnsupported;
       case BatchBlockReason.mixedTypes:
-        return l10n.batchBlockedMixed;
+        return l10n.bodyBatchBlockedMixed;
       case null:
-        return l10n.batchBlockedUnsupported;
+        return l10n.bodyBatchBlockedUnsupported;
     }
   }
 
@@ -313,6 +395,47 @@ class BatchActionBar extends ConsumerWidget {
     ScaffoldMessenger.of(
       context,
     ).showSnackBar(SnackBar(content: Text(message)));
+  }
+}
+
+/// The last button in the bar: opens the sheet with every other action.
+class _MoreButton extends StatelessWidget {
+  final VoidCallback onPressed;
+
+  const _MoreButton({required this.onPressed});
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
+    final label = l10n.labelBatchActionMore;
+
+    return Tooltip(
+      message: label,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(12),
+        onTap: onPressed,
+        child: SizedBox(
+          height: double.infinity,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.more_horiz, color: theme.colorScheme.onSurface),
+              const SizedBox(height: 4),
+              Text(
+                label,
+                maxLines: 2,
+                textAlign: TextAlign.center,
+                overflow: TextOverflow.ellipsis,
+                style: theme.textTheme.labelSmall?.copyWith(
+                  color: theme.colorScheme.onSurface,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }
 
@@ -343,7 +466,7 @@ class _ActionButton extends StatelessWidget {
         // doing nothing at all.
         onTap: onPressed,
         child: SizedBox(
-          width: 84,
+          height: double.infinity,
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -393,27 +516,27 @@ class _ActionButton extends StatelessWidget {
   static String _label(AppLocalizations l10n, BatchAction action) {
     switch (action) {
       case BatchAction.convert:
-        return l10n.batchActionConvert;
+        return l10n.labelBatchActionConvert;
       case BatchAction.watermark:
-        return l10n.batchActionWatermark;
+        return l10n.labelBatchActionWatermark;
       case BatchAction.exportPdf:
-        return l10n.batchActionExportPdf;
+        return l10n.labelBatchActionExportPdf;
       case BatchAction.addTags:
-        return l10n.batchActionAddTags;
+        return l10n.labelBatchActionAddTags;
       case BatchAction.removeTags:
-        return l10n.batchActionRemoveTags;
+        return l10n.labelBatchActionRemoveTags;
       case BatchAction.addToAlbum:
-        return l10n.batchActionAddToAlbum;
+        return l10n.labelBatchActionAddToAlbum;
       case BatchAction.favourite:
-        return l10n.batchActionFavourite;
+        return l10n.labelBatchActionFavourite;
       case BatchAction.unfavourite:
-        return l10n.batchActionUnfavourite;
+        return l10n.bodyBatchActionUnfavourite;
       case BatchAction.moveToVault:
-        return l10n.batchActionMoveToVault;
+        return l10n.labelBatchActionMoveToVault;
       case BatchAction.transfer:
-        return l10n.batchActionTransfer;
+        return l10n.bodyBatchActionTransfer;
       case BatchAction.moveToTrash:
-        return l10n.batchActionMoveToTrash;
+        return l10n.titleBatchActionMoveToTrash;
     }
   }
 }

@@ -1,15 +1,11 @@
 import 'package:in_sreerajp_imgvidgal/core/constants/app_constants.dart';
 import 'package:in_sreerajp_imgvidgal/models/notes/media_note.dart';
 import 'package:in_sreerajp_imgvidgal/repositories/media_repository.dart';
+import 'package:in_sreerajp_imgvidgal/core/errors/app_exception.dart';
 
 /// Thrown when a note cannot be saved.
-class NotesException implements Exception {
-  final String message;
-
-  const NotesException(this.message);
-
-  @override
-  String toString() => 'NotesException: $message';
+final class NotesException extends FeatureException {
+  const NotesException(super.message, {super.cause});
 }
 
 /// Reads and writes the note attached to a media item.

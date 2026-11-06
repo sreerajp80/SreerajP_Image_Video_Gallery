@@ -1,8 +1,10 @@
 import 'dart:async';
 import 'package:in_sreerajp_imgvidgal/core/errors/app_exception.dart';
+import 'package:in_sreerajp_imgvidgal/core/logging/app_logger.dart';
 import 'package:in_sreerajp_imgvidgal/repositories/database/database_constants.dart';
 import 'package:path/path.dart' as p;
 import 'package:sqflite/sqflite.dart';
+import 'package:in_sreerajp_imgvidgal/repositories/database/column_value_rules.dart';
 
 /// Manages SQLite database connection, schema setup, triggers, and migrations.
 class DatabaseHelper {
@@ -80,8 +82,12 @@ class DatabaseHelper {
     // In-memory databases do not support WAL mode
     if (_customPath != inMemoryDatabasePath) {
       try {
-        await db.execute('PRAGMA journal_mode = WAL;');
-      } catch (_) {}
+        // journal_mode returns a row, so execute() fails on Android.
+        await db.rawQuery('PRAGMA journal_mode=WAL;');
+      } catch (error) {
+        // The app still works without WAL, only slower under load.
+        AppLogger.warning('WAL mode could not be enabled', error: error);
+      }
     }
   }
 
@@ -96,7 +102,7 @@ class DatabaseHelper {
         ${DatabaseConstants.colMediaPath} TEXT NOT NULL UNIQUE,
         ${DatabaseConstants.colMediaUri} TEXT,
         ${DatabaseConstants.colMediaDisplayName} TEXT NOT NULL,
-        ${DatabaseConstants.colMediaType} TEXT NOT NULL,
+        ${DatabaseConstants.colMediaType} TEXT NOT NULL ${ColumnValueRule.mediaType.check},
         ${DatabaseConstants.colMediaMimeType} TEXT NOT NULL,
         ${DatabaseConstants.colMediaSizeBytes} INTEGER NOT NULL,
         ${DatabaseConstants.colMediaDateAdded} INTEGER NOT NULL,
@@ -106,9 +112,9 @@ class DatabaseHelper {
         ${DatabaseConstants.colMediaWidth} INTEGER,
         ${DatabaseConstants.colMediaHeight} INTEGER,
         ${DatabaseConstants.colMediaOrientation} INTEGER NOT NULL DEFAULT 0,
-        ${DatabaseConstants.colMediaIsFavorite} INTEGER NOT NULL DEFAULT 0,
-        ${DatabaseConstants.colMediaIsVaulted} INTEGER NOT NULL DEFAULT 0,
-        ${DatabaseConstants.colMediaIsTrash} INTEGER NOT NULL DEFAULT 0,
+        ${DatabaseConstants.colMediaIsFavorite} INTEGER NOT NULL DEFAULT 0 ${ColumnValueRule.mediaIsFavorite.check},
+        ${DatabaseConstants.colMediaIsVaulted} INTEGER NOT NULL DEFAULT 0 ${ColumnValueRule.mediaIsVaulted.check},
+        ${DatabaseConstants.colMediaIsTrash} INTEGER NOT NULL DEFAULT 0 ${ColumnValueRule.mediaIsTrash.check},
         ${DatabaseConstants.colMediaExifJson} TEXT,
         ${DatabaseConstants.colMediaUserNotes} TEXT,
         ${DatabaseConstants.colMediaSha256Hash} TEXT,
@@ -124,14 +130,14 @@ class DatabaseHelper {
       CREATE TABLE ${DatabaseConstants.tableAlbums} (
         ${DatabaseConstants.colId} TEXT PRIMARY KEY,
         ${DatabaseConstants.colName} TEXT NOT NULL,
-        ${DatabaseConstants.colAlbumType} TEXT NOT NULL,
+        ${DatabaseConstants.colAlbumType} TEXT NOT NULL ${ColumnValueRule.albumType.check},
         ${DatabaseConstants.colAlbumRelativeFolderPath} TEXT,
         ${DatabaseConstants.colAlbumCoverMediaId} TEXT,
         ${DatabaseConstants.colAlbumCoverPath} TEXT,
         ${DatabaseConstants.colAlbumItemCount} INTEGER NOT NULL DEFAULT 0,
         ${DatabaseConstants.colAlbumDateCreated} INTEGER NOT NULL,
         ${DatabaseConstants.colAlbumDateModified} INTEGER NOT NULL,
-        ${DatabaseConstants.colAlbumIsPinned} INTEGER NOT NULL DEFAULT 0,
+        ${DatabaseConstants.colAlbumIsPinned} INTEGER NOT NULL DEFAULT 0 ${ColumnValueRule.albumIsPinned.check},
         ${DatabaseConstants.colAlbumSortOrder} INTEGER NOT NULL DEFAULT 0
       );
     ''');
@@ -185,7 +191,7 @@ class DatabaseHelper {
         ${DatabaseConstants.colVaultOriginalFilename} TEXT NOT NULL,
         ${DatabaseConstants.colVaultEncryptedFilename} TEXT NOT NULL,
         ${DatabaseConstants.colVaultEncryptedThumbnailFilename} TEXT,
-        ${DatabaseConstants.colVaultMediaType} TEXT NOT NULL,
+        ${DatabaseConstants.colVaultMediaType} TEXT NOT NULL ${ColumnValueRule.vaultMediaType.check},
         ${DatabaseConstants.colVaultMimeType} TEXT NOT NULL,
         ${DatabaseConstants.colVaultSizeBytes} INTEGER NOT NULL,
         ${DatabaseConstants.colVaultIv} TEXT NOT NULL,
@@ -261,7 +267,8 @@ class DatabaseHelper {
         );
       ''');
       createdFts = true;
-    } catch (_) {
+    } catch (error) {
+      AppLogger.info('FTS5 is not available; trying FTS4');
       // FTS5 unavailable, try FTS4 below.
     }
 
@@ -281,7 +288,8 @@ class DatabaseHelper {
           );
         ''');
         createdFts = true;
-      } catch (_) {
+      } catch (error) {
+        AppLogger.info('FTS4 with options is not available; trying basic FTS4');
         // Fall through to basic FTS4
       }
     }
@@ -301,7 +309,11 @@ class DatabaseHelper {
           );
         ''');
         createdFts = true;
-      } catch (_) {
+      } catch (error) {
+        AppLogger.warning(
+          'FTS4 is not available; search uses a plain table',
+          error: error,
+        );
         // Fall through to plain table
       }
     }
@@ -389,6 +401,21 @@ class DatabaseHelper {
           await _createFtsTableAndTriggers(db);
         }
       }
+
+      // v4: v3 could create the search table empty, and only the insert
+      // trigger adds rows, so photos from before it never became searchable.
+      // Adds a row for every photo that has none; a healthy index gains nothing.
+      if (oldVersion < 4) {
+        await _backfillSearchIndex(db);
+      }
+
+      // v5: the allowed values of enum and 0/1 columns (G38). A new database
+      // has them as CHECK constraints; an existing one gets triggers, because
+      // adding a CHECK means rebuilding the table, and dropping media_items
+      // with foreign keys on would delete every album and tag link.
+      if (oldVersion < 5) {
+        await _addValueCheckTriggers(db);
+      }
     } catch (e, st) {
       throw DatabaseMigrationException(
         'Failed to migrate database from version $oldVersion to $newVersion: $e',
@@ -398,6 +425,49 @@ class DatabaseHelper {
         stackTrace: st,
       );
     }
+  }
+
+  /// Adds a pair of triggers for every [ColumnValueRule], so an upgraded
+  /// database refuses the same values a new one refuses by `CHECK`.
+  Future<void> _addValueCheckTriggers(Database db) async {
+    for (final rule in ColumnValueRule.all) {
+      for (final sql in rule.triggerSql) {
+        await db.execute(sql);
+      }
+    }
+  }
+
+  /// Indexes every media row that has no search row, filled the way the
+  /// insert trigger fills it, plus the item's tag names.
+  Future<void> _backfillSearchIndex(Database db) async {
+    await db.execute('''
+      INSERT INTO ${DatabaseConstants.tableMediaSearchFts} (
+        ${DatabaseConstants.colFtsMediaId},
+        ${DatabaseConstants.colFtsDisplayName},
+        ${DatabaseConstants.colFtsUserNotes},
+        ${DatabaseConstants.colFtsTagsContent},
+        ${DatabaseConstants.colFtsExifSearchText},
+        ${DatabaseConstants.colFtsAddress}
+      )
+      SELECT
+        m.${DatabaseConstants.colId},
+        m.${DatabaseConstants.colMediaDisplayName},
+        COALESCE(m.${DatabaseConstants.colMediaUserNotes}, ''),
+        COALESCE((
+          SELECT group_concat(t.${DatabaseConstants.colName}, ' ')
+          FROM ${DatabaseConstants.tableTags} t
+          INNER JOIN ${DatabaseConstants.tableMediaTags} mt
+            ON t.${DatabaseConstants.colId} = mt.${DatabaseConstants.colMediaTagTagId}
+          WHERE mt.${DatabaseConstants.colMediaTagMediaId} = m.${DatabaseConstants.colId}
+        ), ''),
+        COALESCE(m.${DatabaseConstants.colMediaExifJson}, ''),
+        COALESCE(m.${DatabaseConstants.colMediaAddress}, '')
+      FROM ${DatabaseConstants.tableMedia} m
+      WHERE m.${DatabaseConstants.colId} NOT IN (
+        SELECT ${DatabaseConstants.colFtsMediaId}
+        FROM ${DatabaseConstants.tableMediaSearchFts}
+      );
+    ''');
   }
 
   /// Closes and resets the database instance.

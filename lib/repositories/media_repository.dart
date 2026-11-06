@@ -7,6 +7,7 @@ import 'package:in_sreerajp_imgvidgal/models/media_item.dart';
 import 'package:in_sreerajp_imgvidgal/repositories/database/media_dao.dart';
 import 'package:in_sreerajp_imgvidgal/services/media/media_scanner_service.dart';
 import 'package:in_sreerajp_imgvidgal/services/media/media_store_channel.dart';
+import 'package:in_sreerajp_imgvidgal/core/logging/app_logger.dart';
 
 /// Single entry point for media data used by the provider layer.
 ///
@@ -170,7 +171,8 @@ class MediaRepository {
 
     try {
       return await channel.readBytes(uri, maxBytes: maxBytes);
-    } catch (_) {
+    } catch (error) {
+      AppLogger.debug('Reading original bytes failed');
       // An unreadable or deleted file must never break the viewer.
       return null;
     }

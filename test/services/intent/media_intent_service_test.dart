@@ -121,19 +121,6 @@ void main() {
       expect(initial, isNull);
     });
 
-    test('openDefaultAppsSettings invokes platform method', () async {
-      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-          .setMockMethodCallHandler(channel, (call) async {
-            if (call.method == 'openDefaultAppsSettings') {
-              return true;
-            }
-            return null;
-          });
-
-      final success = await service.openDefaultAppsSettings();
-      expect(success, isTrue);
-    });
-
     test('incomingIntents stream emits on onMediaIntent call', () async {
       final emitted = <MediaIntentData>[];
       final sub = service.incomingIntents.listen(emitted.add);

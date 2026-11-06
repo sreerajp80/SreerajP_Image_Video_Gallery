@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:in_sreerajp_imgvidgal/core/routing/app_router.dart';
@@ -31,14 +31,14 @@ class AlbumMediaScreen extends ConsumerWidget {
 
     // Build visible ids for the select-all button.
     final visibleIds =
-        media.valueOrNull?.map((item) => item.id).toList(growable: false) ??
+        media.value?.map((item) => item.id).toList(growable: false) ??
         const <String>[];
 
     return Scaffold(
       appBar: selecting
           ? SelectionAppBar(visibleIds: visibleIds)
           : AppBar(
-              title: Text(summary.valueOrNull?.name ?? l10n.albumsTitle),
+              title: Text(summary.value?.name ?? l10n.titleAlbums),
               actions: <Widget>[
                 PopupMenuButton<String>(
                   onSelected: (action) =>
@@ -50,7 +50,7 @@ class AlbumMediaScreen extends ConsumerWidget {
                         dense: true,
                         contentPadding: EdgeInsets.zero,
                         leading: const Icon(Icons.drive_file_rename_outline),
-                        title: Text(l10n.albumRename),
+                        title: Text(l10n.titleAlbumRename),
                       ),
                     ),
                     PopupMenuItem<String>(
@@ -59,7 +59,7 @@ class AlbumMediaScreen extends ConsumerWidget {
                         dense: true,
                         contentPadding: EdgeInsets.zero,
                         leading: const Icon(Icons.image_outlined),
-                        title: Text(l10n.albumChooseCover),
+                        title: Text(l10n.titleAlbumChooseCover),
                       ),
                     ),
                     PopupMenuItem<String>(
@@ -68,7 +68,7 @@ class AlbumMediaScreen extends ConsumerWidget {
                         dense: true,
                         contentPadding: EdgeInsets.zero,
                         leading: const Icon(Icons.swap_vert),
-                        title: Text(l10n.albumReorder),
+                        title: Text(l10n.titleAlbumReorder),
                       ),
                     ),
                     PopupMenuItem<String>(
@@ -77,7 +77,7 @@ class AlbumMediaScreen extends ConsumerWidget {
                         dense: true,
                         contentPadding: EdgeInsets.zero,
                         leading: const Icon(Icons.delete_outline),
-                        title: Text(l10n.albumDelete),
+                        title: Text(l10n.titleAlbumDelete),
                       ),
                     ),
                   ],
@@ -90,14 +90,16 @@ class AlbumMediaScreen extends ConsumerWidget {
           loading: () => const Center(child: CircularProgressIndicator()),
           error: (_, _) => const AlbumErrorState(),
           data: (album) {
-            if (album == null) return AlbumErrorState(message: l10n.albumGone);
+            if (album == null) {
+              return AlbumErrorState(message: l10n.bodyAlbumGone);
+            }
             return media.when(
               loading: () => const Center(child: CircularProgressIndicator()),
               error: (_, _) => const AlbumErrorState(),
               data: (items) => AlbumMediaGrid(
                 items: items,
-                emptyTitle: l10n.albumEmptyTitle,
-                emptyBody: l10n.albumEmptyBody,
+                emptyTitle: l10n.titleAlbumEmpty,
+                emptyBody: l10n.bodyAlbumEmpty,
                 selectable: true,
                 onItemLongPress: (item) => _confirmRemove(context, ref, item),
               ),
@@ -114,7 +116,7 @@ class AlbumMediaScreen extends ConsumerWidget {
     String action,
     AsyncValue<AlbumSummary?> summary,
   ) async {
-    final album = summary.valueOrNull;
+    final album = summary.value;
     if (album == null) return;
 
     switch (action) {
@@ -135,7 +137,7 @@ class AlbumMediaScreen extends ConsumerWidget {
     AlbumSummary album,
   ) async {
     final existing =
-        ref.read(virtualAlbumsProvider).valueOrNull ?? const <AlbumSummary>[];
+        ref.read(virtualAlbumsProvider).value ?? const <AlbumSummary>[];
     final name = await showDialog<String>(
       context: context,
       builder: (_) => AlbumEditDialog(
@@ -162,7 +164,7 @@ class AlbumMediaScreen extends ConsumerWidget {
       builder: (sheetContext) => SafeArea(
         child: ListTile(
           leading: const Icon(Icons.remove_circle_outline),
-          title: Text(l10n.albumRemoveMedia),
+          title: Text(l10n.titleAlbumRemoveMedia),
           subtitle: Text(item.displayName),
           onTap: () => Navigator.of(sheetContext).pop(true),
         ),
@@ -179,7 +181,7 @@ class AlbumMediaScreen extends ConsumerWidget {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          failed ? l10n.albumErrorFailed : l10n.albumRemovedFromAlbum,
+          failed ? l10n.errorAlbumErrorFailed : l10n.bodyAlbumRemovedFromAlbum,
         ),
       ),
     );
@@ -194,16 +196,16 @@ class AlbumMediaScreen extends ConsumerWidget {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: Text(l10n.albumDeleteConfirmTitle(album.name)),
-        content: Text(l10n.albumDeleteConfirmBody),
+        title: Text(l10n.titleAlbumDeleteConfirm(album.name)),
+        content: Text(l10n.bodyAlbumDeleteConfirm),
         actions: <Widget>[
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: Text(l10n.albumCancel),
+            child: Text(l10n.actionAlbumCancel),
           ),
           FilledButton(
             onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: Text(l10n.albumDeleteConfirm),
+            child: Text(l10n.actionAlbumDeleteConfirm),
           ),
         ],
       ),
@@ -218,7 +220,9 @@ class AlbumMediaScreen extends ConsumerWidget {
     if (!failed) context.pop();
     messenger.showSnackBar(
       SnackBar(
-        content: Text(failed ? l10n.albumErrorFailed : l10n.albumDeleted),
+        content: Text(
+          failed ? l10n.errorAlbumErrorFailed : l10n.bodyAlbumDeleted,
+        ),
       ),
     );
   }
@@ -228,6 +232,6 @@ class AlbumMediaScreen extends ConsumerWidget {
     final l10n = AppLocalizations.of(context)!;
     ScaffoldMessenger.of(
       context,
-    ).showSnackBar(SnackBar(content: Text(l10n.albumErrorFailed)));
+    ).showSnackBar(SnackBar(content: Text(l10n.errorAlbumErrorFailed)));
   }
 }

@@ -2,34 +2,10 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:in_sreerajp_imgvidgal/core/constants/app_constants.dart';
 import 'package:in_sreerajp_imgvidgal/core/errors/app_exception.dart';
+import 'package:in_sreerajp_imgvidgal/models/media/media_permission_status.dart';
 
-/// Permission state reported by the Android media permission flow.
-enum MediaPermissionStatus {
-  /// Full access to images and videos.
-  granted,
-
-  /// Android 14+ "selected photos" access — only some items are visible.
-  partial,
-
-  /// Denied, but the system will ask again.
-  denied,
-
-  /// Denied with "Don't ask again"; only app settings can change it.
-  permanentlyDenied;
-
-  /// Whether any media at all can be read.
-  bool get canRead =>
-      this == MediaPermissionStatus.granted ||
-      this == MediaPermissionStatus.partial;
-
-  /// Parses the string sent by the native channel, defaulting to [denied].
-  static MediaPermissionStatus fromString(String? value) {
-    return MediaPermissionStatus.values.firstWhere(
-      (status) => status.name == value,
-      orElse: () => MediaPermissionStatus.denied,
-    );
-  }
-}
+// Moved to models so the UI can use it without importing a service (G46).
+export 'package:in_sreerajp_imgvidgal/models/media/media_permission_status.dart';
 
 /// A single raw row read from the Android MediaStore.
 ///

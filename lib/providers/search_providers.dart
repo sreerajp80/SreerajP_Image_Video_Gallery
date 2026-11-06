@@ -12,6 +12,7 @@ import 'package:in_sreerajp_imgvidgal/repositories/search_repository.dart';
 import 'package:in_sreerajp_imgvidgal/services/search/search_history_service.dart';
 import 'package:in_sreerajp_imgvidgal/services/search/search_query_parser.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:flutter_riverpod/legacy.dart';
 
 /// Turns typed text into a query, and a query into an FTS expression.
 final searchQueryParserProvider = Provider<SearchQueryParser>((ref) {
@@ -73,7 +74,7 @@ final debouncedSearchTextProvider = FutureProvider<String>((ref) async {
 
 /// The parsed form of what the user typed.
 final parsedSearchQueryProvider = Provider<SearchQuery>((ref) {
-  final text = ref.watch(debouncedSearchTextProvider).valueOrNull ?? '';
+  final text = ref.watch(debouncedSearchTextProvider).value ?? '';
   return ref.watch(searchQueryParserProvider).parse(text);
 });
 

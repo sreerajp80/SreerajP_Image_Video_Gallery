@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:in_sreerajp_imgvidgal/core/device/device_memory_service.dart';
+import 'package:in_sreerajp_imgvidgal/services/device/device_memory_service.dart';
 import 'package:in_sreerajp_imgvidgal/models/filter_options.dart';
 import 'package:in_sreerajp_imgvidgal/models/media_item.dart';
 import 'package:in_sreerajp_imgvidgal/repositories/database/media_dao.dart';
@@ -12,6 +12,7 @@ import 'package:in_sreerajp_imgvidgal/services/thumbnail/thumbnail_disk_cache.da
 import 'package:in_sreerajp_imgvidgal/services/thumbnail/thumbnail_memory_cache.dart';
 import 'package:in_sreerajp_imgvidgal/services/thumbnail/thumbnail_service.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:flutter_riverpod/legacy.dart';
 
 /// Platform bridge to the Android MediaStore.
 final mediaStoreChannelProvider = Provider<MediaStoreChannel>((ref) {

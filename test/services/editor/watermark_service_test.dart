@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:in_sreerajp_imgvidgal/models/editor/watermark_config.dart';
-import 'package:in_sreerajp_imgvidgal/services/editor/crop_transform_service.dart';
+import 'package:in_sreerajp_imgvidgal/core/domain/editor/crop_transform_service.dart';
 import 'package:in_sreerajp_imgvidgal/services/editor/watermark_service.dart';
 
 void main() {

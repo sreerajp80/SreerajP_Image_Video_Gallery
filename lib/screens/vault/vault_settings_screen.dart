@@ -1,11 +1,11 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:in_sreerajp_imgvidgal/core/constants/app_constants.dart';
 import 'package:in_sreerajp_imgvidgal/l10n/generated/app_localizations.dart';
 import 'package:in_sreerajp_imgvidgal/models/vault/vault_auth_outcome.dart';
 import 'package:in_sreerajp_imgvidgal/models/vault/vault_security_settings.dart';
 import 'package:in_sreerajp_imgvidgal/providers/vault_providers.dart';
-import 'package:in_sreerajp_imgvidgal/services/vault/vault_pin_rules.dart';
+import 'package:in_sreerajp_imgvidgal/core/domain/vault/vault_pin_rules.dart';
 import 'package:in_sreerajp_imgvidgal/widgets/vault/secure_screen.dart';
 import 'package:in_sreerajp_imgvidgal/widgets/vault/vault_auto_lock_scope.dart';
 import 'package:in_sreerajp_imgvidgal/widgets/vault/vault_pin_pad.dart';
@@ -28,11 +28,13 @@ class VaultSettingsScreen extends ConsumerWidget {
     return SecureScreen(
       child: VaultAutoLockScope(
         child: Scaffold(
-          appBar: AppBar(title: Text(l10n.vaultSettingsTitle)),
-          body: settings.when(
-            loading: () => const Center(child: CircularProgressIndicator()),
-            error: (_, _) => Center(child: Text(l10n.vaultAuthError)),
-            data: (value) => _SettingsList(settings: value),
+          appBar: AppBar(title: Text(l10n.titleVaultSettings)),
+          body: SafeArea(
+            child: settings.when(
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (_, _) => Center(child: Text(l10n.errorVaultAuth)),
+              data: (value) => _SettingsList(settings: value),
+            ),
           ),
         ),
       ),
@@ -59,8 +61,8 @@ class _SettingsList extends ConsumerWidget {
     return ListView(
       children: <Widget>[
         _SectionHeader(
-          title: l10n.vaultAutoLockHeading,
-          body: l10n.vaultAutoLockBody,
+          title: l10n.titleVaultAutoLockHeading,
+          body: l10n.bodyVaultAutoLock,
         ),
         RadioGroup<int>(
           groupValue: settings.autoLockSeconds,
@@ -75,8 +77,8 @@ class _SettingsList extends ConsumerWidget {
                   value: seconds,
                   title: Text(
                     seconds < 60
-                        ? l10n.vaultAutoLockSeconds(seconds)
-                        : l10n.vaultAutoLockMinutes(seconds ~/ 60),
+                        ? l10n.bodyVaultAutoLockSeconds(seconds)
+                        : l10n.bodyVaultAutoLockMinutes(seconds ~/ 60),
                   ),
                   dense: true,
                 ),
@@ -89,14 +91,14 @@ class _SettingsList extends ConsumerWidget {
           value: settings.biometricEnabled,
           onChanged: (value) =>
               _save(ref, settings.copyWith(biometricEnabled: value)),
-          title: Text(l10n.vaultBiometricHeading),
-          subtitle: Text(l10n.vaultBiometricBody),
+          title: Text(l10n.titleVaultBiometricHeading),
+          subtitle: Text(l10n.bodyVaultBiometric),
         ),
         const Divider(),
 
         _SectionHeader(
-          title: l10n.vaultShredHeading,
-          body: l10n.vaultShredBody,
+          title: l10n.titleVaultShredHeading,
+          body: l10n.bodyVaultShred,
         ),
         RadioGroup<int>(
           groupValue: settings.shredPasses,
@@ -113,7 +115,7 @@ class _SettingsList extends ConsumerWidget {
               )
                 RadioListTile<int>(
                   value: passes,
-                  title: Text(l10n.vaultShredPassCount(passes)),
+                  title: Text(l10n.bodyVaultShredPassCount(passes)),
                   dense: true,
                 ),
             ],
@@ -123,14 +125,14 @@ class _SettingsList extends ConsumerWidget {
           value: settings.shredOnImportByDefault,
           onChanged: (value) =>
               _save(ref, settings.copyWith(shredOnImportByDefault: value)),
-          title: Text(l10n.vaultShredDefaultHeading),
-          subtitle: Text(l10n.vaultShredDefaultBody),
+          title: Text(l10n.titleVaultShredDefaultHeading),
+          subtitle: Text(l10n.bodyVaultShredDefault),
         ),
         const Divider(),
 
         ListTile(
           leading: const Icon(Icons.password_outlined),
-          title: Text(l10n.vaultChangePin),
+          title: Text(l10n.titleVaultChangePin),
           onTap: () => _openChangePin(context, ref),
         ),
         const Divider(),
@@ -141,12 +143,12 @@ class _SettingsList extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
               Text(
-                l10n.vaultSecureScreenHeading,
+                l10n.titleVaultSecureScreenHeading,
                 style: theme.textTheme.titleSmall,
               ),
               const SizedBox(height: 4),
               Text(
-                l10n.vaultSecureScreenBody,
+                l10n.bodyVaultSecureScreen,
                 style: theme.textTheme.bodySmall,
               ),
             ],
@@ -165,7 +167,7 @@ class _SettingsList extends ConsumerWidget {
     final l10n = AppLocalizations.of(context)!;
     ScaffoldMessenger.of(
       context,
-    ).showSnackBar(SnackBar(content: Text(l10n.vaultPinChanged)));
+    ).showSnackBar(SnackBar(content: Text(l10n.bodyVaultPinChanged)));
   }
 }
 
@@ -204,8 +206,9 @@ class _ChangePinPageState extends ConsumerState<_ChangePinPage> {
 
     if (!VaultPinRules.isValid(pin)) {
       setState(
-        () =>
-            _errorText = l10n.vaultPinTooShort(AppConstants.vaultPinMinLength),
+        () => _errorText = l10n.bodyVaultPinTooShort(
+          AppConstants.vaultPinMinLength,
+        ),
       );
       _padKey.currentState?.clear();
       return;
@@ -226,8 +229,8 @@ class _ChangePinPageState extends ConsumerState<_ChangePinPage> {
       _busy = false;
       _currentPin = null;
       _errorText = outcome.status == VaultAuthStatus.invalidPin
-          ? l10n.vaultPinNotDigits
-          : l10n.vaultWrongPin;
+          ? l10n.bodyVaultPinNotDigits
+          : l10n.bodyVaultWrongPin;
     });
     _padKey.currentState?.clear();
   }
@@ -237,19 +240,21 @@ class _ChangePinPageState extends ConsumerState<_ChangePinPage> {
     final l10n = AppLocalizations.of(context)!;
     return SecureScreen(
       child: Scaffold(
-        appBar: AppBar(title: Text(l10n.vaultChangePin)),
-        body: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
-          child: VaultPinPad(
-            key: _padKey,
-            prompt: _currentPin == null
-                ? l10n.vaultCurrentPin
-                : l10n.vaultNewPin,
-            submitLabel: l10n.vaultChangePin,
-            errorText: _errorText,
-            enabled: !_busy,
-            busy: _busy,
-            onSubmit: _onSubmit,
+        appBar: AppBar(title: Text(l10n.titleVaultChangePin)),
+        body: SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(24),
+            child: VaultPinPad(
+              key: _padKey,
+              prompt: _currentPin == null
+                  ? l10n.labelVaultCurrentPin
+                  : l10n.labelVaultNewPin,
+              submitLabel: l10n.titleVaultChangePin,
+              errorText: _errorText,
+              enabled: !_busy,
+              busy: _busy,
+              onSubmit: _onSubmit,
+            ),
           ),
         ),
       ),

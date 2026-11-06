@@ -1,14 +1,12 @@
 import 'dart:io';
 import 'dart:typed_data';
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:in_sreerajp_imgvidgal/core/errors/app_exception.dart';
 import 'package:in_sreerajp_imgvidgal/l10n/generated/app_localizations.dart';
-import 'package:in_sreerajp_imgvidgal/models/media_item.dart';
 import 'package:in_sreerajp_imgvidgal/models/vault_item.dart';
 import 'package:in_sreerajp_imgvidgal/providers/vault_providers.dart';
-import 'package:in_sreerajp_imgvidgal/repositories/vault_repository.dart';
 import 'package:in_sreerajp_imgvidgal/widgets/vault/secure_screen.dart';
 import 'package:in_sreerajp_imgvidgal/widgets/vault/vault_auto_lock_scope.dart';
 import 'package:video_player/video_player.dart';
@@ -46,9 +44,13 @@ class _VaultViewerScreenState extends ConsumerState<VaultViewerScreen> {
   bool _loading = true;
   String? _errorKey;
 
+  /// Read once here, so `dispose` never has to reach for `ref`.
+  late final VaultViewerActions _actions;
+
   @override
   void initState() {
     super.initState();
+    _actions = ref.read(vaultViewerActionsProvider);
     WidgetsBinding.instance.addPostFrameCallback((_) => _load());
   }
 
@@ -64,22 +66,20 @@ class _VaultViewerScreenState extends ConsumerState<VaultViewerScreen> {
 
   /// Shreds the decrypted working file, if there is one.
   ///
-  /// Deliberately not awaited: `dispose` cannot be asynchronous. The repository
-  /// is read before the widget goes, so the call survives this screen, and the
-  /// sweep on the next unlock is the backstop if it does not finish.
+  /// Deliberately not awaited: `dispose` cannot be asynchronous. The actions
+  /// object was read in `initState`, so the call survives this screen, and
+  /// the sweep on the next unlock is the backstop if it does not finish.
   void _shredWorkingFile() {
     final path = _workingPath;
     if (path == null) return;
     _workingPath = null;
-    final repository = ref.read(vaultRepositoryProvider);
-    unawaitedShred(repository, path);
+    _actions.discardWorkingFile(path);
   }
 
   Future<void> _load() async {
-    final repository = ref.read(vaultRepositoryProvider);
     try {
-      final item = await repository.getItem(widget.itemId);
-      if (item == null) {
+      final opened = await _actions.open(widget.itemId);
+      if (opened == null) {
         if (mounted) {
           setState(() {
             _loading = false;
@@ -89,14 +89,14 @@ class _VaultViewerScreenState extends ConsumerState<VaultViewerScreen> {
         return;
       }
 
-      if (item.mediaType == MediaType.video) {
-        await _loadVideo(repository, item);
+      final workingPath = opened.videoWorkingPath;
+      if (workingPath != null) {
+        await _startVideo(opened.item, workingPath);
       } else {
-        final bytes = await repository.readImageBytes(item);
         if (!mounted) return;
         setState(() {
-          _item = item;
-          _imageBytes = bytes;
+          _item = opened.item;
+          _imageBytes = opened.imageBytes;
           _loading = false;
         });
       }
@@ -117,9 +117,13 @@ class _VaultViewerScreenState extends ConsumerState<VaultViewerScreen> {
     }
   }
 
-  Future<void> _loadVideo(VaultRepository repository, VaultItem item) async {
-    final path = await repository.openVideoForPlayback(item);
+  Future<void> _startVideo(VaultItem item, String path) async {
     _workingPath = path;
+    if (!mounted) {
+      // The screen went while the clip was being decrypted.
+      _shredWorkingFile();
+      return;
+    }
 
     final controller = VideoPlayerController.file(File(path));
     await controller.initialize();
@@ -162,7 +166,7 @@ class _VaultViewerScreenState extends ConsumerState<VaultViewerScreen> {
           appBar: AppBar(
             backgroundColor: Colors.black,
             foregroundColor: Colors.white,
-            title: Text(_item?.originalFilename ?? l10n.vaultTitle),
+            title: Text(_item?.originalFilename ?? l10n.titleVault),
           ),
           body: Center(child: _buildBody(l10n)),
         ),
@@ -179,8 +183,8 @@ class _VaultViewerScreenState extends ConsumerState<VaultViewerScreen> {
         padding: const EdgeInsets.all(32),
         child: Text(
           errorKey == _errorTampered
-              ? l10n.vaultViewerTampered
-              : l10n.vaultViewerFailed,
+              ? l10n.bodyVaultViewerTampered
+              : l10n.errorVaultViewerFailed,
           style: const TextStyle(color: Colors.white70),
           textAlign: TextAlign.center,
         ),
@@ -200,7 +204,7 @@ class _VaultViewerScreenState extends ConsumerState<VaultViewerScreen> {
           bytes,
           fit: BoxFit.contain,
           errorBuilder: (_, _, _) => Text(
-            l10n.vaultViewerFailed,
+            l10n.errorVaultViewerFailed,
             style: const TextStyle(color: Colors.white70),
           ),
         ),
@@ -208,23 +212,13 @@ class _VaultViewerScreenState extends ConsumerState<VaultViewerScreen> {
     }
 
     return Text(
-      l10n.vaultViewerFailed,
+      l10n.errorVaultViewerFailed,
       style: const TextStyle(color: Colors.white70),
     );
   }
 
   static const String _errorMissing = 'missing';
   static const String _errorTampered = 'tampered';
-}
-
-/// Starts a shred without waiting for it.
-///
-/// A free function so `dispose` can fire it without holding a reference to a
-/// widget that is on its way out.
-void unawaitedShred(VaultRepository repository, String path) {
-  // Errors are swallowed on purpose: the sweep on the next unlock is what
-  // catches a shred that could not run, and there is no user here to tell.
-  repository.closeVideoPlayback(path).catchError((_) {});
 }
 
 /// The clip, with a play control and a seek bar.
@@ -261,6 +255,7 @@ class _VaultVideoViewState extends State<_VaultVideoView> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final controller = widget.controller;
     final value = controller.value;
 
@@ -275,6 +270,7 @@ class _VaultVideoViewState extends State<_VaultVideoView> {
         IconButton(
           iconSize: 42,
           color: Colors.white,
+          tooltip: value.isPlaying ? l10n.actionPause : l10n.actionPlay,
           onPressed: () =>
               value.isPlaying ? controller.pause() : controller.play(),
           icon: Icon(value.isPlaying ? Icons.pause : Icons.play_arrow),

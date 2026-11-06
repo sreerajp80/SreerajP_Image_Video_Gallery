@@ -10,9 +10,10 @@ import 'package:in_sreerajp_imgvidgal/providers/selection_providers.dart';
 import 'package:in_sreerajp_imgvidgal/providers/tag_providers.dart';
 import 'package:in_sreerajp_imgvidgal/providers/trash_providers.dart';
 import 'package:in_sreerajp_imgvidgal/providers/vault_providers.dart';
-import 'package:in_sreerajp_imgvidgal/services/batch/batch_action_rules.dart';
+import 'package:in_sreerajp_imgvidgal/core/domain/batch/batch_action_rules.dart';
 import 'package:in_sreerajp_imgvidgal/services/batch/batch_runner_service.dart';
 import 'package:in_sreerajp_imgvidgal/services/batch/gallery_batch_handler.dart';
+import 'package:flutter_riverpod/legacy.dart';
 
 /// Decides which actions a selection allows.
 final batchActionRulesProvider = Provider<BatchActionRules>((ref) {

@@ -2,9 +2,10 @@ import 'dart:math' as math;
 
 import 'package:image/image.dart' as img;
 import 'package:in_sreerajp_imgvidgal/models/editor/markup_layer.dart';
-import 'package:in_sreerajp_imgvidgal/services/editor/crop_transform_service.dart';
-import 'package:in_sreerajp_imgvidgal/services/editor/markup_geometry_service.dart';
+import 'package:in_sreerajp_imgvidgal/core/domain/editor/crop_transform_service.dart';
+import 'package:in_sreerajp_imgvidgal/core/domain/editor/markup_geometry_service.dart';
 import 'package:in_sreerajp_imgvidgal/services/editor/redaction_service.dart';
+import 'package:in_sreerajp_imgvidgal/core/logging/app_logger.dart';
 
 /// Draws markup layers onto real pixels.
 ///
@@ -37,7 +38,8 @@ class MarkupRenderService {
           ShapeAnnotation() => _drawShape(result, layer, size),
           TextAnnotation() => _drawText(result, layer, size),
         };
-      } catch (_) {
+      } catch (error) {
+        AppLogger.debug('Drawing one markup layer failed');
         // Keep the rest of the drawing; a single unusable layer is skipped.
         continue;
       }

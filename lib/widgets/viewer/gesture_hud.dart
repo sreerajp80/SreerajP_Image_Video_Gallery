@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
-import 'package:in_sreerajp_imgvidgal/services/video/video_gesture_service.dart';
+import 'package:material_ui/material_ui.dart';
+import 'package:in_sreerajp_imgvidgal/core/domain/video/video_gesture_service.dart';
 
 /// Floating indicator shown while a brightness, volume, or seek drag is active.
 ///

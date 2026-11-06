@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:in_sreerajp_imgvidgal/l10n/generated/app_localizations.dart';
 import 'package:in_sreerajp_imgvidgal/models/flashback_memory.dart';
 import 'package:in_sreerajp_imgvidgal/models/media_item.dart';
@@ -40,7 +40,7 @@ class FlashbackCarousel extends StatelessWidget {
               ),
               const SizedBox(width: 8),
               Text(
-                l10n.flashbackTitle,
+                l10n.titleFlashback,
                 style: theme.textTheme.titleSmall?.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
@@ -67,8 +67,8 @@ class _MemoryRow extends StatelessWidget {
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context)!;
     final caption = memory.yearsAgo == 1
-        ? l10n.flashbackOneYearAgo
-        : l10n.flashbackYearsAgo(memory.yearsAgo);
+        ? l10n.labelFlashbackOneYearAgo
+        : l10n.bodyFlashbackYearsAgo(memory.yearsAgo);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

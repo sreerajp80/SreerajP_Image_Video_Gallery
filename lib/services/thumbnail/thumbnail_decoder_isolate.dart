@@ -3,6 +3,7 @@ import 'dart:typed_data';
 
 import 'package:image/image.dart' as img;
 import 'package:in_sreerajp_imgvidgal/core/constants/app_constants.dart';
+import 'package:in_sreerajp_imgvidgal/core/logging/app_logger.dart';
 
 /// Input for the pure Dart thumbnail decode performed in a background isolate.
 class ThumbnailDecodeRequest {
@@ -56,6 +57,8 @@ Uint8List? decodeThumbnailSync(ThumbnailDecodeRequest request) {
 
     return img.encodeJpg(resized, quality: request.quality);
   } catch (_) {
+    // Safe to ignore: a corrupt or unsupported picture has no thumbnail; the
+    // tile shows a placeholder (hard rule 5).
     return null;
   }
 }
@@ -67,7 +70,8 @@ Future<Uint8List?> decodeThumbnailInIsolate(
 ) async {
   try {
     return await Isolate.run(() => decodeThumbnailSync(request));
-  } catch (_) {
+  } catch (error) {
+    AppLogger.warning('The thumbnail isolate failed', error: error);
     return null;
   }
 }

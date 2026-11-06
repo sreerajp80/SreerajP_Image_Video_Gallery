@@ -1,11 +1,11 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:in_sreerajp_imgvidgal/core/constants/app_constants.dart';
 import 'package:in_sreerajp_imgvidgal/l10n/generated/app_localizations.dart';
 import 'package:in_sreerajp_imgvidgal/models/media_item.dart';
 import 'package:in_sreerajp_imgvidgal/providers/convert_providers.dart';
 import 'package:in_sreerajp_imgvidgal/providers/timeline_providers.dart';
-import 'package:in_sreerajp_imgvidgal/services/convert/pdf_export_service.dart';
+import 'package:in_sreerajp_imgvidgal/models/convert/pdf_export_result.dart';
 import 'package:in_sreerajp_imgvidgal/widgets/convert/pdf_image_picker_grid.dart';
 import 'package:in_sreerajp_imgvidgal/widgets/convert/pdf_options_panel.dart';
 import 'package:path/path.dart' as p;
@@ -38,7 +38,7 @@ class _PdfExportScreenState extends ConsumerState<PdfExportScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(l10n.pdfExportTitle),
+        title: Text(l10n.titlePdfExport),
         bottom: progress == null
             ? null
             : PreferredSize(
@@ -48,68 +48,72 @@ class _PdfExportScreenState extends ConsumerState<PdfExportScreen> {
                 ),
               ),
       ),
-      body: items.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (_, _) => _CenteredMessage(message: l10n.scanFailed),
-        data: (list) {
-          final photos = list
-              .where((item) => item.isImage)
-              .toList(growable: false);
-          if (photos.isEmpty) {
-            return _CenteredMessage(message: l10n.pdfNoPhotos);
-          }
+      body: SafeArea(
+        child: items.when(
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (_, _) => _CenteredMessage(message: l10n.errorScanFailed),
+          data: (list) {
+            final photos = list
+                .where((item) => item.isImage)
+                .toList(growable: false);
+            if (photos.isEmpty) {
+              return _CenteredMessage(message: l10n.bodyPdfNoPhotos);
+            }
 
-          return ListView(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 96),
-            children: <Widget>[
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: <Widget>[
-                  Text(
-                    l10n.pdfChoosePhotos,
-                    style: Theme.of(context).textTheme.titleSmall,
-                  ),
-                  Text(
-                    selected.isEmpty
-                        ? l10n.pdfNoSelection
-                        : l10n.pdfSelectedCount(selected.length),
-                    style: Theme.of(context).textTheme.bodySmall,
-                  ),
-                ],
-              ),
-              if (selected.length >= AppConstants.pdfMaxPages)
-                Padding(
-                  padding: const EdgeInsets.only(top: 4),
-                  child: Text(
-                    l10n.pdfMaxPagesReached(AppConstants.pdfMaxPages),
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Theme.of(context).colorScheme.error,
+            return ListView(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 96),
+              children: <Widget>[
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: <Widget>[
+                    Text(
+                      l10n.labelPdfChoosePhotos,
+                      style: Theme.of(context).textTheme.titleSmall,
+                    ),
+                    Text(
+                      selected.isEmpty
+                          ? l10n.bodyPdfNoSelection
+                          : l10n.bodyPdfSelectedCount(selected.length),
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                  ],
+                ),
+                if (selected.length >= AppConstants.pdfMaxPages)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 4),
+                    child: Text(
+                      l10n.bodyPdfMaxPagesReached(AppConstants.pdfMaxPages),
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: Theme.of(context).colorScheme.error,
+                      ),
                     ),
                   ),
+                const SizedBox(height: 12),
+                PdfImagePickerGrid(
+                  items: photos,
+                  selectedIds: selected,
+                  onToggle: (item) =>
+                      ref.read(pdfSelectionProvider.notifier).toggle(item.id),
                 ),
-              const SizedBox(height: 12),
-              PdfImagePickerGrid(
-                items: photos,
-                selectedIds: selected,
-                onToggle: (item) =>
-                    ref.read(pdfSelectionProvider.notifier).toggle(item.id),
-              ),
-              const SizedBox(height: 24),
-              PdfOptionsPanel(
-                options: options,
-                onChanged: (value) =>
-                    ref.read(pdfExportOptionsProvider.notifier).state = value,
-              ),
-            ],
-          );
-        },
+                const SizedBox(height: 24),
+                PdfOptionsPanel(
+                  options: options,
+                  onChanged: (value) =>
+                      ref.read(pdfExportOptionsProvider.notifier).state = value,
+                ),
+              ],
+            );
+          },
+        ),
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: selected.isEmpty || isExporting
             ? null
-            : () => _export(items.valueOrNull ?? const <MediaItem>[], selected),
+            : () => _export(items.value ?? const <MediaItem>[], selected),
         icon: const Icon(Icons.picture_as_pdf_rounded),
-        label: Text(isExporting ? l10n.pdfExporting : l10n.pdfExportAction),
+        label: Text(
+          isExporting ? l10n.labelPdfExporting : l10n.actionPdfExport,
+        ),
       ),
     );
   }
@@ -144,8 +148,8 @@ class _PdfExportScreenState extends ConsumerState<PdfExportScreen> {
             SnackBar(
               content: Text(
                 result.skippedCount > 0
-                    ? l10n.pdfSkippedCount(result.skippedCount)
-                    : l10n.pdfExportedAs(
+                    ? l10n.bodyPdfSkippedCount(result.skippedCount)
+                    : l10n.bodyPdfExportedAs(
                         p.basename(result.path),
                         result.pageCount,
                       ),
@@ -156,7 +160,7 @@ class _PdfExportScreenState extends ConsumerState<PdfExportScreen> {
           ref.read(pdfSelectionProvider.notifier).clear();
         },
         error: (_, _) {
-          messenger.showSnackBar(SnackBar(content: Text(l10n.pdfFailed)));
+          messenger.showSnackBar(SnackBar(content: Text(l10n.errorPdfFailed)));
           ref.read(pdfExportControllerProvider.notifier).clear();
         },
       );

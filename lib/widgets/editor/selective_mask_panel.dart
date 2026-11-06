@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:in_sreerajp_imgvidgal/l10n/generated/app_localizations.dart';
 import 'package:in_sreerajp_imgvidgal/models/editor/selective_mask.dart';
 import 'package:in_sreerajp_imgvidgal/widgets/editor/editor_slider_row.dart';
@@ -50,18 +50,21 @@ class SelectiveMaskPanel extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(l10n.editorToolMasks, style: theme.textTheme.labelLarge),
+              Text(
+                l10n.labelEditorToolMasks,
+                style: theme.textTheme.labelLarge,
+              ),
               Row(
                 children: [
                   IconButton(
                     onPressed: () => _addMask(MaskShape.linear),
                     icon: const Icon(Icons.gradient, size: 20),
-                    tooltip: l10n.maskAddLinear,
+                    tooltip: l10n.tooltipMaskAddLinear,
                   ),
                   IconButton(
                     onPressed: () => _addMask(MaskShape.radial),
                     icon: const Icon(Icons.radio_button_unchecked, size: 20),
-                    tooltip: l10n.maskAddRadial,
+                    tooltip: l10n.tooltipMaskAddRadial,
                   ),
                 ],
               ),
@@ -74,7 +77,7 @@ class SelectiveMaskPanel extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
             child: Center(
               child: Text(
-                l10n.maskEmpty,
+                l10n.emptyMask,
                 style: theme.textTheme.bodyMedium?.copyWith(
                   color: theme.colorScheme.onSurfaceVariant,
                 ),
@@ -91,8 +94,8 @@ class SelectiveMaskPanel extends StatelessWidget {
               children: masks.map((m) {
                 final isActive = m.id == selectedMaskId;
                 final label = m.shape == MaskShape.linear
-                    ? l10n.maskShapeLinear
-                    : l10n.maskShapeRadial;
+                    ? l10n.labelMaskShapeLinear
+                    : l10n.labelMaskShapeRadial;
 
                 return Padding(
                   padding: const EdgeInsets.only(right: 8),
@@ -124,21 +127,21 @@ class SelectiveMaskPanel extends StatelessWidget {
             child: Row(
               children: [
                 ChoiceChip(
-                  label: Text(l10n.maskShapeLinear),
+                  label: Text(l10n.labelMaskShapeLinear),
                   selected: mask.shape == MaskShape.linear,
                   onSelected: (_) =>
                       onMaskUpdated(mask.copyWith(shape: MaskShape.linear)),
                 ),
                 const SizedBox(width: 8),
                 ChoiceChip(
-                  label: Text(l10n.maskShapeRadial),
+                  label: Text(l10n.labelMaskShapeRadial),
                   selected: mask.shape == MaskShape.radial,
                   onSelected: (_) =>
                       onMaskUpdated(mask.copyWith(shape: MaskShape.radial)),
                 ),
                 const Spacer(),
                 FilterChip(
-                  label: Text(l10n.maskInvert),
+                  label: Text(l10n.labelMaskInvert),
                   selected: mask.invert,
                   onSelected: (v) => onMaskUpdated(mask.copyWith(invert: v)),
                 ),
@@ -148,10 +151,9 @@ class SelectiveMaskPanel extends StatelessWidget {
 
           // Feather slider.
           EditorSliderRow(
-            label: l10n.maskFeather,
+            label: l10n.labelMaskFeather,
             value: mask.feather,
             min: 0,
-            max: 1,
             neutral: 0.3,
             formatValue: (v) => '${(v * 100).round()}%',
             onChanged: (v) => onMaskUpdated(mask.copyWith(feather: v)),
@@ -162,29 +164,27 @@ class SelectiveMaskPanel extends StatelessWidget {
 
           // Local adjustments.
           EditorSliderRow(
-            label: l10n.toneExposure,
+            label: l10n.labelToneExposure,
             value: mask.exposure,
             onChanged: (v) => onMaskUpdated(mask.copyWith(exposure: v)),
             onChangeEnd: (v) => onMaskUpdated(mask.copyWith(exposure: v)),
           ),
           EditorSliderRow(
-            label: l10n.toneContrast,
+            label: l10n.labelToneContrast,
             value: mask.contrast,
             onChanged: (v) => onMaskUpdated(mask.copyWith(contrast: v)),
             onChangeEnd: (v) => onMaskUpdated(mask.copyWith(contrast: v)),
           ),
           EditorSliderRow(
-            label: l10n.toneTemperature,
+            label: l10n.labelToneTemperature,
             value: mask.temperature,
             onChanged: (v) => onMaskUpdated(mask.copyWith(temperature: v)),
             onChangeEnd: (v) => onMaskUpdated(mask.copyWith(temperature: v)),
           ),
           EditorSliderRow(
-            label: l10n.maskBlur,
+            label: l10n.labelMaskBlur,
             value: mask.blur,
             min: 0,
-            max: 1,
-            neutral: 0,
             formatValue: (v) => '${(v * 100).round()}%',
             onChanged: (v) => onMaskUpdated(mask.copyWith(blur: v)),
             onChangeEnd: (v) => onMaskUpdated(mask.copyWith(blur: v)),

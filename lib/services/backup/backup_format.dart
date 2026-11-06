@@ -2,14 +2,11 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:in_sreerajp_imgvidgal/core/constants/app_constants.dart';
+import 'package:in_sreerajp_imgvidgal/core/errors/app_exception.dart';
 
 /// Thrown when a file is not a backup archive this build can open.
-class BackupFormatException implements Exception {
-  final String message;
-  const BackupFormatException(this.message);
-
-  @override
-  String toString() => 'BackupFormatException: $message';
+final class BackupFormatException extends FeatureException {
+  const BackupFormatException(super.message, {super.cause});
 }
 
 /// The plaintext header that sits at the front of every `.gallerybak` file.
@@ -115,14 +112,13 @@ class BackupFormat {
       throw const BackupFormatException('Format version must be 1 to 255');
     }
 
-    final out = BytesBuilder(copy: true)
+    final out = BytesBuilder()
       ..add(magic)
       ..addByte(header.formatVersion)
       ..addByte(header.salt.length)
       ..add(header.salt);
 
-    final iterationBytes = ByteData(4)
-      ..setUint32(0, header.iterations, Endian.big);
+    final iterationBytes = ByteData(4)..setUint32(0, header.iterations);
     out
       ..add(iterationBytes.buffer.asUint8List())
       ..addByte(header.iv.length)
@@ -176,7 +172,7 @@ class BackupFormat {
       bytes,
       offset,
       offset + 4,
-    ).getUint32(0, Endian.big);
+    ).getUint32(0);
     offset += 4;
     if (iterations <= 0) {
       throw const BackupFormatException('Archive iteration count is not valid');

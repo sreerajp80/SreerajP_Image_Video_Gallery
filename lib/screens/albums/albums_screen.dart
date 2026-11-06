@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:in_sreerajp_imgvidgal/core/routing/app_router.dart';
@@ -25,26 +25,26 @@ class AlbumsScreen extends ConsumerWidget {
     final folders = ref.watch(deviceFolderAlbumsProvider);
 
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.albumsTitle)),
+      appBar: AppBar(title: Text(l10n.titleAlbums)),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _create(context, ref),
         icon: const Icon(Icons.add),
-        label: Text(l10n.albumNew),
+        label: Text(l10n.actionAlbumNew),
       ),
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.only(bottom: 96),
           children: <Widget>[
             _Section(
-              title: l10n.albumsSectionMine,
+              title: l10n.labelAlbumsSectionMine,
               albums: virtual,
-              emptyTitle: l10n.albumsEmptyTitle,
-              emptyBody: l10n.albumsEmptyBody,
+              emptyTitle: l10n.titleAlbumsEmpty,
+              emptyBody: l10n.bodyAlbumsEmpty,
               onTap: (album) => context.push(albumPath(album.id)),
               onLongPress: (album) => _showMenu(context, ref, album),
             ),
             _Section(
-              title: l10n.albumsSectionSmart,
+              title: l10n.labelAlbumsSectionSmart,
               albums: smart,
               onTap: (album) {
                 if (album.albumType == AlbumType.smartTrash) {
@@ -55,9 +55,9 @@ class AlbumsScreen extends ConsumerWidget {
               },
             ),
             _Section(
-              title: l10n.albumsSectionFolders,
+              title: l10n.labelAlbumsSectionFolders,
               albums: folders,
-              emptyTitle: l10n.albumsFoldersEmpty,
+              emptyTitle: l10n.emptyAlbumsFolders,
               onTap: (album) => context.push(folderAlbumPath(album.id)),
             ),
           ],
@@ -68,7 +68,7 @@ class AlbumsScreen extends ConsumerWidget {
 
   Future<void> _create(BuildContext context, WidgetRef ref) async {
     final existing =
-        ref.read(virtualAlbumsProvider).valueOrNull ?? const <AlbumSummary>[];
+        ref.read(virtualAlbumsProvider).value ?? const <AlbumSummary>[];
     final name = await showDialog<String>(
       context: context,
       builder: (_) =>
@@ -97,17 +97,17 @@ class AlbumsScreen extends ConsumerWidget {
           children: <Widget>[
             ListTile(
               leading: const Icon(Icons.drive_file_rename_outline),
-              title: Text(l10n.albumRename),
+              title: Text(l10n.titleAlbumRename),
               onTap: () => Navigator.of(sheetContext).pop('rename'),
             ),
             ListTile(
               leading: const Icon(Icons.push_pin_outlined),
-              title: Text(l10n.albumPin),
+              title: Text(l10n.titleAlbumPin),
               onTap: () => Navigator.of(sheetContext).pop('pin'),
             ),
             ListTile(
               leading: const Icon(Icons.delete_outline),
-              title: Text(l10n.albumDelete),
+              title: Text(l10n.titleAlbumDelete),
               onTap: () => Navigator.of(sheetContext).pop('delete'),
             ),
           ],
@@ -134,7 +134,7 @@ class AlbumsScreen extends ConsumerWidget {
     AlbumSummary album,
   ) async {
     final existing =
-        ref.read(virtualAlbumsProvider).valueOrNull ?? const <AlbumSummary>[];
+        ref.read(virtualAlbumsProvider).value ?? const <AlbumSummary>[];
     final name = await showDialog<String>(
       context: context,
       builder: (_) => AlbumEditDialog(
@@ -157,16 +157,16 @@ class AlbumsScreen extends ConsumerWidget {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: Text(l10n.albumDeleteConfirmTitle(album.name)),
-        content: Text(l10n.albumDeleteConfirmBody),
+        title: Text(l10n.titleAlbumDeleteConfirm(album.name)),
+        content: Text(l10n.bodyAlbumDeleteConfirm),
         actions: <Widget>[
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: Text(l10n.albumCancel),
+            child: Text(l10n.actionAlbumCancel),
           ),
           FilledButton(
             onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: Text(l10n.albumDeleteConfirm),
+            child: Text(l10n.actionAlbumDeleteConfirm),
           ),
         ],
       ),
@@ -179,7 +179,9 @@ class AlbumsScreen extends ConsumerWidget {
     final failed = ref.read(albumEditControllerProvider).hasError;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(failed ? l10n.albumErrorFailed : l10n.albumDeleted),
+        content: Text(
+          failed ? l10n.errorAlbumErrorFailed : l10n.bodyAlbumDeleted,
+        ),
       ),
     );
   }
@@ -189,7 +191,7 @@ class AlbumsScreen extends ConsumerWidget {
     final l10n = AppLocalizations.of(context)!;
     ScaffoldMessenger.of(
       context,
-    ).showSnackBar(SnackBar(content: Text(l10n.albumErrorFailed)));
+    ).showSnackBar(SnackBar(content: Text(l10n.errorAlbumErrorFailed)));
   }
 }
 
@@ -231,7 +233,7 @@ class _Section extends StatelessWidget {
           error: (_, _) => Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             child: Text(
-              l10n.albumsLoadFailed,
+              l10n.errorAlbumsLoadFailed,
               style: theme.textTheme.bodyMedium?.copyWith(
                 color: theme.colorScheme.error,
               ),

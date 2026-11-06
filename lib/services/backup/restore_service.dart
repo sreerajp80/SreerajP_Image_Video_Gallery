@@ -17,6 +17,10 @@ import 'package:in_sreerajp_imgvidgal/services/backup/backup_serializer.dart';
 import 'package:in_sreerajp_imgvidgal/services/backup/document_picker_channel.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
+import 'package:in_sreerajp_imgvidgal/models/backup/restore_status.dart';
+
+// Moved to models so the UI can use it without importing a service (G46).
+export 'package:in_sreerajp_imgvidgal/models/backup/restore_status.dart';
 
 /// An archive that has been opened and understood, but not yet applied.
 ///
@@ -38,38 +42,6 @@ class OpenedArchive {
     required this.plan,
     required this.localMedia,
   });
-}
-
-/// Why a restore could not go ahead.
-enum RestoreFailure {
-  /// The user backed out of the file picker. Not really a failure.
-  cancelled,
-
-  /// The chosen file is not one of ours.
-  notAnArchive,
-
-  /// The password did not open it, or the file is damaged.
-  wrongPasswordOrDamaged,
-
-  /// The file is larger than any real archive would be.
-  tooLarge,
-
-  /// The archive was written by a newer build.
-  tooNew,
-
-  /// Something else went wrong.
-  failed,
-}
-
-/// Thrown when a restore cannot go ahead.
-class RestoreException implements Exception {
-  final RestoreFailure failure;
-  final String message;
-
-  const RestoreException(this.failure, this.message);
-
-  @override
-  String toString() => 'RestoreException(${failure.name}): $message';
 }
 
 /// Opens an archive and, once the user agrees, applies it.
@@ -261,7 +233,8 @@ class RestoreService {
     try {
       if (await file.exists()) await file.delete();
     } catch (_) {
-      // App-private; it goes with the cache.
+      // Safe to ignore: an app-private temporary file that the cache clean-up
+      // removes.
     }
   }
 }

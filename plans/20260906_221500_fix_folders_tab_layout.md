@@ -1,6 +1,6 @@
 # Fix Blank Folders Tab Due to Infinite Layout Size
 
-**Status:** Implemented
+**Status:** completed
 
 ## Problem
 When opening the Folders tab, the screen is blank.

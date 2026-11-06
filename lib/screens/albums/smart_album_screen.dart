@@ -1,10 +1,10 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:in_sreerajp_imgvidgal/l10n/generated/app_localizations.dart';
 import 'package:in_sreerajp_imgvidgal/providers/album_providers.dart';
 import 'package:in_sreerajp_imgvidgal/providers/selection_providers.dart';
-import 'package:in_sreerajp_imgvidgal/services/albums/folder_path_rules.dart';
-import 'package:in_sreerajp_imgvidgal/services/albums/smart_album_service.dart';
+import 'package:in_sreerajp_imgvidgal/core/domain/albums/folder_path_rules.dart';
+import 'package:in_sreerajp_imgvidgal/core/domain/albums/smart_album_service.dart';
 import 'package:in_sreerajp_imgvidgal/widgets/albums/album_card.dart';
 import 'package:in_sreerajp_imgvidgal/widgets/albums/album_media_grid.dart';
 import 'package:in_sreerajp_imgvidgal/widgets/albums/smart_filter_sheet.dart';
@@ -34,7 +34,7 @@ class SmartAlbumScreen extends ConsumerWidget {
 
     // Build visible ids for the select-all button.
     final visibleIds =
-        media.valueOrNull?.map((item) => item.id).toList(growable: false) ??
+        media.value?.map((item) => item.id).toList(growable: false) ??
         const <String>[];
 
     return Scaffold(
@@ -43,7 +43,7 @@ class SmartAlbumScreen extends ConsumerWidget {
           : AppBar(
               title: Text(
                 album == null
-                    ? l10n.albumsTitle
+                    ? l10n.titleAlbums
                     : smartAlbumLabel(l10n, album.albumType),
               ),
               actions: <Widget>[
@@ -58,7 +58,7 @@ class SmartAlbumScreen extends ConsumerWidget {
                         ? Icons.filter_alt
                         : Icons.filter_alt_outlined,
                   ),
-                  tooltip: l10n.filterTitle,
+                  tooltip: l10n.tooltipFilterTitle,
                 ),
               ],
             ),
@@ -69,11 +69,11 @@ class SmartAlbumScreen extends ConsumerWidget {
           error: (_, _) => const AlbumErrorState(),
           data: (items) {
             if (items == null) {
-              return AlbumErrorState(message: l10n.smartAlbumUnknown);
+              return AlbumErrorState(message: l10n.bodySmartAlbumUnknown);
             }
             return AlbumMediaGrid(
               items: items,
-              emptyTitle: l10n.smartAlbumEmptyTitle,
+              emptyTitle: l10n.titleSmartAlbumEmpty,
               selectable: true,
             );
           },
@@ -102,7 +102,7 @@ class FolderAlbumScreen extends ConsumerWidget {
 
     // Build visible ids for the select-all button.
     final visibleIds =
-        media.valueOrNull?.map((item) => item.id).toList(growable: false) ??
+        media.value?.map((item) => item.id).toList(growable: false) ??
         const <String>[];
 
     return Scaffold(
@@ -122,7 +122,7 @@ class FolderAlbumScreen extends ConsumerWidget {
                         ? Icons.filter_alt
                         : Icons.filter_alt_outlined,
                   ),
-                  tooltip: l10n.filterTitle,
+                  tooltip: l10n.tooltipFilterTitle,
                 ),
               ],
             ),
@@ -133,7 +133,7 @@ class FolderAlbumScreen extends ConsumerWidget {
           error: (_, _) => const AlbumErrorState(),
           data: (items) => AlbumMediaGrid(
             items: items,
-            emptyTitle: l10n.folderEmptyTitle,
+            emptyTitle: l10n.titleFolderEmpty,
             selectable: true,
           ),
         ),

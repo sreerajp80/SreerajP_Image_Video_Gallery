@@ -1,5 +1,6 @@
-import 'package:flutter/material.dart';
-import 'package:in_sreerajp_imgvidgal/services/tags/tag_color_palette.dart';
+import 'package:material_ui/material_ui.dart';
+import 'package:in_sreerajp_imgvidgal/core/domain/tags/tag_color_palette.dart';
+import 'package:in_sreerajp_imgvidgal/widgets/common/color_swatch_button.dart';
 import 'package:in_sreerajp_imgvidgal/widgets/tags/tag_chip.dart';
 
 /// The palette swatches a tag colour is chosen from.
@@ -22,20 +23,16 @@ class TagColorPicker extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Wrap(
-      spacing: 10,
-      runSpacing: 10,
       children: <Widget>[
         for (final value in TagColorPalette.colors)
-          InkWell(
+          ColorSwatchButton(
+            argb: value,
+            selected: value == selectedColorValue,
             onTap: () => onChanged(value),
-            customBorder: const CircleBorder(),
-            child: Padding(
-              padding: const EdgeInsets.all(2),
-              child: TagColorDot(
-                color: Color(value),
-                selected: value == selectedColorValue,
-                size: 30,
-              ),
+            child: TagColorDot(
+              color: Color(value),
+              selected: value == selectedColorValue,
+              size: 30,
             ),
           ),
       ],

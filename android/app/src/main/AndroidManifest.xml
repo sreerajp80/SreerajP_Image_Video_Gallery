@@ -38,6 +38,12 @@
     <uses-feature
         android:name="android.hardware.camera.autofocus"
         android:required="false" />
+    <!-- The camera plugin (CameraX) declares camera.any as required. Pairing
+         still works by typing the code, so it is made optional here too. -->
+    <uses-feature
+        android:name="android.hardware.camera.any"
+        android:required="false"
+        tools:replace="android:required" />
 
     <!-- LOCAL NETWORK ONLY. The app never talks to a remote server: no HTTP
          client, no cloud backend, no analytics, no telemetry, no update check.
@@ -71,6 +77,17 @@
          FLAG_KEEP_SCREEN_ON, so the permission is removed from the merge. -->
     <uses-permission
         android:name="android.permission.WAKE_LOCK"
+        tools:node="remove" />
+
+    <!-- The camera plugin asks for these for video recording and saving to
+         shared storage. The pairing scanner only reads preview frames, never
+         records sound and never writes a file, so both are removed from the
+         merge. The controller is created with enableAudio: false. -->
+    <uses-permission
+        android:name="android.permission.RECORD_AUDIO"
+        tools:node="remove" />
+    <uses-permission
+        android:name="android.permission.WRITE_EXTERNAL_STORAGE"
         tools:node="remove" />
 
     <!-- The apps the in-image scanner may hand a code to. Android 11 and above
@@ -119,7 +136,9 @@
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
         android:allowBackup="false"
-        android:fullBackupContent="false">
+        android:fullBackupContent="false"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        tools:targetApi="31">
         <activity
             android:name=".MainActivity"
             android:exported="true"

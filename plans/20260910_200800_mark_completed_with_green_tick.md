@@ -1,6 +1,6 @@
 # Plan: Mark Implemented Features as Completed with Green Tick
 
-**Status:** Completed
+**Status:** completed
 
 ## Summary
 

@@ -13,7 +13,7 @@ MediaItem item({
   bool favorite = false,
   DateTime? added,
 }) {
-  final when = added ?? DateTime(2026, 1, 1);
+  final when = added ?? DateTime(2026);
   return MediaItem(
     id: id,
     path: '/storage/DCIM/$id.jpg',
@@ -36,7 +36,7 @@ void main() {
 
   group('BestPhotoService scoring', () {
     test('prefers the copy with more pixels', () {
-      final small = item(id: 'small', width: 100, height: 100);
+      final small = item(id: 'small');
       final large = item(id: 'large', width: 400, height: 300);
 
       expect(service.pickBest(<MediaItem>[small, large])?.id, 'large');
@@ -52,13 +52,13 @@ void main() {
 
     test('prefers a copy that kept its capture date', () {
       final stripped = item(id: 'stripped');
-      final dated = item(id: 'dated', dateTaken: DateTime(2025, 6, 1));
+      final dated = item(id: 'dated', dateTaken: DateTime(2025, 6));
 
       expect(service.pickBest(<MediaItem>[stripped, dated])?.id, 'dated');
     });
 
     test('prefers a copy that kept its EXIF', () {
-      final taken = DateTime(2025, 6, 1);
+      final taken = DateTime(2025, 6);
       final bare = item(id: 'bare', dateTaken: taken);
       final withExif = item(
         id: 'withExif',
@@ -78,8 +78,8 @@ void main() {
 
     test('falls back to the older file', () {
       // The first copy made is most likely the original.
-      final older = item(id: 'older', added: DateTime(2024, 1, 1));
-      final newer = item(id: 'newer', added: DateTime(2026, 1, 1));
+      final older = item(id: 'older', added: DateTime(2024));
+      final newer = item(id: 'newer', added: DateTime(2026));
 
       expect(service.pickBest(<MediaItem>[newer, older])?.id, 'older');
     });
@@ -87,18 +87,8 @@ void main() {
     test('pixels beat a bigger file, in that order', () {
       // Resolution is checked before file size, so a large low-resolution
       // file does not win over a smaller high-resolution one.
-      final bigFileSmallImage = item(
-        id: 'bigFile',
-        size: 9000,
-        width: 100,
-        height: 100,
-      );
-      final smallFileBigImage = item(
-        id: 'bigImage',
-        size: 1000,
-        width: 800,
-        height: 600,
-      );
+      final bigFileSmallImage = item(id: 'bigFile', size: 9000);
+      final smallFileBigImage = item(id: 'bigImage', width: 800, height: 600);
 
       expect(
         service.pickBest(<MediaItem>[bigFileSmallImage, smallFileBigImage])?.id,
@@ -115,7 +105,7 @@ void main() {
 
     test('ranking is stable and complete', () {
       final items = <MediaItem>[
-        item(id: 'c', width: 100, height: 100),
+        item(id: 'c'),
         item(id: 'a', width: 300, height: 300),
         item(id: 'b', width: 200, height: 200),
       ];

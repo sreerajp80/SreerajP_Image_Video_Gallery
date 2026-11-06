@@ -11,6 +11,7 @@ import 'package:in_sreerajp_imgvidgal/services/sync/network_interface_service.da
 import 'package:in_sreerajp_imgvidgal/services/sync/received_media_service.dart';
 import 'package:in_sreerajp_imgvidgal/services/sync/transfer_crypto_service.dart';
 import 'package:in_sreerajp_imgvidgal/services/sync/transfer_session_service.dart';
+import 'package:flutter_riverpod/legacy.dart';
 
 /// Finds the device's own local network address.
 final networkInterfaceServiceProvider = Provider<NetworkInterfaceService>((

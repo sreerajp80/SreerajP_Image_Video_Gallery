@@ -6,22 +6,17 @@ import 'package:in_sreerajp_imgvidgal/models/media_item.dart';
 import 'package:in_sreerajp_imgvidgal/models/smart_album.dart';
 import 'package:in_sreerajp_imgvidgal/repositories/database/album_dao.dart';
 import 'package:in_sreerajp_imgvidgal/repositories/database/media_dao.dart';
-import 'package:in_sreerajp_imgvidgal/services/albums/album_name_rules.dart';
-import 'package:in_sreerajp_imgvidgal/services/albums/folder_path_rules.dart';
-import 'package:in_sreerajp_imgvidgal/services/albums/smart_album_service.dart';
+import 'package:in_sreerajp_imgvidgal/core/domain/albums/album_name_rules.dart';
+import 'package:in_sreerajp_imgvidgal/core/domain/albums/folder_path_rules.dart';
+import 'package:in_sreerajp_imgvidgal/core/domain/albums/smart_album_service.dart';
 
 /// Thrown when an album name breaks one of the rules.
 ///
 /// Carries the reason so the UI can show the right message rather than
 /// guessing from the text. Mirrors `TagValidationException`.
-class AlbumValidationException implements Exception {
+final class AlbumValidationException extends FeatureException {
   final AlbumNameError reason;
-  final String message;
-
-  const AlbumValidationException(this.reason, this.message);
-
-  @override
-  String toString() => 'AlbumValidationException: $message';
+  const AlbumValidationException(this.reason, super.message, {super.cause});
 }
 
 /// The only way the app reads or changes albums.

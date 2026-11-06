@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:in_sreerajp_imgvidgal/core/config/app_flavor_config.dart';
@@ -19,70 +19,84 @@ class SettingsScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(l10n.settings),
+        title: Text(l10n.titleSettings),
         actions: <Widget>[if (flavor.isDev) const _DevFlavorBadge()],
       ),
-      body: ListView(
-        padding: const EdgeInsets.only(top: 8, bottom: 32),
-        children: <Widget>[
-          _SettingsCategoryCard(
-            icon: Icons.palette_outlined,
-            title: l10n.settingsAppearance,
-            subtitle: l10n.settingsAppearanceSubtitle,
-            onTap: () => context.push(kRouteSettingsAppearance),
-          ),
-          _SettingsCategoryCard(
-            icon: Icons.translate,
-            title: l10n.settingsLanguage,
-            subtitle: l10n.settingsLanguageSubtitle,
-            onTap: () => context.push(kRouteSettingsLanguage),
-          ),
-          _SettingsCategoryCard(
-            icon: Icons.shield_outlined,
-            title: l10n.settingsSafety,
-            subtitle: l10n.settingsSafetySubtitle,
-            onTap: () => context.push(kRouteSettingsSafety),
-          ),
-          _SettingsCategoryCard(
-            icon: Icons.photo_library_outlined,
-            title: l10n.settingsDefaultApp,
-            subtitle: l10n.settingsDefaultAppCardSubtitle,
-            onTap: () => context.push(kRouteSettingsDefaultApp),
-          ),
-          _SettingsCategoryCard(
-            icon: Icons.lock_outline,
-            title: l10n.settingsPrivacy,
-            subtitle: l10n.settingsPrivacySubtitle,
-            onTap: () => context.push(kRouteSettingsPrivacy),
-          ),
-          _SettingsCategoryCard(
-            icon: Icons.help_outline,
-            title: l10n.settingsHelp,
-            subtitle: l10n.settingsHelpCardSubtitle,
-            onTap: () => context.push(kRouteSettingsHelp),
-          ),
-          _SettingsCategoryCard(
-            icon: Icons.info_outline,
-            title: l10n.settingsAbout,
-            subtitle: l10n.settingsAboutSubtitle,
-            onTap: () => context.push(kRouteAbout),
-          ),
-          if (flavor.isDev)
+      body: SafeArea(
+        child: ListView(
+          padding: const EdgeInsets.only(top: 8, bottom: 32),
+          children: <Widget>[
             _SettingsCategoryCard(
-              icon: Icons.code,
-              title: l10n.settingsDeveloper,
-              subtitle: l10n.settingsDeveloperSubtitle,
-              onTap: () => context.push(kRouteSettingsDeveloper),
+              icon: Icons.palette_outlined,
+              title: l10n.titleSettingsAppearance,
+              subtitle: l10n.descSettingsAppearanceSubtitle,
+              onTap: () => context.push(kRouteSettingsAppearance),
             ),
-          const SizedBox(height: 8),
-          _SettingsCategoryCard(
-            icon: Icons.restart_alt,
-            title: l10n.settingsResetTitle,
-            subtitle: l10n.settingsResetBody,
-            isDestructive: true,
-            onTap: () => _confirmReset(context, ref),
-          ),
-        ],
+            _SettingsCategoryCard(
+              icon: Icons.translate,
+              title: l10n.titleSettingsLanguage,
+              subtitle: l10n.descSettingsLanguageSubtitle,
+              onTap: () => context.push(kRouteSettingsLanguage),
+            ),
+            _SettingsCategoryCard(
+              icon: Icons.shield_outlined,
+              title: l10n.titleSettingsSafety,
+              subtitle: l10n.descSettingsSafetySubtitle,
+              onTap: () => context.push(kRouteSettingsSafety),
+            ),
+            _SettingsCategoryCard(
+              icon: Icons.photo_library_outlined,
+              title: l10n.titleSettingsDefaultApp,
+              subtitle: l10n.descSettingsDefaultAppCardSubtitle,
+              onTap: () => context.push(kRouteSettingsDefaultApp),
+            ),
+            _SettingsCategoryCard(
+              icon: Icons.lock_outline,
+              title: l10n.titleSettingsPrivacy,
+              subtitle: l10n.descSettingsPrivacySubtitle,
+              onTap: () => context.push(kRouteSettingsPrivacy),
+            ),
+            _SettingsCategoryCard(
+              icon: Icons.verified_user_outlined,
+              title: l10n.titleSettingsPermissions,
+              subtitle: l10n.descSettingsPermissionsSubtitle,
+              onTap: () => context.push(kRouteSettingsPermissions),
+            ),
+            _SettingsCategoryCard(
+              icon: Icons.backup_outlined,
+              title: l10n.titleBackupOpen,
+              subtitle: l10n.descBackupOpenSubtitle,
+              onTap: () => context.push(kRouteBackup),
+            ),
+            _SettingsCategoryCard(
+              icon: Icons.help_outline,
+              title: l10n.helpSettings,
+              subtitle: l10n.descSettingsHelpCardSubtitle,
+              onTap: () => context.push(kRouteSettingsHelp),
+            ),
+            _SettingsCategoryCard(
+              icon: Icons.info_outline,
+              title: l10n.labelSettingsAbout,
+              subtitle: l10n.descSettingsAboutSubtitle,
+              onTap: () => context.push(kRouteAbout),
+            ),
+            if (flavor.isDev)
+              _SettingsCategoryCard(
+                icon: Icons.code,
+                title: l10n.titleSettingsDeveloper,
+                subtitle: l10n.descSettingsDeveloperSubtitle,
+                onTap: () => context.push(kRouteSettingsDeveloper),
+              ),
+            const SizedBox(height: 8),
+            _SettingsCategoryCard(
+              icon: Icons.restart_alt,
+              title: l10n.titleSettingsReset,
+              subtitle: l10n.bodySettingsReset,
+              isDestructive: true,
+              onTap: () => _confirmReset(context, ref),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -95,16 +109,16 @@ class SettingsScreen extends ConsumerWidget {
     final bool? confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: Text(l10n.settingsResetTitle),
-        content: Text(l10n.settingsResetBody),
+        title: Text(l10n.titleSettingsReset),
+        content: Text(l10n.bodySettingsReset),
         actions: <Widget>[
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: Text(l10n.settingsCancel),
+            child: Text(l10n.actionSettingsCancel),
           ),
           FilledButton(
             onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: Text(l10n.settingsResetConfirm),
+            child: Text(l10n.actionSettingsResetConfirm),
           ),
         ],
       ),
@@ -112,7 +126,7 @@ class SettingsScreen extends ConsumerWidget {
 
     if (confirmed != true) return;
     await ref.read(appSettingsProvider.notifier).resetToDefaults();
-    messenger.showSnackBar(SnackBar(content: Text(l10n.settingsResetDone)));
+    messenger.showSnackBar(SnackBar(content: Text(l10n.bodySettingsResetDone)));
   }
 }
 
@@ -233,7 +247,7 @@ class _DevFlavorBadge extends StatelessWidget {
       ),
       child: Center(
         child: Text(
-          l10n.devBanner,
+          l10n.labelDevBanner,
           style: TextStyle(
             fontSize: 11,
             fontWeight: FontWeight.bold,

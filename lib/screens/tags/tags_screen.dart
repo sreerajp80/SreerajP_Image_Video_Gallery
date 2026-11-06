@@ -1,11 +1,11 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:in_sreerajp_imgvidgal/core/routing/app_router.dart';
 import 'package:in_sreerajp_imgvidgal/l10n/generated/app_localizations.dart';
 import 'package:in_sreerajp_imgvidgal/models/tag.dart';
 import 'package:in_sreerajp_imgvidgal/providers/tag_providers.dart';
-import 'package:in_sreerajp_imgvidgal/services/tags/tag_color_palette.dart';
+import 'package:in_sreerajp_imgvidgal/core/domain/tags/tag_color_palette.dart';
 import 'package:in_sreerajp_imgvidgal/widgets/tags/tag_chip.dart';
 import 'package:in_sreerajp_imgvidgal/widgets/tags/tag_edit_dialog.dart';
 
@@ -19,20 +19,20 @@ class TagsScreen extends ConsumerWidget {
     final tags = ref.watch(allTagsProvider);
 
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.tagsTitle)),
+      appBar: AppBar(title: Text(l10n.titleTags)),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _create(context, ref),
         icon: const Icon(Icons.add),
-        label: Text(l10n.tagNew),
+        label: Text(l10n.actionTagNew),
       ),
       body: SafeArea(
         child: tags.when(
           loading: () => const Center(child: CircularProgressIndicator()),
-          error: (_, _) => Center(child: Text(l10n.tagErrorFailed)),
+          error: (_, _) => Center(child: Text(l10n.errorTagErrorFailed)),
           data: (list) => list.isEmpty
               ? _EmptyState(
-                  title: l10n.tagsEmptyTitle,
-                  body: l10n.tagsEmptyBody,
+                  title: l10n.titleTagsEmpty,
+                  body: l10n.bodyTagsEmpty,
                 )
               : ListView.separated(
                   // Room under the last row so the button never covers it.
@@ -53,7 +53,7 @@ class TagsScreen extends ConsumerWidget {
   }
 
   Future<void> _create(BuildContext context, WidgetRef ref) async {
-    final existing = ref.read(allTagsProvider).valueOrNull ?? const <Tag>[];
+    final existing = ref.read(allTagsProvider).value ?? const <Tag>[];
     final result = await showDialog<TagEditResult>(
       context: context,
       builder: (_) =>
@@ -101,16 +101,16 @@ class TagsScreen extends ConsumerWidget {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: Text(l10n.tagDeleteTitle),
-        content: Text(l10n.tagDeleteBody),
+        title: Text(l10n.titleTagDelete),
+        content: Text(l10n.bodyTagDelete),
         actions: <Widget>[
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: Text(l10n.tagCancel),
+            child: Text(l10n.actionTagCancel),
           ),
           FilledButton(
             onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: Text(l10n.tagDelete),
+            child: Text(l10n.tooltipTagDelete),
           ),
         ],
       ),
@@ -128,7 +128,7 @@ class TagsScreen extends ConsumerWidget {
     final l10n = AppLocalizations.of(context)!;
     ScaffoldMessenger.of(
       context,
-    ).showSnackBar(SnackBar(content: Text(l10n.tagErrorFailed)));
+    ).showSnackBar(SnackBar(content: Text(l10n.errorTagErrorFailed)));
   }
 }
 
@@ -154,18 +154,18 @@ class _TagRow extends StatelessWidget {
     return ListTile(
       leading: TagColorDot(color: color, size: 20),
       title: Text(tag.name),
-      subtitle: Text(l10n.tagItemCount(tag.itemCount)),
+      subtitle: Text(l10n.descTagItemCount(tag.itemCount)),
       onTap: onShowMedia,
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
           IconButton(
-            tooltip: l10n.tagEditTitle,
+            tooltip: l10n.tooltipTagEditTitle,
             icon: const Icon(Icons.edit_outlined),
             onPressed: onEdit,
           ),
           IconButton(
-            tooltip: l10n.tagDelete,
+            tooltip: l10n.tooltipTagDelete,
             icon: const Icon(Icons.delete_outline),
             onPressed: onDelete,
           ),

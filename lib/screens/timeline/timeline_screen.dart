@@ -1,28 +1,18 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:in_sreerajp_imgvidgal/core/routing/app_router.dart';
 import 'package:in_sreerajp_imgvidgal/l10n/generated/app_localizations.dart';
 import 'package:in_sreerajp_imgvidgal/models/media_item.dart';
-import 'package:in_sreerajp_imgvidgal/models/timeline_group.dart';
 import 'package:in_sreerajp_imgvidgal/providers/media_providers.dart';
 import 'package:in_sreerajp_imgvidgal/providers/selection_providers.dart';
-import 'package:in_sreerajp_imgvidgal/providers/settings_providers.dart';
 import 'package:in_sreerajp_imgvidgal/providers/timeline_providers.dart';
-import 'package:in_sreerajp_imgvidgal/services/media/media_store_channel.dart';
-import 'package:in_sreerajp_imgvidgal/services/timeline/timeline_grouping_service.dart';
+import 'package:in_sreerajp_imgvidgal/models/media/media_permission_status.dart';
+import 'package:in_sreerajp_imgvidgal/core/domain/timeline/timeline_grouping_service.dart';
 import 'package:in_sreerajp_imgvidgal/widgets/batch/batch_action_bar.dart';
 import 'package:in_sreerajp_imgvidgal/widgets/batch/selection_app_bar.dart';
-import 'package:in_sreerajp_imgvidgal/widgets/media/fast_scroll_scrubber.dart';
-import 'package:in_sreerajp_imgvidgal/widgets/media/flashback_carousel.dart';
-import 'package:in_sreerajp_imgvidgal/widgets/media/media_grid_tile.dart';
-import 'package:in_sreerajp_imgvidgal/widgets/media/timeline_date_header.dart';
-
-/// Gap between tiles in the grid.
-const double kTileSpacing = 2;
-
-/// Fixed height of a date header row.
-const double kTimelineHeaderHeight = 48;
+import 'package:in_sreerajp_imgvidgal/widgets/timeline/timeline_body.dart';
+import 'package:in_sreerajp_imgvidgal/widgets/timeline/timeline_messages.dart';
 
 /// The main gallery screen: media grouped by day, newest first.
 ///
@@ -60,13 +50,28 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen> {
   void initState() {
     super.initState();
     _lifecycleListener = AppLifecycleListener(onResume: _onResume);
+
+    // The shell builds this screen only once permission is already granted,
+    // so the permission listener in build() never fires on a normal start.
+    // Pick up anything added since the last visit without a pull-to-refresh.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _refreshIfPermitted();
+    });
   }
 
   void _onResume() {
-    final status = ref.read(mediaPermissionStatusProvider).valueOrNull;
+    final status = ref.read(mediaPermissionStatusProvider).value;
     if (status == null || !status.canRead) {
       ref.invalidate(mediaPermissionStatusProvider);
+      return;
     }
+    // Media may have been added while the app was in the background.
+    _refresh();
+  }
+
+  void _refreshIfPermitted() {
+    final status = ref.read(mediaPermissionStatusProvider).value;
+    if (status != null && status.canRead) _refresh();
   }
 
   @override
@@ -102,7 +107,7 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen> {
       final rowIndex = metrics.rowIndexAtOffset(
         _scrollController.offset - _leadingExtent,
       );
-      final data = ref.read(timelineDataProvider).valueOrNull;
+      final data = ref.read(timelineDataProvider).value;
       if (data != null && rowIndex < data.rows.length) {
         _anchorGroupIndex = data.rows[rowIndex].groupIndex;
       }
@@ -133,7 +138,7 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted || !_scrollController.hasClients) return;
       final metrics = _metrics;
-      final data = ref.read(timelineDataProvider).valueOrNull;
+      final data = ref.read(timelineDataProvider).value;
       if (metrics == null || data == null) return;
 
       final target = _leadingExtent + metrics.offsetForGroup(data, groupIndex);
@@ -164,7 +169,7 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen> {
       final l10n = AppLocalizations.of(context)!;
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text(l10n.selectionFull)));
+      ).showSnackBar(SnackBar(content: Text(l10n.bodySelectionFull)));
       return;
     }
     selection.toggle(item.id);
@@ -180,8 +185,8 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen> {
     ref.listen<AsyncValue<MediaPermissionStatus>>(
       mediaPermissionStatusProvider,
       (previous, next) {
-        final prevCanRead = previous?.valueOrNull?.canRead ?? false;
-        final nextCanRead = next.valueOrNull?.canRead ?? false;
+        final prevCanRead = previous?.value?.canRead ?? false;
+        final nextCanRead = next.value?.canRead ?? false;
         if (!prevCanRead && nextCanRead) {
           ref.read(mediaScanControllerProvider.notifier).scan();
         }
@@ -189,7 +194,7 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen> {
     );
 
     final selecting = ref.watch(selectionModeProvider);
-    final visibleIds = timeline.valueOrNull == null
+    final visibleIds = timeline.value == null
         ? const <String>[]
         : <String>[
             for (final group in timeline.value!.groups)
@@ -202,17 +207,17 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen> {
       appBar: selecting
           ? SelectionAppBar(visibleIds: visibleIds)
           : AppBar(
-              title: Text(l10n.timelineTitle),
+              title: Text(l10n.titleTimeline),
               actions: [
                 IconButton(
                   onPressed: () => context.push(kRouteSearch),
                   icon: const Icon(Icons.search),
-                  tooltip: l10n.searchOpen,
+                  tooltip: l10n.tooltipSearchOpen,
                 ),
                 IconButton(
                   onPressed: () => context.push(kRoutePdfExport),
                   icon: const Icon(Icons.picture_as_pdf_outlined),
-                  tooltip: l10n.pdfOpen,
+                  tooltip: l10n.tooltipPdfOpen,
                 ),
                 // Tags and the cleaner live in the overflow: they are used now and
                 // then, unlike search, and a crowded bar helps nobody.
@@ -225,7 +230,7 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen> {
                         dense: true,
                         contentPadding: EdgeInsets.zero,
                         leading: const Icon(Icons.label_outline),
-                        title: Text(l10n.tagsOpen),
+                        title: Text(l10n.titleTagsOpen),
                       ),
                     ),
                     PopupMenuItem<String>(
@@ -234,7 +239,7 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen> {
                         dense: true,
                         contentPadding: EdgeInsets.zero,
                         leading: const Icon(Icons.copy_all_outlined),
-                        title: Text(l10n.cleanerOpen),
+                        title: Text(l10n.titleCleanerOpen),
                       ),
                     ),
                     PopupMenuItem<String>(
@@ -243,7 +248,7 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen> {
                         dense: true,
                         contentPadding: EdgeInsets.zero,
                         leading: const Icon(Icons.delete_outline),
-                        title: Text(l10n.trashTitle),
+                        title: Text(l10n.titleTrash),
                       ),
                     ),
                     PopupMenuItem<String>(
@@ -252,7 +257,7 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen> {
                         dense: true,
                         contentPadding: EdgeInsets.zero,
                         leading: const Icon(Icons.lock_outline),
-                        title: Text(l10n.vaultMenuLabel),
+                        title: Text(l10n.titleVaultMenuLabel),
                       ),
                     ),
                     PopupMenuItem<String>(
@@ -261,7 +266,7 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen> {
                         dense: true,
                         contentPadding: EdgeInsets.zero,
                         leading: const Icon(Icons.send_to_mobile_outlined),
-                        title: Text(l10n.syncOpen),
+                        title: Text(l10n.titleSyncOpen),
                       ),
                     ),
                     PopupMenuItem<String>(
@@ -270,7 +275,7 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen> {
                         dense: true,
                         contentPadding: EdgeInsets.zero,
                         leading: const Icon(Icons.image_search_outlined),
-                        title: Text(l10n.pdfImagesOpen),
+                        title: Text(l10n.titlePdfImagesOpen),
                       ),
                     ),
                     PopupMenuItem<String>(
@@ -279,7 +284,7 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen> {
                         dense: true,
                         contentPadding: EdgeInsets.zero,
                         leading: const Icon(Icons.backup_outlined),
-                        title: Text(l10n.backupOpen),
+                        title: Text(l10n.titleBackupOpen),
                       ),
                     ),
                     PopupMenuItem<String>(
@@ -288,7 +293,7 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen> {
                         dense: true,
                         contentPadding: EdgeInsets.zero,
                         leading: const Icon(Icons.settings_outlined),
-                        title: Text(l10n.settings),
+                        title: Text(l10n.titleSettings),
                       ),
                     ),
                   ],
@@ -299,23 +304,23 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen> {
       body: SafeArea(
         child: permission.when(
           loading: () => const Center(child: CircularProgressIndicator()),
-          error: (error, _) => _MessageState(
+          error: (error, _) => TimelineMessageState(
             icon: Icons.error_outline,
-            title: l10n.scanFailed,
-            actionLabel: l10n.scanMedia,
+            title: l10n.errorScanFailed,
+            actionLabel: l10n.labelScanMedia,
             onAction: _refresh,
           ),
           data: (status) {
             if (!status.canRead) {
               final isPermanentlyDenied =
                   status == MediaPermissionStatus.permanentlyDenied;
-              return _MessageState(
+              return TimelineMessageState(
                 icon: Icons.photo_library_outlined,
-                title: l10n.permissionRequired,
-                body: l10n.permissionRequiredBody,
+                title: l10n.labelPermissionRequired,
+                body: l10n.bodyPermissionRequired,
                 actionLabel: isPermanentlyDenied
-                    ? l10n.openSettings
-                    : l10n.grantPermission,
+                    ? l10n.labelOpenSettings
+                    : l10n.labelGrantPermission,
                 onAction: () async {
                   if (isPermanentlyDenied) {
                     await ref
@@ -339,33 +344,33 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen> {
             return Column(
               children: [
                 if (status == MediaPermissionStatus.partial)
-                  _PartialAccessNotice(message: l10n.permissionPartial),
+                  PartialAccessNotice(message: l10n.bodyPermissionPartial),
                 if (scanState.isLoading) const LinearProgressIndicator(),
                 Expanded(
                   child: timeline.when(
                     loading: () =>
                         const Center(child: CircularProgressIndicator()),
-                    error: (error, _) => _MessageState(
+                    error: (error, _) => TimelineMessageState(
                       icon: Icons.error_outline,
-                      title: l10n.scanFailed,
-                      actionLabel: l10n.scanMedia,
+                      title: l10n.errorScanFailed,
+                      actionLabel: l10n.labelScanMedia,
                       onAction: _refresh,
                     ),
                     data: (data) {
                       if (data.isEmpty) {
                         return RefreshIndicator(
                           onRefresh: _refresh,
-                          child: _MessageState(
+                          child: TimelineMessageState(
                             icon: Icons.photo_library_outlined,
-                            title: l10n.noMediaInTimeline,
-                            body: l10n.pullToScan,
-                            actionLabel: l10n.scanMedia,
+                            title: l10n.bodyNoMediaInTimeline,
+                            body: l10n.bodyPullToScan,
+                            actionLabel: l10n.labelScanMedia,
                             onAction: _refresh,
                             scrollable: true,
                           ),
                         );
                       }
-                      return _TimelineBody(
+                      return TimelineBody(
                         data: data,
                         scrollController: _scrollController,
                         onRefresh: _refresh,
@@ -386,279 +391,6 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen> {
           },
         ),
       ),
-    );
-  }
-}
-
-/// The scrolling part of the timeline: flashbacks, headers, tile rows, scrubber.
-class _TimelineBody extends ConsumerWidget {
-  final TimelineData data;
-  final ScrollController scrollController;
-  final Future<void> Function() onRefresh;
-  final ValueChanged<MediaItem> onItemTap;
-  final ValueChanged<MediaItem> onItemLongPress;
-  final GestureScaleStartCallback onScaleStart;
-  final GestureScaleUpdateCallback onScaleUpdate;
-  final GestureScaleEndCallback onScaleEnd;
-  final ValueChanged<TimelineMetrics> onMetrics;
-
-  /// Key used to measure the flashback carousel's height.
-  final GlobalKey flashbackKey;
-
-  /// Height of the slivers drawn above the first timeline row.
-  final double Function() leadingExtent;
-
-  const _TimelineBody({
-    required this.data,
-    required this.scrollController,
-    required this.onRefresh,
-    required this.onItemTap,
-    required this.onItemLongPress,
-    required this.onScaleStart,
-    required this.onScaleUpdate,
-    required this.onScaleEnd,
-    required this.onMetrics,
-    required this.flashbackKey,
-    required this.leadingExtent,
-  });
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    // Off in settings means the row is not built at all, rather than built
-    // and hidden: nothing should be read off disk for a row nobody wants.
-    final showFlashbacks = ref.watch(showFlashbacksProvider);
-    final flashbacks = showFlashbacks
-        ? ref.watch(flashbackMemoriesProvider).valueOrNull
-        : null;
-
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final tileSize =
-            (constraints.maxWidth - kTileSpacing * (data.columnCount + 1)) /
-            data.columnCount;
-        final tileRowHeight = tileSize + kTileSpacing;
-
-        final metrics = TimelineMetrics.build(
-          data,
-          headerHeight: kTimelineHeaderHeight,
-          tileRowHeight: tileRowHeight,
-        );
-        onMetrics(metrics);
-
-        return GestureDetector(
-          onScaleStart: onScaleStart,
-          onScaleUpdate: onScaleUpdate,
-          onScaleEnd: onScaleEnd,
-          child: Stack(
-            children: [
-              RefreshIndicator(
-                onRefresh: onRefresh,
-                child: CustomScrollView(
-                  controller: scrollController,
-                  slivers: [
-                    if (flashbacks != null && flashbacks.isNotEmpty)
-                      SliverToBoxAdapter(
-                        child: FlashbackCarousel(
-                          key: flashbackKey,
-                          memories: flashbacks,
-                          onItemTap: onItemTap,
-                        ),
-                      ),
-                    SliverList.builder(
-                      itemCount: data.rows.length,
-                      itemBuilder: (context, index) {
-                        final row = data.rows[index];
-                        if (row.isHeader) {
-                          return SizedBox(
-                            height: kTimelineHeaderHeight,
-                            child: TimelineDateHeader(
-                              headerKind: row.headerKind,
-                              date: row.date,
-                              itemCount:
-                                  data.groups[row.groupIndex].items.length,
-                            ),
-                          );
-                        }
-                        return _TileRow(
-                          row: row,
-                          tileSize: tileSize,
-                          columnCount: data.columnCount,
-                          onItemTap: onItemTap,
-                          onItemLongPress: onItemLongPress,
-                        );
-                      },
-                    ),
-                    const SliverToBoxAdapter(child: SizedBox(height: 24)),
-                  ],
-                ),
-              ),
-              FastScrollScrubber(
-                controller: scrollController,
-                labelForOffset: (offset) {
-                  if (metrics.isEmpty) return null;
-                  // The flashback carousel sits above the rows, so subtract it
-                  // before mapping an offset onto a row.
-                  final rowIndex = metrics.rowIndexAtOffset(
-                    offset - leadingExtent(),
-                  );
-                  if (rowIndex >= data.rows.length) return null;
-                  final row = data.rows[rowIndex];
-                  return formatTimelineDate(context, row.headerKind, row.date);
-                },
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-}
-
-/// One line of tiles inside a day group.
-class _TileRow extends ConsumerWidget {
-  final TimelineRow row;
-  final double tileSize;
-  final int columnCount;
-  final ValueChanged<MediaItem> onItemTap;
-  final ValueChanged<MediaItem> onItemLongPress;
-
-  const _TileRow({
-    required this.row,
-    required this.tileSize,
-    required this.columnCount,
-    required this.onItemTap,
-    required this.onItemLongPress,
-  });
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final selected = ref.watch(selectionProvider);
-    final selecting = selected.isNotEmpty;
-
-    return Padding(
-      padding: const EdgeInsets.only(
-        left: kTileSpacing,
-        right: kTileSpacing,
-        bottom: kTileSpacing,
-      ),
-      child: Row(
-        children: [
-          for (var i = 0; i < columnCount; i++) ...[
-            if (i > 0) const SizedBox(width: kTileSpacing),
-            if (i < row.items.length)
-              MediaGridTile(
-                item: row.items[i],
-                size: tileSize,
-                onTap: onItemTap,
-                onLongPress: onItemLongPress,
-                isSelected: selected.contains(row.items[i].id),
-                selectionMode: selecting,
-                semanticLabel: row.items[i].displayName,
-              )
-            else
-              // Keeps the last row of a day aligned with the rows above it.
-              SizedBox(width: tileSize, height: tileSize),
-          ],
-        ],
-      ),
-    );
-  }
-}
-
-/// Notice shown when Android granted access to only some media.
-class _PartialAccessNotice extends StatelessWidget {
-  final String message;
-
-  const _PartialAccessNotice({required this.message});
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return Container(
-      width: double.infinity,
-      color: theme.colorScheme.secondaryContainer,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: Text(
-        message,
-        style: theme.textTheme.bodySmall?.copyWith(
-          color: theme.colorScheme.onSecondaryContainer,
-        ),
-      ),
-    );
-  }
-}
-
-/// Shared empty, permission, and error state layout.
-class _MessageState extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  final String? body;
-  final String actionLabel;
-  final VoidCallback onAction;
-
-  /// Wraps the content in a scroll view so pull-to-refresh still works.
-  final bool scrollable;
-
-  const _MessageState({
-    required this.icon,
-    required this.title,
-    this.body,
-    required this.actionLabel,
-    required this.onAction,
-    this.scrollable = false,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    final content = Padding(
-      padding: const EdgeInsets.all(32),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(icon, size: 56, color: theme.colorScheme.onSurfaceVariant),
-          const SizedBox(height: 16),
-          Text(
-            title,
-            textAlign: TextAlign.center,
-            style: theme.textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          if (body != null) ...[
-            const SizedBox(height: 8),
-            Text(
-              body!,
-              textAlign: TextAlign.center,
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: theme.colorScheme.onSurfaceVariant,
-              ),
-            ),
-          ],
-          const SizedBox(height: 24),
-          FilledButton.icon(
-            onPressed: onAction,
-            icon: const Icon(Icons.refresh),
-            label: Text(actionLabel),
-          ),
-        ],
-      ),
-    );
-
-    if (!scrollable) return Center(child: content);
-
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        return SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          child: ConstrainedBox(
-            constraints: BoxConstraints(minHeight: constraints.maxHeight),
-            child: content,
-          ),
-        );
-      },
     );
   }
 }

@@ -3,7 +3,7 @@ import 'package:in_sreerajp_imgvidgal/theme/app_theme.dart';
 
 /// The preferences the user can change on the Settings screen.
 ///
-/// Deliberately small, and deliberately not secret. None of these five values
+/// Deliberately small, and deliberately not secret. None of these values
 /// is worth protecting, so they live in a plain JSON file rather than secure
 /// storage. The vault keeps its own settings, in its own encrypted store.
 ///
@@ -14,7 +14,8 @@ class AppSettings {
 
   /// Language code, or `null` to follow the phone's own language.
   ///
-  /// Only `'en'` and `'ml'` are accepted; anything else is dropped on read.
+  /// Only `'en'`, `'ml'` and `'sa'` are accepted; anything else is dropped on
+  /// read.
   final String? localeCode;
 
   /// How many columns the timeline grid starts at, always 1 to 5.
@@ -29,12 +30,21 @@ class AppSettings {
   /// a file the app cannot bring back.
   final bool confirmDestructive;
 
+  /// Whether every screen is protected from screenshots, screen recording
+  /// and the recent-apps preview (`FLAG_SECURE`), not only the vault.
+  ///
+  /// Off by default: blocking a screenshot of an ordinary photo is not what
+  /// most people want. The vault is always protected, whatever this says
+  /// (G28, `docs/security.md` §10).
+  final bool protectAllScreens;
+
   const AppSettings({
     this.theme = ThemePreference.system,
     this.localeCode,
     this.gridColumns = AppConstants.defaultGridColumns,
     this.showFlashbacks = true,
     this.confirmDestructive = true,
+    this.protectAllScreens = false,
   });
 
   /// What a phone that has never opened the Settings screen uses.
@@ -47,6 +57,7 @@ class AppSettings {
     int? gridColumns,
     bool? showFlashbacks,
     bool? confirmDestructive,
+    bool? protectAllScreens,
   }) {
     return AppSettings(
       theme: theme ?? this.theme,
@@ -56,6 +67,7 @@ class AppSettings {
       gridColumns: _clampColumns(gridColumns ?? this.gridColumns),
       showFlashbacks: showFlashbacks ?? this.showFlashbacks,
       confirmDestructive: confirmDestructive ?? this.confirmDestructive,
+      protectAllScreens: protectAllScreens ?? this.protectAllScreens,
     );
   }
 
@@ -66,6 +78,7 @@ class AppSettings {
       'gridColumns': gridColumns,
       'showFlashbacks': showFlashbacks,
       'confirmDestructive': confirmDestructive,
+      'protectAllScreens': protectAllScreens,
     };
   }
 
@@ -89,6 +102,10 @@ class AppSettings {
       confirmDestructive: _parseBool(
         raw['confirmDestructive'],
         defaults.confirmDestructive,
+      ),
+      protectAllScreens: _parseBool(
+        raw['protectAllScreens'],
+        defaults.protectAllScreens,
       ),
     );
   }
@@ -128,7 +145,8 @@ class AppSettings {
         other.localeCode == localeCode &&
         other.gridColumns == gridColumns &&
         other.showFlashbacks == showFlashbacks &&
-        other.confirmDestructive == confirmDestructive;
+        other.confirmDestructive == confirmDestructive &&
+        other.protectAllScreens == protectAllScreens;
   }
 
   @override
@@ -138,5 +156,6 @@ class AppSettings {
     gridColumns,
     showFlashbacks,
     confirmDestructive,
+    protectAllScreens,
   );
 }

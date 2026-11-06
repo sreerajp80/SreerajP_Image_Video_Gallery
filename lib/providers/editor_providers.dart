@@ -14,18 +14,20 @@ import 'package:in_sreerajp_imgvidgal/models/editor/watermark_config.dart';
 import 'package:in_sreerajp_imgvidgal/models/media_item.dart';
 import 'package:in_sreerajp_imgvidgal/providers/media_providers.dart';
 import 'package:in_sreerajp_imgvidgal/repositories/media_repository.dart';
-import 'package:in_sreerajp_imgvidgal/services/editor/crop_transform_service.dart';
+import 'package:in_sreerajp_imgvidgal/core/domain/editor/crop_transform_service.dart';
 import 'package:in_sreerajp_imgvidgal/services/editor/editor_save_service.dart';
 import 'package:in_sreerajp_imgvidgal/services/editor/filter_preset_service.dart';
 import 'package:in_sreerajp_imgvidgal/services/editor/hsl_service.dart';
 import 'package:in_sreerajp_imgvidgal/services/editor/image_render_pipeline.dart';
-import 'package:in_sreerajp_imgvidgal/services/editor/markup_geometry_service.dart';
+import 'package:in_sreerajp_imgvidgal/core/domain/editor/markup_geometry_service.dart';
 import 'package:in_sreerajp_imgvidgal/services/editor/markup_render_service.dart';
 import 'package:in_sreerajp_imgvidgal/services/editor/redaction_service.dart';
 import 'package:in_sreerajp_imgvidgal/services/editor/selective_mask_service.dart';
 import 'package:in_sreerajp_imgvidgal/services/editor/tone_adjustment_service.dart';
-import 'package:in_sreerajp_imgvidgal/services/editor/tone_curve_service.dart';
+import 'package:in_sreerajp_imgvidgal/core/domain/editor/tone_curve_service.dart';
 import 'package:in_sreerajp_imgvidgal/services/editor/watermark_service.dart';
+import 'package:in_sreerajp_imgvidgal/core/logging/app_logger.dart';
+import 'package:flutter_riverpod/legacy.dart';
 
 /// Crop, straighten, rotate, and perspective maths.
 final cropTransformServiceProvider = Provider<CropTransformService>((ref) {
@@ -442,8 +444,6 @@ final editorPreviewProvider = FutureProvider.autoDispose
                 sourceBytes: bytes,
                 sessionJson: request.session.toJson(),
                 maxSide: AppConstants.editorPreviewMaxSide,
-                // The preview is thrown away, so the cheaper encode is used.
-                format: RenderFormat.jpeg,
                 quality: 85,
                 logoBytes: logoBytes,
                 captureDate: request.item.dateTaken,
@@ -496,7 +496,6 @@ class EditorSaveController extends StateNotifier<AsyncValue<SaveOutcome?>> {
           sourceBytes: sourceBytes,
           sessionJson: session.toJson(),
           format: format,
-          quality: AppConstants.editorJpegQuality,
           logoBytes: logoBytes,
           captureDate: item.dateTaken,
         ),
@@ -548,6 +547,7 @@ Future<Uint8List?> _readLogoBytes(
     final file = File(path);
     if (await file.exists()) return await file.readAsBytes();
   } catch (_) {
+    // Safe to ignore: the repository just below is tried next.
     // Fall through to the repository, which goes via the MediaStore.
   }
 
@@ -558,7 +558,8 @@ Future<Uint8List?> _readLogoBytes(
       item,
       maxBytes: AppConstants.editorMaxSourceBytes,
     );
-  } catch (_) {
+  } catch (error) {
+    AppLogger.debug('Reading the watermark logo failed');
     return null;
   }
 }

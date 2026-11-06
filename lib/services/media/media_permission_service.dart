@@ -17,6 +17,7 @@ class MediaPermissionService {
     try {
       return await _channel.checkPermissions();
     } on PermissionDeniedException catch (e) {
+      // Safe to ignore: a refusal is the user's answer, not a fault.
       return e.isPermanent
           ? MediaPermissionStatus.permanentlyDenied
           : MediaPermissionStatus.denied;
@@ -30,6 +31,7 @@ class MediaPermissionService {
     try {
       return await _channel.requestPermissions();
     } on PermissionDeniedException catch (e) {
+      // Safe to ignore: a refusal is the user's answer, not a fault.
       return e.isPermanent
           ? MediaPermissionStatus.permanentlyDenied
           : MediaPermissionStatus.denied;

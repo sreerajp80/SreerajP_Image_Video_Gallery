@@ -1,6 +1,6 @@
 # A/B Synchronized Photo Comparison
 
-**Status:** Completed
+**Status:** completed
 
 ## Files to Change
 

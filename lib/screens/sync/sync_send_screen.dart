@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:in_sreerajp_imgvidgal/core/constants/app_constants.dart';
 import 'package:in_sreerajp_imgvidgal/l10n/generated/app_localizations.dart';
@@ -8,10 +8,10 @@ import 'package:in_sreerajp_imgvidgal/models/sync/pairing_payload.dart';
 import 'package:in_sreerajp_imgvidgal/models/sync/sync_role.dart';
 import 'package:in_sreerajp_imgvidgal/providers/sync_providers.dart';
 import 'package:in_sreerajp_imgvidgal/screens/sync/sync_receive_screen.dart';
-import 'package:in_sreerajp_imgvidgal/services/sync/pairing_codec.dart';
-import 'package:in_sreerajp_imgvidgal/services/sync/transfer_session_service.dart';
+import 'package:in_sreerajp_imgvidgal/core/domain/sync/pairing_codec.dart';
+import 'package:in_sreerajp_imgvidgal/models/sync/transfer_session_state.dart';
 import 'package:in_sreerajp_imgvidgal/widgets/sync/transfer_progress_view.dart';
-import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:in_sreerajp_imgvidgal/widgets/sync/pairing_qr_scanner.dart';
 
 /// Reads the other phone's pairing code and connects to it.
 ///
@@ -31,13 +31,6 @@ class SyncSendScreen extends ConsumerStatefulWidget {
 
 class _SyncSendScreenState extends ConsumerState<SyncSendScreen>
     with WidgetsBindingObserver {
-  final MobileScannerController _scanner = MobileScannerController(
-    // One format, so the scanner does not spend effort looking for barcodes
-    // nobody is going to show it.
-    formats: const <BarcodeFormat>[BarcodeFormat.qrCode],
-    detectionSpeed: DetectionSpeed.noDuplicates,
-  );
-
   final TextEditingController _manual = TextEditingController();
 
   /// True once a code has been accepted, so the camera stops feeding frames.
@@ -48,20 +41,24 @@ class _SyncSendScreenState extends ConsumerState<SyncSendScreen>
 
   String? _manualError;
 
+  /// Read once in `initState`: Riverpod 3 does not allow `ref` in `dispose`,
+  /// and the connection must still be closed there (hard rule 2).
+  late final Future<void> Function() _stopSession;
+
   @override
   void initState() {
     super.initState();
+    _stopSession = ref.read(transferSessionProvider).stop;
     WidgetsBinding.instance.addObserver(this);
   }
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
-    _scanner.dispose();
     _manual.dispose();
     // The connection goes with the screen, the same rule the receive side
     // follows for its listener.
-    ref.read(transferSessionProvider).stop();
+    _stopSession();
     super.dispose();
   }
 
@@ -73,24 +70,19 @@ class _SyncSendScreenState extends ConsumerState<SyncSendScreen>
     }
   }
 
-  /// Called for every frame the scanner decodes.
-  void _onDetect(BarcodeCapture capture) {
-    if (_handled) return;
+  /// Called for every QR code the camera reads. Returns true when the code
+  /// is a pairing code and the connection starts; the camera then stops.
+  bool _onCode(String raw) {
+    if (_handled) return false;
 
-    for (final barcode in capture.barcodes) {
-      final raw = barcode.rawValue;
-      if (raw == null || raw.isEmpty) continue;
+    final pairing = PairingCodec.decode(raw);
+    // A QR code that is not ours, or one that points somewhere off the
+    // local network. The camera simply keeps looking.
+    if (pairing == null) return false;
 
-      final pairing = PairingCodec.decode(raw);
-      // A QR code that is not ours, or one that points somewhere off the
-      // local network. The camera simply keeps looking.
-      if (pairing == null) continue;
-
-      _handled = true;
-      _scanner.stop();
-      _connect(pairing);
-      return;
-    }
+    _handled = true;
+    _connect(pairing);
+    return true;
   }
 
   /// Takes a typed code and connects on it.
@@ -103,7 +95,7 @@ class _SyncSendScreenState extends ConsumerState<SyncSendScreen>
     final decoded = PairingCodec.decodeManual(_manual.text);
 
     if (decoded == null) {
-      setState(() => _manualError = l10n.syncManualCodeInvalid);
+      setState(() => _manualError = l10n.bodySyncManualCodeInvalid);
       return;
     }
 
@@ -142,24 +134,23 @@ class _SyncSendScreenState extends ConsumerState<SyncSendScreen>
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final session = ref.watch(transferSessionProvider);
-    final state = ref.watch(transferStateProvider).valueOrNull ?? session.state;
+    final state = ref.watch(transferStateProvider).value ?? session.state;
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(l10n.syncScanTitle),
+        title: Text(l10n.titleSyncScan),
         actions: [
           if (state.phase == SyncPhase.idle)
             TextButton(
               onPressed: () {
+                // The camera widget leaves the screen while typing, which
+                // releases the camera; it starts again when it comes back.
                 setState(() => _typing = !_typing);
-                if (_typing) {
-                  _scanner.stop();
-                } else {
-                  _scanner.start();
-                }
               },
               child: Text(
-                _typing ? l10n.syncScanCode : l10n.syncTypeCodeInstead,
+                _typing
+                    ? l10n.actionSyncScanCode
+                    : l10n.actionSyncTypeCodeInstead,
               ),
             ),
           if (state.phase.isActive)
@@ -168,7 +159,7 @@ class _SyncSendScreenState extends ConsumerState<SyncSendScreen>
                 session.cancel();
                 session.stop();
               },
-              child: Text(l10n.syncStop),
+              child: Text(l10n.actionSyncStop),
             ),
         ],
       ),
@@ -197,7 +188,7 @@ class _SyncSendScreenState extends ConsumerState<SyncSendScreen>
             children: [
               if (state.peerName.isNotEmpty)
                 Text(
-                  l10n.syncPairedWith(state.peerName),
+                  l10n.bodySyncPairedWith(state.peerName),
                   style: theme.textTheme.titleMedium,
                 ),
               const SizedBox(height: 24),
@@ -219,18 +210,22 @@ class _SyncSendScreenState extends ConsumerState<SyncSendScreen>
                   color: theme.colorScheme.primary,
                 ),
                 const SizedBox(height: 16),
-                Text(l10n.syncDone, style: theme.textTheme.titleMedium),
+                Text(l10n.labelSyncDone, style: theme.textTheme.titleMedium),
                 const SizedBox(height: 12),
                 if (state.outcome != null) ...[
                   if (state.outcome!.sentCount > 0)
-                    Text(l10n.syncResultSent(state.outcome!.sentCount)),
+                    Text(l10n.bodySyncResultSent(state.outcome!.sentCount)),
                   if (state.outcome!.receivedCount > 0)
-                    Text(l10n.syncResultReceived(state.outcome!.receivedCount)),
+                    Text(
+                      l10n.bodySyncResultReceived(state.outcome!.receivedCount),
+                    ),
                   if (state.outcome!.skippedCount > 0)
-                    Text(l10n.syncResultSkipped(state.outcome!.skippedCount)),
+                    Text(
+                      l10n.bodySyncResultSkipped(state.outcome!.skippedCount),
+                    ),
                   if (state.outcome!.failedCount > 0)
                     Text(
-                      l10n.syncResultFailed(state.outcome!.failedCount),
+                      l10n.errorSyncResultFailed(state.outcome!.failedCount),
                       style: TextStyle(color: theme.colorScheme.error),
                     ),
                 ],
@@ -264,7 +259,7 @@ class _SyncSendScreenState extends ConsumerState<SyncSendScreen>
                     _handled = false;
                     _typing = true;
                   }),
-                  child: Text(l10n.syncTypeCodeInstead),
+                  child: Text(l10n.actionSyncTypeCodeInstead),
                 ),
               ],
             ),
@@ -277,23 +272,25 @@ class _SyncSendScreenState extends ConsumerState<SyncSendScreen>
     return Stack(
       fit: StackFit.expand,
       children: [
-        MobileScanner(
-          controller: _scanner,
-          onDetect: _onDetect,
+        PairingQrScanner(
+          onCode: _onCode,
           // A camera that will not start is not a dead end: the typed code
           // is offered instead, with the reason said plainly.
-          errorBuilder: (context, error, child) => Padding(
+          errorBuilder: (context) => Padding(
             padding: const EdgeInsets.all(24),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 const Icon(Icons.no_photography_outlined, size: 48),
                 const SizedBox(height: 16),
-                Text(l10n.syncCameraPermission, textAlign: TextAlign.center),
+                Text(
+                  l10n.bodySyncCameraPermission,
+                  textAlign: TextAlign.center,
+                ),
                 const SizedBox(height: 24),
                 FilledButton(
                   onPressed: () => setState(() => _typing = true),
-                  child: Text(l10n.syncTypeCodeInstead),
+                  child: Text(l10n.actionSyncTypeCodeInstead),
                 ),
               ],
             ),
@@ -311,7 +308,7 @@ class _SyncSendScreenState extends ConsumerState<SyncSendScreen>
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Text(
-                l10n.syncPairingHeading,
+                l10n.titleSyncPairingHeading,
                 style: const TextStyle(color: Colors.white),
               ),
             ),
@@ -328,7 +325,7 @@ class _SyncSendScreenState extends ConsumerState<SyncSendScreen>
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Text(
-            l10n.syncManualCodeHeading,
+            l10n.titleSyncManualCodeHeading,
             style: Theme.of(context).textTheme.titleMedium,
           ),
           const SizedBox(height: 16),
@@ -337,7 +334,7 @@ class _SyncSendScreenState extends ConsumerState<SyncSendScreen>
             autofocus: true,
             textCapitalization: TextCapitalization.characters,
             decoration: InputDecoration(
-              labelText: l10n.syncManualCodeLabel,
+              labelText: l10n.labelSyncManualCode,
               errorText: _manualError,
               hintText: 'XXXX-XXXX-XXXX-XXXX-XXXX-XXXX',
             ),
@@ -346,7 +343,7 @@ class _SyncSendScreenState extends ConsumerState<SyncSendScreen>
           const SizedBox(height: 24),
           FilledButton(
             onPressed: _submitManual,
-            child: Text(l10n.syncScanCode),
+            child: Text(l10n.actionSyncScanCode),
           ),
         ],
       ),

@@ -55,12 +55,27 @@ void main() {
       const original = AppSettings(localeCode: 'ml');
 
       // A bare null means "unchanged", so it must not drop the language.
-      expect(original.copyWith(localeCode: null).localeCode, 'ml');
+      expect(original.copyWith().localeCode, 'ml');
       expect(original.copyWith(clearLocaleCode: true).localeCode, isNull);
     });
   });
 
   group('AppSettings JSON', () {
+    test('screen protection is off by default and survives a round trip', () {
+      expect(AppSettings.defaults.protectAllScreens, isFalse);
+
+      const on = AppSettings(protectAllScreens: true);
+      expect(AppSettings.fromJson(on.toJson()), on);
+
+      // A wrong type falls back to the default for that one field.
+      expect(
+        AppSettings.fromJson(<String, Object?>{
+          'protectAllScreens': 'yes',
+        }).protectAllScreens,
+        isFalse,
+      );
+    });
+
     test('round-trips through encode and decode', () {
       const original = AppSettings(
         theme: ThemePreference.amoled,

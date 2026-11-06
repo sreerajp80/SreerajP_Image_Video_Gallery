@@ -1,8 +1,8 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:in_sreerajp_imgvidgal/l10n/generated/app_localizations.dart';
 import 'package:in_sreerajp_imgvidgal/models/editor/tone_adjustments.dart';
 import 'package:in_sreerajp_imgvidgal/models/editor/tone_curve.dart';
-import 'package:in_sreerajp_imgvidgal/services/editor/tone_curve_service.dart';
+import 'package:in_sreerajp_imgvidgal/core/domain/editor/tone_curve_service.dart';
 
 /// Which curve the editor is showing.
 enum CurveChannel { rgb, red, green, blue }
@@ -186,10 +186,10 @@ class _CurveEditorState extends State<CurveEditor> {
     final theme = Theme.of(context);
 
     final labels = <CurveChannel, String>{
-      CurveChannel.rgb: l10n.curveChannelRgb,
-      CurveChannel.red: l10n.curveChannelRed,
-      CurveChannel.green: l10n.curveChannelGreen,
-      CurveChannel.blue: l10n.curveChannelBlue,
+      CurveChannel.rgb: l10n.labelCurveChannelRgb,
+      CurveChannel.red: l10n.labelCurveChannelRed,
+      CurveChannel.green: l10n.labelCurveChannelGreen,
+      CurveChannel.blue: l10n.labelCurveChannelBlue,
     };
 
     return Padding(
@@ -197,7 +197,7 @@ class _CurveEditorState extends State<CurveEditor> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text(l10n.toneCurves, style: theme.textTheme.labelLarge),
+          Text(l10n.labelToneCurves, style: theme.textTheme.labelLarge),
           const SizedBox(height: 8),
           Wrap(
             spacing: 8,
@@ -210,31 +210,40 @@ class _CurveEditorState extends State<CurveEditor> {
             }).toList(),
           ),
           const SizedBox(height: 12),
-          AspectRatio(
-            aspectRatio: 1.6,
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                final size = Size(constraints.maxWidth, constraints.maxHeight);
-                return GestureDetector(
-                  onPanStart: (d) => _onPanStart(d, size),
-                  onPanUpdate: (d) => _onPanUpdate(d, size),
-                  onPanEnd: _onPanEnd,
-                  onTapUp: (d) => _onTapUp(d, size),
-                  onLongPressStart: (d) => _onLongPress(d, size),
-                  child: CustomPaint(
-                    painter: _CurvePainter(
-                      points: _points,
-                      service: _service,
-                      lineColor: _channelColor(theme),
-                      gridColor: theme.colorScheme.outlineVariant,
-                      backgroundColor:
-                          theme.colorScheme.surfaceContainerHighest,
-                      draggingIndex: _draggingIndex,
+          Semantics(
+            container: true,
+            label: l10n.labelA11yCurveArea,
+            value: l10n.bodyA11yCurveValue(_points.length),
+            hint: l10n.helpCurveAddHint,
+            child: AspectRatio(
+              aspectRatio: 1.6,
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  final size = Size(
+                    constraints.maxWidth,
+                    constraints.maxHeight,
+                  );
+                  return GestureDetector(
+                    onPanStart: (d) => _onPanStart(d, size),
+                    onPanUpdate: (d) => _onPanUpdate(d, size),
+                    onPanEnd: _onPanEnd,
+                    onTapUp: (d) => _onTapUp(d, size),
+                    onLongPressStart: (d) => _onLongPress(d, size),
+                    child: CustomPaint(
+                      painter: _CurvePainter(
+                        points: _points,
+                        service: _service,
+                        lineColor: _channelColor(theme),
+                        gridColor: theme.colorScheme.outlineVariant,
+                        backgroundColor:
+                            theme.colorScheme.surfaceContainerHighest,
+                        draggingIndex: _draggingIndex,
+                      ),
+                      size: size,
                     ),
-                    size: size,
-                  ),
-                );
-              },
+                  );
+                },
+              ),
             ),
           ),
           const SizedBox(height: 6),
@@ -243,13 +252,16 @@ class _CurveEditorState extends State<CurveEditor> {
             children: [
               Flexible(
                 child: Text(
-                  l10n.curveAddHint,
+                  l10n.helpCurveAddHint,
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: theme.colorScheme.onSurfaceVariant,
                   ),
                 ),
               ),
-              TextButton(onPressed: _resetCurve, child: Text(l10n.curveReset)),
+              TextButton(
+                onPressed: _resetCurve,
+                child: Text(l10n.actionCurveReset),
+              ),
             ],
           ),
         ],

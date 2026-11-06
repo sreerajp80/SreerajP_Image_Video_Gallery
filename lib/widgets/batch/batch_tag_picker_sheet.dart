@@ -1,9 +1,9 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:in_sreerajp_imgvidgal/l10n/generated/app_localizations.dart';
 import 'package:in_sreerajp_imgvidgal/models/batch/batch_action.dart';
 import 'package:in_sreerajp_imgvidgal/providers/tag_providers.dart';
-import 'package:in_sreerajp_imgvidgal/services/tags/tag_name_rules.dart';
+import 'package:in_sreerajp_imgvidgal/core/domain/tags/tag_name_rules.dart';
 
 /// Bottom sheet for picking or creating tags during batch operations.
 class BatchTagPickerSheet extends ConsumerStatefulWidget {
@@ -74,7 +74,7 @@ class _BatchTagPickerSheetState extends ConsumerState<BatchTagPickerSheet> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text(
-              isAdd ? l10n.batchPickTags : l10n.batchActionRemoveTags,
+              isAdd ? l10n.labelBatchPickTags : l10n.labelBatchActionRemoveTags,
               style: theme.textTheme.titleMedium,
             ),
             const SizedBox(height: 12),
@@ -85,14 +85,14 @@ class _BatchTagPickerSheetState extends ConsumerState<BatchTagPickerSheet> {
               ),
               error: (_, _) => Padding(
                 padding: const EdgeInsets.symmetric(vertical: 16),
-                child: Text(l10n.tagErrorFailed),
+                child: Text(l10n.errorTagErrorFailed),
               ),
               data: (tags) {
                 if (tags.isEmpty) {
                   return Padding(
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     child: Text(
-                      l10n.filterNoTags,
+                      l10n.labelFilterNoTags,
                       style: theme.textTheme.bodyMedium?.copyWith(
                         color: theme.colorScheme.onSurfaceVariant,
                       ),
@@ -142,7 +142,7 @@ class _BatchTagPickerSheetState extends ConsumerState<BatchTagPickerSheet> {
                     child: TextField(
                       controller: _newTagController,
                       decoration: InputDecoration(
-                        hintText: l10n.tagSheetNewHint,
+                        hintText: l10n.helpTagSheetNewHint,
                         isDense: true,
                         border: const OutlineInputBorder(),
                       ),
@@ -152,7 +152,7 @@ class _BatchTagPickerSheetState extends ConsumerState<BatchTagPickerSheet> {
                   const SizedBox(width: 8),
                   FilledButton.tonal(
                     onPressed: _addTypedTag,
-                    child: Text(l10n.tagSheetAdd),
+                    child: Text(l10n.actionTagSheetAdd),
                   ),
                 ],
               ),
@@ -164,7 +164,7 @@ class _BatchTagPickerSheetState extends ConsumerState<BatchTagPickerSheet> {
                 onPressed: _chosen.isEmpty
                     ? null
                     : () => Navigator.of(context).pop(_chosen),
-                child: Text(l10n.batchConfirmContinue),
+                child: Text(l10n.actionBatchConfirmContinue),
               ),
             ),
           ],

@@ -9,6 +9,7 @@ import 'package:in_sreerajp_imgvidgal/services/media/media_store_channel.dart';
 import 'package:in_sreerajp_imgvidgal/services/sync/transfer_exchange_service.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
+import 'package:in_sreerajp_imgvidgal/core/logging/app_logger.dart';
 
 /// Puts an arriving file into the gallery, and its metadata into the database.
 ///
@@ -55,7 +56,11 @@ class ReceivedMediaService implements IncomingFileSink {
     if (sha256.isEmpty) return false;
     try {
       return await _mediaDao.hasMediaWithHash(sha256);
-    } catch (_) {
+    } catch (error) {
+      AppLogger.warning(
+        'The duplicate check before receiving failed',
+        error: error,
+      );
       // If the check itself fails, take the file. Receiving a duplicate is a
       // far smaller problem than silently refusing a photo the user wanted.
       return false;
@@ -127,11 +132,16 @@ class ReceivedMediaService implements IncomingFileSink {
         try {
           final tag = await _tagRepository.findOrCreateTag(name);
           await _tagRepository.addTagToMedia(item.id, tag.id);
-        } catch (_) {
+        } catch (error) {
+          AppLogger.debug('A received tag name was refused');
           // One name the tag rules refuse. The others still land.
         }
       }
-    } catch (_) {
+    } catch (error) {
+      AppLogger.warning(
+        'Saving details for a received photo failed',
+        error: error,
+      );
       // The file is in the gallery; the metadata is a bonus, not the point.
     }
   }
@@ -144,7 +154,8 @@ class ReceivedMediaService implements IncomingFileSink {
     if (receivedPaths.isEmpty) return;
     try {
       await _mediaRepository.scanDevice(incremental: true);
-    } catch (_) {
+    } catch (error) {
+      AppLogger.warning('Indexing received photos failed', error: error);
       // A failed scan means the photos show up on the next one. They are on
       // the device either way, which is the part that matters.
     }
@@ -163,7 +174,7 @@ class ReceivedMediaService implements IncomingFileSink {
         if (entity is File) await _deleteQuietly(entity);
       }
     } catch (_) {
-      // Nothing useful to do; it is app-private space.
+      // Safe to ignore: app-private staging space that goes with the cache.
     }
   }
 
@@ -182,7 +193,7 @@ class ReceivedMediaService implements IncomingFileSink {
     try {
       if (await file.exists()) await file.delete();
     } catch (_) {
-      // App-private staging; it goes with the cache.
+      // Safe to ignore: app-private staging space that goes with the cache.
     }
   }
 }

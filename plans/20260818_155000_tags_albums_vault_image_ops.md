@@ -1,6 +1,6 @@
 # Tags, Custom Albums, Secure Vault, and Comprehensive Image Operations Plan
 
-**Status:** Completed
+**Status:** completed
 
 ## 1. Overview
 Update `docs/Project_Idea.md` to incorporate detailed specifications for:

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:in_sreerajp_imgvidgal/l10n/generated/app_localizations.dart';
 import 'package:in_sreerajp_imgvidgal/widgets/dev/media_scan_panel.dart';
 
@@ -11,19 +11,21 @@ class DeveloperSettingsScreen extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.settingsDeveloper)),
-      body: ListView(
-        padding: const EdgeInsets.fromLTRB(16, 12, 16, 32),
-        children: const <Widget>[
-          Card(
-            margin: EdgeInsets.zero,
-            clipBehavior: Clip.antiAlias,
-            child: Padding(
-              padding: EdgeInsets.all(16),
-              child: MediaScanPanel(),
+      appBar: AppBar(title: Text(l10n.titleSettingsDeveloper)),
+      body: SafeArea(
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 32),
+          children: const <Widget>[
+            Card(
+              margin: EdgeInsets.zero,
+              clipBehavior: Clip.antiAlias,
+              child: Padding(
+                padding: EdgeInsets.all(16),
+                child: MediaScanPanel(),
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

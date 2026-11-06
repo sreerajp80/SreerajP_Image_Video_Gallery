@@ -98,7 +98,7 @@ void main() {
       final probe = File(p.join(workspace.path, 'probe.enc'));
       await probe.writeAsBytes(List<int>.filled(2048, 0xAB), flush: true);
 
-      final handle = await probe.open(mode: FileMode.read);
+      final handle = await probe.open();
       try {
         await buildService().shred(probe.path, passes: 1);
 

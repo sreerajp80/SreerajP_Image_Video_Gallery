@@ -11,15 +11,16 @@ Read it before making any change. See the docs table below for full detail.
 |-------|-------|
 | App name | SreerajP Image Video Gallery |
 | Type | Offline-first image and video gallery application for viewing, organizing, and managing local media |
-| Platform(s) | Android only (minSdk 24, targetSdk 35) |
+| Platform(s) | Android only (minSdk 24, targetSdk 36, compileSdk 36) |
 | Package / org id | in.sreerajp.imgvidgal |
-| Flutter SDK | ^3.41.0 or higher |
-| Dart SDK | ^3.11.0 or higher |
+| Flutter SDK | **3.47.6** (stable) — the exact version this project builds with; CI uses the same (`.github/workflows/ci.yml`). Lowest allowed in `pubspec.yaml`: 3.41.0 |
+| Dart SDK | **3.13.5** (ships with Flutter 3.47.6). Lowest allowed in `pubspec.yaml`: 3.11.0 |
 | State management | Riverpod |
 | Navigation | go_router |
 | Database | sqflite |
 | Orientation | both |
 | Connectivity | no remote network — local Wi-Fi transfer only |
+| Distribution | Google Play and direct split APKs (Android only) — store rules in `docs/guidelines/platform_store_readiness.md` |
 
 ---
 
@@ -27,15 +28,24 @@ Read it before making any change. See the docs table below for full detail.
 
 | Document | Read when |
 |----------|-----------|
-| docs/guidelines/architecture.md | Changing structure, screens, state, services, models, repositories |
-| docs/guidelines/security.md | Touching permissions, logging, storage, crypto, manifest |
-| docs/guidelines/release_process.md | Building a release, versioning, release checklist |
+| docs/architecture.md | Changing structure, screens, state, services, models, repositories |
+| docs/security.md | Touching permissions, logging, storage, crypto, manifest |
+| docs/release_process.md | Building a release, versioning, release checklist |
+| docs/dependencies.md | Adding, removing or upgrading a package |
+| docs/PROJECT_PROFILE.md | Declared platforms, stores, languages and About options — read first |
+| docs/known_gaps.md | Guideline rules the app does not meet yet |
+| docs/workflow_rules.md | Writing a plan or a change log |
 | docs/guidelines/flutter_build_flavors_guide.md | Build config, signing, flavors, Gradle, ProGuard |
 | docs/guidelines/flutter_project_engineering_standard.md | Any code change — layers, naming, testing |
 | docs/guidelines/guideline.md | Common folder structure, About-screen config, keystore rules |
+| docs/guidelines/language_packs/sanskrit_malayalam.md | Adding or changing Malayalam or Sanskrit text (mandatory for this app) |
+| docs/guidelines/DOCS_FOLDER_GUIDELINE.md | Adding or changing any file in `docs/` |
 | docs/GUIDELINES_MANIFEST.md | The shared Flutter guidelines index |
+| docs/guidelines/platform_store_readiness.md | Anything about Google Play or direct APK release |
 
 > If a doc is copied into this project's own `docs/`, the local copy wins over the submodule.
+> `architecture.md`, `security.md` and `release_process.md` have local copies, so read those,
+> not the templates in `docs/guidelines/`.
 
 ---
 
@@ -106,21 +116,44 @@ flutter build appbundle --flavor prod --release \
 
 - Never log secrets, private media metadata, or encryption keys — even in debug builds.
 - Store sensitive configuration or secure preferences in `flutter_secure_storage`; never in plain `SharedPreferences`.
-- Request only necessary media permissions (`READ_MEDIA_IMAGES`, `READ_MEDIA_VIDEO`), plus `CAMERA` for the pairing QR scan only.
+- Request only the permissions the app needs. The manifest declares exactly 11 Android permissions, each with its reason in `docs/security.md` §11: media access (`READ_MEDIA_IMAGES`, `READ_MEDIA_VIDEO`, `READ_MEDIA_VISUAL_USER_SELECTED`, `READ_EXTERNAL_STORAGE` up to API 32), vault unlock (`USE_BIOMETRIC`, `USE_FINGERPRINT` up to API 28), `CAMERA` for the pairing QR scan only, and the local transfer set (`INTERNET`, `ACCESS_WIFI_STATE`, `ACCESS_NETWORK_STATE`, `CHANGE_WIFI_STATE`). AndroidX adds one more to the merged manifest, the app's own private `DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION`, so the merged manifest holds 12. Never add one without updating that table.
 - `CHANGE_WIFI_STATE` exists for one thing: offering a scanned Wi-Fi code to Android as a network suggestion, on the in-image scanner screen. The app never joins a network itself; the user still picks it in the Wi-Fi settings.
-- A scanned code is untrusted input. The app launches an intent only for `http`, `https`, `tel`, `mailto`, `sms` and `geo`, checked in Dart and again in Kotlin. Never add a scheme without a reason written down. See `docs/security.md` §12.
+- A scanned code is untrusted input. The app launches an intent only for `http`, `https`, `tel`, `mailto`, `sms` and `geo`, checked in Dart and again in Kotlin. Never add a scheme without a reason written down. See `docs/security.md` §20.
 - `android.permission.INTERNET` exists for the local transfer feature alone. Never open a socket to an address `LocalAddressRules` rejects, never add an HTTP client, and never start a listener outside the transfer screen's lifetime.
 - Never send media, metadata, or diagnostics anywhere the user did not pair with by hand.
-- Keep `android:allowBackup="false"` in the manifest.
+- Keep `android:allowBackup="false"` and `android:dataExtractionRules` in the manifest. On Android 12+ the first alone does not stop device transfer.
 
 ---
 
 ## Localization rules
 
-- All user-visible text comes from `lib/l10n/*.arb` via `AppLocalizations` — never a raw string literal in a widget. This applies even though the app ships only English (`en`).
-- `l10n.yaml` (project root) and `lib/l10n/app_en.arb` must exist. Run `flutter gen-l10n` after editing any `.arb` file.
-- Every ARB key needs an `@key` description entry.
-- Literals are allowed only for logs, non-UI exception messages, asset paths, route names, and map/JSON keys.
+- This app must ship three languages: **English (`en`), Malayalam (`ml`), Sanskrit (`sa`)**. Every
+  feature and every screen works in all three.
+- **Current state:** all three languages ship. The owner reviewed the Sanskrit text on
+  2026-11-05 (G9 closed); new or changed Sanskrit needs the same review. `test/l10n/` fails the
+  build if a key is missing from any ARB file or if a Hindi marker appears in Sanskrit text.
+- All user-visible text comes from `lib/l10n/*.arb` via `AppLocalizations` — never a raw string
+  literal in a widget.
+- `l10n.yaml` (project root) and all three ARB files (`app_en.arb`, `app_ml.arb`, `app_sa.arb`)
+  must exist. Run `flutter gen-l10n` after editing any `.arb` file.
+- Every new key goes into **all** ARB files with a real translation. Never leave the English
+  value sitting in `app_ml.arb` or `app_sa.arb`.
+- Every ARB key needs an `@key` description entry in the template file (`app_en.arb`).
+- **Sanskrit means Sanskrit, not Hindi in Devanagari.** No Hindi copulas/postpositions/verb endings
+  (`है`, `करें`, `नहीं`, `सेटिंग्स`), no nukta letters. Use the glossary in
+  `docs/guidelines/language_packs/sanskrit_malayalam.md` §4.4 and flag anything you are unsure of for human review.
+- `supportedLocales` is `en`, `ml`, `sa`, and the Sanskrit Material/Cupertino fallback delegates are
+  registered (§8.3.1) — Flutter ships no Sanskrit framework translation. Format dates and numbers
+  with the `formattingLocale(...)` helper, never `DateFormat(..., 'sa')`.
+- The language is user-selectable in Settings (System default / English / മലയാളം / संस्कृतम्),
+  persisted, and applied without restarting the app.
+- Menu, button, label, tab and tooltip strings stay short in all three languages (§8.6); only
+  `desc…`/`help…`/`empty…`/`error…`/`body…` keys may be long prose.
+- Every icon-only control has a localized `tooltip:` (§7.8).
+- The About screen is data-driven, localized, and ends with the "Made with ❤️ from India" badge.
+- Literals are allowed only for logs, non-UI exception messages, asset paths, route names, and
+  map/JSON keys.
+- Log through `AppLogger` (`lib/core/logging/app_logger.dart`), never `print` or `debugPrint`.
 
 ---
 
@@ -166,9 +199,11 @@ test/                # tests
 
 Every change follows plan-before-changing and log-after-changing:
 
-1. **Plan before changing.** Write a full plan to `plans/` named `yyyymmdd_hhMMss_<short-slug>.md` with a `**Status:**` line, the files to change, the issue, and the fix. Then **STOP and get explicit approval** before editing/creating/deleting any project file (other than the plan). A question or ambiguous reply is not approval.
+1. **Plan before changing.** Write a full plan to `plans/` named `yyyymmdd_hhMMss_<short-slug>.md` with a `**Status:**` line, the files to change, the issue, and the fix. Then **STOP and get explicit approval** before editing/creating/deleting any project file (other than the plan). A question or ambiguous reply is not approval. A plan that touches network, storage, sign-in, permissions, deep links, WebViews, platform folders or dependencies has a short **"Security impact"** line (engineering standard §22.2).
 2. **Log after changing.** After implementing, write a change log to `change_log/` named `yyyymmdd_hhMMss_<short-slug>.md` describing what changed and referencing its plan.
 3. **Relative paths & privacy only.** `plans/` and `change_log/` files are committed and may become public on the internet. They MUST use relative repository paths only (never absolute system paths like `C:\...`, `l:\...`, or `file:///...`). They MUST NOT contain any **local system details** — OS user name, computer/host name, home or drive-letter paths, network share names, LAN/internal IP addresses, local server URLs with ports, device serial numbers, personal email addresses — or any secret (API keys, tokens, passwords, keystore passphrases, credentials, PII). Write them as if a stranger will read them; nothing should reveal the machine they came from.
+4. **The guidelines submodule is read-only.** `docs/guidelines/` is read-only. Never edit, pull, check out or commit the submodule or its version. If a guideline needs a change, write a note for the user instead (`docs/guidelines/DOCS_FOLDER_GUIDELINE.md` §1.1). If the folder is empty or missing, stop and ask the user.
+5. **CI is checks only.** GitHub CI runs only `flutter pub get`, code generation (`flutter gen-l10n`), the format check, `flutter analyze`, `flutter test`, and other pass/fail check scripts. No Dependabot or other update bot: dependencies are updated by hand. CI never builds release artifacts, signs, holds signing secrets, uploads, or publishes. Release builds are done locally (`docs/guidelines/flutter_project_engineering_standard.md` §19).
 
 Create `plans/` and `change_log/` if they do not exist.
 

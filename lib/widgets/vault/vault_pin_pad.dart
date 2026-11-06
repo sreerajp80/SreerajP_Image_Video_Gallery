@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:in_sreerajp_imgvidgal/core/constants/app_constants.dart';
 import 'package:in_sreerajp_imgvidgal/l10n/generated/app_localizations.dart';
 
@@ -133,7 +133,7 @@ class VaultPinPadState extends State<VaultPinPad> {
                 ? widget.onBiometric
                 : null,
             icon: const Icon(Icons.fingerprint),
-            label: Text(l10n.vaultUseBiometrics),
+            label: Text(l10n.labelVaultUseBiometrics),
           ),
         ],
       ],
@@ -169,7 +169,7 @@ class VaultPinPadState extends State<VaultPinPad> {
               child: IconButton(
                 onPressed: widget.enabled ? _backspace : null,
                 icon: const Icon(Icons.backspace_outlined),
-                tooltip: l10n.vaultClearSelection,
+                tooltip: l10n.tooltipVaultClearSelection,
               ),
             ),
           ],

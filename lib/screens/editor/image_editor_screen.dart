@@ -1,6 +1,6 @@
 import 'dart:typed_data';
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:in_sreerajp_imgvidgal/l10n/generated/app_localizations.dart';
 import 'package:in_sreerajp_imgvidgal/models/editor/edit_session.dart';
@@ -9,8 +9,8 @@ import 'package:in_sreerajp_imgvidgal/models/editor/watermark_config.dart';
 import 'package:in_sreerajp_imgvidgal/models/media_item.dart';
 import 'package:in_sreerajp_imgvidgal/providers/editor_providers.dart';
 import 'package:in_sreerajp_imgvidgal/providers/timeline_providers.dart';
-import 'package:in_sreerajp_imgvidgal/services/editor/crop_transform_service.dart';
-import 'package:in_sreerajp_imgvidgal/services/editor/editor_save_service.dart';
+import 'package:in_sreerajp_imgvidgal/core/domain/editor/crop_transform_service.dart';
+import 'package:in_sreerajp_imgvidgal/models/editor/save_outcome.dart';
 import 'package:in_sreerajp_imgvidgal/widgets/editor/crop_overlay.dart';
 import 'package:in_sreerajp_imgvidgal/widgets/editor/editor_tool_bar.dart';
 import 'package:in_sreerajp_imgvidgal/widgets/editor/filter_preset_strip.dart';
@@ -55,19 +55,19 @@ class _ImageEditorScreenState extends ConsumerState<ImageEditorScreen> {
     return items.when(
       loading: () =>
           const Scaffold(body: Center(child: CircularProgressIndicator())),
-      error: (_, _) => _MessageScaffold(message: l10n.scanFailed),
+      error: (_, _) => _MessageScaffold(message: l10n.errorScanFailed),
       data: (list) {
         final index = list.indexWhere((item) => item.id == widget.mediaId);
         if (index < 0) {
-          return _MessageScaffold(message: l10n.mediaUnavailable);
+          return _MessageScaffold(message: l10n.labelMediaUnavailable);
         }
 
         final item = list[index];
         if (!item.isImage) {
-          return _MessageScaffold(message: l10n.editorCannotOpen);
+          return _MessageScaffold(message: l10n.bodyEditorCannotOpen);
         }
-        if (!const EditorSaveService().isEditableSize(item.size)) {
-          return _MessageScaffold(message: l10n.editorTooLarge);
+        if (!ref.read(editorSaveServiceProvider).isEditableSize(item.size)) {
+          return _MessageScaffold(message: l10n.bodyEditorTooLarge);
         }
 
         return _buildEditor(context, item);
@@ -95,28 +95,28 @@ class _ImageEditorScreenState extends ConsumerState<ImageEditorScreen> {
       },
       child: Scaffold(
         appBar: AppBar(
-          title: Text(l10n.editorTitle),
+          title: Text(l10n.titleEditor),
           actions: [
             IconButton(
               onPressed: notifier.canUndo ? notifier.undo : null,
               icon: const Icon(Icons.undo),
-              tooltip: l10n.editorUndo,
+              tooltip: l10n.tooltipEditorUndo,
             ),
             IconButton(
               onPressed: notifier.canRedo ? notifier.redo : null,
               icon: const Icon(Icons.redo),
-              tooltip: l10n.editorRedo,
+              tooltip: l10n.tooltipEditorRedo,
             ),
             IconButton(
               onPressed: session.isDirty ? notifier.resetAll : null,
               icon: const Icon(Icons.restart_alt),
-              tooltip: l10n.editorResetAll,
+              tooltip: l10n.tooltipEditorResetAll,
             ),
             TextButton(
               onPressed: session.isDirty && !saveState.isLoading
                   ? () => _save(item, session)
                   : null,
-              child: Text(l10n.editorSave),
+              child: Text(l10n.labelEditorSave),
             ),
           ],
         ),
@@ -138,7 +138,7 @@ class _ImageEditorScreenState extends ConsumerState<ImageEditorScreen> {
                       child: CircularProgressIndicator(strokeWidth: 2),
                     ),
                     const SizedBox(width: 12),
-                    Text(l10n.editorSaving),
+                    Text(l10n.bodyEditorSaving),
                   ],
                 ),
               ),
@@ -173,7 +173,7 @@ class _ImageEditorScreenState extends ConsumerState<ImageEditorScreen> {
       if (bytes != null) _lastPreview = bytes;
     });
 
-    final bytes = preview.valueOrNull ?? _lastPreview;
+    final bytes = preview.value ?? _lastPreview;
 
     return Stack(
       fit: StackFit.expand,
@@ -183,7 +183,7 @@ class _ImageEditorScreenState extends ConsumerState<ImageEditorScreen> {
           child: bytes == null
               ? Center(
                   child: preview.hasError
-                      ? Text(l10n.editorPreviewFailed)
+                      ? Text(l10n.errorEditorPreviewFailed)
                       : const CircularProgressIndicator(),
                 )
               : Image.memory(
@@ -193,7 +193,7 @@ class _ImageEditorScreenState extends ConsumerState<ImageEditorScreen> {
                   // A photo the decoder chokes on shows a message instead of
                   // taking the editor down with it.
                   errorBuilder: (context, _, _) =>
-                      Center(child: Text(l10n.editorCannotOpen)),
+                      Center(child: Text(l10n.bodyEditorCannotOpen)),
                 ),
         ),
         if (bytes != null) _buildOverlay(item, session, tool),
@@ -255,7 +255,7 @@ class _ImageEditorScreenState extends ConsumerState<ImageEditorScreen> {
           onAspectSelected: (preset) =>
               notifier.setAspectPreset(preset, imageSize),
           onRotateLeft: () => notifier.rotateQuarter(clockwise: false),
-          onRotateRight: () => notifier.rotateQuarter(clockwise: true),
+          onRotateRight: () => notifier.rotateQuarter(),
           onFlipHorizontal: notifier.toggleFlipHorizontal,
           onFlipVertical: notifier.toggleFlipVertical,
           onStraightenChanged: notifier.setStraighten,
@@ -338,20 +338,20 @@ class _ImageEditorScreenState extends ConsumerState<ImageEditorScreen> {
     final text = await showDialog<String>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: Text(l10n.markupTextTitle),
+        title: Text(l10n.titleMarkupText),
         content: TextField(
           controller: controller,
           autofocus: true,
-          decoration: InputDecoration(hintText: l10n.markupTextHint),
+          decoration: InputDecoration(hintText: l10n.helpMarkupTextHint),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(),
-            child: Text(l10n.editorKeepEditing),
+            child: Text(l10n.actionEditorKeepEditing),
           ),
           FilledButton(
             onPressed: () => Navigator.of(dialogContext).pop(controller.text),
-            child: Text(l10n.markupTextAdd),
+            child: Text(l10n.actionMarkupTextAdd),
           ),
         ],
       ),
@@ -382,18 +382,18 @@ class _ImageEditorScreenState extends ConsumerState<ImageEditorScreen> {
   /// the gallery itself is the picker. Only images are offered.
   Future<void> _pickLogo(MediaItem item) async {
     final l10n = AppLocalizations.of(context)!;
-    final items = ref.read(timelineItemsProvider).valueOrNull ?? const [];
+    final items = ref.read(timelineItemsProvider).value ?? const [];
     final images = items.where((candidate) => candidate.isImage).toList();
 
     final picked = await showDialog<MediaItem>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: Text(l10n.watermarkPickLogo),
+        title: Text(l10n.actionWatermarkPickLogo),
         content: SizedBox(
           width: double.maxFinite,
           height: 320,
           child: images.isEmpty
-              ? Center(child: Text(l10n.noMediaFound))
+              ? Center(child: Text(l10n.bodyNoMediaFound))
               : GridView.builder(
                   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 3,
@@ -413,7 +413,7 @@ class _ImageEditorScreenState extends ConsumerState<ImageEditorScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(),
-            child: Text(l10n.editorKeepEditing),
+            child: Text(l10n.actionEditorKeepEditing),
           ),
         ],
       ),
@@ -438,7 +438,7 @@ class _ImageEditorScreenState extends ConsumerState<ImageEditorScreen> {
       final l10n = AppLocalizations.of(context)!;
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text(l10n.editorCannotOpen)));
+      ).showSnackBar(SnackBar(content: Text(l10n.bodyEditorCannotOpen)));
       return;
     }
 
@@ -461,7 +461,7 @@ class _ImageEditorScreenState extends ConsumerState<ImageEditorScreen> {
         loading: () {},
         error: (_, _) {
           messenger.showSnackBar(
-            SnackBar(content: Text(l10n.editorSaveFailed)),
+            SnackBar(content: Text(l10n.errorEditorSaveFailed)),
           );
           ref.read(editorSaveControllerProvider.notifier).clear();
         },
@@ -470,8 +470,8 @@ class _ImageEditorScreenState extends ConsumerState<ImageEditorScreen> {
           messenger.showSnackBar(
             SnackBar(
               content: Text(
-                '${l10n.editorSaved(p.basename(outcome.path))}\n'
-                '${l10n.editorOriginalKept}',
+                '${l10n.bodyEditorSaved(p.basename(outcome.path))}\n'
+                '${l10n.bodyEditorOriginalKept}',
               ),
             ),
           );
@@ -488,16 +488,16 @@ class _ImageEditorScreenState extends ConsumerState<ImageEditorScreen> {
     final result = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: Text(l10n.editorDiscardTitle),
-        content: Text(l10n.editorDiscardMessage),
+        title: Text(l10n.titleEditorDiscard),
+        content: Text(l10n.bodyEditorDiscardMessage),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: Text(l10n.editorKeepEditing),
+            child: Text(l10n.actionEditorKeepEditing),
           ),
           FilledButton(
             onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: Text(l10n.editorDiscard),
+            child: Text(l10n.actionEditorDiscard),
           ),
         ],
       ),

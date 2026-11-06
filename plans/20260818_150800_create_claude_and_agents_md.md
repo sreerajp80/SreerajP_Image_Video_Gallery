@@ -1,6 +1,6 @@
 # Plan: Create CLAUDE.md and AGENTS.md
 
-**Status:** Implemented
+**Status:** completed
 
 ## 1. Issue / Goal
 The repository lacks the mandatory root `CLAUDE.md` and `AGENTS.md` instruction files required by the Flutter guidelines in `docs/guidelines/CLAUDE_MD_GUIDELINE.md` and `docs/guidelines/AGENTS_MD_GUIDELINE.md`.

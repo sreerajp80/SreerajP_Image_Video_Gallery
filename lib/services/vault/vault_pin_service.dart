@@ -4,6 +4,7 @@ import 'dart:typed_data';
 
 import 'package:crypto/crypto.dart';
 import 'package:in_sreerajp_imgvidgal/core/constants/app_constants.dart';
+import 'package:in_sreerajp_imgvidgal/core/errors/app_exception.dart';
 
 /// Turns a PIN into stored bytes, and checks one against them.
 ///
@@ -89,10 +90,10 @@ class VaultPinService {
     required int keyLength,
   }) {
     if (iterations < 1) {
-      throw ArgumentError.value(iterations, 'iterations', 'must be at least 1');
+      throw const ValidationException('iterations', 'must be at least 1');
     }
     if (keyLength < 1) {
-      throw ArgumentError.value(keyLength, 'keyLength', 'must be at least 1');
+      throw const ValidationException('keyLength', 'must be at least 1');
     }
 
     final hmac = Hmac(sha256, password);

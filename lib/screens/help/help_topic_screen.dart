@@ -1,6 +1,7 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:in_sreerajp_imgvidgal/l10n/generated/app_localizations.dart';
 import 'package:in_sreerajp_imgvidgal/models/help/help_topic.dart';
+import 'package:in_sreerajp_imgvidgal/widgets/help/help_topic_presentation.dart';
 
 /// A detailed help page displaying guides, steps, tips, and privacy assurances
 /// for one specific feature topic.
@@ -18,48 +19,50 @@ class HelpTopicScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(title: Text(topic.title(l10n))),
-      body: ListView(
-        padding: const EdgeInsets.fromLTRB(16, 8, 16, 28),
-        children: <Widget>[
-          // Hero header card
-          _HeaderCard(topic: topic),
-          const SizedBox(height: 16),
+      body: SafeArea(
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 28),
+          children: <Widget>[
+            // Hero header card
+            _HeaderCard(topic: topic),
+            const SizedBox(height: 16),
 
-          // Overview
-          _SectionTitle(icon: Icons.info_outline, title: l10n.helpOverview),
-          const SizedBox(height: 8),
-          _ContentCard(
-            content: topic.overview(l10n),
-            iconColor: colorScheme.primary,
-          ),
-          const SizedBox(height: 20),
+            // Overview
+            _SectionTitle(icon: Icons.info_outline, title: l10n.helpOverview),
+            const SizedBox(height: 8),
+            _ContentCard(
+              content: topic.overview(l10n),
+              iconColor: colorScheme.primary,
+            ),
+            const SizedBox(height: 20),
 
-          // How to use
-          _SectionTitle(
-            icon: Icons.checklist_rtl_rounded,
-            title: l10n.helpHowToUse,
-          ),
-          const SizedBox(height: 8),
-          _ContentCard(
-            content: topic.steps(l10n),
-            iconColor: colorScheme.secondary,
-          ),
-          const SizedBox(height: 20),
+            // How to use
+            _SectionTitle(
+              icon: Icons.checklist_rtl_rounded,
+              title: l10n.helpHowToUse,
+            ),
+            const SizedBox(height: 8),
+            _ContentCard(
+              content: topic.steps(l10n),
+              iconColor: colorScheme.secondary,
+            ),
+            const SizedBox(height: 20),
 
-          // Tips and shortcuts
-          _SectionTitle(icon: Icons.lightbulb_outline, title: l10n.helpTips),
-          const SizedBox(height: 8),
-          _ContentCard(
-            content: topic.tips(l10n),
-            iconColor: colorScheme.tertiary,
-          ),
-          const SizedBox(height: 20),
+            // Tips and shortcuts
+            _SectionTitle(icon: Icons.lightbulb_outline, title: l10n.helpTips),
+            const SizedBox(height: 8),
+            _ContentCard(
+              content: topic.tips(l10n),
+              iconColor: colorScheme.tertiary,
+            ),
+            const SizedBox(height: 20),
 
-          // Privacy & offline guarantees
-          _SectionTitle(icon: Icons.shield_outlined, title: l10n.helpPrivacy),
-          const SizedBox(height: 8),
-          _PrivacyCard(content: topic.privacy(l10n)),
-        ],
+            // Privacy & offline guarantees
+            _SectionTitle(icon: Icons.shield_outlined, title: l10n.helpPrivacy),
+            const SizedBox(height: 8),
+            _PrivacyCard(content: topic.privacy(l10n)),
+          ],
+        ),
       ),
     );
   }

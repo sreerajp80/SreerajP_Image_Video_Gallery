@@ -1,9 +1,9 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:in_sreerajp_imgvidgal/l10n/generated/app_localizations.dart';
 import 'package:in_sreerajp_imgvidgal/models/tag.dart';
 import 'package:in_sreerajp_imgvidgal/providers/tag_providers.dart';
-import 'package:in_sreerajp_imgvidgal/services/tags/tag_name_rules.dart';
+import 'package:in_sreerajp_imgvidgal/core/domain/tags/tag_name_rules.dart';
 import 'package:in_sreerajp_imgvidgal/widgets/tags/tag_chip.dart';
 
 /// Ticks tags on and off for one media item.
@@ -50,7 +50,7 @@ class _MediaTagSheetState extends ConsumerState<MediaTagSheet> {
     final mediaTags = ref.watch(tagsForMediaProvider(widget.mediaId));
 
     // Seed the ticks from the item's stored tags the first time they arrive.
-    final current = mediaTags.valueOrNull;
+    final current = mediaTags.value;
     if (_selected == null && current != null) {
       _selected = current.map((t) => t.id).toSet();
     }
@@ -66,7 +66,7 @@ class _MediaTagSheetState extends ConsumerState<MediaTagSheet> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
           Text(
-            l10n.tagSheetTitle,
+            l10n.titleTagSheet,
             style: Theme.of(context).textTheme.titleMedium,
           ),
           const SizedBox(height: 12),
@@ -75,12 +75,12 @@ class _MediaTagSheetState extends ConsumerState<MediaTagSheet> {
               padding: EdgeInsets.symmetric(vertical: 24),
               child: Center(child: CircularProgressIndicator()),
             ),
-            error: (_, _) => Text(l10n.tagErrorFailed),
+            error: (_, _) => Text(l10n.errorTagErrorFailed),
             data: (tags) => _TagWrap(
               tags: tags,
               selected: _selected ?? const <String>{},
               onToggle: _toggle,
-              emptyLabel: l10n.filterNoTags,
+              emptyLabel: l10n.labelFilterNoTags,
             ),
           ),
           const SizedBox(height: 12),
@@ -90,7 +90,7 @@ class _MediaTagSheetState extends ConsumerState<MediaTagSheet> {
                 child: TextField(
                   controller: _newTagController,
                   decoration: InputDecoration(
-                    hintText: l10n.tagSheetNewHint,
+                    hintText: l10n.helpTagSheetNewHint,
                     isDense: true,
                     border: const OutlineInputBorder(),
                   ),
@@ -100,7 +100,7 @@ class _MediaTagSheetState extends ConsumerState<MediaTagSheet> {
               const SizedBox(width: 8),
               FilledButton.tonal(
                 onPressed: _addTypedTag,
-                child: Text(l10n.tagSheetAdd),
+                child: Text(l10n.actionTagSheetAdd),
               ),
             ],
           ),
@@ -109,7 +109,7 @@ class _MediaTagSheetState extends ConsumerState<MediaTagSheet> {
             alignment: Alignment.centerRight,
             child: FilledButton(
               onPressed: _saveAndClose,
-              child: Text(l10n.tagSheetDone),
+              child: Text(l10n.actionTagSheetDone),
             ),
           ),
         ],

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:in_sreerajp_imgvidgal/providers/vault_providers.dart';
 
@@ -9,9 +9,8 @@ import 'package:in_sreerajp_imgvidgal/providers/vault_providers.dart';
 /// Android side, so a vault viewer opening on top of the vault grid does not
 /// switch the protection off when it closes and leaves the grid exposed.
 ///
-/// It is scoped rather than app-wide on purpose. Setting the flag for the
-/// whole app would stop the user screenshotting an ordinary holiday photo,
-/// which is not what anybody asked for.
+/// The vault is always protected. Protecting the rest of the app is a
+/// separate user choice, off by default (`AppScreenProtection`).
 class SecureScreen extends ConsumerStatefulWidget {
   /// The screen being protected.
   final Widget child;
@@ -30,20 +29,26 @@ class _SecureScreenState extends ConsumerState<SecureScreen> {
   /// protection off under a screen that still needs it.
   bool _acquired = false;
 
+  /// Read once in `initState`. Riverpod 3 does not allow `ref` in `dispose`,
+  /// and without this the release never ran: leaving the vault kept the
+  /// protection on for the rest of the session.
+  late final Future<void> Function() _acquire;
+  late final Future<void> Function() _release;
+
   @override
   void initState() {
     super.initState();
     final service = ref.read(secureWindowServiceProvider);
+    _acquire = service.acquire;
+    _release = service.release;
     _acquired = true;
-    service.acquire();
+    _acquire();
   }
 
   @override
   void dispose() {
     if (_acquired) {
-      // Read, not watch: the widget is going away, and this must not be tied
-      // to a rebuild that will never come.
-      ref.read(secureWindowServiceProvider).release();
+      _release();
       _acquired = false;
     }
     super.dispose();

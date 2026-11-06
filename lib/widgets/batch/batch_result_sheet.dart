@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:in_sreerajp_imgvidgal/l10n/generated/app_localizations.dart';
 import 'package:in_sreerajp_imgvidgal/models/batch/batch_outcome.dart';
 
@@ -38,37 +38,27 @@ class BatchResultSheet extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(l10n.batchDone, style: theme.textTheme.titleLarge),
+            Text(l10n.labelBatchDone, style: theme.textTheme.titleLarge),
             const SizedBox(height: 16),
 
             if (outcome.succeededCount > 0)
               _Line(
                 icon: Icons.check_circle_outline,
                 colour: theme.colorScheme.primary,
-                text: l10n.batchResultSucceeded(outcome.succeededCount),
+                text: l10n.bodyBatchResultSucceeded(outcome.succeededCount),
               ),
             if (outcome.failedCount > 0)
               _Line(
                 icon: Icons.error_outline,
                 colour: theme.colorScheme.error,
-                text: l10n.batchResultFailed(outcome.failedCount),
+                text: l10n.errorBatchResultFailed(outcome.failedCount),
               ),
             if (outcome.skippedCount > 0)
               _Line(
                 icon: Icons.remove_circle_outline,
                 colour: theme.colorScheme.onSurfaceVariant,
-                text: l10n.batchResultSkipped(outcome.skippedCount),
+                text: l10n.bodyBatchResultSkipped(outcome.skippedCount),
               ),
-
-            if (outcome.firstError != null) ...[
-              const SizedBox(height: 12),
-              Text(
-                outcome.firstError!,
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant,
-                ),
-              ),
-            ],
 
             const SizedBox(height: 16),
             Align(

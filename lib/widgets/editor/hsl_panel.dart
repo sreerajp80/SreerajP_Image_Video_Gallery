@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:in_sreerajp_imgvidgal/l10n/generated/app_localizations.dart';
 import 'package:in_sreerajp_imgvidgal/models/editor/hsl_adjustments.dart';
 import 'package:in_sreerajp_imgvidgal/models/editor/tone_adjustments.dart';
@@ -57,21 +57,21 @@ class _HslPanelState extends State<HslPanel> {
   String _rangeName(AppLocalizations l10n, HslColorRange range) {
     switch (range) {
       case HslColorRange.red:
-        return l10n.hslRangeRed;
+        return l10n.labelHslRangeRed;
       case HslColorRange.orange:
-        return l10n.hslRangeOrange;
+        return l10n.labelHslRangeOrange;
       case HslColorRange.yellow:
-        return l10n.hslRangeYellow;
+        return l10n.labelHslRangeYellow;
       case HslColorRange.green:
-        return l10n.hslRangeGreen;
+        return l10n.labelHslRangeGreen;
       case HslColorRange.cyan:
-        return l10n.hslRangeCyan;
+        return l10n.labelHslRangeCyan;
       case HslColorRange.blue:
-        return l10n.hslRangeBlue;
+        return l10n.labelHslRangeBlue;
       case HslColorRange.purple:
-        return l10n.hslRangePurple;
+        return l10n.labelHslRangePurple;
       case HslColorRange.magenta:
-        return l10n.hslRangeMagenta;
+        return l10n.labelHslRangeMagenta;
     }
   }
 
@@ -90,11 +90,11 @@ class _HslPanelState extends State<HslPanel> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(l10n.hslTitle, style: theme.textTheme.labelLarge),
+              Text(l10n.titleHsl, style: theme.textTheme.labelLarge),
               if (!widget.adjustments.hslAdjustments.isNeutral)
                 TextButton(
                   onPressed: widget.onReset,
-                  child: Text(l10n.hslReset),
+                  child: Text(l10n.actionHslReset),
                 ),
             ],
           ),
@@ -172,7 +172,7 @@ class _HslPanelState extends State<HslPanel> {
 
         // Hue slider.
         EditorSliderRow(
-          label: l10n.hslHue,
+          label: l10n.labelHslHue,
           value: adj.hue,
           onChanged: (v) => widget.onChanged(_withHsl(adj.copyWith(hue: v))),
           onChangeEnd: (v) =>
@@ -181,7 +181,7 @@ class _HslPanelState extends State<HslPanel> {
 
         // Saturation slider.
         EditorSliderRow(
-          label: l10n.hslSaturation,
+          label: l10n.labelHslSaturation,
           value: adj.saturation,
           onChanged: (v) =>
               widget.onChanged(_withHsl(adj.copyWith(saturation: v))),
@@ -191,7 +191,7 @@ class _HslPanelState extends State<HslPanel> {
 
         // Luminance slider.
         EditorSliderRow(
-          label: l10n.hslLuminance,
+          label: l10n.labelHslLuminance,
           value: adj.luminance,
           onChanged: (v) =>
               widget.onChanged(_withHsl(adj.copyWith(luminance: v))),

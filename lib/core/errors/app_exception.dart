@@ -1,8 +1,18 @@
 import 'package:flutter/foundation.dart';
 
 /// Base class for all application-specific exceptions.
+///
+/// The hierarchy is `sealed` (engineering standard §11.3): every direct
+/// subclass lives in this file, so a `switch` over an [AppException] must
+/// name each kind. Errors that belong to one feature (conversion, backup,
+/// transfer and so on) extend [FeatureException] in the feature's own file,
+/// so this core file never imports a service.
+///
+/// Never put a file name, path, URI, note text or metadata value into
+/// [message]: an exception can reach a log. Pass the underlying error as
+/// [cause] instead.
 @immutable
-abstract class AppException implements Exception {
+sealed class AppException implements Exception {
   /// User-friendly message explaining the error.
   final String message;
 
@@ -25,12 +35,12 @@ abstract class AppException implements Exception {
 }
 
 /// Exception thrown on database query, migration, or persistence errors.
-class StorageException extends AppException {
+final class StorageException extends AppException {
   const StorageException(super.message, {super.cause, super.stackTrace});
 }
 
 /// Exception thrown when an atomic file write, staging swap, or checksum fails.
-class AtomicSaveException extends AppException {
+final class AtomicSaveException extends AppException {
   final String? targetPath;
 
   const AtomicSaveException(
@@ -42,7 +52,7 @@ class AtomicSaveException extends AppException {
 }
 
 /// Exception thrown when local database migrations fail.
-class DatabaseMigrationException extends AppException {
+final class DatabaseMigrationException extends AppException {
   final int fromVersion;
   final int toVersion;
 
@@ -56,7 +66,7 @@ class DatabaseMigrationException extends AppException {
 }
 
 /// Exception thrown when domain model serialization or parsing fails.
-class ModelParseException extends AppException {
+final class ModelParseException extends AppException {
   final String modelName;
 
   const ModelParseException(
@@ -68,7 +78,7 @@ class ModelParseException extends AppException {
 }
 
 /// Exception thrown when scanning or indexing device media fails.
-class MediaScanException extends AppException {
+final class MediaScanException extends AppException {
   /// Optional platform error code reported by the native MediaStore channel.
   final String? code;
 
@@ -81,7 +91,7 @@ class MediaScanException extends AppException {
 }
 
 /// Exception thrown when required media permissions are not granted.
-class PermissionDeniedException extends AppException {
+final class PermissionDeniedException extends AppException {
   /// Whether the user selected "Don't ask again" for the permission.
   final bool isPermanent;
 
@@ -94,7 +104,7 @@ class PermissionDeniedException extends AppException {
 }
 
 /// Exception thrown when a thumbnail cannot be generated or cached.
-class ThumbnailException extends AppException {
+final class ThumbnailException extends AppException {
   const ThumbnailException(super.message, {super.cause, super.stackTrace});
 }
 
@@ -104,7 +114,7 @@ class ThumbnailException extends AppException {
 /// The message never carries a file name, a path, a PIN, or key material: a
 /// vault error can end up in a log, and the point of the vault is that its
 /// contents stay unnamed.
-class VaultException extends AppException {
+final class VaultException extends AppException {
   /// Short machine-readable reason, e.g. `keystore_unavailable`.
   final String? code;
 
@@ -118,6 +128,37 @@ class VaultException extends AppException {
 
 /// Exception thrown when unlocking the vault fails for a reason the caller
 /// has to handle rather than show.
-class VaultAuthException extends AppException {
+final class VaultAuthException extends AppException {
   const VaultAuthException(super.message, {super.cause, super.stackTrace});
+}
+
+/// Exception thrown when a value handed to a service is not valid, such as
+/// a byte buffer of the wrong length.
+final class ValidationException extends AppException {
+  /// The name of the value that was refused.
+  final String field;
+
+  const ValidationException(
+    this.field,
+    super.message, {
+    super.cause,
+    super.stackTrace,
+  });
+}
+
+/// Exception thrown when one item of a batch action could not be handled.
+///
+/// The message never names the item: the batch already knows which item it
+/// was working on.
+final class BatchItemException extends AppException {
+  const BatchItemException(super.message, {super.cause, super.stackTrace});
+}
+
+/// Base for exceptions that belong to one feature, such as conversion,
+/// backup or transfer.
+///
+/// Feature exceptions live next to the service that throws them and extend
+/// this class, so they are still [AppException]s.
+abstract class FeatureException extends AppException {
+  const FeatureException(super.message, {super.cause, super.stackTrace});
 }

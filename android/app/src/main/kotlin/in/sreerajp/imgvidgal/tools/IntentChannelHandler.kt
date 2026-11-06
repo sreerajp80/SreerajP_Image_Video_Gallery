@@ -16,6 +16,7 @@ import android.provider.OpenableColumns
 import android.provider.Settings
 import android.webkit.MimeTypeMap
 import androidx.core.content.FileProvider
+import `in`.sreerajp.imgvidgal.media.IncomingUriRules
 import io.flutter.plugin.common.BinaryMessenger
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
@@ -60,7 +61,6 @@ class IntentChannelHandler(
             "suggestWifiNetwork" -> suggestWifiNetwork(call, result)
             "copyToClipboard" -> copyToClipboard(call, result)
             "getInitialMediaIntent" -> getInitialMediaIntent(result)
-            "openDefaultAppsSettings" -> openDefaultAppsSettings(result)
             "shareFile" -> shareFile(call, result)
             else -> result.notImplemented()
         }
@@ -261,50 +261,6 @@ class IntentChannelHandler(
     }
 
     /**
-     * Opens the system settings screen where users can set default apps.
-     */
-    private fun openDefaultAppsSettings(result: MethodChannel.Result) {
-        // Try the standard Default Apps settings screen first
-        val manageDefaultsIntent = Intent(Settings.ACTION_MANAGE_DEFAULT_APPS_SETTINGS).apply {
-            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-        }
-        if (canResolve(manageDefaultsIntent)) {
-            try {
-                activity.startActivity(manageDefaultsIntent)
-                result.success(true)
-                return
-            } catch (_: Exception) {}
-        }
-
-        // On Android 12+, try the app-specific "Open by default" screen
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            val appDefaultsIntent = Intent(
-                Settings.ACTION_APP_OPEN_BY_DEFAULT_SETTINGS,
-                Uri.parse("package:${activity.packageName}")
-            ).apply { addFlags(Intent.FLAG_ACTIVITY_NEW_TASK) }
-            if (canResolve(appDefaultsIntent)) {
-                try {
-                    activity.startActivity(appDefaultsIntent)
-                    result.success(true)
-                    return
-                } catch (_: Exception) {}
-            }
-        }
-
-        // Fallback to app details settings
-        val appDetailsIntent = Intent(
-            Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
-            Uri.parse("package:${activity.packageName}")
-        ).apply { addFlags(Intent.FLAG_ACTIVITY_NEW_TASK) }
-        try {
-            activity.startActivity(appDetailsIntent)
-            result.success(true)
-        } catch (e: Exception) {
-            result.error("no_settings", "The settings screen could not be opened", null)
-        }
-    }
-
-    /**
      * Shares a local file through the Android system share sheet (ACTION_SEND).
      *
      * Uses FileProvider to expose a content URI with read grant permissions,
@@ -320,6 +276,15 @@ class IntentChannelHandler(
         val file = File(filePath)
         if (!file.exists()) {
             result.error("not_found", "The file does not exist", null)
+            return
+        }
+
+        // Only files in the share folder may leave the app. The file provider
+        // is limited to the same folder; this check gives a clear error
+        // instead of an IllegalArgumentException from getUriForFile.
+        val shareRoot = File(activity.cacheDir, SHARE_FOLDER).canonicalFile
+        if (!file.canonicalPath.startsWith(shareRoot.path + File.separator)) {
+            result.error("bad_path", "Only files in the share folder can be shared", null)
             return
         }
 
@@ -349,16 +314,15 @@ class IntentChannelHandler(
         }
     }
 
-    private fun canResolve(intent: Intent): Boolean {
-        return intent.resolveActivity(activity.packageManager) != null
-    }
-
     /**
      * Extracts safe URI, MIME type, and display name from an ACTION_VIEW intent.
      */
     private fun extractMediaIntentData(intent: Intent?): Map<String, Any?>? {
         if (intent == null || intent.action != Intent.ACTION_VIEW) return null
         val uri = intent.data ?: return null
+        // A refused link is reported, so the user is told why nothing opened,
+        // but nothing about it (URI, name, size) is sent across.
+        if (!IncomingUriRules.isAllowed(activity, uri)) return REFUSED_INTENT
 
         val resolver = activity.contentResolver
         var mimeType = intent.type ?: resolver.getType(uri)
@@ -409,6 +373,15 @@ class IntentChannelHandler(
 
     private companion object {
         const val CHANNEL_NAME = "in.sreerajp.imgvidgal/intents"
+
+        /**
+         * The cache sub-folder that shared files are written to. Must match
+         * `ShareService.shareFolderName` in Dart and `res/xml/provider_paths.xml`.
+         */
+        const val SHARE_FOLDER = "shared_media"
+
+        /** What Flutter receives for a link that IncomingUriRules refused. */
+        val REFUSED_INTENT: Map<String, Any?> = mapOf("refused" to true)
 
         /**
          * The only schemes this app will ever launch.

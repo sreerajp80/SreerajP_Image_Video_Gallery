@@ -1,6 +1,6 @@
 # Disable Two-Finger Swipe on PageView So Only Single-Finger Swipes Move to Next Image
 
-**Status:** Completed
+**Status:** completed
 
 ## Problem
 

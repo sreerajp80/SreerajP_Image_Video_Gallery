@@ -22,10 +22,11 @@ import 'package:in_sreerajp_imgvidgal/services/vault/vault_crypto_service.dart';
 import 'package:in_sreerajp_imgvidgal/services/vault/vault_export_service.dart';
 import 'package:in_sreerajp_imgvidgal/services/vault/vault_import_service.dart';
 import 'package:in_sreerajp_imgvidgal/services/vault/vault_key_service.dart';
-import 'package:in_sreerajp_imgvidgal/services/vault/vault_lock_policy.dart';
+import 'package:in_sreerajp_imgvidgal/core/domain/vault/vault_lock_policy.dart';
 import 'package:in_sreerajp_imgvidgal/services/vault/vault_preview_service.dart';
 import 'package:in_sreerajp_imgvidgal/services/vault/vault_shredder_service.dart';
 import 'package:in_sreerajp_imgvidgal/services/vault/vault_storage_service.dart';
+import 'package:flutter_riverpod/legacy.dart';
 
 // ------------------------------------------------------------------ plumbing
 
@@ -432,6 +433,59 @@ final vaultItemsProvider = FutureProvider<List<VaultItem>>((ref) async {
   final lock = ref.watch(vaultLockControllerProvider);
   if (!lock.isUnlocked) return const <VaultItem>[];
   return ref.watch(vaultRepositoryProvider).getItems();
+});
+
+/// One vault item opened for viewing.
+///
+/// A picture comes back as decrypted bytes held in memory only. A video comes
+/// back as the path of a decrypted working file, which the caller must hand
+/// to [VaultViewerActions.discardWorkingFile] when playback ends.
+class VaultOpenedItem {
+  final VaultItem item;
+  final Uint8List? imageBytes;
+  final String? videoWorkingPath;
+
+  const VaultOpenedItem.image(this.item, Uint8List bytes)
+    : imageBytes = bytes,
+      videoWorkingPath = null;
+
+  const VaultOpenedItem.video(this.item, String workingPath)
+    : imageBytes = null,
+      videoWorkingPath = workingPath;
+}
+
+/// What the vault viewer screen does with the repository.
+class VaultViewerActions {
+  final VaultRepository _repository;
+
+  const VaultViewerActions(this._repository);
+
+  /// Opens one item, or returns null when it no longer exists.
+  ///
+  /// Throws a `VaultException` when the stored payload fails its integrity
+  /// check, so the screen can say the file was tampered with.
+  Future<VaultOpenedItem?> open(String id) async {
+    final item = await _repository.getItem(id);
+    if (item == null) return null;
+    if (item.mediaType == MediaType.video) {
+      final path = await _repository.openVideoForPlayback(item);
+      return VaultOpenedItem.video(item, path);
+    }
+    return VaultOpenedItem.image(item, await _repository.readImageBytes(item));
+  }
+
+  /// Starts shredding a video working file without waiting for it.
+  ///
+  /// Safe to call from `dispose`. Errors are swallowed on purpose: the sweep
+  /// on the next unlock catches a shred that could not run, and there is no
+  /// user here to tell.
+  void discardWorkingFile(String path) {
+    _repository.closeVideoPlayback(path).catchError((_) {});
+  }
+}
+
+final vaultViewerActionsProvider = Provider<VaultViewerActions>((ref) {
+  return VaultViewerActions(ref.watch(vaultRepositoryProvider));
 });
 
 /// One vault item by id, or null when the vault is shut or it is gone.

@@ -1,10 +1,10 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:in_sreerajp_imgvidgal/l10n/generated/app_localizations.dart';
 import 'package:in_sreerajp_imgvidgal/models/media_item.dart';
 import 'package:in_sreerajp_imgvidgal/providers/media_providers.dart';
 import 'package:in_sreerajp_imgvidgal/providers/viewer_providers.dart';
-import 'package:in_sreerajp_imgvidgal/services/viewer/viewer_transform_service.dart';
+import 'package:in_sreerajp_imgvidgal/core/domain/viewer/viewer_transform_service.dart';
 
 /// One zoomable, pannable, rotatable image page of the fullscreen viewer.
 ///
@@ -136,7 +136,7 @@ class _InteractiveImageViewState extends ConsumerState<InteractiveImageView>
     final thumbnail = ref.watch(thumbnailProvider(widget.item));
     final l10n = AppLocalizations.of(context)!;
 
-    final bytes = fullBytes.valueOrNull ?? thumbnail.valueOrNull;
+    final bytes = fullBytes.value ?? thumbnail.value;
 
     Widget content;
     if (bytes == null || bytes.isEmpty) {
@@ -144,17 +144,16 @@ class _InteractiveImageViewState extends ConsumerState<InteractiveImageView>
           ? const Center(child: CircularProgressIndicator())
           : _ViewerMessage(
               icon: Icons.broken_image_outlined,
-              message: l10n.mediaUnavailable,
+              message: l10n.labelMediaUnavailable,
             );
     } else {
       content = Image.memory(
         bytes,
         fit: BoxFit.contain,
         gaplessPlayback: true,
-        filterQuality: FilterQuality.medium,
         errorBuilder: (context, error, stackTrace) => _ViewerMessage(
           icon: Icons.broken_image_outlined,
-          message: l10n.mediaUnavailable,
+          message: l10n.labelMediaUnavailable,
         ),
       );
     }

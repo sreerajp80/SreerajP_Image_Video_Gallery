@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:in_sreerajp_imgvidgal/core/constants/app_constants.dart';
 import 'package:in_sreerajp_imgvidgal/l10n/generated/app_localizations.dart';
@@ -7,7 +7,6 @@ import 'package:in_sreerajp_imgvidgal/models/convert/size_estimate.dart';
 import 'package:in_sreerajp_imgvidgal/models/media_item.dart';
 import 'package:in_sreerajp_imgvidgal/providers/convert_providers.dart';
 import 'package:in_sreerajp_imgvidgal/providers/timeline_providers.dart';
-import 'package:in_sreerajp_imgvidgal/services/convert/output_naming_service.dart';
 import 'package:in_sreerajp_imgvidgal/widgets/convert/format_chip_row.dart';
 import 'package:in_sreerajp_imgvidgal/widgets/convert/resize_panel.dart';
 import 'package:in_sreerajp_imgvidgal/widgets/convert/size_preview_card.dart';
@@ -34,19 +33,21 @@ class FormatConverterScreen extends ConsumerWidget {
     return items.when(
       loading: () =>
           const Scaffold(body: Center(child: CircularProgressIndicator())),
-      error: (_, _) => _MessageScaffold(message: l10n.scanFailed),
+      error: (_, _) => _MessageScaffold(message: l10n.errorScanFailed),
       data: (list) {
         final index = list.indexWhere((item) => item.id == mediaId);
         if (index < 0) {
-          return _MessageScaffold(message: l10n.mediaUnavailable);
+          return _MessageScaffold(message: l10n.labelMediaUnavailable);
         }
 
         final item = list[index];
         if (!item.isImage) {
-          return _MessageScaffold(message: l10n.convertCannotOpen);
+          return _MessageScaffold(message: l10n.bodyConvertCannotOpen);
         }
-        if (!const OutputNamingService().isConvertibleSize(item.size)) {
-          return _MessageScaffold(message: l10n.convertTooLarge);
+        if (!ref
+            .read(outputNamingServiceProvider)
+            .isConvertibleSize(item.size)) {
+          return _MessageScaffold(message: l10n.bodyConvertTooLarge);
         }
 
         return _ConverterBody(item: item);
@@ -93,7 +94,7 @@ class _ConverterBodyState extends ConsumerState<_ConverterBody> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(l10n.convertTitle),
+        title: Text(l10n.titleConvert),
         actions: <Widget>[
           if (isSaving)
             const Padding(
@@ -108,72 +109,75 @@ class _ConverterBodyState extends ConsumerState<_ConverterBody> {
             ),
         ],
       ),
-      body: sourceBytes.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (_, _) => _CenteredMessage(message: l10n.convertUnreadable),
-        data: (bytes) {
-          if (bytes == null) {
-            return _CenteredMessage(message: l10n.convertUnreadable);
-          }
+      body: SafeArea(
+        child: sourceBytes.when(
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (_, _) =>
+              _CenteredMessage(message: l10n.bodyConvertUnreadable),
+          data: (bytes) {
+            if (bytes == null) {
+              return _CenteredMessage(message: l10n.bodyConvertUnreadable);
+            }
 
-          return ListView(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 96),
-            children: <Widget>[
-              _Preview(item: item),
-              const SizedBox(height: 20),
-              _SectionTitle(text: l10n.convertFormatLabel),
-              FormatChipRow(
-                selected: request.format,
-                onChanged: notifier.setFormat,
-              ),
-              if (request.format.supportsQuality) ...<Widget>[
+            return ListView(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 96),
+              children: <Widget>[
+                _Preview(item: item),
+                const SizedBox(height: 20),
+                _SectionTitle(text: l10n.labelConvertFormat),
+                FormatChipRow(
+                  selected: request.format,
+                  onChanged: notifier.setFormat,
+                ),
+                if (request.format.supportsQuality) ...<Widget>[
+                  const SizedBox(height: 16),
+                  _SectionTitle(text: l10n.labelConvertQuality),
+                  Slider(
+                    value: request.effectiveQuality.toDouble(),
+                    min: AppConstants.convertMinQuality.toDouble(),
+                    max: AppConstants.convertMaxQuality.toDouble(),
+                    divisions:
+                        AppConstants.convertMaxQuality -
+                        AppConstants.convertMinQuality,
+                    label: '${request.effectiveQuality}',
+                    onChanged: (value) => notifier.setQuality(value.round()),
+                  ),
+                ],
+                const SizedBox(height: 8),
+                _SectionTitle(text: l10n.labelConvertResize),
+                ResizePanel(
+                  spec: request.resize,
+                  sourceWidth: item.width ?? 0,
+                  sourceHeight: item.height ?? 0,
+                  onModeChanged: notifier.setResizeMode,
+                  onLongestSideChanged: notifier.setLongestSide,
+                  onPercentChanged: notifier.setPercent,
+                  onExactChanged: notifier.setExactSize,
+                  onKeepAspectChanged: notifier.setKeepAspect,
+                ),
+                const SizedBox(height: 8),
+                SwitchListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: Text(l10n.titleConvertStripMetadata),
+                  subtitle: Text(l10n.helpConvertStripMetadataHint),
+                  value: request.stripMetadata,
+                  onChanged: notifier.setStripMetadata,
+                ),
                 const SizedBox(height: 16),
-                _SectionTitle(text: l10n.convertQualityLabel),
-                Slider(
-                  value: request.effectiveQuality.toDouble(),
-                  min: AppConstants.convertMinQuality.toDouble(),
-                  max: AppConstants.convertMaxQuality.toDouble(),
-                  divisions:
-                      AppConstants.convertMaxQuality -
-                      AppConstants.convertMinQuality,
-                  label: '${request.effectiveQuality}',
-                  onChanged: (value) => notifier.setQuality(value.round()),
+                SizePreviewCard(
+                  estimate: _lastEstimate,
+                  originalBytes: item.size,
+                  isWorking: estimate.isLoading,
+                  hasFailed:
+                      estimate.hasValue && estimate.value == null ||
+                      estimate.hasError,
                 ),
               ],
-              const SizedBox(height: 8),
-              _SectionTitle(text: l10n.convertResizeLabel),
-              ResizePanel(
-                spec: request.resize,
-                sourceWidth: item.width ?? 0,
-                sourceHeight: item.height ?? 0,
-                onModeChanged: notifier.setResizeMode,
-                onLongestSideChanged: notifier.setLongestSide,
-                onPercentChanged: notifier.setPercent,
-                onExactChanged: notifier.setExactSize,
-                onKeepAspectChanged: notifier.setKeepAspect,
-              ),
-              const SizedBox(height: 8),
-              SwitchListTile(
-                contentPadding: EdgeInsets.zero,
-                title: Text(l10n.convertStripMetadata),
-                subtitle: Text(l10n.convertStripMetadataHint),
-                value: request.stripMetadata,
-                onChanged: notifier.setStripMetadata,
-              ),
-              const SizedBox(height: 16),
-              SizePreviewCard(
-                estimate: _lastEstimate,
-                originalBytes: item.size,
-                isWorking: estimate.isLoading,
-                hasFailed:
-                    estimate.hasValue && estimate.value == null ||
-                    estimate.hasError,
-              ),
-            ],
-          );
-        },
+            );
+          },
+        ),
       ),
-      floatingActionButton: sourceBytes.valueOrNull == null
+      floatingActionButton: sourceBytes.value == null
           ? null
           : FloatingActionButton.extended(
               onPressed: isSaving
@@ -183,10 +187,12 @@ class _ConverterBodyState extends ConsumerState<_ConverterBody> {
                         .save(
                           item: item,
                           request: request,
-                          sourceBytes: sourceBytes.valueOrNull!,
+                          sourceBytes: sourceBytes.value!,
                         ),
               icon: const Icon(Icons.save_alt_rounded),
-              label: Text(isSaving ? l10n.convertSaving : l10n.convertSave),
+              label: Text(
+                isSaving ? l10n.labelConvertSaving : l10n.labelConvertSave,
+              ),
             ),
     );
   }
@@ -205,13 +211,15 @@ class _ConverterBodyState extends ConsumerState<_ConverterBody> {
           if (result == null) return;
           messenger.showSnackBar(
             SnackBar(
-              content: Text(l10n.convertSavedAs(p.basename(result.path))),
+              content: Text(l10n.bodyConvertSavedAs(p.basename(result.path))),
             ),
           );
           ref.read(convertSaveControllerProvider.notifier).clear();
         },
         error: (_, _) {
-          messenger.showSnackBar(SnackBar(content: Text(l10n.convertFailed)));
+          messenger.showSnackBar(
+            SnackBar(content: Text(l10n.errorConvertFailed)),
+          );
           ref.read(convertSaveControllerProvider.notifier).clear();
         },
       );
@@ -271,7 +279,7 @@ class _MessageScaffold extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(AppLocalizations.of(context)!.convertTitle)),
+      appBar: AppBar(title: Text(AppLocalizations.of(context)!.titleConvert)),
       body: _CenteredMessage(message: message),
     );
   }

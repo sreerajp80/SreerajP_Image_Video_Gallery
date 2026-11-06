@@ -1,0 +1,31 @@
+# Checks only (CLAUDE.md workflow rule 5, engineering standard 19.1).
+# No secrets, read-only permission, no build, no signing, no upload.
+# Action and Flutter versions are updated by hand (standard 19.2).
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [master]
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          # The exact version recorded in CLAUDE.md / AGENTS.md.
+          flutter-version: 3.47.6
+      - run: flutter pub get
+      - name: Generated localizations are up to date
+        run: |
+          flutter gen-l10n
+          git diff --exit-code -- lib/l10n/generated
+      - run: dart format --output=none --set-exit-if-changed .
+      - run: flutter analyze
+      - run: flutter test

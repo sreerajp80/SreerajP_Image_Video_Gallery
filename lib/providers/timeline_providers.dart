@@ -6,7 +6,8 @@ import 'package:in_sreerajp_imgvidgal/models/timeline_group.dart';
 import 'package:in_sreerajp_imgvidgal/providers/media_providers.dart';
 import 'package:in_sreerajp_imgvidgal/providers/settings_providers.dart';
 import 'package:in_sreerajp_imgvidgal/services/timeline/flashback_service.dart';
-import 'package:in_sreerajp_imgvidgal/services/timeline/timeline_grouping_service.dart';
+import 'package:in_sreerajp_imgvidgal/core/domain/timeline/timeline_grouping_service.dart';
+import 'package:flutter_riverpod/legacy.dart';
 
 /// Default grid density used on first launch.
 const int kDefaultGridColumnCount = 3;

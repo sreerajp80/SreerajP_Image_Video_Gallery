@@ -1,10 +1,10 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:in_sreerajp_imgvidgal/l10n/generated/app_localizations.dart';
 import 'package:in_sreerajp_imgvidgal/models/media_item.dart';
 import 'package:in_sreerajp_imgvidgal/providers/media_providers.dart';
 import 'package:in_sreerajp_imgvidgal/providers/viewer_providers.dart';
-import 'package:in_sreerajp_imgvidgal/services/viewer/viewer_transform_service.dart';
+import 'package:in_sreerajp_imgvidgal/core/domain/viewer/viewer_transform_service.dart';
 
 /// Interactive sliding curtain comparison view.
 ///
@@ -37,6 +37,9 @@ class _CurtainComparisonViewState extends ConsumerState<CurtainComparisonView>
     with SingleTickerProviderStateMixin {
   /// Divider fraction from 0.0 (left) to 1.0 (right).
   double _dividerFraction = 0.5;
+
+  /// The divider moved by [delta], kept inside the same limits as a drag.
+  double _nudged(double delta) => (_dividerFraction + delta).clamp(0.02, 0.98);
 
   late final AnimationController _zoomAnimationController;
   Animation<Matrix4>? _zoomAnimation;
@@ -97,6 +100,7 @@ class _CurtainComparisonViewState extends ConsumerState<CurtainComparisonView>
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -130,8 +134,6 @@ class _CurtainComparisonViewState extends ConsumerState<CurtainComparisonView>
               child: ClipRect(
                 clipper: _LeftCurtainClipper(dividerX: dividerX),
                 child: IgnorePointer(
-                  // Pointer events pass through to the InteractiveViewer underneath
-                  ignoring: true,
                   child: ValueListenableBuilder<Matrix4>(
                     valueListenable: widget.transformationController,
                     builder: (context, matrix, _) {
@@ -154,7 +156,10 @@ class _CurtainComparisonViewState extends ConsumerState<CurtainComparisonView>
               top: 16,
               left: 16,
               child: _CurtainBadge(
-                label: 'A: ${widget.itemA.displayName}',
+                label: l10n.labelCompareBadge(
+                  l10n.labelComparePhotoA,
+                  widget.itemA.displayName,
+                ),
                 color: theme.colorScheme.primaryContainer,
                 textColor: theme.colorScheme.onPrimaryContainer,
               ),
@@ -163,7 +168,10 @@ class _CurtainComparisonViewState extends ConsumerState<CurtainComparisonView>
               top: 16,
               right: 16,
               child: _CurtainBadge(
-                label: 'B: ${widget.itemB.displayName}',
+                label: l10n.labelCompareBadge(
+                  l10n.labelComparePhotoB,
+                  widget.itemB.displayName,
+                ),
                 color: theme.colorScheme.secondaryContainer,
                 textColor: theme.colorScheme.onSecondaryContainer,
               ),
@@ -190,35 +198,57 @@ class _CurtainComparisonViewState extends ConsumerState<CurtainComparisonView>
 
             // Draggable Divider Handle
             Positioned(
-              left: dividerX - 22,
-              top: height * 0.48 - 22,
-              child: GestureDetector(
-                behavior: HitTestBehavior.opaque,
-                onHorizontalDragUpdate: (details) {
-                  setState(() {
-                    _dividerFraction = (details.globalPosition.dx / width)
-                        .clamp(0.02, 0.98);
-                  });
-                },
-                child: Container(
-                  width: 44,
-                  height: 44,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.4),
-                        blurRadius: 8,
-                        spreadRadius: 1,
+              // The handle is 44 dp; 2 dp of padding makes the area that
+              // takes the drag 48 dp (standard §7.1).
+              left: dividerX - 24,
+              top: height * 0.48 - 24,
+              child: Semantics(
+                slider: true,
+                label: l10n.labelA11yCompareDivider,
+                value: l10n.bodyA11yPercentValue(
+                  (_dividerFraction * 100).round(),
+                ),
+                increasedValue: l10n.bodyA11yPercentValue(
+                  (_nudged(0.05) * 100).round(),
+                ),
+                decreasedValue: l10n.bodyA11yPercentValue(
+                  (_nudged(-0.05) * 100).round(),
+                ),
+                onIncrease: () =>
+                    setState(() => _dividerFraction = _nudged(0.05)),
+                onDecrease: () =>
+                    setState(() => _dividerFraction = _nudged(-0.05)),
+                child: GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onHorizontalDragUpdate: (details) {
+                    setState(() {
+                      _dividerFraction = (details.globalPosition.dx / width)
+                          .clamp(0.02, 0.98);
+                    });
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.all(2),
+                    child: Container(
+                      width: 44,
+                      height: 44,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.4),
+                            blurRadius: 8,
+                            spreadRadius: 1,
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
-                  child: const Center(
-                    child: Icon(
-                      Icons.compare_arrows_rounded,
-                      color: Colors.black87,
-                      size: 26,
+                      child: const Center(
+                        child: Icon(
+                          Icons.compare_arrows_rounded,
+                          color: Colors.black87,
+                          size: 26,
+                        ),
+                      ),
                     ),
                   ),
                 ),
@@ -296,7 +326,7 @@ class _CompareImageDisplay extends ConsumerWidget {
     final thumbnail = ref.watch(thumbnailProvider(item));
     final l10n = AppLocalizations.of(context)!;
 
-    final bytes = fullBytes.valueOrNull ?? thumbnail.valueOrNull;
+    final bytes = fullBytes.value ?? thumbnail.value;
 
     if (bytes == null || bytes.isEmpty) {
       if (fullBytes.isLoading || thumbnail.isLoading) {
@@ -313,7 +343,7 @@ class _CompareImageDisplay extends ConsumerWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              l10n.mediaUnavailable,
+              l10n.labelMediaUnavailable,
               style: const TextStyle(color: Colors.white54),
             ),
           ],
@@ -325,8 +355,7 @@ class _CompareImageDisplay extends ConsumerWidget {
       bytes,
       fit: BoxFit.contain,
       gaplessPlayback: true,
-      filterQuality: FilterQuality.medium,
-      errorBuilder: (_, __, ___) => Center(
+      errorBuilder: (_, _, _) => Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -337,7 +366,7 @@ class _CompareImageDisplay extends ConsumerWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              l10n.mediaUnavailable,
+              l10n.labelMediaUnavailable,
               style: const TextStyle(color: Colors.white54),
             ),
           ],

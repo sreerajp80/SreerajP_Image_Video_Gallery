@@ -2,21 +2,16 @@ import 'package:in_sreerajp_imgvidgal/core/errors/app_exception.dart';
 import 'package:in_sreerajp_imgvidgal/models/tag.dart';
 import 'package:in_sreerajp_imgvidgal/repositories/database/media_dao.dart';
 import 'package:in_sreerajp_imgvidgal/repositories/database/tag_dao.dart';
-import 'package:in_sreerajp_imgvidgal/services/tags/tag_color_palette.dart';
-import 'package:in_sreerajp_imgvidgal/services/tags/tag_name_rules.dart';
+import 'package:in_sreerajp_imgvidgal/core/domain/tags/tag_color_palette.dart';
+import 'package:in_sreerajp_imgvidgal/core/domain/tags/tag_name_rules.dart';
 
 /// Thrown when a tag name breaks one of the rules.
 ///
 /// Carries the reason so the UI can show the right message rather than
 /// guessing from the text.
-class TagValidationException implements Exception {
+final class TagValidationException extends FeatureException {
   final TagNameError reason;
-  final String message;
-
-  const TagValidationException(this.reason, this.message);
-
-  @override
-  String toString() => 'TagValidationException: $message';
+  const TagValidationException(this.reason, super.message, {super.cause});
 }
 
 /// The only way the app changes tags.

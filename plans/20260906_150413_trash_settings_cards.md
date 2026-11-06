@@ -1,6 +1,6 @@
 # Trash Screen & Settings Card Layout
 
-**Status:** Approved
+**Status:** completed
 
 ## Issue
 

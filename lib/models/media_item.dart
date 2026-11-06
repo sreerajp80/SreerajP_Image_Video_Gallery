@@ -238,7 +238,10 @@ class MediaItem {
         if (decoded is Map<String, dynamic>) {
           parsedExif = ExifData.fromMap(decoded);
         }
-      } catch (_) {}
+      } catch (_) {
+        // Safe to ignore: a corrupt cached EXIF reads as none and is parsed
+        // again from the file.
+      }
     } else if (rawExif is Map<String, dynamic>) {
       parsedExif = ExifData.fromMap(rawExif);
     }

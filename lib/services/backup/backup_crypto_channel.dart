@@ -1,5 +1,6 @@
 import 'package:flutter/services.dart';
 import 'package:in_sreerajp_imgvidgal/core/constants/app_constants.dart';
+import 'package:in_sreerajp_imgvidgal/core/errors/app_exception.dart';
 
 /// Why a cipher call failed.
 enum BackupCryptoFailure {
@@ -19,11 +20,9 @@ enum BackupCryptoFailure {
 }
 
 /// Thrown when the backup channel refuses a call.
-class BackupCryptoException implements Exception {
+final class BackupCryptoException extends FeatureException {
   final BackupCryptoFailure failure;
-  final String message;
-
-  const BackupCryptoException(this.failure, this.message);
+  const BackupCryptoException(this.failure, super.message, {super.cause});
 
   /// Whether this is the everyday case of a mistyped password.
   bool get isWrongPassword =>
@@ -130,12 +129,7 @@ class BackupCryptoChannel {
   }) async {
     final result = await _invoke<Map<Object?, Object?>>(
       'encryptWithKey',
-      <String, dynamic>{
-        'key': key,
-        'bytes': bytes,
-        'iv': iv,
-        if (aad != null) 'aad': aad,
-      },
+      <String, dynamic>{'key': key, 'bytes': bytes, 'iv': iv, 'aad': ?aad},
     );
     return (result?['bytes'] as Uint8List?) ?? Uint8List(0);
   }
@@ -152,12 +146,7 @@ class BackupCryptoChannel {
   }) async {
     final result = await _invoke<Map<Object?, Object?>>(
       'decryptWithKey',
-      <String, dynamic>{
-        'key': key,
-        'bytes': bytes,
-        'iv': iv,
-        if (aad != null) 'aad': aad,
-      },
+      <String, dynamic>{'key': key, 'bytes': bytes, 'iv': iv, 'aad': ?aad},
     );
     return (result?['bytes'] as Uint8List?) ?? Uint8List(0);
   }

@@ -1,10 +1,10 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:in_sreerajp_imgvidgal/l10n/generated/app_localizations.dart';
 import 'package:in_sreerajp_imgvidgal/models/media_item.dart';
 import 'package:in_sreerajp_imgvidgal/providers/media_providers.dart';
 import 'package:in_sreerajp_imgvidgal/providers/viewer_providers.dart';
-import 'package:in_sreerajp_imgvidgal/services/viewer/viewer_transform_service.dart';
+import 'package:in_sreerajp_imgvidgal/core/domain/viewer/viewer_transform_service.dart';
 
 /// Displays Photo A and Photo B in a split view (either side-by-side or
 /// stacked vertically).
@@ -239,7 +239,6 @@ class _ComparisonPane extends StatelessWidget {
                 transformationController: controller,
                 minScale: ViewerTransformService.minScale,
                 maxScale: ViewerTransformService.maxScale,
-                clipBehavior: Clip.hardEdge,
                 child: SizedBox(
                   width: constraints.maxWidth,
                   height: constraints.maxHeight,
@@ -292,7 +291,7 @@ class _SplitImageDisplay extends ConsumerWidget {
     final thumbnail = ref.watch(thumbnailProvider(item));
     final l10n = AppLocalizations.of(context)!;
 
-    final bytes = fullBytes.valueOrNull ?? thumbnail.valueOrNull;
+    final bytes = fullBytes.value ?? thumbnail.value;
 
     if (bytes == null || bytes.isEmpty) {
       if (fullBytes.isLoading || thumbnail.isLoading) {
@@ -309,7 +308,7 @@ class _SplitImageDisplay extends ConsumerWidget {
             ),
             const SizedBox(height: 6),
             Text(
-              l10n.mediaUnavailable,
+              l10n.labelMediaUnavailable,
               style: const TextStyle(color: Colors.white54, fontSize: 12),
             ),
           ],
@@ -321,8 +320,7 @@ class _SplitImageDisplay extends ConsumerWidget {
       bytes,
       fit: BoxFit.contain,
       gaplessPlayback: true,
-      filterQuality: FilterQuality.medium,
-      errorBuilder: (_, __, ___) => Center(
+      errorBuilder: (_, _, _) => Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -333,7 +331,7 @@ class _SplitImageDisplay extends ConsumerWidget {
             ),
             const SizedBox(height: 6),
             Text(
-              l10n.mediaUnavailable,
+              l10n.labelMediaUnavailable,
               style: const TextStyle(color: Colors.white54, fontSize: 12),
             ),
           ],

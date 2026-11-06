@@ -48,7 +48,7 @@ BackupPayload _fullPayload() => BackupPayload(
     BackupTagLink(mediaId: 'media_2', tagId: 'tag_trip'),
   ],
   albumLinks: const <BackupAlbumLink>[
-    BackupAlbumLink(albumId: 'album_best', mediaId: 'media_1', position: 0),
+    BackupAlbumLink(albumId: 'album_best', mediaId: 'media_1'),
     BackupAlbumLink(albumId: 'album_best', mediaId: 'media_2', position: 1),
   ],
   mediaRecords: const <BackupMediaRecord>[
@@ -249,7 +249,7 @@ void main() {
     });
 
     test('accepts an older payload version', () {
-      final payload = BackupPayload(manifest: _manifest(payloadVersion: 1));
+      final payload = BackupPayload(manifest: _manifest());
       expect(
         serializer.decode(serializer.encode(payload)).manifest.payloadVersion,
         1,

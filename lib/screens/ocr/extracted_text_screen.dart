@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:in_sreerajp_imgvidgal/l10n/generated/app_localizations.dart';
 import 'package:in_sreerajp_imgvidgal/models/ocr/ocr_language.dart';
@@ -48,28 +48,33 @@ class _ExtractedTextScreenState extends ConsumerState<ExtractedTextScreen> {
     final language = ref.watch(ocrLanguageProvider);
 
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.ocrTitle)),
-      body: Column(
-        children: <Widget>[
-          _languageBar(context, l10n, language),
-          const Divider(height: 1),
-          Expanded(
-            child: state.when(
-              loading: () => _busy(context, l10n),
-              error: (_, __) => _message(context, l10n.ocrFailedEngine),
-              data: (result) {
-                if (result == null) return _busy(context, l10n);
-                if (result.isFailure) {
-                  return _message(context, _failureText(l10n, result.failure!));
-                }
-                if (result.foundNothing) {
-                  return _message(context, l10n.ocrNoText);
-                }
-                return _text(context, l10n, result);
-              },
+      appBar: AppBar(title: Text(l10n.titleOcr)),
+      body: SafeArea(
+        child: Column(
+          children: <Widget>[
+            _languageBar(context, l10n, language),
+            const Divider(height: 1),
+            Expanded(
+              child: state.when(
+                loading: () => _busy(context, l10n),
+                error: (_, _) => _message(context, l10n.bodyOcrFailedEngine),
+                data: (result) {
+                  if (result == null) return _busy(context, l10n);
+                  if (result.isFailure) {
+                    return _message(
+                      context,
+                      _failureText(l10n, result.failure!),
+                    );
+                  }
+                  if (result.foundNothing) {
+                    return _message(context, l10n.bodyOcrNoText);
+                  }
+                  return _text(context, l10n, result);
+                },
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -83,7 +88,10 @@ class _ExtractedTextScreenState extends ConsumerState<ExtractedTextScreen> {
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
       child: Row(
         children: <Widget>[
-          Text(l10n.ocrLanguage, style: Theme.of(context).textTheme.labelLarge),
+          Text(
+            l10n.labelOcrLanguage,
+            style: Theme.of(context).textTheme.labelLarge,
+          ),
           const SizedBox(width: 12),
           Expanded(
             child: SingleChildScrollView(
@@ -121,10 +129,10 @@ class _ExtractedTextScreenState extends ConsumerState<ExtractedTextScreen> {
         children: <Widget>[
           const CircularProgressIndicator(),
           const SizedBox(height: 16),
-          Text(l10n.ocrReading),
+          Text(l10n.labelOcrReading),
           const SizedBox(height: 8),
           Text(
-            l10n.ocrSlowHint,
+            l10n.helpOcrSlowHint,
             style: Theme.of(context).textTheme.bodySmall,
             textAlign: TextAlign.center,
           ),
@@ -150,7 +158,10 @@ class _ExtractedTextScreenState extends ConsumerState<ExtractedTextScreen> {
             const SizedBox(height: 16),
             Text(text, textAlign: TextAlign.center),
             const SizedBox(height: 16),
-            OutlinedButton(onPressed: _read, child: Text(l10n.ocrReadAgain)),
+            OutlinedButton(
+              onPressed: _read,
+              child: Text(l10n.actionOcrReadAgain),
+            ),
           ],
         ),
       ),
@@ -185,20 +196,20 @@ class _ExtractedTextScreenState extends ConsumerState<ExtractedTextScreen> {
             children: <Widget>[
               Expanded(
                 child: Text(
-                  l10n.ocrWordCount(result.wordCount),
+                  l10n.bodyOcrWordCount(result.wordCount),
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
               ),
               TextButton.icon(
                 onPressed: () => _saveToNotes(result.text),
                 icon: const Icon(Icons.note_add_outlined),
-                label: Text(l10n.ocrSaveToNotes),
+                label: Text(l10n.labelOcrSaveToNotes),
               ),
               const SizedBox(width: 8),
               FilledButton.icon(
                 onPressed: () => _copy(result.text),
                 icon: const Icon(Icons.copy_outlined),
-                label: Text(l10n.ocrCopyAll),
+                label: Text(l10n.actionOcrCopyAll),
               ),
             ],
           ),
@@ -210,7 +221,7 @@ class _ExtractedTextScreenState extends ConsumerState<ExtractedTextScreen> {
   Future<void> _copy(String text) async {
     final l10n = AppLocalizations.of(context)!;
     await ref.read(scanActionRunnerProvider).copy(text);
-    _say(l10n.ocrCopied);
+    _say(l10n.labelOcrCopied);
   }
 
   Future<void> _saveToNotes(String text) async {
@@ -219,7 +230,7 @@ class _ExtractedTextScreenState extends ConsumerState<ExtractedTextScreen> {
         .read(notesControllerProvider.notifier)
         .append(widget.mediaId, text);
 
-    _say(saved ? l10n.ocrSavedToNotes : l10n.notesSaveFailed);
+    _say(saved ? l10n.labelOcrSavedToNotes : l10n.errorNotesSaveFailed);
   }
 
   void _say(String message) {
@@ -231,19 +242,19 @@ class _ExtractedTextScreenState extends ConsumerState<ExtractedTextScreen> {
 
   String _languageLabel(AppLocalizations l10n, OcrLanguage language) {
     return switch (language) {
-      OcrLanguage.english => l10n.ocrLanguageEnglish,
-      OcrLanguage.malayalam => l10n.ocrLanguageMalayalam,
-      OcrLanguage.both => l10n.ocrLanguageBoth,
+      OcrLanguage.english => l10n.labelOcrLanguageEnglish,
+      OcrLanguage.malayalam => l10n.labelOcrLanguageMalayalam,
+      OcrLanguage.both => l10n.bodyOcrLanguageBoth,
     };
   }
 
   String _failureText(AppLocalizations l10n, OcrFailure failure) {
     return switch (failure) {
-      OcrFailure.unreadableImage => l10n.ocrFailedUnreadable,
-      OcrFailure.imageTooLarge => l10n.ocrFailedTooLarge,
-      OcrFailure.missingLanguageData => l10n.ocrFailedMissingData,
-      OcrFailure.timedOut => l10n.ocrFailedTimeout,
-      OcrFailure.engineFailed => l10n.ocrFailedEngine,
+      OcrFailure.unreadableImage => l10n.bodyOcrFailedUnreadable,
+      OcrFailure.imageTooLarge => l10n.bodyOcrFailedTooLarge,
+      OcrFailure.missingLanguageData => l10n.bodyOcrFailedMissingData,
+      OcrFailure.timedOut => l10n.bodyOcrFailedTimeout,
+      OcrFailure.engineFailed => l10n.bodyOcrFailedEngine,
     };
   }
 }

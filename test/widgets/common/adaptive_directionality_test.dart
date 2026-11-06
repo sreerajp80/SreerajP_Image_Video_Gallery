@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:in_sreerajp_imgvidgal/widgets/common/adaptive_directionality.dart';
 
@@ -66,34 +66,21 @@ void main() {
         await directionFor(tester, '20260831', ambient: TextDirection.rtl),
         TextDirection.rtl,
       );
-      expect(
-        await directionFor(tester, '', ambient: TextDirection.ltr),
-        TextDirection.ltr,
-      );
+      expect(await directionFor(tester, ''), TextDirection.ltr);
     });
 
     testWidgets('uses the fallback for neutral text when given one', (
       tester,
     ) async {
       expect(
-        await directionFor(
-          tester,
-          '1234',
-          ambient: TextDirection.ltr,
-          fallback: TextDirection.rtl,
-        ),
+        await directionFor(tester, '1234', fallback: TextDirection.rtl),
         TextDirection.rtl,
       );
     });
 
     testWidgets('the fallback never overrides real text', (tester) async {
       expect(
-        await directionFor(
-          tester,
-          'photos',
-          ambient: TextDirection.ltr,
-          fallback: TextDirection.rtl,
-        ),
+        await directionFor(tester, 'photos', fallback: TextDirection.rtl),
         TextDirection.ltr,
       );
     });

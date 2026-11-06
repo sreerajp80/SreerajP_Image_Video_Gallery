@@ -12,6 +12,7 @@ import 'package:in_sreerajp_imgvidgal/services/video/gif_frame_planner.dart';
 import 'package:in_sreerajp_imgvidgal/services/video/video_frame_service.dart';
 import 'package:in_sreerajp_imgvidgal/services/video/video_tools_channel.dart';
 import 'package:in_sreerajp_imgvidgal/services/video/video_trim_service.dart';
+import 'package:flutter_riverpod/legacy.dart';
 
 /// The native video tools channel.
 final videoToolsChannelProvider = Provider<VideoToolsChannel>((ref) {

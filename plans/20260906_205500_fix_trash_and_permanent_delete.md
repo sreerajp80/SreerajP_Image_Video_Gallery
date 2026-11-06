@@ -1,6 +1,6 @@
 # Plan: Fix Trash Sync and Implement Permanent File Deletion
 
-**Status:** Approved
+**Status:** completed
 
 ## Overview
 This plan addresses two related issues:

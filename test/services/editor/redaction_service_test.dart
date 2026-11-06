@@ -3,7 +3,7 @@ import 'package:image/image.dart' as img;
 import 'package:in_sreerajp_imgvidgal/core/constants/app_constants.dart';
 import 'package:in_sreerajp_imgvidgal/models/editor/crop_transform.dart';
 import 'package:in_sreerajp_imgvidgal/models/editor/redaction_region.dart';
-import 'package:in_sreerajp_imgvidgal/services/editor/crop_transform_service.dart';
+import 'package:in_sreerajp_imgvidgal/core/domain/editor/crop_transform_service.dart';
 import 'package:in_sreerajp_imgvidgal/services/editor/redaction_service.dart';
 
 /// Builds a white picture with a small sharp black square inside it.
@@ -107,12 +107,7 @@ void main() {
 
       final result = service.apply(
         image,
-        const RedactionRegion(
-          id: 'r1',
-          rect: wideRegion,
-          mode: RedactionMode.blur,
-          strength: 1,
-        ),
+        const RedactionRegion(id: 'r1', rect: wideRegion, strength: 1),
         const PixelSize(100, 100),
       );
 

@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:in_sreerajp_imgvidgal/core/constants/app_constants.dart';
+import 'package:in_sreerajp_imgvidgal/core/errors/app_exception.dart';
 
 /// What a frame carries.
 ///
@@ -67,6 +68,8 @@ class TransferFrame {
       final decoded = jsonDecode(utf8.decode(body));
       return decoded is Map<String, dynamic> ? decoded : null;
     } catch (_) {
+      // Safe to ignore: a body that is not a JSON object reads as null, which
+      // the caller refuses.
       return null;
     }
   }
@@ -78,12 +81,8 @@ class TransferFrame {
 /// speaking a different protocol, and trying to resynchronise a byte stream
 /// after a bad length is how a parser gets talked into an allocation it
 /// cannot afford.
-class TransferProtocolException implements Exception {
-  final String message;
-  const TransferProtocolException(this.message);
-
-  @override
-  String toString() => 'TransferProtocolException: $message';
+final class TransferProtocolException extends FeatureException {
+  const TransferProtocolException(super.message, {super.cause});
 }
 
 /// Frames the transfer's byte stream.
@@ -129,7 +128,7 @@ class TransferProtocol {
 
     final out = Uint8List(headerBytes + body.length);
     final view = ByteData.sublistView(out);
-    view.setUint32(0, body.length, Endian.big);
+    view.setUint32(0, body.length);
     out[lengthPrefixBytes] = type.wireValue;
     out.setRange(headerBytes, headerBytes + body.length, body);
     return out;
@@ -155,7 +154,7 @@ class TransferProtocol {
 /// read TCP correctly.
 class FrameReader {
   /// Bytes seen but not yet formed into a frame.
-  final BytesBuilder _buffer = BytesBuilder(copy: true);
+  final BytesBuilder _buffer = BytesBuilder();
 
   /// Largest body this reader will accept.
   final int maxFrameBytes;
@@ -176,12 +175,12 @@ class FrameReader {
 
     // takeBytes() empties the builder, so the leftover is put back at the end
     // of each pass rather than the buffer being read through repeatedly.
-    var bytes = _buffer.takeBytes();
+    final bytes = _buffer.takeBytes();
     var offset = 0;
 
     while (bytes.length - offset >= TransferProtocol.headerBytes) {
       final view = ByteData.sublistView(bytes, offset);
-      final bodyLength = view.getUint32(0, Endian.big);
+      final bodyLength = view.getUint32(0);
 
       if (bodyLength > maxFrameBytes) {
         throw TransferProtocolException(

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:in_sreerajp_imgvidgal/l10n/generated/app_localizations.dart';
@@ -7,6 +7,7 @@ import 'package:in_sreerajp_imgvidgal/models/tag.dart';
 import 'package:in_sreerajp_imgvidgal/providers/tag_providers.dart';
 import 'package:in_sreerajp_imgvidgal/repositories/tag_repository.dart';
 import 'package:in_sreerajp_imgvidgal/widgets/batch/batch_tag_picker_sheet.dart';
+import 'package:in_sreerajp_imgvidgal/core/l10n/sanskrit_fallback_delegates.dart';
 
 class FakeTagRepository implements TagRepository {
   final List<Tag> tags;
@@ -49,7 +50,7 @@ void main() {
         ProviderScope(
           overrides: [tagRepositoryProvider.overrideWithValue(fakeRepo)],
           child: MaterialApp(
-            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            localizationsDelegates: appLocalizationsDelegates,
             supportedLocales: AppLocalizations.supportedLocales,
             home: Scaffold(
               body: Builder(
@@ -125,7 +126,7 @@ void main() {
       ProviderScope(
         overrides: [tagRepositoryProvider.overrideWithValue(fakeRepo)],
         child: MaterialApp(
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          localizationsDelegates: appLocalizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           home: Scaffold(
             body: Builder(
@@ -176,7 +177,7 @@ void main() {
         ProviderScope(
           overrides: [tagRepositoryProvider.overrideWithValue(fakeRepo)],
           child: MaterialApp(
-            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            localizationsDelegates: appLocalizationsDelegates,
             supportedLocales: AppLocalizations.supportedLocales,
             home: Scaffold(
               body: Builder(

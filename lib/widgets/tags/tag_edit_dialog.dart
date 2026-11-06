@@ -1,8 +1,8 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:in_sreerajp_imgvidgal/l10n/generated/app_localizations.dart';
 import 'package:in_sreerajp_imgvidgal/models/tag.dart';
-import 'package:in_sreerajp_imgvidgal/services/tags/tag_color_palette.dart';
-import 'package:in_sreerajp_imgvidgal/services/tags/tag_name_rules.dart';
+import 'package:in_sreerajp_imgvidgal/core/domain/tags/tag_color_palette.dart';
+import 'package:in_sreerajp_imgvidgal/core/domain/tags/tag_name_rules.dart';
 import 'package:in_sreerajp_imgvidgal/widgets/tags/tag_color_picker.dart';
 
 /// What the user chose in the tag dialog.
@@ -82,7 +82,9 @@ class _TagEditDialogState extends State<TagEditDialog> {
     final error = _touched ? _errorText(l10n, check.error) : null;
 
     return AlertDialog(
-      title: Text(widget.tag == null ? l10n.tagNew : l10n.tagEditTitle),
+      title: Text(
+        widget.tag == null ? l10n.actionTagNew : l10n.tooltipTagEditTitle,
+      ),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -92,7 +94,7 @@ class _TagEditDialogState extends State<TagEditDialog> {
             autofocus: true,
             maxLength: TagNameRules.maxLength,
             decoration: InputDecoration(
-              labelText: l10n.tagNameLabel,
+              labelText: l10n.labelTagName,
               errorText: error,
             ),
             onChanged: _followNameColor,
@@ -100,7 +102,7 @@ class _TagEditDialogState extends State<TagEditDialog> {
           ),
           const SizedBox(height: 8),
           Text(
-            l10n.tagColorLabel,
+            l10n.labelTagColor,
             style: Theme.of(context).textTheme.labelLarge,
           ),
           const SizedBox(height: 8),
@@ -113,11 +115,11 @@ class _TagEditDialogState extends State<TagEditDialog> {
       actions: <Widget>[
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: Text(l10n.tagCancel),
+          child: Text(l10n.actionTagCancel),
         ),
         FilledButton(
           onPressed: check.isValid ? () => _submit(check) : null,
-          child: Text(l10n.tagSave),
+          child: Text(l10n.actionTagSave),
         ),
       ],
     );
@@ -136,9 +138,9 @@ class _TagEditDialogState extends State<TagEditDialog> {
   String? _errorText(AppLocalizations l10n, TagNameError? error) {
     return switch (error) {
       null => null,
-      TagNameError.empty => l10n.tagErrorEmpty,
-      TagNameError.tooLong => l10n.tagErrorTooLong,
-      TagNameError.duplicate => l10n.tagErrorDuplicate,
+      TagNameError.empty => l10n.emptyTagError,
+      TagNameError.tooLong => l10n.bodyTagErrorTooLong,
+      TagNameError.duplicate => l10n.bodyTagErrorDuplicate,
     };
   }
 }

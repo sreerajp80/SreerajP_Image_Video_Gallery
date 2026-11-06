@@ -5,6 +5,7 @@ import 'package:in_sreerajp_imgvidgal/models/video/gif_export_options.dart';
 import 'package:in_sreerajp_imgvidgal/services/convert/output_naming_service.dart';
 import 'package:in_sreerajp_imgvidgal/services/video/gif_frame_planner.dart';
 import 'package:in_sreerajp_imgvidgal/services/video/video_tools_channel.dart';
+import 'package:in_sreerajp_imgvidgal/core/logging/app_logger.dart';
 
 /// A GIF that was written out of a clip.
 @immutable
@@ -98,7 +99,8 @@ class GifExportService {
             maxSide: options.effectiveMaxSide,
           ),
         );
-      } catch (_) {
+      } catch (error) {
+        AppLogger.debug('A video frame could not be grabbed');
         // A clip can refuse a frame near its very end. Losing one frame is
         // far better than losing the whole GIF, so it is simply skipped.
       }
@@ -170,6 +172,7 @@ class GifExportService {
     try {
       return img.decodeImage(bytes);
     } catch (_) {
+      // Safe to ignore: a frame that will not decode is skipped (hard rule 5).
       return null;
     }
   }

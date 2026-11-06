@@ -7,7 +7,7 @@ import 'package:in_sreerajp_imgvidgal/models/tag.dart';
 import 'package:in_sreerajp_imgvidgal/repositories/database/media_dao.dart';
 import 'package:in_sreerajp_imgvidgal/repositories/database/tag_dao.dart';
 import 'package:in_sreerajp_imgvidgal/services/search/search_query_parser.dart';
-import 'package:in_sreerajp_imgvidgal/services/tags/tag_name_rules.dart';
+import 'package:in_sreerajp_imgvidgal/core/domain/tags/tag_name_rules.dart';
 
 /// Runs searches against the indexed library.
 ///

@@ -164,7 +164,7 @@ void main() {
     );
 
     test('an unreadable markup layer is dropped, not fatal', () {
-      final session = EditSession.fromMap(<String, dynamic>{
+      final session = EditSession.fromMap(const <String, dynamic>{
         'mediaId': 'media-1',
         'markup': <dynamic>[
           <String, dynamic>{'kind': 'from-a-newer-build'},

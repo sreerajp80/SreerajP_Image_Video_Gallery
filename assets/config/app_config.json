@@ -1,16 +1,58 @@
 {
-  "appName": "SreerajP Image Video Gallery",
-  "description": "Offline-first image and video gallery application for viewing, organizing, and managing local media.",
-  "version": "2.5.2",
-  "build": "15",
+  "appName": {
+    "en": "SreerajP Image Video Gallery",
+    "ml": "ശ്രീരാജ് പി ഇമേജ് വീഡിയോ ഗാലറി",
+    "sa": "श्रीराजपी चित्रदृश्यशाला"
+  },
+  "description": {
+    "en": "Offline-first image and video gallery application for viewing, organizing, and managing local media.",
+    "ml": "ഫോണിലെ ചിത്രങ്ങളും വീഡിയോകളും കാണാനും ക്രമീകരിക്കാനും കൈകാര്യം ചെയ്യാനുമുള്ള, ഇന്റർനെറ്റ് ഇല്ലാതെ പ്രവർത്തിക്കുന്ന ഗാലറി ആപ്പ്.",
+    "sa": "स्थानीयचित्राणां दृश्यानां च दर्शनाय, व्यवस्थापनाय, प्रबन्धनाय च अन्तर्जालं विना कार्यं कुर्वन् चित्रशालानुप्रयोगः।"
+  },
+  "version": "2.6.4",
+  "build": "22",
   "details": {
-    "Author": "Sreeraj P",
-    "License": "All libraries used are open source.",
-    "IDE Used": "Visual Studio Code / Antigravity",
-    "AI Used": "Anthropic Claude / Google Gemini",
-    "Storage Model": "Scoped Storage and MediaStore API",
-    "Network Policy": "No remote server, no account, no analytics. Internet access is used only to reach another phone on your own Wi-Fi, from the transfer screen.",
-    "Security": "Hardware-backed biometrics and AES-256-GCM",
-    "Languages": "English and Malayalam"
+    "author": {
+      "en": "Sreeraj P",
+      "ml": "ശ്രീരാജ് പി",
+      "sa": "श्रीराजः पी"
+    },
+    "license": {
+      "en": "MIT License. All libraries used are open source.",
+      "ml": "MIT ലൈസൻസ്. ഉപയോഗിച്ച എല്ലാ ലൈബ്രറികളും ഓപ്പൺ സോഴ്സ് ആണ്.",
+      "sa": "MIT-अनुज्ञापत्रम्। सर्वे प्रयुक्ताः तन्त्रांशकोशाः मुक्तस्रोतसः सन्ति।"
+    },
+    "email": "sreerajp@zohomail.in",
+    "privacyPolicy": "https://github.com/sreerajp80/SreerajP_Image_Video_Gallery/blob/master/PRIVACY.md",
+    "ideUsed": {
+      "en": "Visual Studio Code / Antigravity",
+      "ml": "വിഷ്വൽ സ്റ്റുഡിയോ കോഡ് / ആന്റിഗ്രാവിറ്റി",
+      "sa": "विश्वल् स्टुडियो कोड् / आन्टिग्राविटि"
+    },
+    "aiUsed": {
+      "en": "Anthropic Claude / Google Gemini",
+      "ml": "ആന്ത്രോപിക് ക്ലോഡ് / ഗൂഗിൾ ജെമിനി",
+      "sa": "आन्थ्रोपिक् क्लोड् / गूगल् जेमिनि"
+    },
+    "storageModel": {
+      "en": "Scoped Storage and MediaStore API",
+      "ml": "സ്കോപ്പ്ഡ് സ്റ്റോറേജും മീഡിയസ്റ്റോർ API-യും",
+      "sa": "सीमितसङ्ग्रहः MediaStore API च"
+    },
+    "networkPolicy": {
+      "en": "No remote server, no account, no analytics. Internet access is used only to reach another phone on your own Wi-Fi, from the transfer screen.",
+      "ml": "റിമോട്ട് സെർവറില്ല, അക്കൗണ്ടില്ല, അനലിറ്റിക്സില്ല. നിങ്ങളുടെ സ്വന്തം വൈ-ഫൈയിലുള്ള മറ്റൊരു ഫോണുമായി ബന്ധപ്പെടാൻ മാത്രമാണ്, കൈമാറ്റ സ്ക്രീനിൽ നിന്ന്, ഇന്റർനെറ്റ് അനുമതി ഉപയോഗിക്കുന്നത്.",
+      "sa": "दूरस्थः सेवकः नास्ति, उपयोक्तृविवरणं नास्ति, विश्लेषणं नास्ति। अन्तर्जालप्रवेशः केवलं स्थानान्तरणपटलात् भवतः स्वकीये Wi-Fi जाले अन्यं दूरवाणीयन्त्रं प्राप्तुं प्रयुज्यते।"
+    },
+    "security": {
+      "en": "Hardware-backed biometrics and AES-256-GCM",
+      "ml": "ഹാർഡ്‌വെയർ അധിഷ്ഠിത ബയോമെട്രിക്സും AES-256-GCM-ഉം",
+      "sa": "यन्त्राधारिता अङ्गुलिमुद्रा AES-256-GCM च"
+    },
+    "languages": {
+      "en": "English, Malayalam and Sanskrit",
+      "ml": "ഇംഗ്ലീഷ്, മലയാളം, സംസ്കൃതം",
+      "sa": "आङ्ग्लं, मलयाळं, संस्कृतं च"
+    }
   }
 }

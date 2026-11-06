@@ -1,6 +1,6 @@
 # Plan: Spline RGB Curves, Selective Masks, 8-Channel HSL Color Tuner
 
-**Status:** Approved
+**Status:** completed
 
 ## Summary
 

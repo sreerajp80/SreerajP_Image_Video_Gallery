@@ -1,6 +1,6 @@
 # Plan: Update docs/guidelines Submodule
 
-**Status:** Implemented
+**Status:** completed
 
 ## 1. Issue / Goal
 The `docs/guidelines` git submodule is behind remote `origin/master` by 1 commit (`7e664ba` - "Updates"). The goal is to update the `docs/guidelines` submodule to fast-forward to the latest commit on `origin/master`.

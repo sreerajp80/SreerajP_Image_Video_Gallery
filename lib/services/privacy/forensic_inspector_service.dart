@@ -3,6 +3,7 @@ import 'dart:typed_data';
 
 import 'package:image/image.dart' as img;
 import 'package:in_sreerajp_imgvidgal/models/privacy/forensic_metadata.dart';
+import 'package:in_sreerajp_imgvidgal/core/logging/app_logger.dart';
 
 /// Analyzes high-resolution media bytes for forensic lens, optical, and hardware metadata.
 class ForensicInspectorService {
@@ -17,7 +18,8 @@ class ForensicInspectorService {
         return inspectBytesSync(bytes);
       }
       return await Isolate.run(() => inspectBytesSync(bytes));
-    } catch (_) {
+    } catch (error) {
+      AppLogger.debug('Reading forensic metadata failed');
       return const ForensicMetadata();
     }
   }
@@ -37,7 +39,7 @@ class ForensicInspectorService {
 
       // Optical focal lengths
       final physicalFocal = _number(subExif[_tagFocalLength]);
-      var focal35 = _number(subExif[_tagFocalLengthIn35mmFilm]);
+      final focal35 = _number(subExif[_tagFocalLengthIn35mmFilm]);
       final fNumber = _number(subExif[_tagFNumber]);
 
       // Calculate crop factor
@@ -119,7 +121,8 @@ class ForensicInspectorService {
         digitalZoomRatio: digitalZoomRatio,
         flashDetails: flashDetails,
       );
-    } catch (_) {
+    } catch (error) {
+      AppLogger.debug('Reading forensic metadata failed');
       return const ForensicMetadata();
     }
   }
@@ -129,8 +132,9 @@ class ForensicInspectorService {
     if (cropFactor == null) return null;
     if (cropFactor <= 1.05) return 'Full Frame (35mm)';
     if (cropFactor >= 1.4 && cropFactor <= 1.7) return 'APS-C (~1.5x)';
-    if (cropFactor >= 1.9 && cropFactor <= 2.2)
+    if (cropFactor >= 1.9 && cropFactor <= 2.2) {
       return 'Micro Four Thirds (2.0x)';
+    }
     if (cropFactor >= 2.5 && cropFactor <= 2.9) return '1-inch Type (2.7x)';
     if (cropFactor >= 3.0 && cropFactor <= 4.5) {
       return 'Mobile Sensor (~1/1.3" - 1/1.7")';
@@ -210,7 +214,9 @@ class ForensicInspectorService {
           }
         }
       }
-    } catch (_) {}
+    } catch (_) {
+      // Safe to ignore: an unreadable colour profile is shown as not present.
+    }
     return null;
   }
 
@@ -321,7 +327,7 @@ class ForensicInspectorService {
   String? _formatLensSpecification(img.IfdValue? value) {
     if (value == null || value.length < 4) return null;
     try {
-      final minFocal = value.toDouble(0);
+      final minFocal = value.toDouble();
       final maxFocal = value.toDouble(1);
       final minAperture = value.toDouble(2);
       final maxAperture = value.toDouble(3);
@@ -336,6 +342,7 @@ class ForensicInspectorService {
 
       return '$focalStr $apertureStr';
     } catch (_) {
+      // Safe to ignore: a lens specification that will not parse is not shown.
       return null;
     }
   }

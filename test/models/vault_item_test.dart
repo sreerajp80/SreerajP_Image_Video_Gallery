@@ -4,7 +4,7 @@ import 'package:in_sreerajp_imgvidgal/models/vault_item.dart';
 
 void main() {
   group('VaultItem Domain Model', () {
-    final now = DateTime(2026, 8, 29, 9, 0, 0);
+    final now = DateTime(2026, 8, 29, 9);
     final testVault = VaultItem(
       id: 'vault_001',
       originalPath: '/storage/emulated/0/DCIM/Camera/passport.jpg',
@@ -20,7 +20,6 @@ void main() {
       dateTaken: now,
       width: 1920,
       height: 1080,
-      durationMs: null,
       tags: const ['Personal', 'ID'],
       notes: 'Passport scan document',
     );
@@ -41,7 +40,6 @@ void main() {
         dateTaken: now,
         width: 1920,
         height: 1080,
-        durationMs: null,
         tags: const ['Personal', 'ID'],
         notes: 'Passport scan document',
       );

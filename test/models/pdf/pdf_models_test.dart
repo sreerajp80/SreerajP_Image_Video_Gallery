@@ -9,7 +9,6 @@ PdfImageEntry _usable(int number) => PdfImageEntry(
   width: 10,
   height: 20,
   bytes: Uint8List.fromList(<int>[1, 2, 3]),
-  format: PdfImageFormat.png,
 );
 
 const _skipped = PdfImageEntry.skipped(

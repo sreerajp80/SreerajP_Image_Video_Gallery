@@ -1,12 +1,32 @@
+import 'dart:io';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:in_sreerajp_imgvidgal/repositories/database/database_constants.dart';
 import 'package:in_sreerajp_imgvidgal/repositories/database/database_helper.dart';
+import 'package:path/path.dart' as p;
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 void main() {
   setUpAll(() {
     sqfliteFfiInit();
     databaseFactory = databaseFactoryFfi;
+  });
+
+  test('turns on WAL mode for a database file on disk', () async {
+    final tempDir = Directory.systemTemp.createTempSync('db_wal_test');
+    final helper = DatabaseHelper(
+      customPath: p.join(tempDir.path, 'wal.db'),
+      customFactory: databaseFactoryFfi,
+    );
+    addTearDown(() async {
+      await helper.close();
+      tempDir.deleteSync(recursive: true);
+    });
+
+    final db = await helper.database;
+    final rows = await db.rawQuery('PRAGMA journal_mode;');
+
+    expect(rows.single.values.single, 'wal');
   });
 
   group('DatabaseHelper Lifecycle & Schema', () {

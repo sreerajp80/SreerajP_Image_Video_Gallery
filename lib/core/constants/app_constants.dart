@@ -10,13 +10,18 @@ class AppConstants {
   ///
   /// Anything outside this set is ignored when settings are read, so a
   /// hand-edited file cannot ask for a language that has no strings.
-  static const Set<String> supportedLocaleCodes = <String>{'en', 'ml'};
+  static const Set<String> supportedLocaleCodes = <String>{'en', 'ml', 'sa'};
 
   /// File the user's preferences are kept in, inside the app support
   /// directory.
   ///
   /// A plain JSON file, not secure storage: none of these values is a secret.
   static const String appSettingsFileName = 'app_settings.json';
+
+  /// `SharedPreferences` key for the in-app language choice: `system` or a
+  /// code from [supportedLocaleCodes]. The name is set by engineering
+  /// standard §8.4.
+  static const String languagePreferenceKey = 'app_language';
 
   // Grid Defaults
   static const int minGridColumns = 1;
@@ -71,6 +76,14 @@ class AppConstants {
   // Fullscreen Viewer & Video Player
   /// Method channel name used for screen brightness, volume, and keep-awake.
   static const String playbackChannelName = 'in.sreerajp.imgvidgal/playback';
+
+  /// Method channel that reports the app's own version name and build
+  /// number from PackageManager. Replaces the `package_info_plus` plugin.
+  static const String appInfoChannelName = 'in.sreerajp.imgvidgal/app_info';
+
+  /// Method channel to the ZXing barcode reader in Kotlin
+  /// (`BarcodeChannelHandler`). Replaced mobile_scanner and its ML Kit (G47).
+  static const String barcodeChannelName = 'in.sreerajp.imgvidgal/barcode';
 
   /// Smallest zoom level of the image viewer (fit to screen).
   static const double viewerMinScale = 1.0;

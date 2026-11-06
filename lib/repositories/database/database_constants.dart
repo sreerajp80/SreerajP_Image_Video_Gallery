@@ -6,7 +6,7 @@ class DatabaseConstants {
   static const String databaseName = 'gallery_database.db';
 
   /// Current SQLite database schema version.
-  static const int schemaVersion = 3;
+  static const int schemaVersion = 5;
 
   // Table Names
   static const String tableMedia = 'media_items';

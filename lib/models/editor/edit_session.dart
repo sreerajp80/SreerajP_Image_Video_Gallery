@@ -228,7 +228,7 @@ class EditSession {
         return EditSession.fromMap(Map<String, dynamic>.from(decoded));
       }
     } catch (_) {
-      // A corrupt session is not worth failing over; start clean instead.
+      // Safe to ignore: a corrupt saved session starts clean instead.
     }
     return EditSession.initial('');
   }

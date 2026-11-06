@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:in_sreerajp_imgvidgal/l10n/generated/app_localizations.dart';
 import 'package:in_sreerajp_imgvidgal/models/editor/filter_preset.dart';
 import 'package:in_sreerajp_imgvidgal/widgets/editor/editor_slider_row.dart';
@@ -22,21 +22,21 @@ class FilterPresetStrip extends StatelessWidget {
   static String labelFor(AppLocalizations l10n, FilterPresetId id) {
     switch (id) {
       case FilterPresetId.none:
-        return l10n.filterNone;
+        return l10n.labelFilterNone;
       case FilterPresetId.mono:
-        return l10n.filterMono;
+        return l10n.labelFilterMono;
       case FilterPresetId.sepia:
-        return l10n.filterSepia;
+        return l10n.labelFilterSepia;
       case FilterPresetId.vintage:
-        return l10n.filterVintage;
+        return l10n.labelFilterVintage;
       case FilterPresetId.vivid:
-        return l10n.filterVivid;
+        return l10n.labelFilterVivid;
       case FilterPresetId.cool:
-        return l10n.filterCool;
+        return l10n.labelFilterCool;
       case FilterPresetId.warm:
-        return l10n.filterWarm;
+        return l10n.labelFilterWarm;
       case FilterPresetId.fade:
-        return l10n.filterFade;
+        return l10n.labelFilterFade;
     }
   }
 
@@ -70,10 +70,9 @@ class FilterPresetStrip extends StatelessWidget {
         ),
         if (selected.id != FilterPresetId.none)
           EditorSliderRow(
-            label: l10n.filterIntensity,
+            label: l10n.labelFilterIntensity,
             value: selected.intensity,
             min: 0,
-            max: 1,
             neutral: 1,
             onChanged: (value) =>
                 onChanged(selected.copyWith(intensity: value)),

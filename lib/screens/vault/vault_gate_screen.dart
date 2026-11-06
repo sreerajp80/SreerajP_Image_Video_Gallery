@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:in_sreerajp_imgvidgal/core/constants/app_constants.dart';
 import 'package:in_sreerajp_imgvidgal/l10n/generated/app_localizations.dart';
@@ -6,7 +6,7 @@ import 'package:in_sreerajp_imgvidgal/models/vault/vault_auth_outcome.dart';
 import 'package:in_sreerajp_imgvidgal/models/vault/vault_lock_state.dart';
 import 'package:in_sreerajp_imgvidgal/providers/vault_providers.dart';
 import 'package:in_sreerajp_imgvidgal/screens/vault/vault_screen.dart';
-import 'package:in_sreerajp_imgvidgal/services/vault/vault_pin_rules.dart';
+import 'package:in_sreerajp_imgvidgal/core/domain/vault/vault_pin_rules.dart';
 import 'package:in_sreerajp_imgvidgal/widgets/vault/secure_screen.dart';
 import 'package:in_sreerajp_imgvidgal/widgets/vault/vault_pin_pad.dart';
 
@@ -77,7 +77,7 @@ class _VaultGateScreenState extends ConsumerState<VaultGateScreen> {
     if (_firstPin != pin) {
       setState(() {
         _firstPin = null;
-        _errorText = l10n.vaultPinMismatch;
+        _errorText = l10n.bodyVaultPinMismatch;
       });
       _padKey.currentState?.clear();
       return;
@@ -118,7 +118,7 @@ class _VaultGateScreenState extends ConsumerState<VaultGateScreen> {
     setState(() => _busy = true);
     final outcome = await ref
         .read(vaultLockControllerProvider.notifier)
-        .unlockWithBiometrics(l10n.vaultUnlockReason);
+        .unlockWithBiometrics(l10n.bodyVaultUnlockReason);
     if (!mounted) return;
 
     setState(() {
@@ -137,7 +137,7 @@ class _VaultGateScreenState extends ConsumerState<VaultGateScreen> {
     if (_biometricOffered) return;
     if (lock.status != VaultLockStatus.locked) return;
     if (lock.isLockedOutAt(DateTime.now())) return;
-    if (!(ref.read(vaultBiometricAvailableProvider).valueOrNull ?? false)) {
+    if (!(ref.read(vaultBiometricAvailableProvider).value ?? false)) {
       return;
     }
     _biometricOffered = true;
@@ -160,14 +160,16 @@ class _VaultGateScreenState extends ConsumerState<VaultGateScreen> {
 
     return SecureScreen(
       child: Scaffold(
-        appBar: AppBar(title: Text(l10n.vaultTitle)),
-        body: keystoreReady.when(
-          loading: () => const Center(child: CircularProgressIndicator()),
-          error: (_, _) => _KeystoreUnavailable(l10n: l10n),
-          data: (ready) {
-            if (!ready) return _KeystoreUnavailable(l10n: l10n);
-            return _buildGate(lock, l10n);
-          },
+        appBar: AppBar(title: Text(l10n.titleVault)),
+        body: SafeArea(
+          child: keystoreReady.when(
+            loading: () => const Center(child: CircularProgressIndicator()),
+            error: (_, _) => _KeystoreUnavailable(l10n: l10n),
+            data: (ready) {
+              if (!ready) return _KeystoreUnavailable(l10n: l10n);
+              return _buildGate(lock, l10n);
+            },
+          ),
         ),
       ),
     );
@@ -194,13 +196,13 @@ class _VaultGateScreenState extends ConsumerState<VaultGateScreen> {
           Icon(Icons.lock_outline, size: 56, color: theme.colorScheme.primary),
           const SizedBox(height: 16),
           Text(
-            l10n.vaultSetUpTitle,
+            l10n.titleVaultSetUp,
             style: theme.textTheme.headlineSmall,
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 8),
           Text(
-            l10n.vaultSetUpBody,
+            l10n.bodyVaultSetUp,
             style: theme.textTheme.bodyMedium,
             textAlign: TextAlign.center,
           ),
@@ -221,7 +223,7 @@ class _VaultGateScreenState extends ConsumerState<VaultGateScreen> {
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
-                      l10n.vaultNoRecoveryWarning,
+                      l10n.bodyVaultNoRecoveryWarning,
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: theme.colorScheme.onErrorContainer,
                       ),
@@ -235,11 +237,11 @@ class _VaultGateScreenState extends ConsumerState<VaultGateScreen> {
           VaultPinPad(
             key: _padKey,
             prompt: _firstPin == null
-                ? l10n.vaultChoosePin
-                : l10n.vaultConfirmPin,
+                ? l10n.labelVaultChoosePin
+                : l10n.bodyVaultConfirmPin,
             submitLabel: _firstPin == null
-                ? l10n.vaultUnlock
-                : l10n.vaultCreate,
+                ? l10n.labelVaultUnlock
+                : l10n.labelVaultCreate,
             errorText: _errorText,
             enabled: !_busy,
             busy: _busy,
@@ -256,7 +258,7 @@ class _VaultGateScreenState extends ConsumerState<VaultGateScreen> {
     final now = DateTime.now();
     final lockedOut = lock.isLockedOutAt(now);
     final biometricAvailable =
-        ref.watch(vaultBiometricAvailableProvider).valueOrNull ?? false;
+        ref.watch(vaultBiometricAvailableProvider).value ?? false;
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(24),
@@ -271,10 +273,10 @@ class _VaultGateScreenState extends ConsumerState<VaultGateScreen> {
           const SizedBox(height: 24),
           VaultPinPad(
             key: _padKey,
-            prompt: l10n.vaultEnterPin,
-            submitLabel: l10n.vaultUnlock,
+            prompt: l10n.labelVaultEnterPin,
+            submitLabel: l10n.labelVaultUnlock,
             errorText: lockedOut
-                ? l10n.vaultLockedOut(lock.remainingLockoutSeconds(now))
+                ? l10n.bodyVaultLockedOut(lock.remainingLockoutSeconds(now))
                 : _errorText,
             enabled: !_busy && !lockedOut,
             busy: _busy,
@@ -295,15 +297,15 @@ class _VaultGateScreenState extends ConsumerState<VaultGateScreen> {
     switch (rejection) {
       case VaultPinRejection.empty:
       case VaultPinRejection.tooShort:
-        return l10n.vaultPinTooShort(AppConstants.vaultPinMinLength);
+        return l10n.bodyVaultPinTooShort(AppConstants.vaultPinMinLength);
       case VaultPinRejection.tooLong:
-        return l10n.vaultPinTooLong(AppConstants.vaultPinMaxLength);
+        return l10n.bodyVaultPinTooLong(AppConstants.vaultPinMaxLength);
       case VaultPinRejection.notDigits:
-        return l10n.vaultPinNotDigits;
+        return l10n.bodyVaultPinNotDigits;
       case VaultPinRejection.allSameDigit:
-        return l10n.vaultPinAllSame;
+        return l10n.bodyVaultPinAllSame;
       case VaultPinRejection.sequential:
-        return l10n.vaultPinSequential;
+        return l10n.bodyVaultPinSequential;
     }
   }
 
@@ -315,24 +317,24 @@ class _VaultGateScreenState extends ConsumerState<VaultGateScreen> {
         final left =
             AppConstants.vaultMaxFailedAttempts - outcome.failedAttempts;
         return left > 0
-            ? '${l10n.vaultWrongPin} — ${l10n.vaultAttemptsLeft(left)}'
-            : l10n.vaultWrongPin;
+            ? '${l10n.bodyVaultWrongPin} — ${l10n.bodyVaultAttemptsLeft(left)}'
+            : l10n.bodyVaultWrongPin;
       case VaultAuthStatus.invalidPin:
-        return l10n.vaultPinTooShort(AppConstants.vaultPinMinLength);
+        return l10n.bodyVaultPinTooShort(AppConstants.vaultPinMinLength);
       case VaultAuthStatus.lockedOut:
-        return l10n.vaultLockedOut(
+        return l10n.bodyVaultLockedOut(
           outcome.lockoutSeconds > 0
               ? outcome.lockoutSeconds
               : AppConstants.vaultLockoutSeconds,
         );
       case VaultAuthStatus.biometricFailed:
-        return l10n.vaultBiometricFailed;
+        return l10n.errorVaultBiometricFailed;
       case VaultAuthStatus.biometricUnavailable:
-        return l10n.vaultBiometricUnavailable;
+        return l10n.bodyVaultBiometricUnavailable;
       case VaultAuthStatus.cancelled:
         return '';
       case VaultAuthStatus.error:
-        return l10n.vaultAuthError;
+        return l10n.errorVaultAuth;
     }
   }
 }
@@ -363,13 +365,13 @@ class _KeystoreUnavailable extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             Text(
-              l10n.vaultKeystoreUnavailableTitle,
+              l10n.titleVaultKeystoreUnavailable,
               style: theme.textTheme.titleMedium,
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 8),
             Text(
-              l10n.vaultKeystoreUnavailableBody,
+              l10n.bodyVaultKeystoreUnavailable,
               style: theme.textTheme.bodyMedium,
               textAlign: TextAlign.center,
             ),

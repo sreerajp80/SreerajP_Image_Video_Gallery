@@ -189,10 +189,7 @@ void main() {
   // Text read out of someone's photo can be a payslip or a prescription. It
   // must not be able to reach a log line through a stray interpolation.
   test('the result never prints the text it holds', () {
-    const result = OcrResult(
-      text: 'Account 1234 5678, balance 40000',
-      language: OcrLanguage.english,
-    );
+    const result = OcrResult(text: 'Account 1234 5678, balance 40000');
 
     expect(result.toString(), isNot(contains('Account')));
     expect(result.toString(), isNot(contains('1234')));

@@ -5,12 +5,12 @@ import 'package:in_sreerajp_imgvidgal/repositories/database/database_helper.dart
 import 'package:in_sreerajp_imgvidgal/repositories/database/media_dao.dart';
 import 'package:in_sreerajp_imgvidgal/repositories/database/tag_dao.dart';
 import 'package:in_sreerajp_imgvidgal/repositories/tag_repository.dart';
-import 'package:in_sreerajp_imgvidgal/services/tags/tag_color_palette.dart';
-import 'package:in_sreerajp_imgvidgal/services/tags/tag_name_rules.dart';
+import 'package:in_sreerajp_imgvidgal/core/domain/tags/tag_color_palette.dart';
+import 'package:in_sreerajp_imgvidgal/core/domain/tags/tag_name_rules.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 MediaItem item(String id) {
-  final when = DateTime(2026, 1, 1);
+  final when = DateTime(2026);
   return MediaItem(
     id: id,
     path: '/storage/DCIM/$id.jpg',

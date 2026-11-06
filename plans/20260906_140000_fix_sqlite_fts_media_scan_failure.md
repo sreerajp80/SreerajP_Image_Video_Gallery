@@ -1,6 +1,6 @@
 # Plan: Fix SQLite FTS Module Error Causing Media Scan Failure
 
-**Status:** Completed
+**Status:** completed
 
 ## Problem
 When opening the app or tapping "Scan media on device", the media scan fails with "Media scan failed" ("മീഡിയ സ്കാൻ പരാജയപ്പെട്ടു").

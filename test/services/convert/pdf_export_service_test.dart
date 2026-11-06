@@ -9,7 +9,7 @@ import 'package:path/path.dart' as p;
 
 /// A small solid picture, encoded as PNG.
 Uint8List samplePng({int width = 60, int height = 40}) {
-  final image = img.Image(width: width, height: height, numChannels: 3);
+  final image = img.Image(width: width, height: height);
   img.fill(image, color: img.ColorRgb8(30, 90, 180));
   return img.encodePng(image);
 }

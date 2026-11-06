@@ -61,7 +61,7 @@ void main() {
     test('after: and before: read an ISO date', () {
       final query = parser.parse('after:2026-01-01 before:2026-06-30');
 
-      expect(query.after, DateTime(2026, 1, 1));
+      expect(query.after, DateTime(2026));
       // The end day is included in full, so a single-day range still matches.
       expect(query.before, DateTime(2026, 6, 30, 23, 59, 59, 999));
     });

@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:in_sreerajp_imgvidgal/core/errors/app_exception.dart';
 import 'package:in_sreerajp_imgvidgal/models/vault/vault_security_settings.dart';
+import 'package:in_sreerajp_imgvidgal/core/logging/app_logger.dart';
 
 /// Holds what the vault needs to remember between launches.
 ///
@@ -48,18 +49,30 @@ abstract class VaultCredentialStore {
 
 /// The real store, backed by `flutter_secure_storage`.
 ///
-/// On Android that means the values sit in `EncryptedSharedPreferences` under
-/// a key the Android Keystore holds — not in plain `SharedPreferences`, which
-/// the project's security rules forbid for anything sensitive.
+/// On Android the values are encrypted with AES-GCM under a key the Android
+/// Keystore holds — not in plain `SharedPreferences`, which the project's
+/// security rules forbid for anything sensitive.
 class SecureVaultCredentialStore implements VaultCredentialStore {
   final FlutterSecureStorage _storage;
 
+  /// How the vault's secrets are stored on Android. Each choice protects the
+  /// user's access to their own vault:
+  /// - `migrateOnAlgorithmChange`: if a later version of the plugin changes
+  ///   its cipher, existing data is moved to the new one, so the PIN keeps
+  ///   working after an update.
+  /// - `migrateWithBackup`: a copy is kept while such a move runs, so a crash
+  ///   half way cannot lose the PIN.
+  /// - `resetOnError: false`: the plugin's default is to wipe everything on a
+  ///   storage error. Here that would erase the vault PIN, so an error is
+  ///   reported instead and the data is left alone.
+  static const AndroidOptions androidOptions = AndroidOptions(
+    migrateWithBackup: true,
+    resetOnError: false,
+  );
+
   SecureVaultCredentialStore({FlutterSecureStorage? storage})
     : _storage =
-          storage ??
-          const FlutterSecureStorage(
-            aOptions: AndroidOptions(encryptedSharedPreferences: true),
-          );
+          storage ?? const FlutterSecureStorage(aOptions: androidOptions);
 
   static const String _keySalt = 'vault_pin_salt';
   static const String _keyHash = 'vault_pin_hash';
@@ -101,7 +114,11 @@ class SecureVaultCredentialStore implements VaultCredentialStore {
       final decoded = jsonDecode(raw);
       if (decoded is! Map) return VaultSecuritySettings.defaults;
       return VaultSecuritySettings.fromJson(decoded.cast<String, dynamic>());
-    } catch (_) {
+    } catch (error) {
+      AppLogger.warning(
+        'Vault settings were unreadable; defaults used',
+        error: error,
+      );
       // Corrupt settings must not lock anyone out. The defaults are the safe
       // ones anyway: biometrics on, and the shortest sensible auto-lock.
       return VaultSecuritySettings.defaults;

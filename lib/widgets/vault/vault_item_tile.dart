@@ -1,8 +1,9 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:in_sreerajp_imgvidgal/models/media_item.dart';
 import 'package:in_sreerajp_imgvidgal/models/vault_item.dart';
 import 'package:in_sreerajp_imgvidgal/providers/vault_providers.dart';
+import 'package:in_sreerajp_imgvidgal/widgets/common/sized_memory_image.dart';
 
 /// One tile in the vault grid.
 ///
@@ -54,9 +55,8 @@ class VaultItemTile extends ConsumerWidget {
             child: thumbnail.when(
               data: (bytes) => bytes == null
                   ? _FallbackIcon(mediaType: item.mediaType)
-                  : Image.memory(
+                  : SizedMemoryImage(
                       bytes,
-                      fit: BoxFit.cover,
                       // A preview that will not decode must not throw inside
                       // a grid; it falls back like a missing one.
                       errorBuilder: (_, _, _) =>

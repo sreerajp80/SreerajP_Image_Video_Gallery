@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:in_sreerajp_imgvidgal/l10n/generated/app_localizations.dart';
-import 'package:in_sreerajp_imgvidgal/services/albums/album_name_rules.dart';
+import 'package:in_sreerajp_imgvidgal/core/domain/albums/album_name_rules.dart';
 
 /// Makes or renames an album.
 ///
@@ -64,7 +64,9 @@ class _AlbumEditDialogState extends State<AlbumEditDialog> {
     final isRename = widget.currentName != null;
 
     return AlertDialog(
-      title: Text(isRename ? l10n.albumRenameTitle : l10n.albumCreateTitle),
+      title: Text(
+        isRename ? l10n.titleAlbumRenameTitle : l10n.titleAlbumCreate,
+      ),
       content: TextField(
         controller: _controller,
         autofocus: true,
@@ -73,19 +75,19 @@ class _AlbumEditDialogState extends State<AlbumEditDialog> {
         onChanged: (_) => setState(() => _touched = true),
         onSubmitted: (_) => _submit(),
         decoration: InputDecoration(
-          labelText: l10n.albumNameLabel,
-          hintText: l10n.albumNameHint,
+          labelText: l10n.labelAlbumName,
+          hintText: l10n.helpAlbumNameHint,
           errorText: _touched ? _errorText(l10n, check) : null,
         ),
       ),
       actions: <Widget>[
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: Text(l10n.albumCancel),
+          child: Text(l10n.actionAlbumCancel),
         ),
         FilledButton(
           onPressed: check.isValid ? _submit : null,
-          child: Text(isRename ? l10n.albumRename : l10n.albumSave),
+          child: Text(isRename ? l10n.titleAlbumRename : l10n.labelAlbumSave),
         ),
       ],
     );
@@ -94,9 +96,9 @@ class _AlbumEditDialogState extends State<AlbumEditDialog> {
   String? _errorText(AppLocalizations l10n, AlbumNameCheck check) {
     return switch (check.error) {
       null => null,
-      AlbumNameError.empty => l10n.albumErrorEmpty,
-      AlbumNameError.tooLong => l10n.albumErrorTooLong,
-      AlbumNameError.duplicate => l10n.albumErrorDuplicate,
+      AlbumNameError.empty => l10n.emptyAlbumError,
+      AlbumNameError.tooLong => l10n.bodyAlbumErrorTooLong,
+      AlbumNameError.duplicate => l10n.bodyAlbumErrorDuplicate,
     };
   }
 }

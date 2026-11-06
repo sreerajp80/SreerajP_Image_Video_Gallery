@@ -1,6 +1,6 @@
 import 'dart:typed_data';
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:in_sreerajp_imgvidgal/l10n/generated/app_localizations.dart';
 import 'package:in_sreerajp_imgvidgal/models/media_item.dart';
@@ -31,16 +31,16 @@ class VideoToolsScreen extends ConsumerWidget {
     return items.when(
       loading: () =>
           const Scaffold(body: Center(child: CircularProgressIndicator())),
-      error: (_, _) => _MessageScaffold(message: l10n.scanFailed),
+      error: (_, _) => _MessageScaffold(message: l10n.errorScanFailed),
       data: (list) {
         final index = list.indexWhere((item) => item.id == mediaId);
         if (index < 0) {
-          return _MessageScaffold(message: l10n.mediaUnavailable);
+          return _MessageScaffold(message: l10n.labelMediaUnavailable);
         }
 
         final item = list[index];
         if (!item.isVideo) {
-          return _MessageScaffold(message: l10n.videoToolsUnavailable);
+          return _MessageScaffold(message: l10n.bodyVideoToolsUnavailable);
         }
 
         return _ClipLoader(item: item);
@@ -62,13 +62,14 @@ class _ClipLoader extends ConsumerWidget {
 
     return info.when(
       loading: () => Scaffold(
-        appBar: AppBar(title: Text(l10n.videoToolsTitle)),
+        appBar: AppBar(title: Text(l10n.titleVideoTools)),
         body: const Center(child: CircularProgressIndicator()),
       ),
-      error: (_, _) => _MessageScaffold(message: l10n.videoToolsUnavailable),
+      error: (_, _) =>
+          _MessageScaffold(message: l10n.bodyVideoToolsUnavailable),
       data: (clip) {
         if (!clip.isUsable) {
-          return _MessageScaffold(message: l10n.videoToolsUnavailable);
+          return _MessageScaffold(message: l10n.bodyVideoToolsUnavailable);
         }
         return _VideoToolsBody(item: item, clip: clip);
       },
@@ -121,33 +122,35 @@ class _VideoToolsBodyState extends ConsumerState<_VideoToolsBody>
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(l10n.videoToolsTitle),
+        title: Text(l10n.titleVideoTools),
         bottom: TabBar(
           controller: _tabs,
           tabs: <Widget>[
-            Tab(text: l10n.videoTabFrame),
-            Tab(text: l10n.videoTabGif),
-            Tab(text: l10n.videoTabTrim),
+            Tab(text: l10n.tabVideoTabFrame),
+            Tab(text: l10n.tabVideoTabGif),
+            Tab(text: l10n.tabVideoTabTrim),
           ],
         ),
       ),
-      body: Column(
-        children: <Widget>[
-          if (progress != null)
-            LinearProgressIndicator(
-              value: progress.total == 0 ? null : progress.fraction,
+      body: SafeArea(
+        child: Column(
+          children: <Widget>[
+            if (progress != null)
+              LinearProgressIndicator(
+                value: progress.total == 0 ? null : progress.fraction,
+              ),
+            Expanded(
+              child: TabBarView(
+                controller: _tabs,
+                children: <Widget>[
+                  _buildFrameTab(duration),
+                  _buildGifTab(duration),
+                  _buildTrimTab(duration),
+                ],
+              ),
             ),
-          Expanded(
-            child: TabBarView(
-              controller: _tabs,
-              children: <Widget>[
-                _buildFrameTab(duration),
-                _buildGifTab(duration),
-                _buildTrimTab(duration),
-              ],
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
       floatingActionButton: _buildAction(l10n, duration, isBusy),
     );
@@ -222,14 +225,14 @@ class _VideoToolsBodyState extends ConsumerState<_VideoToolsBody>
         const SizedBox(height: 20),
         if (!range.isValid)
           Text(
-            l10n.trimTooShort,
+            l10n.bodyTrimTooShort,
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
               color: Theme.of(context).colorScheme.error,
             ),
           ),
         const SizedBox(height: 12),
         Text(
-          l10n.trimLosslessNote,
+          l10n.bodyTrimLosslessNote,
           style: Theme.of(context).textTheme.bodySmall,
         ),
       ],
@@ -252,7 +255,7 @@ class _VideoToolsBodyState extends ConsumerState<_VideoToolsBody>
                   format: ref.read(frameFormatProvider),
                 ),
           icon: const Icon(Icons.photo_camera_back_outlined),
-          label: Text(isBusy ? l10n.videoWorking : l10n.frameSaveAction),
+          label: Text(isBusy ? l10n.labelVideoWorking : l10n.actionFrameSave),
         );
 
       case 1:
@@ -265,7 +268,7 @@ class _VideoToolsBodyState extends ConsumerState<_VideoToolsBody>
                   clipDurationMs: duration,
                 ),
           icon: const Icon(Icons.gif_box_outlined),
-          label: Text(isBusy ? l10n.gifExporting : l10n.gifExportAction),
+          label: Text(isBusy ? l10n.labelGifExporting : l10n.actionGifExport),
         );
 
       default:
@@ -279,7 +282,7 @@ class _VideoToolsBodyState extends ConsumerState<_VideoToolsBody>
                   clipDurationMs: duration,
                 ),
           icon: const Icon(Icons.content_cut_rounded),
-          label: Text(isBusy ? l10n.videoWorking : l10n.trimAction),
+          label: Text(isBusy ? l10n.labelVideoWorking : l10n.actionTrim),
         );
     }
   }
@@ -298,13 +301,15 @@ class _VideoToolsBodyState extends ConsumerState<_VideoToolsBody>
           if (outcome == null) return;
           messenger.showSnackBar(
             SnackBar(
-              content: Text(l10n.videoJobSavedAs(p.basename(outcome.path))),
+              content: Text(l10n.bodyVideoJobSavedAs(p.basename(outcome.path))),
             ),
           );
           ref.read(videoToolsControllerProvider.notifier).clear();
         },
         error: (_, _) {
-          messenger.showSnackBar(SnackBar(content: Text(l10n.videoJobFailed)));
+          messenger.showSnackBar(
+            SnackBar(content: Text(l10n.errorVideoJobFailed)),
+          );
           ref.read(videoToolsControllerProvider.notifier).clear();
         },
       );
@@ -321,7 +326,7 @@ class _MessageScaffold extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(AppLocalizations.of(context)!.videoToolsTitle),
+        title: Text(AppLocalizations.of(context)!.titleVideoTools),
       ),
       body: Center(
         child: Padding(

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:in_sreerajp_imgvidgal/l10n/generated/app_localizations.dart';
 import 'package:in_sreerajp_imgvidgal/models/album_summary.dart';
@@ -35,7 +35,7 @@ class _AlbumPickerSheetState extends ConsumerState<AlbumPickerSheet> {
 
   Future<void> _createAlbum() async {
     final existing =
-        ref.read(virtualAlbumsProvider).valueOrNull ?? const <AlbumSummary>[];
+        ref.read(virtualAlbumsProvider).value ?? const <AlbumSummary>[];
     final name = await showDialog<String>(
       context: context,
       builder: (_) =>
@@ -71,7 +71,9 @@ class _AlbumPickerSheetState extends ConsumerState<AlbumPickerSheet> {
     navigator.pop();
     messenger.showSnackBar(
       SnackBar(
-        content: Text(failed ? l10n.albumErrorFailed : l10n.albumPickerSaved),
+        content: Text(
+          failed ? l10n.errorAlbumErrorFailed : l10n.bodyAlbumPickerSaved,
+        ),
       ),
     );
   }
@@ -81,7 +83,7 @@ class _AlbumPickerSheetState extends ConsumerState<AlbumPickerSheet> {
     final l10n = AppLocalizations.of(context)!;
     ScaffoldMessenger.of(
       context,
-    ).showSnackBar(SnackBar(content: Text(l10n.albumErrorFailed)));
+    ).showSnackBar(SnackBar(content: Text(l10n.errorAlbumErrorFailed)));
   }
 
   @override
@@ -92,7 +94,7 @@ class _AlbumPickerSheetState extends ConsumerState<AlbumPickerSheet> {
 
     // The stored membership seeds the ticks once, then the user's own choices
     // take over; re-seeding on every rebuild would undo every tap.
-    _selected ??= current.valueOrNull?.toSet();
+    _selected ??= current.value?.toSet();
 
     return SafeArea(
       child: Padding(
@@ -105,14 +107,14 @@ class _AlbumPickerSheetState extends ConsumerState<AlbumPickerSheet> {
               children: <Widget>[
                 Expanded(
                   child: Text(
-                    l10n.albumPickerTitle,
+                    l10n.titleAlbumPicker,
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                 ),
                 TextButton.icon(
                   onPressed: _createAlbum,
                   icon: const Icon(Icons.add),
-                  label: Text(l10n.albumPickerCreate),
+                  label: Text(l10n.actionAlbumPickerCreate),
                 ),
               ],
             ),
@@ -125,13 +127,13 @@ class _AlbumPickerSheetState extends ConsumerState<AlbumPickerSheet> {
                 ),
                 error: (_, _) => Padding(
                   padding: const EdgeInsets.symmetric(vertical: 32),
-                  child: Text(l10n.albumsLoadFailed),
+                  child: Text(l10n.errorAlbumsLoadFailed),
                 ),
                 data: (list) {
                   if (list.isEmpty) {
                     return Padding(
                       padding: const EdgeInsets.symmetric(vertical: 32),
-                      child: Text(l10n.albumPickerEmpty),
+                      child: Text(l10n.emptyAlbumPicker),
                     );
                   }
                   final selected = _selected ?? const <String>{};
@@ -143,7 +145,9 @@ class _AlbumPickerSheetState extends ConsumerState<AlbumPickerSheet> {
                       return CheckboxListTile(
                         value: selected.contains(album.id),
                         title: Text(album.name),
-                        subtitle: Text(l10n.albumItemCount(album.itemCount)),
+                        subtitle: Text(
+                          l10n.descAlbumItemCount(album.itemCount),
+                        ),
                         onChanged: (_) => setState(() {
                           final next = <String>{...selected};
                           if (!next.remove(album.id)) next.add(album.id);
@@ -160,7 +164,7 @@ class _AlbumPickerSheetState extends ConsumerState<AlbumPickerSheet> {
               alignment: Alignment.centerRight,
               child: FilledButton(
                 onPressed: _save,
-                child: Text(l10n.albumPickerDone),
+                child: Text(l10n.actionAlbumPickerDone),
               ),
             ),
           ],

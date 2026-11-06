@@ -1,10 +1,11 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:in_sreerajp_imgvidgal/l10n/generated/app_localizations.dart';
 import 'package:in_sreerajp_imgvidgal/models/exif_data.dart';
 import 'package:in_sreerajp_imgvidgal/models/media_item.dart';
 import 'package:in_sreerajp_imgvidgal/providers/viewer_providers.dart';
 import 'package:in_sreerajp_imgvidgal/widgets/viewer/media_details_sheet.dart';
+import 'package:in_sreerajp_imgvidgal/widgets/common/unit_format_context.dart';
 
 /// Bottom sheet displaying side-by-side technical metadata and camera EXIF
 /// attributes for Photo A and Photo B.
@@ -37,8 +38,8 @@ class CompareMetadataSheet extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
-    final exifA = ref.watch(mediaExifProvider(itemA)).valueOrNull;
-    final exifB = ref.watch(mediaExifProvider(itemB)).valueOrNull;
+    final exifA = ref.watch(mediaExifProvider(itemA)).value;
+    final exifB = ref.watch(mediaExifProvider(itemB)).value;
 
     return DraggableScrollableSheet(
       expand: false,
@@ -55,7 +56,7 @@ class CompareMetadataSheet extends ConsumerWidget {
                 const Icon(Icons.tune_outlined),
                 const SizedBox(width: 12),
                 Text(
-                  l10n.compareDetails,
+                  l10n.tooltipCompareDetails,
                   style: theme.textTheme.titleLarge?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
@@ -79,7 +80,7 @@ class CompareMetadataSheet extends ConsumerWidget {
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(
-                      l10n.comparePhotoA,
+                      l10n.labelComparePhotoA,
                       textAlign: TextAlign.center,
                       style: theme.textTheme.labelLarge?.copyWith(
                         color: theme.colorScheme.onPrimaryContainer,
@@ -101,7 +102,7 @@ class CompareMetadataSheet extends ConsumerWidget {
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(
-                      l10n.comparePhotoB,
+                      l10n.labelComparePhotoB,
                       textAlign: TextAlign.center,
                       style: theme.textTheme.labelLarge?.copyWith(
                         color: theme.colorScheme.onSecondaryContainer,
@@ -114,12 +115,12 @@ class CompareMetadataSheet extends ConsumerWidget {
             ),
             const SizedBox(height: 12),
             _CompareRow(
-              label: l10n.detailsFileName,
+              label: l10n.labelDetailsFileName,
               valA: itemA.displayName,
               valB: itemB.displayName,
             ),
             _CompareRow(
-              label: l10n.compareDimensions,
+              label: l10n.labelCompareDimensions,
               valA: itemA.width != null && itemA.height != null
                   ? '${itemA.width} × ${itemA.height} (${_megapixels(itemA.width!, itemA.height!)})'
                   : '—',
@@ -128,48 +129,48 @@ class CompareMetadataSheet extends ConsumerWidget {
                   : '—',
             ),
             _CompareRow(
-              label: l10n.compareFileSize,
-              valA: formatFileSize(itemA.size),
-              valB: formatFileSize(itemB.size),
+              label: l10n.labelCompareFileSize,
+              valA: context.units.bytes(itemA.size),
+              valB: context.units.bytes(itemB.size),
             ),
             _CompareRow(
-              label: l10n.detailsFormat,
+              label: l10n.labelDetailsFormat,
               valA: itemA.mimeType,
               valB: itemB.mimeType,
             ),
             _CompareRow(
-              label: l10n.compareDateTaken,
+              label: l10n.labelCompareDateTaken,
               valA: formatDetailDate(context, itemA.effectiveDate),
               valB: formatDetailDate(context, itemB.effectiveDate),
             ),
             const Divider(height: 24),
             _CompareRow(
-              label: l10n.compareCamera,
+              label: l10n.labelCompareCamera,
               valA: _cameraName(exifA),
               valB: _cameraName(exifB),
             ),
             _CompareRow(
-              label: l10n.compareAperture,
+              label: l10n.labelCompareAperture,
               valA: exifA?.fNumber != null ? 'f/${exifA!.fNumber}' : '—',
               valB: exifB?.fNumber != null ? 'f/${exifB!.fNumber}' : '—',
             ),
             _CompareRow(
-              label: l10n.compareShutterSpeed,
+              label: l10n.labelCompareShutterSpeed,
               valA: exifA?.exposureTime ?? '—',
               valB: exifB?.exposureTime ?? '—',
             ),
             _CompareRow(
-              label: l10n.compareIso,
-              valA: exifA?.iso != null ? 'ISO ${exifA!.iso}' : '—',
-              valB: exifB?.iso != null ? 'ISO ${exifB!.iso}' : '—',
+              label: l10n.labelCompareIso,
+              valA: exifA?.iso != null ? context.units.iso(exifA!.iso!) : '—',
+              valB: exifB?.iso != null ? context.units.iso(exifB!.iso!) : '—',
             ),
             _CompareRow(
-              label: l10n.compareFocalLength,
+              label: l10n.labelCompareFocalLength,
               valA: exifA?.focalLength != null
-                  ? '${exifA!.focalLength!.toStringAsFixed(1)} mm'
+                  ? context.units.millimetres(exifA!.focalLength!, decimals: 1)
                   : '—',
               valB: exifB?.focalLength != null
-                  ? '${exifB!.focalLength!.toStringAsFixed(1)} mm'
+                  ? context.units.millimetres(exifB!.focalLength!, decimals: 1)
                   : '—',
             ),
           ],

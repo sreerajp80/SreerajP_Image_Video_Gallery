@@ -3,14 +3,11 @@ import 'dart:convert';
 import 'package:in_sreerajp_imgvidgal/models/backup/backup_manifest.dart';
 import 'package:in_sreerajp_imgvidgal/models/backup/backup_media_record.dart';
 import 'package:in_sreerajp_imgvidgal/models/backup/backup_payload.dart';
+import 'package:in_sreerajp_imgvidgal/core/errors/app_exception.dart';
 
 /// Thrown when an archive body is not something this build can read.
-class BackupSerializerException implements Exception {
-  final String message;
-  const BackupSerializerException(this.message);
-
-  @override
-  String toString() => 'BackupSerializerException: $message';
+final class BackupSerializerException extends FeatureException {
+  const BackupSerializerException(super.message, {super.cause});
 }
 
 /// Turns a [BackupPayload] into the JSON that goes inside an archive, and
@@ -56,7 +53,10 @@ class BackupSerializer {
     try {
       decoded = jsonDecode(text);
     } catch (e) {
-      throw BackupSerializerException('Archive body is not valid JSON: $e');
+      throw BackupSerializerException(
+        'Archive body is not valid JSON',
+        cause: e,
+      );
     }
 
     if (decoded is! Map<String, dynamic>) {

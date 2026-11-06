@@ -17,7 +17,7 @@ void main() {
     late AlbumDao albumDao;
     late MediaDao mediaDao;
 
-    final now = DateTime(2026, 8, 29, 10, 0, 0);
+    final now = DateTime(2026, 8, 29, 10);
 
     final testMedia = MediaItem(
       id: 'media_100',

@@ -1,6 +1,6 @@
 # Viewer Controls Visibility and Layout Improvement
 
-**Status:** Completed
+**Status:** completed
 
 ## Files to Change
 

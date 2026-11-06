@@ -27,17 +27,10 @@ class PrivacyScrubOptions {
   });
 
   /// Preset that scrubs every trace of metadata for maximum privacy.
-  static const PrivacyScrubOptions fullScrub = PrivacyScrubOptions(
-    stripLocation: true,
-    stripCameraAndLensSerials: true,
-    stripTimestamps: true,
-    stripAuthorAndSoftware: true,
-    stripAllExif: true,
-  );
+  static const PrivacyScrubOptions fullScrub = PrivacyScrubOptions();
 
   /// Preset that removes location coordinates while preserving camera specs and date.
   static const PrivacyScrubOptions locationOnly = PrivacyScrubOptions(
-    stripLocation: true,
     stripCameraAndLensSerials: false,
     stripTimestamps: false,
     stripAuthorAndSoftware: false,
@@ -46,10 +39,7 @@ class PrivacyScrubOptions {
 
   /// Preset that removes hardware serial numbers and location while keeping camera model.
   static const PrivacyScrubOptions privacyBalanced = PrivacyScrubOptions(
-    stripLocation: true,
-    stripCameraAndLensSerials: true,
     stripTimestamps: false,
-    stripAuthorAndSoftware: true,
     stripAllExif: false,
   );
 

@@ -19,7 +19,7 @@ MediaItem item(
   String? address,
   bool favorite = false,
 }) {
-  final when = DateTime(2026, 1, 1);
+  final when = DateTime(2026);
   return MediaItem(
     id: id,
     path: '/storage/DCIM/$id',
@@ -155,10 +155,10 @@ void main() {
 
       test('a date range narrows the result', () async {
         await mediaDao.insertMediaItem(
-          item('old', name: 'holiday.jpg', taken: DateTime(2024, 5, 1)),
+          item('old', name: 'holiday.jpg', taken: DateTime(2024, 5)),
         );
         await mediaDao.insertMediaItem(
-          item('new', name: 'holiday_two.jpg', taken: DateTime(2026, 5, 1)),
+          item('new', name: 'holiday_two.jpg', taken: DateTime(2026, 5)),
         );
 
         expect(await idsFor('holiday after:2026-01-01'), <String>['new']);
@@ -212,10 +212,7 @@ void main() {
 
         final results = await repository.searchText(
           'holiday',
-          baseFilter: FilterOptions(
-            tagIds: <String>{beachId, familyId},
-            tagFilterMode: TagFilterMode.andMode,
-          ),
+          baseFilter: FilterOptions(tagIds: <String>{beachId, familyId}),
         );
 
         expect(results.map((r) => r.item.id).toList(), <String>['both']);
@@ -270,10 +267,7 @@ void main() {
 
           final results = await repository.searchText(
             'tag:family',
-            baseFilter: FilterOptions(
-              tagIds: <String>{beachId},
-              tagFilterMode: TagFilterMode.andMode,
-            ),
+            baseFilter: FilterOptions(tagIds: <String>{beachId}),
           );
 
           expect(results.map((r) => r.item.id).toList(), <String>['both']);

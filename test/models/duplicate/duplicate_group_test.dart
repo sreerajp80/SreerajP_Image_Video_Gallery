@@ -4,7 +4,7 @@ import 'package:in_sreerajp_imgvidgal/models/duplicate/duplicate_scan_state.dart
 import 'package:in_sreerajp_imgvidgal/models/media_item.dart';
 
 MediaItem item(String id, {int size = 100}) {
-  final when = DateTime(2026, 1, 1);
+  final when = DateTime(2026);
   return MediaItem(
     id: id,
     path: '/storage/DCIM/$id.jpg',
@@ -24,7 +24,7 @@ void main() {
       kind: DuplicateGroupKind.exact,
       items: <MediaItem>[
         item('keep', size: 900),
-        item('drop1', size: 100),
+        item('drop1'),
         item('drop2', size: 250),
       ],
       suggestedKeeperId: 'keep',

@@ -1,10 +1,10 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:in_sreerajp_imgvidgal/core/constants/app_constants.dart';
 import 'package:in_sreerajp_imgvidgal/providers/vault_providers.dart';
-import 'package:in_sreerajp_imgvidgal/services/vault/vault_lock_policy.dart';
+import 'package:in_sreerajp_imgvidgal/core/domain/vault/vault_lock_policy.dart';
 
 /// Shuts the vault when the app is backgrounded or left alone.
 ///

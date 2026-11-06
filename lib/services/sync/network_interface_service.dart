@@ -1,6 +1,7 @@
 import 'dart:io';
 
-import 'package:in_sreerajp_imgvidgal/services/sync/local_address_rules.dart';
+import 'package:in_sreerajp_imgvidgal/core/domain/sync/local_address_rules.dart';
+import 'package:in_sreerajp_imgvidgal/core/logging/app_logger.dart';
 
 /// One usable address on this device.
 class LocalNetworkAddress {
@@ -41,7 +42,6 @@ class NetworkInterfaceService {
   static Future<List<NetworkInterface>> _defaultLister() =>
       NetworkInterface.list(
         type: InternetAddressType.IPv4,
-        includeLoopback: false,
         includeLinkLocal: true,
       );
 
@@ -53,7 +53,8 @@ class NetworkInterfaceService {
     final List<NetworkInterface> interfaces;
     try {
       interfaces = await _lister();
-    } catch (_) {
+    } catch (error) {
+      AppLogger.warning('Listing network interfaces failed', error: error);
       // No network at all, or an OS that refused to enumerate. Neither is a
       // crash: the screen says there is no Wi-Fi to transfer over.
       return const <LocalNetworkAddress>[];

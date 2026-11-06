@@ -1,6 +1,6 @@
 # Fix Syntax Error in IntentChannelHandler.kt
 
-**Status:** Completed
+**Status:** completed
 
 ## Issue
 Running the Gradle build for release failed with compilation errors in `android/app/src/main/kotlin/in/sreerajp/imgvidgal/tools/IntentChannelHandler.kt`.

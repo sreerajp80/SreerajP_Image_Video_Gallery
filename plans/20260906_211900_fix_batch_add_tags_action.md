@@ -1,6 +1,6 @@
 # Plan: Fix Batch "Add Tags" and "Add to Album" Doing Nothing on Selection
 
-**Status:** Approved
+**Status:** completed
 
 ## Overview
 When selecting a photo and pressing **Add tags** in the bottom batch action bar, nothing happens. This occurs because the tag picker silently returns `null` when no tags exist in the database, without displaying any UI, sheet, or option to create a tag. Furthermore, even when tags do exist, the picker did not provide a way to create and apply a new tag. A similar issue affects **Add to album** when no albums have been created yet.

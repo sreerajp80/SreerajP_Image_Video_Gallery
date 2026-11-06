@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:in_sreerajp_imgvidgal/l10n/generated/app_localizations.dart';
 import 'package:in_sreerajp_imgvidgal/models/editor/crop_transform.dart';
 import 'package:in_sreerajp_imgvidgal/models/editor/redaction_region.dart';
@@ -71,33 +71,41 @@ class _RedactionCanvasState extends State<RedactionCanvas> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
 
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final size = Size(constraints.maxWidth, constraints.maxHeight);
-        return GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          onPanStart: (details) => setState(() {
-            _start = details.localPosition;
-            _current = details.localPosition;
-          }),
-          onPanUpdate: (details) =>
-              setState(() => _current = details.localPosition),
-          onPanEnd: (_) => _finish(size),
-          onPanCancel: () => _finish(size),
-          child: CustomPaint(
-            painter: _RedactionPainter(
-              regions: widget.regions,
-              pending: _rectFor(size),
-              fillColor: theme.colorScheme.inverseSurface.withValues(
-                alpha: 0.6,
+    // Like markup, drawing a box needs touch; the hint says so.
+    return Semantics(
+      container: true,
+      label: l10n.labelA11yRedactionArea,
+      value: l10n.bodyA11yRedactionValue(widget.regions.length),
+      hint: l10n.helpA11yDrawingNeedsTouchHint,
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final size = Size(constraints.maxWidth, constraints.maxHeight);
+          return GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onPanStart: (details) => setState(() {
+              _start = details.localPosition;
+              _current = details.localPosition;
+            }),
+            onPanUpdate: (details) =>
+                setState(() => _current = details.localPosition),
+            onPanEnd: (_) => _finish(size),
+            onPanCancel: () => _finish(size),
+            child: CustomPaint(
+              painter: _RedactionPainter(
+                regions: widget.regions,
+                pending: _rectFor(size),
+                fillColor: theme.colorScheme.inverseSurface.withValues(
+                  alpha: 0.6,
+                ),
+                borderColor: theme.colorScheme.primary,
               ),
-              borderColor: theme.colorScheme.primary,
+              size: size,
             ),
-            size: size,
-          ),
-        );
-      },
+          );
+        },
+      ),
     );
   }
 }
@@ -169,9 +177,9 @@ class RedactionControlsPanel extends StatelessWidget {
     final theme = Theme.of(context);
 
     final labels = <RedactionMode, String>{
-      RedactionMode.blur: l10n.redactBlur,
-      RedactionMode.pixelate: l10n.redactPixelate,
-      RedactionMode.blackout: l10n.redactBlackout,
+      RedactionMode.blur: l10n.labelRedactBlur,
+      RedactionMode.pixelate: l10n.labelRedactPixelate,
+      RedactionMode.blackout: l10n.labelRedactBlackout,
     };
 
     return ListView(
@@ -193,10 +201,9 @@ class RedactionControlsPanel extends StatelessWidget {
         ),
         if (settings.mode != RedactionMode.blackout)
           EditorSliderRow(
-            label: l10n.redactStrength,
+            label: l10n.labelRedactStrength,
             value: settings.strength,
             min: 0,
-            max: 1,
             neutral: 0.6,
             onChanged: (value) =>
                 onSettingsChanged(settings.copyWith(strength: value)),
@@ -209,8 +216,8 @@ class RedactionControlsPanel extends StatelessWidget {
               Flexible(
                 child: Text(
                   regionCount == 0
-                      ? l10n.redactHint
-                      : l10n.redactCount(regionCount),
+                      ? l10n.helpRedactHint
+                      : l10n.bodyRedactCount(regionCount),
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: theme.colorScheme.onSurfaceVariant,
                   ),
@@ -219,7 +226,7 @@ class RedactionControlsPanel extends StatelessWidget {
               TextButton.icon(
                 onPressed: regionCount > 0 ? onRemoveLast : null,
                 icon: const Icon(Icons.undo),
-                label: Text(l10n.redactRemoveLast),
+                label: Text(l10n.actionRedactRemoveLast),
               ),
             ],
           ),

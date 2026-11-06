@@ -1,3 +1,4 @@
+import 'package:material_ui/material_ui.dart';
 import 'package:go_router/go_router.dart';
 import 'package:in_sreerajp_imgvidgal/screens/albums/album_media_screen.dart';
 import 'package:in_sreerajp_imgvidgal/screens/albums/album_reorder_screen.dart';
@@ -18,6 +19,7 @@ import 'package:in_sreerajp_imgvidgal/screens/settings/default_app_settings_scre
 import 'package:in_sreerajp_imgvidgal/screens/settings/developer_settings_screen.dart';
 import 'package:in_sreerajp_imgvidgal/screens/settings/help_settings_screen.dart';
 import 'package:in_sreerajp_imgvidgal/screens/settings/language_settings_screen.dart';
+import 'package:in_sreerajp_imgvidgal/screens/settings/permissions_settings_screen.dart';
 import 'package:in_sreerajp_imgvidgal/screens/settings/privacy_settings_screen.dart';
 import 'package:in_sreerajp_imgvidgal/screens/settings/safety_settings_screen.dart';
 import 'package:in_sreerajp_imgvidgal/screens/settings/settings_screen.dart';
@@ -60,6 +62,9 @@ const String kRouteSettingsDefaultApp = '$kRouteSettings/default-app';
 
 /// Route path of the privacy settings screen.
 const String kRouteSettingsPrivacy = '$kRouteSettings/privacy';
+
+/// Route path of the screen that lists every Android permission the app uses.
+const String kRouteSettingsPermissions = '$kRouteSettings/permissions';
 
 /// Route path of the help topics list screen.
 const String kRouteSettingsHelp = '$kRouteSettings/help';
@@ -193,6 +198,11 @@ const String kRoutePdfImages = '/pdf-images';
 /// the albums, the private vault, backup and restore, the local transfer, and
 /// the in-image scanner, text reader, notes and PDF image tool.
 /// That completes the route hierarchy in `docs/architecture.md`.
+/// The app-wide messenger, for messages that do not belong to one screen,
+/// such as "this file could not be opened" after another app's link.
+final GlobalKey<ScaffoldMessengerState> rootScaffoldMessengerKey =
+    GlobalKey<ScaffoldMessengerState>();
+
 final GoRouter appRouter = GoRouter(
   initialLocation: kRouteTimeline,
   routes: <RouteBase>[
@@ -227,6 +237,10 @@ final GoRouter appRouter = GoRouter(
             GoRoute(
               path: 'privacy',
               builder: (context, state) => const PrivacySettingsScreen(),
+            ),
+            GoRoute(
+              path: 'permissions',
+              builder: (context, state) => const PermissionsSettingsScreen(),
             ),
             GoRoute(
               path: 'help',

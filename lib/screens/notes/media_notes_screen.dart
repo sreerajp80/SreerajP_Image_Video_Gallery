@@ -1,10 +1,10 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:in_sreerajp_imgvidgal/core/constants/app_constants.dart';
 import 'package:in_sreerajp_imgvidgal/l10n/generated/app_localizations.dart';
 import 'package:in_sreerajp_imgvidgal/providers/notes_providers.dart';
 import 'package:in_sreerajp_imgvidgal/providers/scan_providers.dart';
-import 'package:in_sreerajp_imgvidgal/services/scan/intent_channel.dart';
+import 'package:in_sreerajp_imgvidgal/models/scan/intent_exception.dart';
 import 'package:in_sreerajp_imgvidgal/widgets/notes/markdown_view.dart';
 
 /// The note editor at `/media-viewer/:id/notes`.
@@ -57,7 +57,7 @@ class _MediaNotesScreenState extends ConsumerState<MediaNotesScreen> {
       canPop: !_isDirty,
       onPopInvokedWithResult: (didPop, _) async {
         if (didPop) return;
-        if (await _confirmDiscard() && mounted) {
+        if (await _confirmDiscard() && context.mounted) {
           Navigator.of(context).pop();
         }
       },
@@ -65,11 +65,11 @@ class _MediaNotesScreenState extends ConsumerState<MediaNotesScreen> {
         length: 2,
         child: Scaffold(
           appBar: AppBar(
-            title: Text(l10n.notesTitle),
+            title: Text(l10n.titleNotes),
             bottom: TabBar(
               tabs: <Widget>[
-                Tab(text: l10n.notesWriteTab),
-                Tab(text: l10n.notesPreviewTab),
+                Tab(text: l10n.tabNotesWrite),
+                Tab(text: l10n.tabNotesPreview),
               ],
             ),
             actions: <Widget>[
@@ -77,23 +77,25 @@ class _MediaNotesScreenState extends ConsumerState<MediaNotesScreen> {
                 IconButton(
                   onPressed: _confirmDelete,
                   icon: const Icon(Icons.delete_outline),
-                  tooltip: l10n.notesDelete,
+                  tooltip: l10n.tooltipNotesDelete,
                 ),
               IconButton(
                 onPressed: _save,
                 icon: const Icon(Icons.check),
-                tooltip: l10n.notesSave,
+                tooltip: l10n.tooltipNotesSave,
               ),
             ],
           ),
-          body: note.when(
-            loading: () => const Center(child: CircularProgressIndicator()),
-            error: (_, __) => Center(child: Text(l10n.notesSaveFailed)),
-            data: (_) => TabBarView(
-              children: <Widget>[
-                _editor(context, l10n),
-                _preview(context, l10n),
-              ],
+          body: SafeArea(
+            child: note.when(
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (_, _) => Center(child: Text(l10n.errorNotesSaveFailed)),
+              data: (_) => TabBarView(
+                children: <Widget>[
+                  _editor(context, l10n),
+                  _preview(context, l10n),
+                ],
+              ),
             ),
           ),
         ),
@@ -124,7 +126,7 @@ class _MediaNotesScreenState extends ConsumerState<MediaNotesScreen> {
                     required maxLength,
                   }) => null,
               decoration: InputDecoration(
-                hintText: l10n.notesHint,
+                hintText: l10n.helpNotesHint,
                 border: const OutlineInputBorder(),
                 alignLabelWithHint: true,
               ),
@@ -133,7 +135,7 @@ class _MediaNotesScreenState extends ConsumerState<MediaNotesScreen> {
           ),
           const SizedBox(height: 8),
           Text(
-            l10n.notesCharacterCount(
+            l10n.bodyNotesCharacterCount(
               _controller.text.length,
               AppConstants.notesMaxLength,
             ),
@@ -150,13 +152,13 @@ class _MediaNotesScreenState extends ConsumerState<MediaNotesScreen> {
       child: MarkdownView(
         source: _controller.text,
         emptyState: Text(
-          l10n.notesEmpty,
+          l10n.emptyNotes,
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
             color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
         ),
         onOpenLink: _openLink,
-        onBlockedLink: () => _say(l10n.notesLinkBlocked),
+        onBlockedLink: () => _say(l10n.bodyNotesLinkBlocked),
       ),
     );
   }
@@ -168,7 +170,11 @@ class _MediaNotesScreenState extends ConsumerState<MediaNotesScreen> {
     try {
       await ref.read(scanActionRunnerProvider).open(uri);
     } on IntentException catch (error) {
-      _say(error.hasNoApp ? l10n.codeScanOpenFailed : l10n.notesLinkBlocked);
+      _say(
+        error.hasNoApp
+            ? l10n.errorCodeScanOpenFailed
+            : l10n.bodyNotesLinkBlocked,
+      );
     }
   }
 
@@ -177,7 +183,7 @@ class _MediaNotesScreenState extends ConsumerState<MediaNotesScreen> {
     final text = _controller.text;
 
     if (text.length > AppConstants.notesMaxLength) {
-      _say(l10n.notesTooLong);
+      _say(l10n.bodyNotesTooLong);
       return;
     }
 
@@ -188,9 +194,9 @@ class _MediaNotesScreenState extends ConsumerState<MediaNotesScreen> {
     if (!mounted) return;
     if (saved) {
       setState(() => _saved = text.trim());
-      _say(l10n.notesSaved);
+      _say(l10n.labelNotesSaved);
     } else {
-      _say(l10n.notesSaveFailed);
+      _say(l10n.errorNotesSaveFailed);
     }
   }
 
@@ -200,16 +206,16 @@ class _MediaNotesScreenState extends ConsumerState<MediaNotesScreen> {
     final leave = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(l10n.notesDiscardTitle),
-        content: Text(l10n.notesDiscardBody),
+        title: Text(l10n.titleNotesDiscard),
+        content: Text(l10n.bodyNotesDiscard),
         actions: <Widget>[
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: Text(l10n.notesDiscardKeep),
+            child: Text(l10n.actionNotesDiscardKeep),
           ),
           FilledButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: Text(l10n.notesDiscardLeave),
+            child: Text(l10n.actionNotesDiscardLeave),
           ),
         ],
       ),
@@ -224,16 +230,16 @@ class _MediaNotesScreenState extends ConsumerState<MediaNotesScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(l10n.notesDeleteTitle),
-        content: Text(l10n.notesDeleteBody),
+        title: Text(l10n.titleNotesDelete),
+        content: Text(l10n.bodyNotesDelete),
         actions: <Widget>[
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: Text(l10n.notesCancel),
+            child: Text(l10n.actionNotesCancel),
           ),
           FilledButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: Text(l10n.notesDelete),
+            child: Text(l10n.tooltipNotesDelete),
           ),
         ],
       ),
@@ -251,9 +257,9 @@ class _MediaNotesScreenState extends ConsumerState<MediaNotesScreen> {
         _saved = '';
         _controller.clear();
       });
-      _say(l10n.notesDeleted);
+      _say(l10n.labelNotesDeleted);
     } else {
-      _say(l10n.notesSaveFailed);
+      _say(l10n.errorNotesSaveFailed);
     }
   }
 

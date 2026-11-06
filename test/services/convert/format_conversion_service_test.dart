@@ -46,7 +46,7 @@ void main() {
     test('a PNG becomes a real JPEG', () {
       final result = service.convertSync(
         sourceBytes: samplePng(),
-        request: const ConversionRequest(format: ImageOutputFormat.jpeg),
+        request: const ConversionRequest(),
       );
 
       expect(result.width, 40);
@@ -80,7 +80,6 @@ void main() {
       final result = service.convertSync(
         sourceBytes: samplePng(width: 400, height: 200),
         request: const ConversionRequest(
-          format: ImageOutputFormat.jpeg,
           resize: ResizeSpec(mode: ResizeMode.longestSide, longestSide: 100),
         ),
       );
@@ -94,17 +93,11 @@ void main() {
 
       final high = service.convertSync(
         sourceBytes: source,
-        request: const ConversionRequest(
-          format: ImageOutputFormat.jpeg,
-          quality: 95,
-        ),
+        request: const ConversionRequest(quality: 95),
       );
       final low = service.convertSync(
         sourceBytes: source,
-        request: const ConversionRequest(
-          format: ImageOutputFormat.jpeg,
-          quality: 20,
-        ),
+        request: const ConversionRequest(quality: 20),
       );
 
       expect(low.bytes.length, lessThan(high.bytes.length));
@@ -146,7 +139,7 @@ void main() {
     test('preparing for JPEG flattens automatically', () {
       final prepared = service.prepare(
         sourceBytes: samplePng(alpha: 0),
-        request: const ConversionRequest(format: ImageOutputFormat.jpeg),
+        request: const ConversionRequest(),
       );
 
       expect(prepared.hasAlpha, isFalse);

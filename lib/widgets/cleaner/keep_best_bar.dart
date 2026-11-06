@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:in_sreerajp_imgvidgal/l10n/generated/app_localizations.dart';
 
 /// The bar along the bottom of the comparison screen.
@@ -43,7 +43,7 @@ class KeepBestBar extends StatelessWidget {
                   const SizedBox(width: 6),
                   Expanded(
                     child: Text(
-                      l10n.compareTrashNotice,
+                      l10n.bodyCompareTrashNotice,
                       style: theme.textTheme.bodySmall,
                     ),
                   ),
@@ -53,7 +53,7 @@ class KeepBestBar extends StatelessWidget {
               FilledButton.icon(
                 onPressed: trashCount > 0 ? onConfirm : null,
                 icon: const Icon(Icons.delete_sweep_outlined),
-                label: Text(l10n.compareKeepAndTrash(trashCount)),
+                label: Text(l10n.bodyCompareKeepAndTrash(trashCount)),
               ),
             ],
           ),

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:in_sreerajp_imgvidgal/core/routing/app_router.dart';
@@ -6,7 +6,7 @@ import 'package:in_sreerajp_imgvidgal/l10n/generated/app_localizations.dart';
 import 'package:in_sreerajp_imgvidgal/models/duplicate/duplicate_scan_state.dart';
 import 'package:in_sreerajp_imgvidgal/providers/duplicate_providers.dart';
 import 'package:in_sreerajp_imgvidgal/widgets/cleaner/duplicate_group_card.dart';
-import 'package:in_sreerajp_imgvidgal/widgets/viewer/media_details_sheet.dart';
+import 'package:in_sreerajp_imgvidgal/widgets/common/unit_format_context.dart';
 
 /// The duplicate cleaner at `/cleaner`.
 class DuplicateCleanerScreen extends ConsumerWidget {
@@ -20,12 +20,12 @@ class DuplicateCleanerScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(l10n.cleanerTitle),
+        title: Text(l10n.titleCleaner),
         actions: <Widget>[
           if (state.isRunning)
             TextButton(
               onPressed: controller.cancel,
-              child: Text(l10n.cleanerStop),
+              child: Text(l10n.actionCleanerStop),
             ),
         ],
       ),
@@ -44,8 +44,8 @@ class DuplicateCleanerScreen extends ConsumerWidget {
               icon: const Icon(Icons.search),
               label: Text(
                 state.stage == DuplicateScanStage.idle
-                    ? l10n.cleanerStart
-                    : l10n.cleanerRescan,
+                    ? l10n.labelCleanerStart
+                    : l10n.labelCleanerRescan,
               ),
             ),
     );
@@ -69,19 +69,21 @@ class _StatusPanel extends StatelessWidget {
 
     final lines = <String>[
       switch (state.stage) {
-        DuplicateScanStage.hashing => l10n.cleanerScanning(
+        DuplicateScanStage.hashing => l10n.bodyCleanerScanning(
           state.processed,
           state.total,
         ),
-        DuplicateScanStage.grouping => l10n.cleanerGrouping,
-        DuplicateScanStage.cancelled => l10n.cleanerCancelled,
-        DuplicateScanStage.failed => l10n.cleanerFailed,
-        DuplicateScanStage.done ||
-        DuplicateScanStage.idle => l10n.cleanerGroupsFound(state.groups.length),
+        DuplicateScanStage.grouping => l10n.labelCleanerGrouping,
+        DuplicateScanStage.cancelled => l10n.labelCleanerCancelled,
+        DuplicateScanStage.failed => l10n.errorCleanerFailed,
+        DuplicateScanStage.done || DuplicateScanStage.idle =>
+          l10n.bodyCleanerGroupsFound(state.groups.length),
       },
       if (state.groups.isNotEmpty)
-        l10n.cleanerReclaimable(formatFileSize(state.reclaimableBytes)),
-      if (state.failures > 0) l10n.cleanerFailures(state.failures),
+        l10n.bodyCleanerReclaimable(
+          context.units.bytes(state.reclaimableBytes),
+        ),
+      if (state.failures > 0) l10n.bodyCleanerFailures(state.failures),
     ];
 
     return Padding(
@@ -130,25 +132,25 @@ class _Body extends ConsumerWidget {
     return switch (state.stage) {
       DuplicateScanStage.idle => _Message(
         icon: Icons.copy_all_outlined,
-        title: l10n.cleanerIdleTitle,
-        body: l10n.cleanerIdleBody,
+        title: l10n.titleCleanerIdle,
+        body: l10n.bodyCleanerIdle,
       ),
       DuplicateScanStage.hashing || DuplicateScanStage.grouping => const Center(
         child: CircularProgressIndicator(),
       ),
       DuplicateScanStage.failed => _Message(
         icon: Icons.error_outline,
-        title: l10n.cleanerFailed,
-        body: state.errorMessage,
+        title: l10n.errorCleanerFailed,
+        body: l10n.bodyCleanerFailed,
       ),
       DuplicateScanStage.cancelled => _Message(
         icon: Icons.pause_circle_outline,
-        title: l10n.cleanerCancelled,
+        title: l10n.labelCleanerCancelled,
       ),
       DuplicateScanStage.done => _Message(
         icon: Icons.check_circle_outline,
-        title: l10n.cleanerNoneTitle,
-        body: l10n.cleanerNoneBody,
+        title: l10n.titleCleanerNone,
+        body: l10n.bodyCleanerNone,
       ),
     };
   }

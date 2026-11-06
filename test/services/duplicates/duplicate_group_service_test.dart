@@ -5,7 +5,7 @@ import 'package:in_sreerajp_imgvidgal/models/media_item.dart';
 import 'package:in_sreerajp_imgvidgal/services/duplicates/duplicate_group_service.dart';
 
 MediaItem item(String id, {int size = 1000, int side = 100}) {
-  final when = DateTime(2026, 1, 1);
+  final when = DateTime(2026);
   return MediaItem(
     id: id,
     path: '/storage/DCIM/$id.jpg',
@@ -161,8 +161,8 @@ void main() {
     });
 
     test('a picture with only one perceptual hash is not compared', () {
-      final a = const MediaHashes(mediaId: 'a', pHash: base);
-      final b = const MediaHashes(mediaId: 'b', pHash: base, dHash: base);
+      const a = MediaHashes(mediaId: 'a', pHash: base);
+      const b = MediaHashes(mediaId: 'b', pHash: base, dHash: base);
 
       expect(service.areSimilar(a, b), isFalse);
     });

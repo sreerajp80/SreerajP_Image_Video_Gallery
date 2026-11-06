@@ -16,7 +16,7 @@ void main() {
 
       expect(frame.length, TransferProtocol.headerBytes + 3);
       expect(
-        ByteData.sublistView(frame).getUint32(0, Endian.big),
+        ByteData.sublistView(frame).getUint32(0),
         3,
         reason: 'the prefix counts the body only',
       );
@@ -27,7 +27,7 @@ void main() {
     test('encodes an empty body', () {
       final frame = TransferProtocol.encode(FrameType.complete, const <int>[]);
       expect(frame.length, TransferProtocol.headerBytes);
-      expect(ByteData.sublistView(frame).getUint32(0, Endian.big), 0);
+      expect(ByteData.sublistView(frame).getUint32(0), 0);
     });
 
     test('refuses a body over the frame cap', () {
@@ -160,7 +160,7 @@ void main() {
       // read, or a hostile peer gets to name an allocation size.
       final reader = FrameReader(maxFrameBytes: 64);
       final header = Uint8List(TransferProtocol.headerBytes);
-      ByteData.sublistView(header).setUint32(0, 1 << 20, Endian.big);
+      ByteData.sublistView(header).setUint32(0, 1 << 20);
       header[4] = FrameType.fileChunk.wireValue;
 
       expect(
@@ -172,7 +172,7 @@ void main() {
     test('refuses an unknown frame type', () {
       final reader = FrameReader();
       final wire = Uint8List(TransferProtocol.headerBytes);
-      ByteData.sublistView(wire).setUint32(0, 0, Endian.big);
+      ByteData.sublistView(wire).setUint32(0, 0);
       wire[4] = 200;
 
       expect(() => reader.add(wire), throwsA(isA<TransferProtocolException>()));

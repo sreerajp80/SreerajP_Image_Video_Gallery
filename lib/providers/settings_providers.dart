@@ -4,16 +4,22 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:in_sreerajp_imgvidgal/core/config/app_config.dart';
 import 'package:in_sreerajp_imgvidgal/core/config/config_service.dart';
 import 'package:in_sreerajp_imgvidgal/models/settings/app_settings.dart';
+import 'package:in_sreerajp_imgvidgal/services/device/app_info_service.dart';
 import 'package:in_sreerajp_imgvidgal/services/settings/app_settings_service.dart';
+import 'package:in_sreerajp_imgvidgal/services/settings/language_preference_store.dart';
 import 'package:in_sreerajp_imgvidgal/theme/app_theme.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:flutter_riverpod/legacy.dart';
 
 /// Where the preferences file lives, once the app support directory is known.
 final appSettingsServiceProvider = FutureProvider<AppSettingsService>((
   ref,
 ) async {
   final directory = await getApplicationSupportDirectory();
-  return AppSettingsService(directory: directory);
+  return AppSettingsService(
+    directory: directory,
+    languageStore: SharedPreferencesLanguageStore(),
+  );
 });
 
 /// Holds the current preferences and writes every change back to disk.
@@ -50,6 +56,9 @@ class AppSettingsNotifier extends StateNotifier<AppSettings> {
   Future<void> setConfirmDestructive(bool value) =>
       _update(state.copyWith(confirmDestructive: value));
 
+  Future<void> setProtectAllScreens(bool value) =>
+      _update(state.copyWith(protectAllScreens: value));
+
   /// Puts everything back to how a fresh install starts.
   Future<void> resetToDefaults() => _update(AppSettings.defaults);
 
@@ -60,7 +69,8 @@ class AppSettingsNotifier extends StateNotifier<AppSettings> {
       final service = await _service();
       await service.save(updated);
     } catch (_) {
-      // Nothing to do and nothing worth saying. See the class comment.
+      // Safe to ignore: the settings service logs its own save failures, and
+      // the new value is already in use.
     }
   }
 }
@@ -76,6 +86,11 @@ final appSettingsProvider =
         service: () => ref.read(appSettingsServiceProvider.future),
       );
     });
+
+/// The installed app's version, read from Android.
+final appInfoServiceProvider = Provider<AppInfoService>((ref) {
+  return const AppInfoService();
+});
 
 /// The locale to run in, or `null` to follow the phone.
 final localeProvider = Provider<Locale?>((ref) {
@@ -98,5 +113,7 @@ final showFlashbacksProvider = Provider<bool>((ref) {
 /// `loadAndVerify` degrades to [AppConfig.fallback] rather than throwing, so
 /// this never lands in an error state over a bad config file.
 final appConfigProvider = FutureProvider<AppConfig>((ref) async {
-  return ConfigService().loadAndVerify();
+  return ConfigService().loadAndVerify(
+    appInfoService: ref.watch(appInfoServiceProvider),
+  );
 });

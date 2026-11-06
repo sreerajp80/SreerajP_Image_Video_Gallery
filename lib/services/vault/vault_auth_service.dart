@@ -5,7 +5,7 @@ import 'package:in_sreerajp_imgvidgal/models/vault/vault_security_settings.dart'
 import 'package:in_sreerajp_imgvidgal/services/vault/vault_biometric_service.dart';
 import 'package:in_sreerajp_imgvidgal/services/vault/vault_credential_store.dart';
 import 'package:in_sreerajp_imgvidgal/services/vault/vault_key_service.dart';
-import 'package:in_sreerajp_imgvidgal/services/vault/vault_pin_rules.dart';
+import 'package:in_sreerajp_imgvidgal/core/domain/vault/vault_pin_rules.dart';
 import 'package:in_sreerajp_imgvidgal/services/vault/vault_pin_service.dart';
 
 /// Decides who may open the vault.

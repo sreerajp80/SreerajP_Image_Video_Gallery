@@ -1,4 +1,17 @@
-# SreerajP Image Video Gallery
+# Project Idea — SreerajP Image Video Gallery
+
+This document is the product concept for the SreerajP Image Video Gallery app: what it does,
+for whom, and the promises it makes about privacy and safety. Read it first when you need to
+know *why* a feature exists or *what* it should do. How it is built is in
+[architecture.md](architecture.md); how it is protected is in [security.md](security.md).
+
+### Read first
+- [CLAUDE.md](../CLAUDE.md) / [AGENTS.md](../AGENTS.md)
+- [architecture.md](architecture.md)
+- [security.md](security.md)
+- [known_gaps.md](known_gaps.md)
+
+---
 
 ## 1. Overview
 An offline-first Android media gallery application designed for viewing, organizing, editing, converting, and managing local images and videos. The application prioritizes high performance, complete user privacy, modern design aesthetics, broad media format support, and non-destructive media operations.
@@ -158,9 +171,10 @@ An offline-first Android media gallery application designed for viewing, organiz
 - **Themes**: Full support for both Light and Dark themes (with True Black / AMOLED dark mode).
 - **Edge-to-Edge Experience**: Modern Android edge-to-edge transparent system bars navigation.
 - **Responsive Layout**: Adaptive layouts optimized for portrait, landscape, tablets, and foldable devices.
-- **Bi-directional Multi-Script Inclusion (English & Malayalam)**:
-  - Full multi-language support for English (`en`) and Malayalam (`ml`).
+- **Bi-directional Multi-Script Inclusion (English, Malayalam & Sanskrit)**:
+  - Full multi-language support for English (`en`), Malayalam (`ml`) and Sanskrit (`sa`).
   - Text direction detection per field (`detectTextDirection`) applied through `AdaptiveDirectionality` so Malayalam and Latin text flow properly.
+  - **Sanskrit (`sa`)** was added on 2026-09-26. It still needs a fluent reader's review — see [known_gaps.md](known_gaps.md) G9.
 - **Performance & Smoothness**: 60/120 FPS scrolling, lazy-loaded thumbnails, and asynchronous memory caching for smooth scrolling across thousands of media items.
 
 ---
@@ -169,8 +183,8 @@ An offline-first Android media gallery application designed for viewing, organiz
 
 | Component | Choice | Purpose |
 |-----------|--------|---------|
-| **Framework** | Flutter 3.44.8 | Cross-platform UI toolkit |
-| **Language** | Dart 3.12.2 | Type-safe programming language |
+| **Framework** | Flutter 3.41 or higher | Cross-platform UI toolkit |
+| **Language** | Dart 3.11 or higher | Type-safe programming language |
 | **State Management** | Riverpod | Predictable, reactive, testable state management |
 | **Navigation** | go_router | Declarative routing with deep-link support |
 | **Local Database & Search** | sqflite / SQLite FTS5 | Fast local metadata indexing, tag associations, album memberships, favorites, and full-text search |

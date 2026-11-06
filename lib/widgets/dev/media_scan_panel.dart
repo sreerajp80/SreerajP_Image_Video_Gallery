@@ -1,9 +1,9 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:in_sreerajp_imgvidgal/l10n/generated/app_localizations.dart';
 import 'package:in_sreerajp_imgvidgal/models/filter_options.dart';
 import 'package:in_sreerajp_imgvidgal/providers/media_providers.dart';
-import 'package:in_sreerajp_imgvidgal/services/media/media_store_channel.dart';
+import 'package:in_sreerajp_imgvidgal/models/media/media_permission_status.dart';
 import 'package:in_sreerajp_imgvidgal/widgets/media/media_thumbnail.dart';
 
 /// Development-only panel that exercises the Phase 3 scanner and thumbnail
@@ -29,7 +29,7 @@ class MediaScanPanel extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              l10n.scanMedia,
+              l10n.labelScanMedia,
               style: Theme.of(
                 context,
               ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
@@ -38,7 +38,7 @@ class MediaScanPanel extends ConsumerWidget {
             permission.when(
               data: (status) => _PermissionRow(status: status),
               loading: () => const LinearProgressIndicator(),
-              error: (error, _) => Text(l10n.scanFailed),
+              error: (error, _) => Text(l10n.errorScanFailed),
             ),
             const SizedBox(height: 12),
             Row(
@@ -50,12 +50,12 @@ class MediaScanPanel extends ConsumerWidget {
                             .read(mediaScanControllerProvider.notifier)
                             .scan(),
                   icon: const Icon(Icons.refresh),
-                  label: Text(l10n.scanMedia),
+                  label: Text(l10n.labelScanMedia),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: indexedCount.when(
-                    data: (count) => Text(l10n.indexedItems(count)),
+                    data: (count) => Text(l10n.bodyIndexedItems(count)),
                     loading: () => const SizedBox.shrink(),
                     error: (error, _) => const SizedBox.shrink(),
                   ),
@@ -72,14 +72,14 @@ class MediaScanPanel extends ConsumerWidget {
                     const SizedBox(height: 6),
                     Text(
                       value.total > 0
-                          ? l10n.scanProgress(value.scanned, value.total)
-                          : l10n.scanningMedia,
+                          ? l10n.bodyScanProgress(value.scanned, value.total)
+                          : l10n.bodyScanningMedia,
                       style: Theme.of(context).textTheme.bodySmall,
                     ),
                   ],
                 ),
                 loading: () => const LinearProgressIndicator(),
-                error: (error, _) => Text(l10n.scanFailed),
+                error: (error, _) => Text(l10n.errorScanFailed),
               ),
             ],
             scanState.when(
@@ -88,7 +88,7 @@ class MediaScanPanel extends ConsumerWidget {
                 return Padding(
                   padding: const EdgeInsets.only(top: 12),
                   child: Text(
-                    l10n.scanComplete(result.indexed),
+                    l10n.bodyScanComplete(result.indexed),
                     style: Theme.of(context).textTheme.bodySmall,
                   ),
                 );
@@ -97,7 +97,7 @@ class MediaScanPanel extends ConsumerWidget {
               error: (error, _) => Padding(
                 padding: const EdgeInsets.only(top: 12),
                 child: Text(
-                  l10n.scanFailed,
+                  l10n.errorScanFailed,
                   style: TextStyle(color: Theme.of(context).colorScheme.error),
                 ),
               ),
@@ -130,7 +130,7 @@ class _PermissionRow extends ConsumerWidget {
             size: 20,
           ),
           const SizedBox(width: 8),
-          Expanded(child: Text(l10n.permissionRequired)),
+          Expanded(child: Text(l10n.labelPermissionRequired)),
         ],
       );
     }
@@ -140,8 +140,8 @@ class _PermissionRow extends ConsumerWidget {
       children: [
         Text(
           status == MediaPermissionStatus.partial
-              ? l10n.permissionPartial
-              : l10n.permissionRequiredBody,
+              ? l10n.bodyPermissionPartial
+              : l10n.bodyPermissionRequired,
           style: Theme.of(context).textTheme.bodySmall,
         ),
         const SizedBox(height: 8),
@@ -151,7 +151,7 @@ class _PermissionRow extends ConsumerWidget {
               await ref.read(mediaPermissionServiceProvider).openSettings();
               ref.invalidate(mediaPermissionStatusProvider);
             },
-            child: Text(l10n.openSettings),
+            child: Text(l10n.labelOpenSettings),
           )
         else
           OutlinedButton(
@@ -159,7 +159,7 @@ class _PermissionRow extends ConsumerWidget {
               await ref.read(mediaPermissionServiceProvider).request();
               ref.invalidate(mediaPermissionStatusProvider);
             },
-            child: Text(l10n.grantPermission),
+            child: Text(l10n.labelGrantPermission),
           ),
       ],
     );
@@ -179,7 +179,7 @@ class _ThumbnailStrip extends ConsumerWidget {
       data: (media) {
         if (media.isEmpty) {
           return Text(
-            l10n.noMediaFound,
+            l10n.bodyNoMediaFound,
             style: Theme.of(context).textTheme.bodySmall,
           );
         }
@@ -199,8 +199,10 @@ class _ThumbnailStrip extends ConsumerWidget {
         height: 88,
         child: Center(child: CircularProgressIndicator()),
       ),
-      error: (error, _) =>
-          Text(l10n.scanFailed, style: Theme.of(context).textTheme.bodySmall),
+      error: (error, _) => Text(
+        l10n.errorScanFailed,
+        style: Theme.of(context).textTheme.bodySmall,
+      ),
     );
   }
 }

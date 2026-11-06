@@ -1,9 +1,9 @@
 # Implementation Progress — SreerajP Image Video Gallery
 
-This point-in-time document tracks the live implementation status across all phases of the SreerajP Image Video Gallery project.
+This living document tracks the implementation status across all phases of the SreerajP Image Video Gallery project. It is updated in place. Guideline gaps that are still open are listed in [known_gaps.md](known_gaps.md), not here.
 
-**Date:** 2026-08-18  
-**Status:** Completed
+**Last updated:** 2026-11-02  
+**Status:** All 14 build phases completed; guideline conformance work continues (see [known_gaps.md](known_gaps.md))
 
 ### Read first
 - [AGENTS.md](../AGENTS.md)
@@ -237,7 +237,7 @@ This point-in-time document tracks the live implementation status across all pha
 - [x] Ship `eng.traineddata` and `mal.traineddata` in `assets/tessdata/`, so the language data is in the app and is never downloaded.
 - [x] Build the pure `BarcodePayloadParser`: every code kind, the `WIFI:` escaping rule, and a product barcode that must not be offered as a phone number.
 - [x] Build the pure `ScanActionResolver`, the one place that decides what a code may do, on a permitted list of schemes rather than a forbidden one.
-- [x] Build `ImageScanService` on `mobile_scanner`'s `analyzeImage`, so a still file is read with no camera and no camera permission.
+- [x] Build `ImageScanService` on `mobile_scanner`'s `analyzeImage`, so a still file is read with no camera and no camera permission. (Replaced on 2026-11-02 by ZXing core on the app's `barcode` channel, because `mobile_scanner` used closed-source ML Kit — G47.)
 - [x] Build the native `IntentChannelHandler` and its Dart side, checking the scheme on both, and never using `Intent.parseUri`.
 - [x] Make Wi-Fi joining a suggestion the user confirms, never a silent join, with the password copied as sensitive so it stays out of the clipboard preview.
 - [x] Add the `<queries>` entries the six permitted schemes need, and `CHANGE_WIFI_STATE`, each with its reason beside it.
@@ -274,3 +274,62 @@ This point-in-time document tracks the live implementation status across all pha
 - [x] Add the `-dontwarn com.google.android.play.core.**` rule that the release build needs, without adding the proprietary Play Core SDK that hard rule 1 forbids.
 - [x] Add unit and widget tests for the direction detector, the directionality wrapper, the settings model, the settings store, the settings providers, and both new screens.
 - [x] Run the full check: `flutter gen-l10n`, `dart format .`, `flutter analyze` clean, 1793 tests passing, and an obfuscated split-per-ABI production APK built for all three ABIs.
+
+---
+
+## Update — 2026-09-26: Shared guidelines updated
+
+**Date:** 2026-09-26
+
+The `docs/guidelines` submodule moved to a newer version. The new rules add Sanskrit (`sa`) as a
+third mandatory language, a "Made with ❤️ from India" badge on the About screen, and stricter
+rules for the docs themselves. The phases above stay marked as they were on 2026-08-18; they
+were complete against the rules of that time.
+
+- [x] Update the `docs/guidelines` submodule.
+- [x] Bring `CLAUDE.md`, `AGENTS.md`, `README.md` and every file in `docs/` in line with the new
+      doc guidelines, and correct facts that no longer matched the code.
+- [x] Record the code the new rules need in [known_gaps.md](known_gaps.md).
+- [ ] Add Sanskrit: `app_sa.arb`, fallback delegates, language picker option (G1–G3).
+- [ ] Add the About-screen badge and localized `app_config.json` values (G4, G5).
+- [ ] Turn off App Bundle language splitting (G6).
+- [ ] Add global error handlers and a logger (G7, G8).
+- [ ] Audit tooltips, label length and ARB parity against the new rules.
+
+---
+
+## Update — 2026-09-26: Code brought in line with the guidelines
+
+**Date:** 2026-09-26
+
+The open items of the previous entry were done the same day under
+[plans/20260926_112415_code-guideline-conformance.md](../plans/20260926_112415_code-guideline-conformance.md).
+The previous entry's unticked boxes are left as they were written.
+
+- [x] Add Sanskrit: `app_sa.arb` (every key), fallback delegates, `संस्कृतम्` in the language picker (G1–G3).
+- [x] Add the About-screen badge and localized `app_config.json` values (G4, G5).
+- [x] Turn off App Bundle language splitting (G6).
+- [x] Add global error handlers and `AppLogger` (G7, G8).
+- [x] Audit tooltips (3 fixed), hard-coded strings (fixed) and ARB parity (7 Malayalam keys added;
+      parity, placeholder, label-length and Hindi-marker tests added).
+- [x] Move file, repository and platform-channel work out of the privacy sheet, the viewer and
+      the vault viewer into services and providers.
+- [x] Remove `package_info_plus`, and with it the `http` package, from the dependency tree.
+- [ ] Fluent-reader review of the Sanskrit (G9), and the other open items in
+      [known_gaps.md](known_gaps.md).
+
+## Update — 2026-11-04: Every remaining guideline gap closed
+
+Plan: [20261102_201827_finish-all-pending-guideline-work.md](../plans/20261102_201827_finish-all-pending-guideline-work.md).
+
+- [x] Owner's toolchain: Flutter 3.47.6, AGP 9.4.1, Kotlin 2.4.10, Gradle 9.8.0; `targetSdk` 36.
+- [x] Privacy policy (`PRIVACY.md`) and support email on the About screen (G17, G18).
+- [x] "Hide content" setting: `FLAG_SECURE` on every screen (G28).
+- [x] Pure rules moved to `lib/core/domain/`; no screen or widget imports a service (G46).
+- [x] Language stored under `app_language` (G10); every ARB key prefixed and length-checked (G11).
+- [x] Screen tests in all three languages (G12); a test file for every provider file (G13).
+- [x] Large files split or given a written reason (G41).
+- [x] Owner's review of every Sanskrit string applied on 2026-11-05 (G9).
+- [x] Four long Malayalam labels shortened by the owner (G50).
+- [ ] Owner's phone checks listed in [known_gaps.md](known_gaps.md) §2.
+

@@ -1,6 +1,6 @@
 import 'dart:typed_data';
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:in_sreerajp_imgvidgal/l10n/generated/app_localizations.dart';
@@ -8,6 +8,7 @@ import 'package:in_sreerajp_imgvidgal/models/media_item.dart';
 import 'package:in_sreerajp_imgvidgal/providers/media_providers.dart';
 import 'package:in_sreerajp_imgvidgal/providers/viewer_providers.dart';
 import 'package:in_sreerajp_imgvidgal/widgets/compare/curtain_comparison_view.dart';
+import 'package:in_sreerajp_imgvidgal/core/l10n/sanskrit_fallback_delegates.dart';
 
 void main() {
   final photoA = MediaItem(
@@ -47,7 +48,7 @@ void main() {
           thumbnailProvider(photoB).overrideWith((ref) => Uint8List(0)),
         ],
         child: MaterialApp(
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          localizationsDelegates: appLocalizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           home: Scaffold(
             body: CurtainComparisonView(

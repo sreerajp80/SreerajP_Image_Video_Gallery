@@ -3,7 +3,7 @@ import 'package:in_sreerajp_imgvidgal/models/vault/vault_lock_state.dart';
 
 void main() {
   group('VaultLockState', () {
-    final now = DateTime(2026, 8, 30, 12, 0, 0);
+    final now = DateTime(2026, 8, 30, 12);
 
     test('starts unknown, shut, and with a clean slate', () {
       const state = VaultLockState.initial;
@@ -29,10 +29,7 @@ void main() {
         const VaultLockState(status: VaultLockStatus.notSetUp).isSetUp,
         isFalse,
       );
-      expect(
-        const VaultLockState(status: VaultLockStatus.unknown).isSetUp,
-        isFalse,
-      );
+      expect(const VaultLockState().isSetUp, isFalse);
     });
 
     group('lockout', () {

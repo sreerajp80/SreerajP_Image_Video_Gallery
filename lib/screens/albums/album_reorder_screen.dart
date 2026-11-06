@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:in_sreerajp_imgvidgal/l10n/generated/app_localizations.dart';
@@ -57,7 +57,9 @@ class _AlbumReorderScreenState extends ConsumerState<AlbumReorderScreen> {
     if (!failed) context.pop();
     messenger.showSnackBar(
       SnackBar(
-        content: Text(failed ? l10n.albumErrorFailed : l10n.albumOrderSaved),
+        content: Text(
+          failed ? l10n.errorAlbumErrorFailed : l10n.bodyAlbumOrderSaved,
+        ),
       ),
     );
   }
@@ -68,7 +70,7 @@ class _AlbumReorderScreenState extends ConsumerState<AlbumReorderScreen> {
     final media = ref.watch(albumMediaProvider(widget.albumId));
 
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.albumReorderTitle)),
+      appBar: AppBar(title: Text(l10n.titleAlbumReorderTitle)),
       body: SafeArea(
         child: media.when(
           loading: () => const Center(child: CircularProgressIndicator()),
@@ -79,7 +81,7 @@ class _AlbumReorderScreenState extends ConsumerState<AlbumReorderScreen> {
             _items ??= loaded;
             final items = _items!;
             if (items.isEmpty) {
-              return AlbumErrorState(message: l10n.albumEmptyTitle);
+              return AlbumErrorState(message: l10n.titleAlbumEmpty);
             }
 
             return Column(
@@ -87,7 +89,7 @@ class _AlbumReorderScreenState extends ConsumerState<AlbumReorderScreen> {
                 Padding(
                   padding: const EdgeInsets.all(16),
                   child: Text(
-                    l10n.albumReorderHint,
+                    l10n.helpAlbumReorderHint,
                     style: Theme.of(context).textTheme.bodySmall,
                   ),
                 ),
@@ -122,7 +124,7 @@ class _AlbumReorderScreenState extends ConsumerState<AlbumReorderScreen> {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _items == null ? null : _save,
         icon: const Icon(Icons.check),
-        label: Text(l10n.albumReorderSave),
+        label: Text(l10n.actionAlbumReorderSave),
       ),
     );
   }

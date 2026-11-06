@@ -2,7 +2,9 @@ import 'dart:math' as math;
 import 'dart:typed_data';
 
 import 'package:image/image.dart' as img;
+import 'package:in_sreerajp_imgvidgal/core/logging/app_logger.dart';
 import 'package:in_sreerajp_imgvidgal/models/privacy/gps_fuzz_result.dart';
+import 'package:in_sreerajp_imgvidgal/services/privacy/exif_scrubber_service.dart';
 
 /// Service providing mathematical geodesy and GPS geofence shifting (location fuzzing).
 ///
@@ -15,7 +17,10 @@ class GpsGeofenceService {
 
   final math.Random _random;
 
-  GpsGeofenceService({math.Random? random}) : _random = random ?? math.Random();
+  /// Secure by default: this offset is what hides a home address, so it must
+  /// not be guessable.
+  GpsGeofenceService({math.Random? random})
+    : _random = random ?? math.Random.secure();
 
   /// Calculates a randomized GPS shift for the given [latitude] and [longitude].
   ///
@@ -124,13 +129,20 @@ class GpsGeofenceService {
   /// Modifies image [bytes] to overwrite the GPS EXIF tags with [fuzzResult].
   ///
   /// Returns the updated image bytes with fuzzed GPS coordinates embedded.
+  ///
+  /// Throws [PrivacyProcessingException] when the position cannot be moved.
+  /// It never returns the original, which still holds the true position.
   Uint8List applyFuzzToImageBytes({
     required Uint8List bytes,
     required GpsFuzzResult fuzzResult,
   }) {
     try {
       final decoded = img.decodeImage(bytes);
-      if (decoded == null) return bytes;
+      if (decoded == null) {
+        throw const PrivacyProcessingException(
+          'The picture could not be read to move its location',
+        );
+      }
 
       final exif = img.decodeJpgExif(bytes) ?? img.ExifData();
       exif.gpsIfd.setGpsLocation(
@@ -140,8 +152,15 @@ class GpsGeofenceService {
 
       decoded.exif = exif;
       return Uint8List.fromList(img.encodeJpg(decoded, quality: 92));
-    } catch (_) {
-      return bytes;
+    } on PrivacyProcessingException {
+      AppLogger.warning('Moving the location failed');
+      rethrow;
+    } catch (error) {
+      AppLogger.warning('Moving the location failed', error: error);
+      throw PrivacyProcessingException(
+        'The location could not be moved',
+        cause: error,
+      );
     }
   }
 

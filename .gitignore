@@ -88,3 +88,14 @@ $RECYCLE.BIN/
 
 # Project-specific test fixtures — never commit
 photo_vault*.jpg
+
+# OCR accuracy tool: real test pictures and run results stay local.
+# Only the README-listed made-up examples are committed.
+tool/ocr_eval/samples/*
+!tool/ocr_eval/samples/*_example_*
+tool/ocr_eval/results/
+
+# Local-only Play Console notes (never commit)
+play_closed_testing/
+/plans/20261106_063908_play-closed-testing-docs.md
+/change_log/20261106_*_play-closed-testing-docs.md

@@ -1,18 +1,27 @@
-# Feature Improvements, Standout Capabilities & Ecosystem Architecture
+# Feature Improvements & Standout Features — SreerajP Image Video Gallery
 
-This document provides a comprehensive inventory of targeted feature improvements, architectural boundaries, unique standout capabilities, and cross-application ecosystem workflows for the **SreerajP Image Video Gallery** application.
+This point-in-time document is a feature review of the **SreerajP Image Video Gallery** app:
+ideas for improving existing modules, standout features, and links with other SreerajP apps.
+Read it when you plan new features. It is a proposal, not a description of the app today — for
+current facts, trust [architecture.md](architecture.md) and [security.md](security.md). Claims
+that were wrong when written are corrected in §9 rather than edited in place.
 
-> **Read first:**
-> - [AGENTS.md](../AGENTS.md) / [CLAUDE.md](../CLAUDE.md) — Project hard rules and coding standards
-> - [guidelines/architecture.md](guidelines/architecture.md) — Architectural layers and component boundaries
-> - [guidelines/security.md](guidelines/security.md) — Security posture, storage, and networking restrictions
-> - [guidelines/flutter_project_engineering_standard.md](guidelines/flutter_project_engineering_standard.md) — Engineering and testing conventions
+**Date:** 2026-09-06  
+**Scope:** Feature ideas and a comparison with other gallery apps.  
+**Result:** Proposal only; nothing in the roadmap below is committed work.
+
+### Read first
+- [CLAUDE.md](../CLAUDE.md) / [AGENTS.md](../AGENTS.md) — project hard rules and coding standards
+- [architecture.md](architecture.md) — layers and component boundaries
+- [security.md](security.md) — security posture, storage and networking limits
+- [known_gaps.md](known_gaps.md) — guideline rules the app does not meet yet
+- [guidelines/flutter_project_engineering_standard.md](guidelines/flutter_project_engineering_standard.md) — engineering and testing conventions
 
 ---
 
 ## 1. Executive Summary & App Mission
 
-**SreerajP Image Video Gallery** (`in.sreerajp.imgvidgal`) is an offline-first, privacy-respecting, open-source media gallery and local processing workstation built with Flutter (^3.41.0+) and Dart (^3.11.0+) for Android (minSdk 24, targetSdk 35). It serves as a high-performance hub for viewing, organizing, searching, editing, converting, securing, and transferring local photos and videos without relying on cloud backends, proprietary tracking SDKs, or third-party ad networks.
+**SreerajP Image Video Gallery** (`in.sreerajp.imgvidgal`) is an offline-first, privacy-respecting, open-source media gallery and local processing workstation built with Flutter (^3.41.0+) and Dart (^3.11.0+) for Android (minSdk 24, targetSdk 36). It serves as a high-performance hub for viewing, organizing, searching, editing, converting, securing, and transferring local photos and videos without relying on cloud backends, proprietary tracking SDKs, or third-party ad networks.
 
 ### Core Architectural Non-Negotiables
 1. **100% Offline & Private:** Zero remote servers, zero cloud synchronization, zero telemetry, and zero analytics. Outbound network sockets are strictly restricted to authorized local Wi-Fi peer-to-peer transfers between devices on the same subnet.
@@ -250,10 +259,10 @@ The Android gallery landscape is dominated by two problematic archetypes:
 
 | Architectural Fact | Specification / Value |
 |---|---|
-| **Platform** | Android only (minSdk 24, targetSdk 35) |
+| **Platform** | Android only (minSdk 24, targetSdk 36) |
 | **Language & Framework** | Flutter (^3.41.0+) / Dart (^3.11.0+) / Native Kotlin |
 | **Package / App ID** | `in.sreerajp.imgvidgal` |
-| **State Management** | `flutter_riverpod` (v2.x, strict layer separation) |
+| **State Management** | `flutter_riverpod` (v3.x, strict layer separation) |
 | **Local Persistence** | `sqflite` (SQLite WAL mode, FTS5 full-text search) |
 | **Navigation** | `go_router` (declarative type-safe routing) |
 | **Cryptography** | Hardware-backed Android Keystore / StrongBox HSM, `pointycastle`, `crypto` |
@@ -306,3 +315,17 @@ By systematically executing this roadmap, **SreerajP Image Video Gallery** sets 
 - **Pro-Grade Media Workstation:** Offering tone curves, lossless stream-copy audio extraction, frame jog wheels, and format conversions previously found only on desktop applications.
 - **Uncompromised Data Sovereignty:** Demonstrating that cutting-edge capabilities—such as in-image OCR text search, perceptual duplicate cleaning, and multi-device synchronization—can be achieved with **zero internet permissions**, **zero remote servers**, and **zero tracking**.
 - **Deep Ecosystem Integration:** Anchoring the SreerajP application suite as the trusted media engine for journals, documents, contacts, communication, and system clocks.
+
+---
+
+## 9. Corrections (2026-09-26)
+
+These statements above were wrong or out of date. The text above is kept as written; trust this
+list and [security.md](security.md) instead.
+
+| Where | What it says | What is true |
+|---|---|---|
+| §1 "Core Architectural Non-Negotiables" item 1, §5.2 comparison table ("Internet Requirement"), §8 | "100% offline", "zero internet calls", "zero internet permissions" | The app makes no internet calls and contacts no server, but `android.permission.INTERNET` **is** declared, for the local Wi-Fi transfer feature only. `LocalAddressRules` refuses any non-private address. See [security.md](security.md) §19. |
+| §3.8 "Zero-Knowledge Local P2P Wi-Fi Sync" | Uses an "ephemeral X25519 key exchange" | There is no X25519. Both phones derive the session key from a random 9-byte pairing secret with HMAC-SHA256, then prove it with an HMAC challenge. Frames are AES-256-GCM. See [security.md](security.md) §19.2–§19.3. |
+| §1 item 6 and elsewhere | The UI is "bilingual" (English and Malayalam) | True today, but the shared guidelines now require Sanskrit (`sa`) as a third language. It is not added yet — [known_gaps.md](known_gaps.md) G1–G3. *(Later the same day: Sanskrit was added; see [known_gaps.md](known_gaps.md) §1.)* |
+| §7 roadmap | Target versions `v1.1.0`–`v1.5.0` | The app is already past these versions (see `pubspec.yaml`). The version labels are out of date; read the table as priority order only. |

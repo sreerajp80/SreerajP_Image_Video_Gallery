@@ -6,6 +6,7 @@ import 'package:in_sreerajp_imgvidgal/core/constants/app_constants.dart';
 import 'package:in_sreerajp_imgvidgal/core/storage/atomic_saver.dart';
 import 'package:in_sreerajp_imgvidgal/models/search/search_history_entry.dart';
 import 'package:path/path.dart' as p;
+import 'package:in_sreerajp_imgvidgal/core/logging/app_logger.dart';
 
 /// Remembers the searches the user ran, newest first.
 ///
@@ -45,7 +46,8 @@ class SearchHistoryService {
         if (entry != null) entries.add(entry);
       }
       return _sortAndCap(entries);
-    } catch (_) {
+    } catch (error) {
+      AppLogger.debug('Search history was unreadable; starting empty');
       // A hand-edited or half-written file is not worth an error dialog.
       return const <SearchHistoryEntry>[];
     }
@@ -102,7 +104,8 @@ class SearchHistoryService {
         filePath,
         Uint8List.fromList(utf8.encode(json)),
       );
-    } catch (_) {
+    } catch (error) {
+      AppLogger.warning('Saving search history failed', error: error);
       // Losing the recent list is not worth failing a search over.
     }
   }

@@ -11,6 +11,8 @@ import 'package:in_sreerajp_imgvidgal/services/vault/vault_crypto_service.dart';
 import 'package:in_sreerajp_imgvidgal/services/vault/vault_preview_service.dart';
 import 'package:in_sreerajp_imgvidgal/services/vault/vault_shredder_service.dart';
 import 'package:in_sreerajp_imgvidgal/services/vault/vault_storage_service.dart';
+import 'package:in_sreerajp_imgvidgal/core/errors/app_exception.dart';
+import 'package:in_sreerajp_imgvidgal/core/logging/app_logger.dart';
 
 /// Moves media out of the public gallery and into the vault.
 ///
@@ -77,7 +79,11 @@ class VaultImportService {
             shredded++;
           }
         }
-      } catch (_) {
+      } catch (error) {
+        AppLogger.warning(
+          'Moving one item into the vault failed',
+          error: error,
+        );
         failed++;
       }
       onProgress?.call(index + 1, items.length);
@@ -93,7 +99,10 @@ class VaultImportService {
   /// Imports one item, cleaning up after itself if anything goes wrong.
   Future<VaultItem> _importOne(MediaItem item) async {
     if (item.size > AppConstants.vaultMaxImportBytes) {
-      throw StateError('the file is too large for the vault');
+      throw const VaultException(
+        'The file is too large for the vault',
+        code: 'too_large',
+      );
     }
 
     // 1. The payload. Nothing about the original changes yet.
@@ -130,9 +139,6 @@ class VaultImportService {
         sizeBytes: payload.cipherSizeBytes,
         iv: payload.iv,
         thumbnailIv: thumbnailIv,
-        // The GCM tag is appended to the ciphertext by the platform cipher,
-        // so it lives in the payload rather than in a column of its own.
-        authTag: null,
         dateVaulted: DateTime.now(),
         dateTaken: item.dateTaken,
         width: item.width,
@@ -168,6 +174,7 @@ class VaultImportService {
       final file = File(await _storage.pathFor(fileName));
       if (await file.exists()) await file.delete();
     } catch (_) {
+      // Safe to ignore: the orphan sweep at the next unlock removes it.
       // Already gone, or unreachable. Either way there is nothing useful to
       // do about it here, and the orphan sweep will catch it.
     }

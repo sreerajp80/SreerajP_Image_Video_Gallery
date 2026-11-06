@@ -354,7 +354,12 @@ class MediaStoreChannelHandler(
 
         worker.execute {
             val bytes = try {
-                loadThumbnail(Uri.parse(uriString), width, height)
+                val uri = Uri.parse(uriString)
+                if (IncomingUriRules.isAllowed(activity, uri)) {
+                    loadThumbnail(uri, width, height)
+                } else {
+                    null
+                }
             } catch (e: Throwable) {
                 null
             }
@@ -423,7 +428,12 @@ class MediaStoreChannelHandler(
 
         worker.execute {
             val bytes = try {
-                readBytes(Uri.parse(uriString), maxBytes)
+                val uri = Uri.parse(uriString)
+                if (IncomingUriRules.isAllowed(activity, uri)) {
+                    readBytes(uri, maxBytes)
+                } else {
+                    null
+                }
             } catch (e: Throwable) {
                 null
             }

@@ -1,6 +1,7 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:in_sreerajp_imgvidgal/l10n/generated/app_localizations.dart';
 import 'package:in_sreerajp_imgvidgal/models/sync/transfer_progress.dart';
+import 'package:in_sreerajp_imgvidgal/widgets/common/unit_format_context.dart';
 
 /// Shows how far a transfer has got.
 ///
@@ -28,7 +29,7 @@ class TransferProgressView extends StatelessWidget {
         ),
         const SizedBox(height: 12),
         Text(
-          l10n.syncProgressFiles(progress.filesDone, progress.filesTotal),
+          l10n.bodySyncProgressFiles(progress.filesDone, progress.filesTotal),
           style: theme.textTheme.bodyMedium,
         ),
         if (progress.currentName != null) ...[
@@ -45,7 +46,10 @@ class TransferProgressView extends StatelessWidget {
         if (progress.bytesTotal > 0) ...[
           const SizedBox(height: 4),
           Text(
-            '${_size(progress.bytesDone)} / ${_size(progress.bytesTotal)}',
+            l10n.bodyTransferBytesProgress(
+              context.units.bytes(progress.bytesDone),
+              context.units.bytes(progress.bytesTotal),
+            ),
             style: theme.textTheme.bodySmall?.copyWith(
               color: theme.colorScheme.onSurfaceVariant,
             ),
@@ -53,15 +57,5 @@ class TransferProgressView extends StatelessWidget {
         ],
       ],
     );
-  }
-
-  /// A short byte size. Digits and units only, so it needs no translation.
-  static String _size(int bytes) {
-    if (bytes < 1024) return '$bytes B';
-    if (bytes < 1024 * 1024) return '${(bytes / 1024).toStringAsFixed(0)} KB';
-    if (bytes < 1024 * 1024 * 1024) {
-      return '${(bytes / (1024 * 1024)).toStringAsFixed(1)} MB';
-    }
-    return '${(bytes / (1024 * 1024 * 1024)).toStringAsFixed(2)} GB';
   }
 }

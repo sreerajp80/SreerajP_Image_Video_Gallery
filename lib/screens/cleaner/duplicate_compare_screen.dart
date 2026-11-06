@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:in_sreerajp_imgvidgal/l10n/generated/app_localizations.dart';
 import 'package:in_sreerajp_imgvidgal/models/duplicate/duplicate_group.dart';
@@ -31,12 +31,12 @@ class DuplicateCompareScreen extends ConsumerWidget {
 
     if (group == null) {
       return Scaffold(
-        appBar: AppBar(title: Text(l10n.compareTitle)),
+        appBar: AppBar(title: Text(l10n.titleCompare)),
         body: Center(
           child: Padding(
             padding: const EdgeInsets.all(24),
             child: Text(
-              l10n.compareGroupGone,
+              l10n.bodyCompareGroupGone,
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.titleMedium,
             ),
@@ -55,15 +55,15 @@ class DuplicateCompareScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(l10n.compareTitle),
+        title: Text(l10n.titleCompare),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(28),
           child: Padding(
             padding: const EdgeInsets.only(bottom: 8),
             child: Text(
               group.kind == DuplicateGroupKind.exact
-                  ? l10n.cleanerKindExact
-                  : l10n.cleanerKindSimilar,
+                  ? l10n.labelCleanerKindExact
+                  : l10n.labelCleanerKindSimilar,
               style: Theme.of(context).textTheme.labelMedium,
             ),
           ),
@@ -116,16 +116,16 @@ class DuplicateCompareScreen extends ConsumerWidget {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: Text(l10n.compareConfirmTitle(count)),
-        content: Text(l10n.compareConfirmBody),
+        title: Text(l10n.titleCompareConfirm(count)),
+        content: Text(l10n.bodyCompareConfirm),
         actions: <Widget>[
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: Text(l10n.compareCancel),
+            child: Text(l10n.actionCompareCancel),
           ),
           FilledButton(
             onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: Text(l10n.compareConfirm),
+            child: Text(l10n.actionCompareConfirm),
           ),
         ],
       ),
@@ -140,7 +140,9 @@ class DuplicateCompareScreen extends ConsumerWidget {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          moved == null ? l10n.compareFailed : l10n.compareMoved(moved),
+          moved == null
+              ? l10n.errorCompareFailed
+              : l10n.bodyCompareMoved(moved),
         ),
       ),
     );

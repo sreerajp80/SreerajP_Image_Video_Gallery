@@ -7,6 +7,7 @@ import 'package:in_sreerajp_imgvidgal/models/media_item.dart';
 import 'package:in_sreerajp_imgvidgal/repositories/database/media_dao.dart';
 import 'package:in_sreerajp_imgvidgal/services/duplicates/content_hash_service.dart';
 import 'package:in_sreerajp_imgvidgal/services/duplicates/duplicate_group_service.dart';
+import 'package:in_sreerajp_imgvidgal/core/logging/app_logger.dart';
 
 /// Runs a duplicate scan across the indexed library.
 ///
@@ -111,13 +112,15 @@ class DuplicateScanService {
 
       report(state.copyWith(stage: DuplicateScanStage.done, groups: groups));
       return state;
-    } catch (e) {
-      report(
-        state.copyWith(
-          stage: DuplicateScanStage.failed,
-          errorMessage: e.toString(),
-        ),
+    } catch (error, stackTrace) {
+      // The screen shows a plain, translated message. The detail goes to the
+      // log only: exception text can hold a path or a class name (§11.2).
+      AppLogger.error(
+        'Duplicate scan failed',
+        error: error,
+        stackTrace: stackTrace,
       );
+      report(state.copyWith(stage: DuplicateScanStage.failed));
       return state;
     }
   }

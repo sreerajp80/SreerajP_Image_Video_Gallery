@@ -39,7 +39,7 @@ void main() {
 
   group('fromMap', () {
     test('a full map is read straight through', () {
-      final info = VideoClipInfo.fromMap(<String, dynamic>{
+      final info = VideoClipInfo.fromMap(const <String, dynamic>{
         'durationMs': 4200,
         'width': 640,
         'height': 480,
@@ -57,7 +57,7 @@ void main() {
     });
 
     test('a map with nothing in it gives zeros rather than throwing', () {
-      final info = VideoClipInfo.fromMap(<String, dynamic>{});
+      final info = VideoClipInfo.fromMap(const <String, dynamic>{});
 
       expect(info, VideoClipInfo.unknown);
       expect(info.isUsable, isFalse);

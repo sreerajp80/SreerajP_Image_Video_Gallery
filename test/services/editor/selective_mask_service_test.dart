@@ -11,7 +11,6 @@ void main() {
     test('linear mask weight is 1.0 before start and 0.0 past end', () {
       const mask = SelectiveMask(
         id: 'lin_1',
-        shape: MaskShape.linear,
         startPoint: NormalizedPoint(0.2, 0.5),
         endPoint: NormalizedPoint(0.8, 0.5),
         feather: 0.0,
@@ -57,7 +56,6 @@ void main() {
         shape: MaskShape.radial,
         startPoint: NormalizedPoint(0.5, 0.5),
         endPoint: NormalizedPoint(0.8, 0.5),
-        invert: false,
       );
       const inverted = SelectiveMask(
         id: 'inv',

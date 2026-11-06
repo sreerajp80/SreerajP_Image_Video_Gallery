@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:in_sreerajp_imgvidgal/core/constants/app_constants.dart';
 import 'package:in_sreerajp_imgvidgal/l10n/generated/app_localizations.dart';
 import 'package:in_sreerajp_imgvidgal/models/video/gif_export_options.dart';
@@ -55,7 +55,7 @@ class GifOptionsPanel extends StatelessWidget {
               onRangeChanged(options.range.copyWith(endMs: value)),
         ),
         const SizedBox(height: 20),
-        Text(l10n.gifFrameRateLabel, style: theme.textTheme.titleSmall),
+        Text(l10n.labelGifFrameRate, style: theme.textTheme.titleSmall),
         const SizedBox(height: 8),
         Wrap(
           spacing: 8,
@@ -73,7 +73,7 @@ class GifOptionsPanel extends StatelessWidget {
               .toList(growable: false),
         ),
         const SizedBox(height: 20),
-        Text(l10n.gifSizeLabel, style: theme.textTheme.titleSmall),
+        Text(l10n.labelGifSize, style: theme.textTheme.titleSmall),
         const SizedBox(height: 8),
         Wrap(
           spacing: 8,
@@ -92,17 +92,20 @@ class GifOptionsPanel extends StatelessWidget {
         ),
         SwitchListTile(
           contentPadding: EdgeInsets.zero,
-          title: Text(l10n.gifLoopLabel),
+          title: Text(l10n.titleGifLoopLabel),
           value: options.loop,
           onChanged: onLoopChanged,
         ),
         const SizedBox(height: 8),
-        Text(l10n.gifFrameCount(frameCount), style: theme.textTheme.bodyMedium),
+        Text(
+          l10n.bodyGifFrameCount(frameCount),
+          style: theme.textTheme.bodyMedium,
+        ),
         if (isCapped)
           Padding(
             padding: const EdgeInsets.only(top: 4),
             child: Text(
-              l10n.gifCapped,
+              l10n.bodyGifCapped,
               style: theme.textTheme.bodySmall?.copyWith(
                 color: theme.colorScheme.onSurfaceVariant,
               ),

@@ -1,6 +1,6 @@
 # Plan: Media Privacy, EXIF Scrubber & Geofence Shifting
 
-**Status:** Completed
+**Status:** completed
 
 ## Summary
 

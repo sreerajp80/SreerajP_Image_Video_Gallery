@@ -7,6 +7,7 @@ import 'package:in_sreerajp_imgvidgal/models/media_item.dart';
 import 'package:in_sreerajp_imgvidgal/repositories/database/media_dao.dart';
 import 'package:in_sreerajp_imgvidgal/services/media/media_store_channel.dart';
 import 'package:in_sreerajp_imgvidgal/services/media/media_type_resolver.dart';
+import 'package:in_sreerajp_imgvidgal/core/logging/app_logger.dart';
 
 /// Stage the scanner is currently in.
 enum ScanPhase {
@@ -112,6 +113,10 @@ class MediaScannerService {
   ScanProgress _progress = const ScanProgress(phase: ScanPhase.idle);
   bool _isScanning = false;
 
+  /// Unreadable rows seen by the last full pass. They are on the device but
+  /// never in the index, so the quick-scan count check allows for them.
+  int _lastFullPassSkipped = 0;
+
   MediaScannerService({
     required MediaStoreChannel channel,
     required MediaDao mediaDao,
@@ -160,67 +165,40 @@ class MediaScannerService {
           ? await _mediaDao.getNewestDateModifiedMs()
           : null;
 
-      final seenIds = <String>{};
-      var scanned = 0;
-      var skipped = 0;
-      var indexed = 0;
-      var offset = 0;
+      var pass = await _indexPass(sinceDateModifiedMs: since);
+      var fullPass = !incremental;
 
-      while (true) {
-        final entries = await _channel.queryMedia(
-          offset: offset,
-          limit: _batchSize,
-          sinceDateModifiedMs: since,
-        );
-        if (entries.isEmpty) break;
-
-        final items = <MediaItem>[];
-        for (final entry in entries) {
-          scanned++;
-          try {
-            final item = mapEntryToMediaItem(entry);
-            items.add(item);
-            seenIds.add(item.id);
-          } catch (_) {
-            // A single bad row is counted and skipped, never fatal.
-            skipped++;
-          }
+      // The quick pass only sees rows newer than the newest one indexed, so it
+      // misses deletions and files that arrive with an old date. If the device
+      // count no longer matches the index, fall back to a full pass. Skipped
+      // with partial access, where hidden items make the numbers differ.
+      if (incremental && permission == MediaPermissionStatus.granted) {
+        final stored = await _mediaDao.getMediaStoreBackedCount();
+        if (stored + _lastFullPassSkipped != total) {
+          AppLogger.debug('Quick scan count mismatch; running a full pass');
+          pass = await _indexPass(sinceDateModifiedMs: null);
+          fullPass = true;
         }
-
-        if (items.isNotEmpty) {
-          await _mediaDao.batchUpsertMediaItems(items);
-          indexed += items.length;
-        }
-
-        _emit(
-          _progress.copyWith(
-            phase: ScanPhase.indexing,
-            scanned: scanned,
-            skipped: skipped,
-          ),
-        );
-
-        if (entries.length < _batchSize) break;
-        offset += entries.length;
       }
+      if (fullPass) _lastFullPassSkipped = pass.skipped;
 
       var removed = 0;
-      if (!incremental && permission == MediaPermissionStatus.granted) {
+      if (fullPass && permission == MediaPermissionStatus.granted) {
         _emit(_progress.copyWith(phase: ScanPhase.cleaningUp));
-        removed = await _mediaDao.deleteMediaItemsMissingFrom(seenIds);
+        removed = await _mediaDao.deleteMediaItemsMissingFrom(pass.seenIds);
       }
 
       _emit(
         _progress.copyWith(
           phase: ScanPhase.completed,
-          scanned: scanned,
-          skipped: skipped,
+          scanned: pass.scanned,
+          skipped: pass.skipped,
         ),
       );
 
       return ScanResult(
-        indexed: indexed,
-        skipped: skipped,
+        indexed: pass.indexed,
+        skipped: pass.skipped,
         removed: removed,
         permissionStatus: permission,
       );
@@ -233,6 +211,63 @@ class MediaScannerService {
     } finally {
       _isScanning = false;
     }
+  }
+
+  /// Reads MediaStore page by page and upserts every readable row.
+  ///
+  /// With [sinceDateModifiedMs] only rows modified at or after it are read.
+  Future<_PassResult> _indexPass({required int? sinceDateModifiedMs}) async {
+    final seenIds = <String>{};
+    var scanned = 0;
+    var skipped = 0;
+    var indexed = 0;
+    var offset = 0;
+
+    while (true) {
+      final entries = await _channel.queryMedia(
+        offset: offset,
+        limit: _batchSize,
+        sinceDateModifiedMs: sinceDateModifiedMs,
+      );
+      if (entries.isEmpty) break;
+
+      final items = <MediaItem>[];
+      for (final entry in entries) {
+        scanned++;
+        try {
+          final item = mapEntryToMediaItem(entry);
+          items.add(item);
+          seenIds.add(item.id);
+        } catch (error) {
+          AppLogger.debug('Skipped one unreadable MediaStore row');
+          // A single bad row is counted and skipped, never fatal.
+          skipped++;
+        }
+      }
+
+      if (items.isNotEmpty) {
+        await _mediaDao.batchUpsertMediaItems(items);
+        indexed += items.length;
+      }
+
+      _emit(
+        _progress.copyWith(
+          phase: ScanPhase.indexing,
+          scanned: scanned,
+          skipped: skipped,
+        ),
+      );
+
+      if (entries.length < _batchSize) break;
+      offset += entries.length;
+    }
+
+    return _PassResult(
+      seenIds: seenIds,
+      scanned: scanned,
+      skipped: skipped,
+      indexed: indexed,
+    );
   }
 
   /// Converts a raw MediaStore row into the immutable domain model.
@@ -289,4 +324,19 @@ class MediaScannerService {
   Future<void> dispose() async {
     await _progressController.close();
   }
+}
+
+/// What one pass over MediaStore found.
+class _PassResult {
+  final Set<String> seenIds;
+  final int scanned;
+  final int skipped;
+  final int indexed;
+
+  const _PassResult({
+    required this.seenIds,
+    required this.scanned,
+    required this.skipped,
+    required this.indexed,
+  });
 }

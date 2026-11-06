@@ -1,10 +1,10 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:in_sreerajp_imgvidgal/l10n/generated/app_localizations.dart';
 import 'package:in_sreerajp_imgvidgal/models/sync/sync_role.dart';
 import 'package:in_sreerajp_imgvidgal/models/sync/transfer_outcome.dart';
 import 'package:in_sreerajp_imgvidgal/providers/sync_providers.dart';
-import 'package:in_sreerajp_imgvidgal/services/sync/transfer_session_service.dart';
+import 'package:in_sreerajp_imgvidgal/models/sync/transfer_session_state.dart';
 import 'package:in_sreerajp_imgvidgal/widgets/sync/pairing_qr_card.dart';
 import 'package:in_sreerajp_imgvidgal/widgets/sync/transfer_progress_view.dart';
 
@@ -24,9 +24,14 @@ class SyncReceiveScreen extends ConsumerStatefulWidget {
 
 class _SyncReceiveScreenState extends ConsumerState<SyncReceiveScreen>
     with WidgetsBindingObserver {
+  /// Read once in `initState`: Riverpod 3 does not allow `ref` in `dispose`,
+  /// and the port must still be closed there (hard rule 2).
+  late final Future<void> Function() _stopSession;
+
   @override
   void initState() {
     super.initState();
+    _stopSession = ref.read(transferSessionProvider).stop;
     WidgetsBinding.instance.addObserver(this);
     WidgetsBinding.instance.addPostFrameCallback((_) => _start());
   }
@@ -36,7 +41,7 @@ class _SyncReceiveScreenState extends ConsumerState<SyncReceiveScreen>
     WidgetsBinding.instance.removeObserver(this);
     // Leaving the screen closes the port. Not "eventually", not "on the next
     // scan": here, on the way out.
-    ref.read(transferSessionProvider).stop();
+    _stopSession();
     super.dispose();
   }
 
@@ -73,11 +78,11 @@ class _SyncReceiveScreenState extends ConsumerState<SyncReceiveScreen>
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final session = ref.watch(transferSessionProvider);
-    final state = ref.watch(transferStateProvider).valueOrNull ?? session.state;
+    final state = ref.watch(transferStateProvider).value ?? session.state;
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(l10n.syncTitle),
+        title: Text(l10n.titleSync),
         actions: [
           if (state.phase.isActive)
             TextButton(
@@ -85,7 +90,7 @@ class _SyncReceiveScreenState extends ConsumerState<SyncReceiveScreen>
                 session.cancel();
                 session.stop();
               },
-              child: Text(l10n.syncStop),
+              child: Text(l10n.actionSyncStop),
             ),
         ],
       ),
@@ -126,7 +131,7 @@ class _Body extends StatelessWidget {
               const SizedBox(height: 32),
               const CircularProgressIndicator(),
               const SizedBox(height: 16),
-              Text(l10n.syncWaiting, style: theme.textTheme.bodyMedium),
+              Text(l10n.bodySyncWaiting, style: theme.textTheme.bodyMedium),
             ],
           ),
         );
@@ -137,11 +142,11 @@ class _Body extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(
-              l10n.syncPairedWith(state.peerName),
+              l10n.bodySyncPairedWith(state.peerName),
               style: theme.textTheme.titleMedium,
             ),
             const SizedBox(height: 8),
-            Text(l10n.syncTransferring, style: theme.textTheme.bodySmall),
+            Text(l10n.labelSyncTransferring, style: theme.textTheme.bodySmall),
             const SizedBox(height: 32),
             TransferProgressView(progress: state.progress),
           ],
@@ -195,19 +200,19 @@ class _Outcome extends StatelessWidget {
             color: theme.colorScheme.primary,
           ),
           const SizedBox(height: 16),
-          Text(l10n.syncDone, style: theme.textTheme.titleMedium),
+          Text(l10n.labelSyncDone, style: theme.textTheme.titleMedium),
           const SizedBox(height: 16),
 
           if (outcome != null) ...[
             if (outcome.receivedCount > 0)
-              Text(l10n.syncResultReceived(outcome.receivedCount)),
+              Text(l10n.bodySyncResultReceived(outcome.receivedCount)),
             if (outcome.sentCount > 0)
-              Text(l10n.syncResultSent(outcome.sentCount)),
+              Text(l10n.bodySyncResultSent(outcome.sentCount)),
             if (outcome.skippedCount > 0)
-              Text(l10n.syncResultSkipped(outcome.skippedCount)),
+              Text(l10n.bodySyncResultSkipped(outcome.skippedCount)),
             if (outcome.failedCount > 0)
               Text(
-                l10n.syncResultFailed(outcome.failedCount),
+                l10n.errorSyncResultFailed(outcome.failedCount),
                 style: TextStyle(color: theme.colorScheme.error),
               ),
           ],
@@ -215,7 +220,7 @@ class _Outcome extends StatelessWidget {
           if (state.landedInAppFolder) ...[
             const SizedBox(height: 16),
             Text(
-              l10n.syncSavedToAppFolder,
+              l10n.bodySyncSavedToAppFolder,
               textAlign: TextAlign.center,
               style: theme.textTheme.bodySmall?.copyWith(
                 color: theme.colorScheme.onSurfaceVariant,
@@ -235,23 +240,23 @@ class _Outcome extends StatelessWidget {
 String failureMessage(AppLocalizations l10n, TransferFailure? failure) {
   switch (failure) {
     case TransferFailure.noLocalNetwork:
-      return l10n.syncErrorNoNetwork;
+      return l10n.bodySyncErrorNoNetwork;
     case TransferFailure.pairingTimeout:
-      return l10n.syncErrorPairingTimeout;
+      return l10n.bodySyncErrorPairingTimeout;
     case TransferFailure.remoteAddressRefused:
-      return l10n.syncErrorRefused;
+      return l10n.bodySyncErrorRefused;
     case TransferFailure.handshakeRejected:
-      return l10n.syncErrorHandshake;
+      return l10n.bodySyncErrorHandshake;
     case TransferFailure.protocolMismatch:
-      return l10n.syncErrorProtocol;
+      return l10n.bodySyncErrorProtocol;
     case TransferFailure.connectionLost:
-      return l10n.syncErrorConnection;
+      return l10n.bodySyncErrorConnection;
     case TransferFailure.idleTimeout:
-      return l10n.syncErrorIdle;
+      return l10n.bodySyncErrorIdle;
     case TransferFailure.cancelled:
-      return l10n.syncErrorCancelled;
+      return l10n.bodySyncErrorCancelled;
     case TransferFailure.unknown:
     case null:
-      return l10n.syncErrorUnknown;
+      return l10n.bodySyncErrorUnknown;
   }
 }

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:in_sreerajp_imgvidgal/core/constants/app_constants.dart';
 import 'package:in_sreerajp_imgvidgal/l10n/generated/app_localizations.dart';
 
@@ -54,14 +54,14 @@ class _BackupPasswordDialogState extends State<BackupPasswordDialog> {
 
     if (value.length < AppConstants.backupPasswordMinLength) {
       setState(() {
-        _error = l10n.backupPasswordTooShort(
+        _error = l10n.bodyBackupPasswordTooShort(
           AppConstants.backupPasswordMinLength,
         );
       });
       return;
     }
     if (widget.isCreating && value != _confirm.text) {
-      setState(() => _error = l10n.backupPasswordMismatch);
+      setState(() => _error = l10n.bodyBackupPasswordMismatch);
       return;
     }
 
@@ -74,7 +74,7 @@ class _BackupPasswordDialogState extends State<BackupPasswordDialog> {
     final theme = Theme.of(context);
 
     return AlertDialog(
-      title: Text(l10n.backupPasswordTitle),
+      title: Text(l10n.titleBackupPassword),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -84,9 +84,12 @@ class _BackupPasswordDialogState extends State<BackupPasswordDialog> {
             autofocus: true,
             obscureText: _obscured,
             decoration: InputDecoration(
-              labelText: l10n.backupPasswordLabel,
+              labelText: l10n.labelBackupPassword,
               errorText: _error,
               suffixIcon: IconButton(
+                tooltip: _obscured
+                    ? l10n.tooltipShowPassword
+                    : l10n.tooltipHidePassword,
                 icon: Icon(
                   _obscured ? Icons.visibility_outlined : Icons.visibility_off,
                 ),
@@ -101,7 +104,7 @@ class _BackupPasswordDialogState extends State<BackupPasswordDialog> {
               controller: _confirm,
               obscureText: _obscured,
               decoration: InputDecoration(
-                labelText: l10n.backupPasswordConfirmLabel,
+                labelText: l10n.labelBackupPasswordConfirm,
               ),
               onSubmitted: (_) => _submit(),
             ),
@@ -118,7 +121,7 @@ class _BackupPasswordDialogState extends State<BackupPasswordDialog> {
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    l10n.backupPasswordWarning,
+                    l10n.bodyBackupPasswordWarning,
                     style: theme.textTheme.bodySmall?.copyWith(
                       color: theme.colorScheme.error,
                     ),

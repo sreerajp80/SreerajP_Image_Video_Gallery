@@ -1,6 +1,6 @@
 # Plan: Enhance Project Idea Document
 
-**Status:** Implemented
+**Status:** completed
 
 ## 1. Issue / Goal
 The current `docs/Project_Idea.md` contains a minimal description of the app. It needs to be enhanced into a comprehensive, structured project idea and product specification based on existing codebase conventions, Flutter guidelines, and architectural rules in `AGENTS.md`.

@@ -6,7 +6,7 @@ import 'package:in_sreerajp_imgvidgal/models/filter_options.dart';
 import 'package:in_sreerajp_imgvidgal/models/media_item.dart';
 import 'package:in_sreerajp_imgvidgal/repositories/database/database_constants.dart';
 import 'package:in_sreerajp_imgvidgal/repositories/database/database_helper.dart';
-import 'package:in_sreerajp_imgvidgal/services/albums/folder_path_rules.dart';
+import 'package:in_sreerajp_imgvidgal/core/domain/albums/folder_path_rules.dart';
 import 'package:sqflite/sqflite.dart';
 
 /// Data Access Object for managing MediaItem records and SQLite FTS5 search queries.
@@ -498,10 +498,10 @@ class MediaDao {
     final values = <String, Object?>{
       if (isFavorite != null)
         DatabaseConstants.colMediaIsFavorite: isFavorite ? 1 : 0,
-      if (userNotes != null) DatabaseConstants.colMediaUserNotes: userNotes,
-      if (address != null) DatabaseConstants.colMediaAddress: address,
-      if (latitude != null) DatabaseConstants.colMediaLatitude: latitude,
-      if (longitude != null) DatabaseConstants.colMediaLongitude: longitude,
+      DatabaseConstants.colMediaUserNotes: ?userNotes,
+      DatabaseConstants.colMediaAddress: ?address,
+      DatabaseConstants.colMediaLatitude: ?latitude,
+      DatabaseConstants.colMediaLongitude: ?longitude,
     };
     if (values.isEmpty) return;
 
@@ -583,11 +583,9 @@ class MediaDao {
   Future<int> restoreAllFromTrash() async {
     try {
       final db = await _db;
-      return await db.update(
-        DatabaseConstants.tableMedia,
-        {DatabaseConstants.colMediaIsTrash: 0},
-        where: '${DatabaseConstants.colMediaIsTrash} = 1',
-      );
+      return await db.update(DatabaseConstants.tableMedia, {
+        DatabaseConstants.colMediaIsTrash: 0,
+      }, where: '${DatabaseConstants.colMediaIsTrash} = 1');
     } catch (e, st) {
       throw StorageException(
         'Failed to restore all trashed items: $e',
@@ -865,6 +863,29 @@ class MediaDao {
     }
   }
 
+  /// Number of indexed rows that should still be in MediaStore.
+  ///
+  /// Counts every non-vaulted row, trashed or not: the app's own trash keeps
+  /// the file in MediaStore, while vaulted files are removed from it. The
+  /// scanner compares this with the device count to spot missed changes.
+  Future<int> getMediaStoreBackedCount() async {
+    try {
+      final db = await _db;
+      final result = await db.rawQuery('''
+        SELECT COUNT(*) as count
+        FROM ${DatabaseConstants.tableMedia}
+        WHERE ${DatabaseConstants.colMediaIsVaulted} = 0
+      ''');
+      return (result.first['count'] as int?) ?? 0;
+    } catch (e, st) {
+      throw StorageException(
+        'Failed to get MediaStore-backed count: $e',
+        cause: e,
+        stackTrace: st,
+      );
+    }
+  }
+
   /// Total count of media items matching active criteria.
   Future<int> getTotalCount({
     bool includeTrash = false,
@@ -920,7 +941,7 @@ class MediaDao {
     try {
       final db = await _db;
       if (seenIds.isEmpty) {
-        return db.delete(
+        return await db.delete(
           DatabaseConstants.tableMedia,
           where: '${DatabaseConstants.colMediaIsVaulted} = 0',
         );
@@ -996,9 +1017,7 @@ class MediaDao {
         limit: limit,
         offset: offset,
       );
-      return results
-          .map((row) => MediaItem.fromMap(row, tags: const <String>[]))
-          .toList();
+      return results.map((row) => MediaItem.fromMap(row)).toList();
     } catch (e, st) {
       throw StorageException(
         'Failed to read hash candidates: $e',

@@ -17,7 +17,7 @@ void main() {
       latitude: 10.0261,
       longitude: 76.3125,
       altitude: 15.4,
-      dateTimeOriginal: DateTime(2026, 8, 29, 9, 0, 0),
+      dateTimeOriginal: DateTime(2026, 8, 29, 9),
       software: 'v2.00',
       colorSpace: 'sRGB',
     );
@@ -37,7 +37,7 @@ void main() {
         latitude: 10.0261,
         longitude: 76.3125,
         altitude: 15.4,
-        dateTimeOriginal: DateTime(2026, 8, 29, 9, 0, 0),
+        dateTimeOriginal: DateTime(2026, 8, 29, 9),
         software: 'v2.00',
         colorSpace: 'sRGB',
       );

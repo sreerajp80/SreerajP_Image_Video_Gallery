@@ -3,49 +3,22 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:in_sreerajp_imgvidgal/core/constants/app_constants.dart';
 import 'package:in_sreerajp_imgvidgal/models/convert/conversion_request.dart';
-import 'package:in_sreerajp_imgvidgal/models/convert/image_output_format.dart';
 import 'package:in_sreerajp_imgvidgal/models/convert/pdf_export_options.dart';
 import 'package:in_sreerajp_imgvidgal/models/convert/resize_spec.dart';
 import 'package:in_sreerajp_imgvidgal/services/convert/format_conversion_service.dart';
 import 'package:in_sreerajp_imgvidgal/services/convert/output_naming_service.dart';
 import 'package:in_sreerajp_imgvidgal/services/convert/pdf_layout_service.dart';
 import 'package:pdf/pdf.dart';
+import 'package:in_sreerajp_imgvidgal/core/errors/app_exception.dart';
+import 'package:in_sreerajp_imgvidgal/core/logging/app_logger.dart';
+import 'package:in_sreerajp_imgvidgal/models/convert/pdf_export_result.dart';
+
+// Moved to models so the UI can use it without importing a service (G46).
+export 'package:in_sreerajp_imgvidgal/models/convert/pdf_export_result.dart';
 
 /// Thrown when no PDF could be produced at all.
-class PdfExportException implements Exception {
-  final String message;
-
-  const PdfExportException(this.message);
-
-  @override
-  String toString() => 'PdfExportException: $message';
-}
-
-/// What an export produced.
-@immutable
-class PdfExportResult {
-  /// Full path of the new PDF.
-  final String path;
-
-  /// Size of the PDF in bytes.
-  final int bytes;
-
-  /// How many photos made it into the document.
-  final int pageCount;
-
-  /// How many chosen photos could not be read and were left out.
-  final int skippedCount;
-
-  const PdfExportResult({
-    required this.path,
-    required this.bytes,
-    required this.pageCount,
-    required this.skippedCount,
-  });
-
-  @override
-  String toString() =>
-      'PdfExportResult($pageCount pages, $bytes bytes, $skippedCount skipped)';
+final class PdfExportException extends FeatureException {
+  const PdfExportException(super.message, {super.cause});
 }
 
 /// Builds a PDF document from a list of photos.
@@ -140,7 +113,6 @@ class PdfExportService {
       final encoded = await _conversionService.convert(
         sourceBytes: sourceBytes,
         request: ConversionRequest(
-          format: ImageOutputFormat.jpeg,
           quality: options.effectiveQuality,
           resize: const ResizeSpec(
             mode: ResizeMode.longestSide,
@@ -154,7 +126,8 @@ class PdfExportService {
         width: encoded.width,
         height: encoded.height,
       );
-    } catch (_) {
+    } catch (error) {
+      AppLogger.warning('Preparing one PDF page failed', error: error);
       // One bad photo must not cost the user the rest of the document.
       return null;
     }
@@ -202,7 +175,7 @@ class PdfExportService {
 
       return await document.save();
     } catch (error) {
-      throw PdfExportException('The PDF could not be created: $error');
+      throw PdfExportException('The PDF could not be created', cause: error);
     }
   }
 }

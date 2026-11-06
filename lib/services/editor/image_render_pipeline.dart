@@ -6,7 +6,7 @@ import 'package:in_sreerajp_imgvidgal/core/constants/app_constants.dart';
 import 'package:in_sreerajp_imgvidgal/models/editor/edit_session.dart';
 import 'package:in_sreerajp_imgvidgal/models/editor/tone_adjustments.dart';
 import 'package:in_sreerajp_imgvidgal/models/editor/watermark_config.dart';
-import 'package:in_sreerajp_imgvidgal/services/editor/crop_transform_service.dart';
+import 'package:in_sreerajp_imgvidgal/core/domain/editor/crop_transform_service.dart';
 import 'package:in_sreerajp_imgvidgal/services/editor/filter_preset_service.dart';
 import 'package:in_sreerajp_imgvidgal/services/editor/hsl_service.dart';
 import 'package:in_sreerajp_imgvidgal/services/editor/markup_render_service.dart';
@@ -14,6 +14,7 @@ import 'package:in_sreerajp_imgvidgal/services/editor/redaction_service.dart';
 import 'package:in_sreerajp_imgvidgal/services/editor/selective_mask_service.dart';
 import 'package:in_sreerajp_imgvidgal/services/editor/tone_adjustment_service.dart';
 import 'package:in_sreerajp_imgvidgal/services/editor/watermark_service.dart';
+import 'package:in_sreerajp_imgvidgal/core/errors/app_exception.dart';
 
 /// The file type the render writes out.
 enum RenderFormat {
@@ -94,13 +95,8 @@ class RenderResult {
 ///
 /// The editor catches it and shows a message, because a broken or
 /// unsupported file must never take the app down.
-class ImageRenderException implements Exception {
-  final String message;
-
-  const ImageRenderException(this.message);
-
-  @override
-  String toString() => 'ImageRenderException: $message';
+final class ImageRenderException extends FeatureException {
+  const ImageRenderException(super.message, {super.cause});
 }
 
 /// Turns an [EditSession] into real pixels.
@@ -203,7 +199,7 @@ class ImageRenderPipeline {
     } on ImageRenderException {
       rethrow;
     } catch (error) {
-      throw ImageRenderException('The image could not be read: $error');
+      throw ImageRenderException('The image could not be read', cause: error);
     }
   }
 
@@ -365,7 +361,8 @@ class ImageRenderPipeline {
       try {
         logo = img.decodeImage(logoBytes);
       } catch (_) {
-        // An unreadable logo simply means no watermark, never a failed save.
+        // Safe to ignore: an unreadable logo means no watermark, never a failed
+        // save.
         logo = null;
       }
       if (logo == null) return image;
@@ -391,7 +388,6 @@ class ImageRenderPipeline {
         resized,
         dstX: placement.left,
         dstY: placement.top,
-        blend: img.BlendMode.alpha,
       );
     }
 
@@ -421,7 +417,6 @@ class ImageRenderPipeline {
       raster,
       dstX: placement.left,
       dstY: placement.top,
-      blend: img.BlendMode.alpha,
     );
   }
 
@@ -478,8 +473,8 @@ class ImageRenderPipeline {
   img.Image _safeCrop(img.Image image, PixelRect rect) {
     final left = rect.left.clamp(0, math.max(0, image.width - 1)).toInt();
     final top = rect.top.clamp(0, math.max(0, image.height - 1)).toInt();
-    final width = rect.width.clamp(1, image.width - left).toInt();
-    final height = rect.height.clamp(1, image.height - top).toInt();
+    final width = rect.width.clamp(1, image.width - left);
+    final height = rect.height.clamp(1, image.height - top);
 
     return img.copyCrop(image, x: left, y: top, width: width, height: height);
   }

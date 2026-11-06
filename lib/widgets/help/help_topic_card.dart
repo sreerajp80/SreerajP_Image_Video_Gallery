@@ -1,6 +1,7 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:in_sreerajp_imgvidgal/l10n/generated/app_localizations.dart';
 import 'package:in_sreerajp_imgvidgal/models/help/help_topic.dart';
+import 'package:in_sreerajp_imgvidgal/widgets/help/help_topic_presentation.dart';
 
 /// A card representing one help topic in the Settings Help section.
 ///

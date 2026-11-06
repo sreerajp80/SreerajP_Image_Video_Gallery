@@ -9,85 +9,20 @@ import 'package:in_sreerajp_imgvidgal/models/sync/pairing_payload.dart';
 import 'package:in_sreerajp_imgvidgal/models/sync/sync_role.dart';
 import 'package:in_sreerajp_imgvidgal/models/sync/transfer_manifest.dart';
 import 'package:in_sreerajp_imgvidgal/models/sync/transfer_outcome.dart';
-import 'package:in_sreerajp_imgvidgal/models/sync/transfer_progress.dart';
-import 'package:in_sreerajp_imgvidgal/services/sync/local_address_rules.dart';
+import 'package:in_sreerajp_imgvidgal/core/domain/sync/local_address_rules.dart';
 import 'package:in_sreerajp_imgvidgal/services/sync/network_interface_service.dart';
 import 'package:in_sreerajp_imgvidgal/services/sync/p2p_client_service.dart';
 import 'package:in_sreerajp_imgvidgal/services/sync/p2p_connection.dart';
 import 'package:in_sreerajp_imgvidgal/services/sync/p2p_server_service.dart';
-import 'package:in_sreerajp_imgvidgal/services/sync/pairing_codec.dart';
+import 'package:in_sreerajp_imgvidgal/core/domain/sync/pairing_codec.dart';
 import 'package:in_sreerajp_imgvidgal/services/sync/received_media_service.dart';
 import 'package:in_sreerajp_imgvidgal/services/sync/transfer_crypto_service.dart';
 import 'package:in_sreerajp_imgvidgal/services/sync/transfer_exchange_service.dart';
+import 'package:in_sreerajp_imgvidgal/core/logging/app_logger.dart';
+import 'package:in_sreerajp_imgvidgal/models/sync/transfer_session_state.dart';
 
-/// Everything the transfer screen needs to draw itself.
-class TransferSessionState {
-  final SyncPhase phase;
-  final SyncRole role;
-
-  /// The pairing code to show, when this device is the one listening.
-  final PairingPayload? pairing;
-
-  /// The typed fallback code for the same pairing.
-  final String? manualCode;
-
-  /// The other device's name, once paired.
-  final String peerName;
-
-  final TransferProgress progress;
-
-  /// What the peer is offering, once it has said.
-  final TransferManifest? offer;
-
-  final TransferOutcome? outcome;
-
-  /// Why it ended, for the message on screen.
-  final TransferFailure? failure;
-
-  /// True when the received files went to the app's own folder rather than
-  /// the shared gallery, which happens only on Android 9 and below.
-  final bool landedInAppFolder;
-
-  const TransferSessionState({
-    this.phase = SyncPhase.idle,
-    this.role = SyncRole.send,
-    this.pairing,
-    this.manualCode,
-    this.peerName = '',
-    this.progress = TransferProgress.zero,
-    this.offer,
-    this.outcome,
-    this.failure,
-    this.landedInAppFolder = false,
-  });
-
-  TransferSessionState copyWith({
-    SyncPhase? phase,
-    SyncRole? role,
-    PairingPayload? pairing,
-    String? manualCode,
-    String? peerName,
-    TransferProgress? progress,
-    TransferManifest? offer,
-    TransferOutcome? outcome,
-    TransferFailure? failure,
-    bool? landedInAppFolder,
-    bool clearFailure = false,
-  }) {
-    return TransferSessionState(
-      phase: phase ?? this.phase,
-      role: role ?? this.role,
-      pairing: pairing ?? this.pairing,
-      manualCode: manualCode ?? this.manualCode,
-      peerName: peerName ?? this.peerName,
-      progress: progress ?? this.progress,
-      offer: offer ?? this.offer,
-      outcome: outcome ?? this.outcome,
-      failure: clearFailure ? null : (failure ?? this.failure),
-      landedInAppFolder: landedInAppFolder ?? this.landedInAppFolder,
-    );
-  }
-}
+// Moved to models so the UI can use it without importing a service (G46).
+export 'package:in_sreerajp_imgvidgal/models/sync/transfer_session_state.dart';
 
 /// Drives one whole transfer, from pairing to the last file.
 ///
@@ -172,7 +107,8 @@ class TransferSessionService {
     final int port;
     try {
       port = await server.start(address: address.address);
-    } catch (_) {
+    } catch (error) {
+      AppLogger.warning('Starting the transfer listener failed', error: error);
       _emit(
         _state.copyWith(
           phase: SyncPhase.failed,
@@ -214,9 +150,14 @@ class TransferSessionService {
 
       await _runExchange(role: role, toOffer: toOffer);
     } on TransferSessionException catch (error) {
+      AppLogger.warning(
+        'The transfer ended with a session error',
+        error: error,
+      );
       _emit(_state.copyWith(phase: SyncPhase.failed, failure: error.failure));
       await stop();
-    } catch (_) {
+    } catch (error) {
+      AppLogger.error('The transfer failed', error: error);
       _emit(
         _state.copyWith(
           phase: SyncPhase.failed,
@@ -282,9 +223,14 @@ class TransferSessionService {
 
       await _runExchange(role: role, toOffer: toOffer);
     } on TransferSessionException catch (error) {
+      AppLogger.warning(
+        'The transfer ended with a session error',
+        error: error,
+      );
       _emit(_state.copyWith(phase: SyncPhase.failed, failure: error.failure));
       await stop();
-    } catch (_) {
+    } catch (error) {
+      AppLogger.error('The transfer failed', error: error);
       _emit(
         _state.copyWith(
           phase: SyncPhase.failed,
@@ -356,6 +302,10 @@ class TransferSessionService {
         ),
       );
     } on TransferSessionException catch (error) {
+      AppLogger.warning(
+        'The exchange ended with a session error',
+        error: error,
+      );
       _emit(_state.copyWith(phase: SyncPhase.failed, failure: error.failure));
     } finally {
       await stop();
@@ -378,7 +328,8 @@ class TransferSessionService {
       final int length;
       try {
         length = await file.length();
-      } catch (_) {
+      } catch (error) {
+        AppLogger.debug('Reading a file size for transfer failed');
         continue;
       }
       if (length <= 0 || length > AppConstants.syncMaxFileBytes) continue;
@@ -386,7 +337,8 @@ class TransferSessionService {
       String digest;
       try {
         digest = TransferCryptoService.hexDigest(await file.readAsBytes());
-      } catch (_) {
+      } catch (error) {
+        AppLogger.debug('Hashing a file for transfer failed');
         continue;
       }
 
@@ -452,6 +404,8 @@ class TransferSessionService {
       if (secret.length != AppConstants.syncPairingSecretBytes) return null;
       return TransferCryptoService.deriveSessionKey(secret);
     } catch (_) {
+      // Safe to ignore: a bad key in the pairing code reads as null and the
+      // code is refused.
       return null;
     }
   }

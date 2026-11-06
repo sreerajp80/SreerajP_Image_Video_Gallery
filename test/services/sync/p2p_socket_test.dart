@@ -778,7 +778,6 @@ void main() {
       final proof = TransferCryptoService.proofFor(
         key: _key(1),
         challenge: challenge,
-        protocolVersion: 1,
       );
 
       expect(

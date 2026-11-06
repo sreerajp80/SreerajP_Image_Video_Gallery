@@ -1,9 +1,9 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:in_sreerajp_imgvidgal/l10n/generated/app_localizations.dart';
 import 'package:in_sreerajp_imgvidgal/providers/backup_providers.dart';
-import 'package:in_sreerajp_imgvidgal/services/backup/backup_service.dart';
-import 'package:in_sreerajp_imgvidgal/services/backup/restore_service.dart';
+import 'package:in_sreerajp_imgvidgal/models/backup/backup_status.dart';
+import 'package:in_sreerajp_imgvidgal/models/backup/restore_status.dart';
 import 'package:in_sreerajp_imgvidgal/widgets/backup/backup_password_dialog.dart';
 import 'package:in_sreerajp_imgvidgal/widgets/backup/restore_preview_sheet.dart';
 
@@ -40,13 +40,15 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
         final error = ref.read(backupControllerProvider).error;
         _tell(
           error is BackupException && error.isEmpty
-              ? l10n.backupNothingToSave
-              : l10n.backupFailed,
+              ? l10n.bodyBackupNothingToSave
+              : l10n.errorBackupFailed,
         );
         return;
       }
       // Backing out of the file picker is a normal thing to do, not a fault.
-      _tell(result.wasCancelled ? l10n.backupCancelled : l10n.backupDone);
+      _tell(
+        result.wasCancelled ? l10n.labelBackupCancelled : l10n.labelBackupDone,
+      );
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -89,27 +91,27 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
           .applyOpened();
 
       if (!mounted) return;
-      _tell(summary == null ? l10n.restoreFailed : l10n.restoreDone);
+      _tell(summary == null ? l10n.errorRestoreFailed : l10n.labelRestoreDone);
     } finally {
       if (mounted) setState(() => _busy = false);
     }
   }
 
   static String _restoreMessage(AppLocalizations l10n, Object error) {
-    if (error is! RestoreException) return l10n.restoreFailed;
+    if (error is! RestoreException) return l10n.errorRestoreFailed;
 
     switch (error.failure) {
       case RestoreFailure.wrongPasswordOrDamaged:
-        return l10n.restoreWrongPassword;
+        return l10n.bodyRestoreWrongPassword;
       case RestoreFailure.notAnArchive:
-        return l10n.restoreNotAnArchive;
+        return l10n.bodyRestoreNotAnArchive;
       case RestoreFailure.tooLarge:
-        return l10n.restoreTooLarge;
+        return l10n.bodyRestoreTooLarge;
       case RestoreFailure.tooNew:
-        return l10n.restoreTooNew;
+        return l10n.bodyRestoreTooNew;
       case RestoreFailure.cancelled:
       case RestoreFailure.failed:
-        return l10n.restoreFailed;
+        return l10n.errorRestoreFailed;
     }
   }
 
@@ -125,16 +127,13 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
     final stage = ref.watch(backupStageProvider);
 
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.backupTitle)),
+      appBar: AppBar(title: Text(l10n.titleBackup)),
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.all(16),
           children: [
             if (_busy) ...[
-              LinearProgressIndicator(
-                value: null,
-                semanticsLabel: _stageLabel(l10n, stage),
-              ),
+              LinearProgressIndicator(semanticsLabel: _stageLabel(l10n, stage)),
               const SizedBox(height: 8),
               Text(
                 _stageLabel(l10n, stage),
@@ -145,17 +144,17 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
 
             _Card(
               icon: Icons.backup_outlined,
-              title: l10n.backupCreateTitle,
-              body: l10n.backupCreateBody,
-              actionLabel: l10n.backupCreateAction,
+              title: l10n.titleBackupCreate,
+              body: l10n.bodyBackupCreate,
+              actionLabel: l10n.actionBackupCreate,
               onAction: _busy ? null : _createBackup,
             ),
             const SizedBox(height: 16),
             _Card(
               icon: Icons.restore_outlined,
-              title: l10n.backupRestoreTitle,
-              body: l10n.backupRestoreBody,
-              actionLabel: l10n.backupRestoreAction,
+              title: l10n.titleBackupRestore,
+              body: l10n.bodyBackupRestore,
+              actionLabel: l10n.actionBackupRestore,
               onAction: _busy ? null : _restoreBackup,
             ),
           ],
@@ -167,16 +166,16 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
   static String _stageLabel(AppLocalizations l10n, BackupStage? stage) {
     switch (stage) {
       case BackupStage.collecting:
-        return l10n.backupStageCollecting;
+        return l10n.labelBackupStageCollecting;
       case BackupStage.packing:
-        return l10n.backupStagePacking;
+        return l10n.labelBackupStagePacking;
       case BackupStage.choosingDestination:
-        return l10n.backupStageChoosing;
+        return l10n.bodyBackupStageChoosing;
       case BackupStage.encrypting:
-        return l10n.backupStageEncrypting;
+        return l10n.labelBackupStageEncrypting;
       case BackupStage.done:
       case null:
-        return l10n.backupTitle;
+        return l10n.titleBackup;
     }
   }
 }

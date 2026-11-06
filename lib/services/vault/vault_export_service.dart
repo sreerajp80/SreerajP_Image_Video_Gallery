@@ -10,6 +10,7 @@ import 'package:in_sreerajp_imgvidgal/services/vault/vault_crypto_service.dart';
 import 'package:in_sreerajp_imgvidgal/services/vault/vault_shredder_service.dart';
 import 'package:in_sreerajp_imgvidgal/services/vault/vault_storage_service.dart';
 import 'package:path/path.dart' as p;
+import 'package:in_sreerajp_imgvidgal/core/logging/app_logger.dart';
 
 /// Takes media back out of the vault, and removes it for good.
 ///
@@ -59,7 +60,8 @@ class VaultExportService {
       try {
         await _exportOne(items[index], shredPasses: shredPasses);
         restored.add(items[index].id);
-      } catch (_) {
+      } catch (error) {
+        AppLogger.warning('Restoring one vault item failed', error: error);
         failed++;
       }
       onProgress?.call(index + 1, items.length);
@@ -86,7 +88,8 @@ class VaultExportService {
         shredded += await _shredPayloads(item, shredPasses: shredPasses);
         await _vaultDao.deleteVaultItem(item.id);
         removed.add(item.id);
-      } catch (_) {
+      } catch (error) {
+        AppLogger.warning('Removing one vault item failed', error: error);
         failed++;
       }
     }
@@ -187,6 +190,8 @@ class VaultExportService {
       final media = await _mediaDao.getMediaItemByPath(item.originalPath);
       if (media != null) await _mediaDao.updateVaulted(media.id, false);
     } catch (_) {
+      // Safe to ignore: the original row may be long gone, which is normal; the
+      // restore has already succeeded.
       // The original row may be long gone, which is normal when the original
       // was shredded on import. The restore itself has already succeeded.
     }

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:in_sreerajp_imgvidgal/core/routing/app_router.dart';
@@ -65,7 +65,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     final hasQuery = text.trim().isNotEmpty || filter.hasActiveFilters;
 
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.searchTitle)),
+      appBar: AppBar(title: Text(l10n.titleSearch)),
       body: SafeArea(
         child: Column(
           children: <Widget>[
@@ -96,13 +96,13 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                           const Center(child: CircularProgressIndicator()),
                       error: (_, _) => _Message(
                         icon: Icons.error_outline,
-                        title: l10n.searchFailed,
+                        title: l10n.errorSearchFailed,
                       ),
                       data: (items) => items.isEmpty
                           ? _Message(
                               icon: Icons.search_off,
-                              title: l10n.searchNoResultsTitle,
-                              body: l10n.searchNoResultsBody,
+                              title: l10n.titleSearchNoResults,
+                              body: l10n.bodySearchNoResults,
                             )
                           : _ResultGrid(results: items),
                     ),
@@ -168,13 +168,13 @@ class _IdleState extends StatelessWidget {
               ),
               const SizedBox(height: 12),
               Text(
-                l10n.searchStartTitle,
+                l10n.titleSearchStart,
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.titleMedium,
               ),
               const SizedBox(height: 8),
               Text(
-                l10n.searchStartBody,
+                l10n.bodySearchStart,
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.bodySmall,
               ),
@@ -206,7 +206,7 @@ class _ResultGrid extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
           child: Text(
-            l10n.searchResultCount(results.length),
+            l10n.bodySearchResultCount(results.length),
             style: Theme.of(context).textTheme.labelMedium,
           ),
         ),
@@ -240,11 +240,11 @@ class _ResultGrid extends StatelessWidget {
   /// gets no extra label.
   String? _matchLabel(AppLocalizations l10n, SearchMatchField field) {
     return switch (field) {
-      SearchMatchField.displayName => l10n.searchMatchedInName,
-      SearchMatchField.tags => l10n.searchMatchedInTags,
-      SearchMatchField.notes => l10n.searchMatchedInNotes,
-      SearchMatchField.address => l10n.searchMatchedInPlace,
-      SearchMatchField.exif => l10n.searchMatchedInDetails,
+      SearchMatchField.displayName => l10n.bodySearchMatchedInName,
+      SearchMatchField.tags => l10n.labelSearchMatchedInTags,
+      SearchMatchField.notes => l10n.labelSearchMatchedInNotes,
+      SearchMatchField.address => l10n.labelSearchMatchedInPlace,
+      SearchMatchField.exif => l10n.bodySearchMatchedInDetails,
       SearchMatchField.filter => null,
     };
   }

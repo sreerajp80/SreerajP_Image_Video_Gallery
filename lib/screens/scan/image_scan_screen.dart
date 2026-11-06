@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:in_sreerajp_imgvidgal/l10n/generated/app_localizations.dart';
 import 'package:in_sreerajp_imgvidgal/models/scan/scan_action.dart';
@@ -6,7 +6,7 @@ import 'package:in_sreerajp_imgvidgal/models/scan/scanned_code.dart';
 import 'package:in_sreerajp_imgvidgal/providers/media_providers.dart';
 import 'package:in_sreerajp_imgvidgal/providers/notes_providers.dart';
 import 'package:in_sreerajp_imgvidgal/providers/scan_providers.dart';
-import 'package:in_sreerajp_imgvidgal/services/scan/intent_channel.dart';
+import 'package:in_sreerajp_imgvidgal/models/scan/intent_exception.dart';
 import 'package:in_sreerajp_imgvidgal/widgets/scan/scanned_code_card.dart';
 
 /// Shows the codes found inside one picture, at `/media-viewer/:id/scan`.
@@ -48,62 +48,64 @@ class _ImageScanScreenState extends ConsumerState<ImageScanScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(l10n.codeScanTitle),
+        title: Text(l10n.titleCodeScan),
         actions: <Widget>[
           IconButton(
             onPressed: _scan,
             icon: const Icon(Icons.refresh),
-            tooltip: l10n.codeScanRetry,
+            tooltip: l10n.tooltipCodeScanRetry,
           ),
         ],
       ),
-      body: state.when(
-        loading: () => _busy(l10n.codeScanLooking),
-        error: (_, __) => _message(
-          context,
-          icon: Icons.error_outline,
-          text: l10n.codeScanFailed,
-          onRetry: _scan,
+      body: SafeArea(
+        child: state.when(
+          loading: () => _busy(l10n.labelCodeScanLooking),
+          error: (_, _) => _message(
+            context,
+            icon: Icons.error_outline,
+            text: l10n.errorCodeScanFailed,
+            onRetry: _scan,
+          ),
+          data: (outcome) {
+            if (outcome == null) return _busy(l10n.labelCodeScanLooking);
+
+            if (outcome.decoderFailed) {
+              return _message(
+                context,
+                icon: Icons.error_outline,
+                text: l10n.errorCodeScanFailed,
+                onRetry: _scan,
+              );
+            }
+            if (outcome.foundNothing) {
+              return _message(
+                context,
+                icon: Icons.qr_code_scanner_outlined,
+                text: l10n.bodyCodeScanNoCodes,
+                onRetry: _scan,
+              );
+            }
+
+            return ListView(
+              padding: const EdgeInsets.only(bottom: 24),
+              children: <Widget>[
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+                  child: Text(
+                    l10n.bodyCodeScanFoundCount(outcome.codes.length),
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                ),
+                for (final code in outcome.codes)
+                  ScannedCodeCard(
+                    code: code,
+                    actions: ref.watch(scanActionsProvider(code)),
+                    onAction: (action) => _runAction(code, action),
+                  ),
+              ],
+            );
+          },
         ),
-        data: (outcome) {
-          if (outcome == null) return _busy(l10n.codeScanLooking);
-
-          if (outcome.decoderFailed) {
-            return _message(
-              context,
-              icon: Icons.error_outline,
-              text: l10n.codeScanFailed,
-              onRetry: _scan,
-            );
-          }
-          if (outcome.foundNothing) {
-            return _message(
-              context,
-              icon: Icons.qr_code_scanner_outlined,
-              text: l10n.codeScanNoCodes,
-              onRetry: _scan,
-            );
-          }
-
-          return ListView(
-            padding: const EdgeInsets.only(bottom: 24),
-            children: <Widget>[
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
-                child: Text(
-                  l10n.codeScanFoundCount(outcome.codes.length),
-                  style: Theme.of(context).textTheme.bodyMedium,
-                ),
-              ),
-              for (final code in outcome.codes)
-                ScannedCodeCard(
-                  code: code,
-                  actions: ref.watch(scanActionsProvider(code)),
-                  onAction: (action) => _runAction(code, action),
-                ),
-            ],
-          );
-        },
       ),
     );
   }
@@ -146,7 +148,7 @@ class _ImageScanScreenState extends ConsumerState<ImageScanScreen> {
               const SizedBox(height: 16),
               OutlinedButton(
                 onPressed: onRetry,
-                child: Text(l10n.codeScanRetry),
+                child: Text(l10n.tooltipCodeScanRetry),
               ),
             ],
           ],
@@ -163,13 +165,13 @@ class _ImageScanScreenState extends ConsumerState<ImageScanScreen> {
       switch (action.type) {
         case ScanActionType.copy:
           await runner.copy(action.target);
-          _say(l10n.codeScanCopied);
+          _say(l10n.labelCodeScanCopied);
 
         case ScanActionType.copyWifiPassword:
           // Marked sensitive, so Android 13 and above keeps it out of the
           // clipboard preview that pops up on screen.
           await runner.copy(action.target, isSensitive: true);
-          _say(l10n.codeScanPasswordCopied);
+          _say(l10n.labelCodeScanPasswordCopied);
 
         case ScanActionType.connectWifi:
           final wifi = code.wifi;
@@ -181,13 +183,19 @@ class _ImageScanScreenState extends ConsumerState<ImageScanScreen> {
             await runner.copy(wifi.password, isSensitive: true);
           }
           final accepted = await runner.connectWifi(wifi);
-          _say(accepted ? l10n.codeScanWifiSuggested : l10n.codeScanWifiManual);
+          _say(
+            accepted
+                ? l10n.bodyCodeScanWifiSuggested
+                : l10n.bodyCodeScanWifiManual,
+          );
 
         case ScanActionType.saveToNotes:
           final saved = await ref
               .read(notesControllerProvider.notifier)
               .append(widget.mediaId, action.target);
-          _say(saved ? l10n.codeScanSavedToNotes : l10n.notesSaveFailed);
+          _say(
+            saved ? l10n.labelCodeScanSavedToNotes : l10n.errorNotesSaveFailed,
+          );
 
         case ScanActionType.openUrl:
         case ScanActionType.dial:
@@ -197,9 +205,13 @@ class _ImageScanScreenState extends ConsumerState<ImageScanScreen> {
           await runner.open(action.target);
       }
     } on IntentException catch (error) {
-      _say(error.hasNoApp ? l10n.codeScanOpenFailed : l10n.codeScanFailed);
+      _say(
+        error.hasNoApp
+            ? l10n.errorCodeScanOpenFailed
+            : l10n.errorCodeScanFailed,
+      );
     } catch (_) {
-      _say(l10n.codeScanFailed);
+      _say(l10n.errorCodeScanFailed);
     }
   }
 

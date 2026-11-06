@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:in_sreerajp_imgvidgal/l10n/generated/app_localizations.dart';
 import 'package:in_sreerajp_imgvidgal/models/media_item.dart';
 
@@ -52,9 +52,9 @@ class MediaBadges extends StatelessWidget {
     final duration = formatMediaDuration(item.durationMs);
 
     final chips = <String>[
-      if (item.mediaType == MediaType.gif) l10n.badgeGif,
-      if (item.mediaType == MediaType.rawImage) l10n.badgeRaw,
-      if (isHighResolution(item)) l10n.badgeHd,
+      if (item.mediaType == MediaType.gif) l10n.labelBadgeGif,
+      if (item.mediaType == MediaType.rawImage) l10n.labelBadgeRaw,
+      if (isHighResolution(item)) l10n.labelBadgeHd,
     ];
 
     if (chips.isEmpty && duration == null) return const SizedBox.shrink();
@@ -79,7 +79,7 @@ class MediaBadges extends StatelessWidget {
             Align(
               alignment: AlignmentDirectional.bottomEnd,
               child: Semantics(
-                label: l10n.badgeVideoDuration(duration),
+                label: l10n.labelBadgeVideoDuration(duration),
                 child: _Badge(
                   label: duration,
                   compact: compact,

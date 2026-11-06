@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:in_sreerajp_imgvidgal/l10n/generated/app_localizations.dart';
 import 'package:in_sreerajp_imgvidgal/models/search/search_history_entry.dart';
 import 'package:in_sreerajp_imgvidgal/widgets/common/adaptive_directionality.dart';
@@ -39,13 +39,13 @@ class RecentSearchList extends StatelessWidget {
             children: <Widget>[
               Expanded(
                 child: Text(
-                  l10n.searchRecentTitle,
+                  l10n.titleSearchRecent,
                   style: Theme.of(context).textTheme.titleSmall,
                 ),
               ),
               TextButton(
                 onPressed: onClearAll,
-                child: Text(l10n.searchRecentClear),
+                child: Text(l10n.actionSearchRecentClear),
               ),
             ],
           ),
@@ -65,7 +65,7 @@ class RecentSearchList extends StatelessWidget {
               ),
             ),
             trailing: IconButton(
-              tooltip: l10n.searchRecentRemove,
+              tooltip: l10n.tooltipSearchRecentRemove,
               icon: const Icon(Icons.close, size: 18),
               onPressed: () => onRemove(entry.text),
             ),

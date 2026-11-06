@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:in_sreerajp_imgvidgal/core/routing/app_router.dart';
@@ -28,13 +28,13 @@ class NotesPreviewTile extends ConsumerWidget {
       // nothing rather than an error: the sheet's job is the file's details,
       // and a missing note line is not worth a red message.
       loading: () => const SizedBox.shrink(),
-      error: (_, __) => const SizedBox.shrink(),
+      error: (_, _) => const SizedBox.shrink(),
       data: (value) {
         return ListTile(
           contentPadding: EdgeInsets.zero,
           leading: const Icon(Icons.sticky_note_2_outlined),
           title: Text(
-            l10n.notesDetailsLabel,
+            l10n.titleNotesDetailsLabel,
             style: theme.textTheme.bodySmall?.copyWith(
               color: theme.colorScheme.onSurfaceVariant,
             ),
@@ -43,7 +43,7 @@ class NotesPreviewTile extends ConsumerWidget {
           // note's own first line follows the note.
           subtitle: value.isEmpty
               ? Text(
-                  l10n.notesAddFromDetails,
+                  l10n.labelNotesAddFromDetails,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: theme.textTheme.bodyMedium,

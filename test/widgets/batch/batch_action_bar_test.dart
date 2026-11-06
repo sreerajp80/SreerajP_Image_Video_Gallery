@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:in_sreerajp_imgvidgal/l10n/generated/app_localizations.dart';
@@ -10,6 +10,7 @@ import 'package:in_sreerajp_imgvidgal/providers/selection_providers.dart';
 import 'package:in_sreerajp_imgvidgal/providers/tag_providers.dart';
 import 'package:in_sreerajp_imgvidgal/repositories/tag_repository.dart';
 import 'package:in_sreerajp_imgvidgal/widgets/batch/batch_action_bar.dart';
+import 'package:in_sreerajp_imgvidgal/core/l10n/sanskrit_fallback_delegates.dart';
 
 class FakeTagRepo implements TagRepository {
   final List<Tag> tags;
@@ -48,8 +49,8 @@ MediaItem _sampleItem(String id) => MediaItem(
   mediaType: MediaType.image,
   mimeType: 'image/jpeg',
   size: 1024,
-  dateAdded: DateTime(2026, 1, 1),
-  dateModified: DateTime(2026, 1, 1),
+  dateAdded: DateTime(2026),
+  dateModified: DateTime(2026),
 );
 
 void main() {
@@ -66,7 +67,7 @@ void main() {
             tagRepositoryProvider.overrideWithValue(fakeRepo),
           ],
           child: const MaterialApp(
-            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            localizationsDelegates: appLocalizationsDelegates,
             supportedLocales: AppLocalizations.supportedLocales,
             home: Scaffold(bottomNavigationBar: BatchActionBar()),
           ),
@@ -74,8 +75,12 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      // Find "Add tags" button
-      final addTagsFinder = find.widgetWithText(InkWell, 'Add tags');
+      // Tags live in the More sheet, not the bar.
+      expect(find.widgetWithText(InkWell, 'Add tags'), findsNothing);
+      await tester.tap(find.widgetWithText(InkWell, 'More'));
+      await tester.pumpAndSettle();
+
+      final addTagsFinder = find.widgetWithText(ListTile, 'Add tags');
       expect(addTagsFinder, findsOneWidget);
 
       // Tap "Add tags"
@@ -102,7 +107,7 @@ void main() {
             tagRepositoryProvider.overrideWithValue(fakeRepo),
           ],
           child: const MaterialApp(
-            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            localizationsDelegates: appLocalizationsDelegates,
             supportedLocales: AppLocalizations.supportedLocales,
             home: Scaffold(bottomNavigationBar: BatchActionBar()),
           ),
@@ -110,7 +115,10 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      final removeTagsFinder = find.widgetWithText(InkWell, 'Remove tags');
+      await tester.tap(find.widgetWithText(InkWell, 'More'));
+      await tester.pumpAndSettle();
+
+      final removeTagsFinder = find.widgetWithText(ListTile, 'Remove tags');
       expect(removeTagsFinder, findsOneWidget);
 
       await tester.tap(removeTagsFinder);
@@ -134,7 +142,7 @@ void main() {
             virtualAlbumsProvider.overrideWith((ref) async => <AlbumSummary>[]),
           ],
           child: const MaterialApp(
-            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            localizationsDelegates: appLocalizationsDelegates,
             supportedLocales: AppLocalizations.supportedLocales,
             home: Scaffold(bottomNavigationBar: BatchActionBar()),
           ),
@@ -154,4 +162,51 @@ void main() {
       expect(find.text('New album'), findsOneWidget);
     },
   );
+
+  testWidgets('BatchActionBar shows the quick actions and More in the bar', (
+    tester,
+  ) async {
+    final item = _sampleItem('photo1');
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          selectedMediaProvider.overrideWith((ref) async => [item]),
+        ],
+        child: const MaterialApp(
+          localizationsDelegates: appLocalizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(bottomNavigationBar: BatchActionBar()),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    for (final label in <String>[
+      'Send to a device',
+      'Add to favourites',
+      'Add to album',
+      'Move to trash',
+      'More',
+    ]) {
+      expect(
+        find.widgetWithText(InkWell, label),
+        findsOneWidget,
+        reason: label,
+      );
+    }
+    expect(find.widgetWithText(InkWell, 'Convert'), findsNothing);
+    expect(find.byType(ListView), findsNothing);
+
+    await tester.tap(find.widgetWithText(InkWell, 'More'));
+    await tester.pumpAndSettle();
+
+    for (final label in <String>['Convert', 'Watermark', 'Add tags']) {
+      expect(
+        find.widgetWithText(ListTile, label),
+        findsOneWidget,
+        reason: label,
+      );
+    }
+  });
 }

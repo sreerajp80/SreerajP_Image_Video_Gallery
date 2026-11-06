@@ -171,7 +171,6 @@ void main() {
       width: 2,
       height: 2,
       bytes: Uint8List.fromList(<int>[1, 2, 3, 4]),
-      format: PdfImageFormat.png,
     );
 
     test('each picture is published, named after the PDF', () async {
@@ -199,7 +198,7 @@ void main() {
     });
 
     test('a PDF with no usable name still gives a name', () async {
-      await service.saveImages(<PdfImageEntry>[entry(1)], sourceName: '');
+      await service.saveImages(<PdfImageEntry>[entry(1)]);
       expect(mediaStore.publishedNames.single, startsWith('pdf_1'));
     });
 

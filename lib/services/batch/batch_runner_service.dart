@@ -4,7 +4,8 @@ import 'package:in_sreerajp_imgvidgal/models/batch/batch_action.dart';
 import 'package:in_sreerajp_imgvidgal/models/batch/batch_outcome.dart';
 import 'package:in_sreerajp_imgvidgal/models/batch/batch_progress.dart';
 import 'package:in_sreerajp_imgvidgal/models/media_item.dart';
-import 'package:in_sreerajp_imgvidgal/services/batch/batch_action_rules.dart';
+import 'package:in_sreerajp_imgvidgal/core/domain/batch/batch_action_rules.dart';
+import 'package:in_sreerajp_imgvidgal/core/logging/app_logger.dart';
 
 /// What one batch action needs doing to one file.
 ///
@@ -139,6 +140,7 @@ class BatchRunnerService {
           succeeded.add(item.id);
           if (output != null && output.isNotEmpty) outputs.add(output);
         } catch (error) {
+          AppLogger.warning('A batch item failed', error: error);
           failed.add(item.id);
           firstError ??= _describe(error);
         }
@@ -193,6 +195,7 @@ class BatchRunnerService {
         wasCancelled: _cancelled,
       );
     } catch (error) {
+      AppLogger.error('A batch action failed', error: error);
       onProgress?.call(progress.copyWith(clearCurrentName: true));
       return BatchOutcome(
         action: action,

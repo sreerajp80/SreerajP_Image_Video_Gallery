@@ -5,26 +5,15 @@ import 'package:in_sreerajp_imgvidgal/core/constants/app_constants.dart';
 import 'package:in_sreerajp_imgvidgal/core/storage/atomic_saver.dart';
 import 'package:in_sreerajp_imgvidgal/services/editor/image_render_pipeline.dart';
 import 'package:path/path.dart' as p;
+import 'package:in_sreerajp_imgvidgal/core/errors/app_exception.dart';
+import 'package:in_sreerajp_imgvidgal/models/editor/save_outcome.dart';
 
-/// Where an edited copy was written.
-class SaveOutcome {
-  /// Full path of the new file.
-  final String path;
-
-  /// Size of the new file in bytes.
-  final int sizeBytes;
-
-  const SaveOutcome({required this.path, required this.sizeBytes});
-}
+// Moved to models so the UI can use it without importing a service (G46).
+export 'package:in_sreerajp_imgvidgal/models/editor/save_outcome.dart';
 
 /// Thrown when an edited copy cannot be written.
-class EditorSaveException implements Exception {
-  final String message;
-
-  const EditorSaveException(this.message);
-
-  @override
-  String toString() => 'EditorSaveException: $message';
+final class EditorSaveException extends FeatureException {
+  const EditorSaveException(super.message, {super.cause});
 }
 
 /// Writes the edited photo out as a new file, never over the original.
@@ -103,7 +92,10 @@ class EditorSaveService {
     } on EditorSaveException {
       rethrow;
     } catch (error) {
-      throw EditorSaveException('The edited copy could not be saved: $error');
+      throw EditorSaveException(
+        'The edited copy could not be saved',
+        cause: error,
+      );
     }
   }
 

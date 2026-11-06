@@ -4,8 +4,9 @@ import 'dart:typed_data';
 
 import 'package:in_sreerajp_imgvidgal/core/constants/app_constants.dart';
 import 'package:in_sreerajp_imgvidgal/models/sync/transfer_outcome.dart';
-import 'package:in_sreerajp_imgvidgal/services/sync/local_address_rules.dart';
+import 'package:in_sreerajp_imgvidgal/core/domain/sync/local_address_rules.dart';
 import 'package:in_sreerajp_imgvidgal/services/sync/p2p_connection.dart';
+import 'package:in_sreerajp_imgvidgal/core/logging/app_logger.dart';
 
 /// Listens for one peer on the local network.
 ///
@@ -72,7 +73,6 @@ class P2pServerService {
       _server = await ServerSocket.bind(
         address,
         AppConstants.syncEphemeralPort,
-        shared: false,
       );
     } catch (error) {
       throw const TransferSessionException(
@@ -178,6 +178,7 @@ class P2pServerService {
       await _closeListener();
       if (!waiting.isCompleted) waiting.complete(connection);
     } catch (error) {
+      AppLogger.warning('The transfer handshake failed', error: error);
       await connection.close();
       _hasPeer = false;
       if (!waiting.isCompleted) {
@@ -200,7 +201,7 @@ class P2pServerService {
     try {
       await _server?.close();
     } catch (_) {
-      // Already closed.
+      // Safe to ignore: the listener is already closed.
     }
     _server = null;
   }

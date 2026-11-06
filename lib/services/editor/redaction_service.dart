@@ -3,7 +3,7 @@ import 'dart:math' as math;
 import 'package:image/image.dart' as img;
 import 'package:in_sreerajp_imgvidgal/core/constants/app_constants.dart';
 import 'package:in_sreerajp_imgvidgal/models/editor/redaction_region.dart';
-import 'package:in_sreerajp_imgvidgal/services/editor/crop_transform_service.dart';
+import 'package:in_sreerajp_imgvidgal/core/domain/editor/crop_transform_service.dart';
 
 /// Hides parts of a photo so the detail is really gone.
 ///
@@ -25,7 +25,7 @@ class RedactionService {
     final safe = strength.isNaN ? 0.5 : strength.clamp(0.0, 1.0);
     final shorter = math.min(regionSize.width, regionSize.height);
     final radius = (shorter * 0.08 * (0.25 + safe)).round();
-    return radius.clamp(2, AppConstants.editorMaxBlurRadius).toInt();
+    return radius.clamp(2, AppConstants.editorMaxBlurRadius);
   }
 
   /// The block size, in pixels, for a pixelated region of [strength].
@@ -33,7 +33,7 @@ class RedactionService {
     final safe = strength.isNaN ? 0.5 : strength.clamp(0.0, 1.0);
     final shorter = math.min(regionSize.width, regionSize.height);
     final block = (shorter * 0.06 * (0.3 + safe)).round();
-    return block.clamp(2, AppConstants.editorMaxPixelateBlock).toInt();
+    return block.clamp(2, AppConstants.editorMaxPixelateBlock);
   }
 
   /// Applies every region in [regions] to [image], in order.

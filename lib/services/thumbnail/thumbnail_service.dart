@@ -1,12 +1,13 @@
 import 'dart:async';
 import 'dart:typed_data';
 
-import 'package:in_sreerajp_imgvidgal/core/device/device_memory_service.dart';
+import 'package:in_sreerajp_imgvidgal/services/device/device_memory_service.dart';
 import 'package:in_sreerajp_imgvidgal/models/media_item.dart';
 import 'package:in_sreerajp_imgvidgal/services/media/media_store_channel.dart';
 import 'package:in_sreerajp_imgvidgal/services/thumbnail/thumbnail_decoder_isolate.dart';
 import 'package:in_sreerajp_imgvidgal/services/thumbnail/thumbnail_disk_cache.dart';
 import 'package:in_sreerajp_imgvidgal/services/thumbnail/thumbnail_memory_cache.dart';
+import 'package:in_sreerajp_imgvidgal/core/logging/app_logger.dart';
 
 /// Signature of the background decoder, injectable so tests stay synchronous.
 typedef ThumbnailDecoder =
@@ -150,7 +151,8 @@ class ThumbnailService {
   Future<Uint8List?> _safe(Future<Uint8List?> Function() action) async {
     try {
       return await action();
-    } catch (_) {
+    } catch (error) {
+      AppLogger.debug('A thumbnail step failed');
       return null;
     }
   }

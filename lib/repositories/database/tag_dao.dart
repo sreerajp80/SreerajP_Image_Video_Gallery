@@ -132,16 +132,12 @@ class TagDao {
     try {
       final db = await _db;
       await db.transaction((txn) async {
-        await txn.insert(
-          DatabaseConstants.tableMediaTags,
-          {
-            DatabaseConstants.colMediaTagMediaId: mediaId,
-            DatabaseConstants.colMediaTagTagId: tagId,
-            DatabaseConstants.colMediaTagDateTagged:
-                DateTime.now().millisecondsSinceEpoch,
-          },
-          conflictAlgorithm: ConflictAlgorithm.ignore,
-        );
+        await txn.insert(DatabaseConstants.tableMediaTags, {
+          DatabaseConstants.colMediaTagMediaId: mediaId,
+          DatabaseConstants.colMediaTagTagId: tagId,
+          DatabaseConstants.colMediaTagDateTagged:
+              DateTime.now().millisecondsSinceEpoch,
+        }, conflictAlgorithm: ConflictAlgorithm.ignore);
 
         // Update tag item count
         final countResult = await txn.rawQuery(
@@ -286,15 +282,11 @@ class TagDao {
         }
 
         for (final tagId in tagIds.difference(before)) {
-          await txn.insert(
-            DatabaseConstants.tableMediaTags,
-            {
-              DatabaseConstants.colMediaTagMediaId: mediaId,
-              DatabaseConstants.colMediaTagTagId: tagId,
-              DatabaseConstants.colMediaTagDateTagged: now,
-            },
-            conflictAlgorithm: ConflictAlgorithm.ignore,
-          );
+          await txn.insert(DatabaseConstants.tableMediaTags, {
+            DatabaseConstants.colMediaTagMediaId: mediaId,
+            DatabaseConstants.colMediaTagTagId: tagId,
+            DatabaseConstants.colMediaTagDateTagged: now,
+          }, conflictAlgorithm: ConflictAlgorithm.ignore);
         }
 
         // Recount only the tags that actually changed.

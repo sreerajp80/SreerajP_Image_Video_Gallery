@@ -1,6 +1,6 @@
 # Plan: Phase 2 — Core Domain Models & Database (sqflite + SQLite FTS5)
 
-**Status:** Implemented
+**Status:** completed
 
 ## 1. Issue & Objective
 Phase 2 of the SreerajP Image Video Gallery implements the entire data layer backbone for local persistence, indexing, metadata management, atomic file handling, and full-text search.

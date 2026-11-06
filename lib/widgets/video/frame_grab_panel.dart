@@ -1,10 +1,11 @@
 import 'dart:typed_data';
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:in_sreerajp_imgvidgal/l10n/generated/app_localizations.dart';
 import 'package:in_sreerajp_imgvidgal/models/convert/image_output_format.dart';
 import 'package:in_sreerajp_imgvidgal/widgets/convert/format_chip_row.dart';
 import 'package:in_sreerajp_imgvidgal/widgets/video/trim_range_bar.dart';
+import 'package:in_sreerajp_imgvidgal/widgets/common/sized_memory_image.dart';
 
 /// The still-frame tab: a scrubber, the frame under it, and a format choice.
 ///
@@ -61,11 +62,11 @@ class FrameGrabPanel extends StatelessWidget {
                       child: isLoading
                           ? const CircularProgressIndicator()
                           : Text(
-                              l10n.frameUnavailable,
+                              l10n.bodyFrameUnavailable,
                               textAlign: TextAlign.center,
                             ),
                     )
-                  : Image.memory(
+                  : SizedMemoryImage(
                       frameBytes!,
                       fit: BoxFit.contain,
                       gaplessPlayback: true,
@@ -74,10 +75,9 @@ class FrameGrabPanel extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 16),
-        Text(l10n.framePositionLabel, style: theme.textTheme.titleSmall),
+        Text(l10n.labelFramePosition, style: theme.textTheme.titleSmall),
         Slider(
           value: positionMs.toDouble().clamp(0, max),
-          min: 0,
           max: max,
           label: formatDuration(positionMs),
           onChanged: (value) => onPositionChanged(value.round()),
@@ -87,7 +87,7 @@ class FrameGrabPanel extends StatelessWidget {
           style: theme.textTheme.bodySmall,
         ),
         const SizedBox(height: 20),
-        Text(l10n.frameFormatLabel, style: theme.textTheme.titleSmall),
+        Text(l10n.labelFrameFormat, style: theme.textTheme.titleSmall),
         const SizedBox(height: 8),
         FormatChipRow(
           selected: format,

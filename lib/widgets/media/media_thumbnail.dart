@@ -1,8 +1,9 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:in_sreerajp_imgvidgal/l10n/generated/app_localizations.dart';
 import 'package:in_sreerajp_imgvidgal/models/media_item.dart';
 import 'package:in_sreerajp_imgvidgal/providers/media_providers.dart';
+import 'package:in_sreerajp_imgvidgal/widgets/common/sized_memory_image.dart';
 
 /// Shows the cached thumbnail for one media item.
 ///
@@ -36,19 +37,18 @@ class MediaThumbnail extends ConsumerWidget {
           return _Placeholder(
             icon: Icons.broken_image_outlined,
             colorScheme: colorScheme,
-            label: AppLocalizations.of(context)!.mediaUnavailable,
+            label: AppLocalizations.of(context)!.labelMediaUnavailable,
           );
         }
-        return Image.memory(
+        return SizedMemoryImage(
           bytes,
           width: size,
           height: size,
-          fit: BoxFit.cover,
           gaplessPlayback: true,
           errorBuilder: (context, error, stackTrace) => _Placeholder(
             icon: Icons.broken_image_outlined,
             colorScheme: colorScheme,
-            label: AppLocalizations.of(context)!.mediaUnavailable,
+            label: AppLocalizations.of(context)!.labelMediaUnavailable,
           ),
         );
       },
@@ -65,7 +65,7 @@ class MediaThumbnail extends ConsumerWidget {
       error: (error, stackTrace) => _Placeholder(
         icon: Icons.broken_image_outlined,
         colorScheme: colorScheme,
-        label: AppLocalizations.of(context)!.mediaUnavailable,
+        label: AppLocalizations.of(context)!.labelMediaUnavailable,
       ),
     );
 

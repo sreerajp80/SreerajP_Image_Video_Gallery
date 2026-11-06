@@ -6,13 +6,13 @@ import 'package:in_sreerajp_imgvidgal/core/constants/app_constants.dart';
 import 'package:in_sreerajp_imgvidgal/models/sync/transfer_outcome.dart';
 import 'package:in_sreerajp_imgvidgal/services/sync/transfer_crypto_service.dart';
 import 'package:in_sreerajp_imgvidgal/services/sync/transfer_protocol.dart';
+import 'package:in_sreerajp_imgvidgal/core/errors/app_exception.dart';
+import 'package:in_sreerajp_imgvidgal/core/logging/app_logger.dart';
 
 /// Thrown when a session has to end.
-class TransferSessionException implements Exception {
+final class TransferSessionException extends FeatureException {
   final TransferFailure failure;
-  final String message;
-
-  const TransferSessionException(this.failure, this.message);
+  const TransferSessionException(this.failure, super.message, {super.cause});
 
   @override
   String toString() => 'TransferSessionException(${failure.name}): $message';
@@ -123,6 +123,7 @@ class P2pConnection {
         _deliver(frame);
       }
     } on TransferProtocolException catch (error) {
+      AppLogger.warning('A transfer frame was malformed', error: error);
       // A bad length or an unknown type is fatal. Trying to resynchronise a
       // byte stream after one is how a parser gets talked into an allocation
       // it cannot afford.
@@ -329,6 +330,8 @@ class P2pConnection {
     } on TransferSessionException {
       rethrow;
     } catch (_) {
+      // Safe to ignore: a body that is not a JSON object reads as no message,
+      // which the caller refuses.
       return null;
     }
   }
@@ -401,6 +404,8 @@ class P2pConnection {
     try {
       return base64.decode(value);
     } catch (_) {
+      // Safe to ignore: bad base64 from the peer reads as null, which the
+      // caller refuses.
       return null;
     }
   }
@@ -455,12 +460,12 @@ class SocketDuplex implements TransferDuplex {
     try {
       await _socket.flush();
     } catch (_) {
-      // Nothing to do: the peer has already gone.
+      // Safe to ignore: the peer has already gone.
     }
     try {
       _socket.destroy();
     } catch (_) {
-      // Already destroyed.
+      // Safe to ignore: the socket is already destroyed.
     }
   }
 

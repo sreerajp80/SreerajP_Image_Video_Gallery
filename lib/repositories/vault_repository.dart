@@ -9,6 +9,7 @@ import 'package:in_sreerajp_imgvidgal/services/vault/vault_export_service.dart';
 import 'package:in_sreerajp_imgvidgal/services/vault/vault_import_service.dart';
 import 'package:in_sreerajp_imgvidgal/services/vault/vault_shredder_service.dart';
 import 'package:in_sreerajp_imgvidgal/services/vault/vault_storage_service.dart';
+import 'package:in_sreerajp_imgvidgal/core/logging/app_logger.dart';
 
 /// The only way the app reads or changes the vault.
 ///
@@ -68,7 +69,8 @@ class VaultRepository {
     if (name == null || name.isEmpty || iv == null || iv.isEmpty) return null;
     try {
       return await _crypto.decryptToMemory(fileName: name, iv: iv);
-    } catch (_) {
+    } catch (error) {
+      AppLogger.debug('Decrypting a vault preview failed');
       // A preview that will not decrypt is a cosmetic loss; the tile falls
       // back to an icon and the item itself is untouched.
       return null;
@@ -164,7 +166,11 @@ class VaultRepository {
     try {
       final working = await _storage.findWorkingFiles();
       await _shredder.shredAll(working, passes: shredPasses);
-    } catch (_) {
+    } catch (error) {
+      AppLogger.warning(
+        'Shredding working files before unlock failed',
+        error: error,
+      );
       // Nothing actionable; the next unlock tries again.
     }
 
@@ -174,7 +180,8 @@ class VaultRepository {
       // Plain deletes: these have only ever held ciphertext, and shredding
       // them would spend a lot of writes to hide nothing.
       await _shredder.shredAll(orphans, passes: 1);
-    } catch (_) {
+    } catch (error) {
+      AppLogger.warning('Removing orphan vault payloads failed', error: error);
       // Same again.
     }
   }

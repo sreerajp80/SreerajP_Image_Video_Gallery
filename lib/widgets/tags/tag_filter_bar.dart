@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:in_sreerajp_imgvidgal/l10n/generated/app_localizations.dart';
 import 'package:in_sreerajp_imgvidgal/models/filter_options.dart';
 import 'package:in_sreerajp_imgvidgal/models/tag.dart';
@@ -41,7 +41,7 @@ class TagFilterBar extends StatelessWidget {
       return Padding(
         padding: const EdgeInsets.symmetric(vertical: 8),
         child: Text(
-          l10n.filterNoTags,
+          l10n.labelFilterNoTags,
           style: Theme.of(context).textTheme.bodySmall,
         ),
       );
@@ -57,11 +57,11 @@ class TagFilterBar extends StatelessWidget {
               segments: <ButtonSegment<TagFilterMode>>[
                 ButtonSegment<TagFilterMode>(
                   value: TagFilterMode.andMode,
-                  label: Text(l10n.filterTagModeAll),
+                  label: Text(l10n.actionFilterTagModeAll),
                 ),
                 ButtonSegment<TagFilterMode>(
                   value: TagFilterMode.orMode,
-                  label: Text(l10n.filterTagModeAny),
+                  label: Text(l10n.actionFilterTagModeAny),
                 ),
               ],
               selected: <TagFilterMode>{mode},

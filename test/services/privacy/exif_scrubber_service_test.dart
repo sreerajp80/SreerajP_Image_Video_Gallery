@@ -17,6 +17,13 @@ void main() {
       );
     });
 
+    test('bytes that are not a picture throw instead of coming back', () {
+      expect(
+        service.scrubBytes(Uint8List.fromList(List<int>.filled(64, 7))),
+        throwsA(isA<PrivacyProcessingException>()),
+      );
+    });
+
     test('losslessly strips APP1 and APP13 metadata markers from JPEG', () {
       // Construct minimal valid JPEG with APP1 segment
       final builder = BytesBuilder();
@@ -146,13 +153,7 @@ void main() {
       img.fill(image, color: img.ColorRgb8(255, 0, 0));
       final jpgBytes = Uint8List.fromList(img.encodeJpg(image));
 
-      final options = const PrivacyScrubOptions(
-        stripLocation: true,
-        stripCameraAndLensSerials: true,
-        stripTimestamps: true,
-        stripAuthorAndSoftware: true,
-        stripAllExif: false,
-      );
+      const options = PrivacyScrubOptions(stripAllExif: false);
 
       final scrubbed = service.scrubBytesSync(jpgBytes, options: options);
       final decodedScrubbed = img.decodeImage(scrubbed);

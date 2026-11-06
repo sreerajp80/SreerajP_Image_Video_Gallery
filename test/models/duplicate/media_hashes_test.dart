@@ -38,7 +38,7 @@ void main() {
       // Such a hash is a negative Dart integer. Asking it directly for a hex
       // string would produce a minus sign and lose the bit pattern, so this is
       // the case the two-halves encoding exists for.
-      final value = 1 << 63;
+      const value = 1 << 63;
 
       expect(MediaHashes.toHex64(value).length, 16);
       expect(MediaHashes.toHex64(value).startsWith('-'), isFalse);

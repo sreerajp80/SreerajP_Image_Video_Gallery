@@ -11,6 +11,7 @@ import 'package:in_sreerajp_imgvidgal/services/media/media_scanner_service.dart'
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 import '../services/media/fake_media_store_channel.dart';
+import 'package:flutter_riverpod/misc.dart';
 
 void main() {
   setUpAll(() {
@@ -30,9 +31,9 @@ void main() {
       mediaType: MediaType.image,
       mimeType: 'image/jpeg',
       size: 1000,
-      dateAdded: DateTime(2026, 9, 1),
-      dateModified: DateTime(2026, 9, 1),
-      dateTaken: DateTime(2026, 9, 1),
+      dateAdded: DateTime(2026, 9),
+      dateModified: DateTime(2026, 9),
+      dateTaken: DateTime(2026, 9),
       isTrash: true,
     );
 

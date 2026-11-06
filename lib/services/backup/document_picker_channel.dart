@@ -1,5 +1,6 @@
 import 'package:flutter/services.dart';
 import 'package:in_sreerajp_imgvidgal/core/constants/app_constants.dart';
+import 'package:in_sreerajp_imgvidgal/core/errors/app_exception.dart';
 
 /// What the picker said about a chosen file.
 class PickedDocument {
@@ -26,11 +27,9 @@ class PickedDocument {
 ///
 /// Backing out of the picker is *not* this: choosing nothing is a normal
 /// thing to do, and comes back as null rather than as an error.
-class DocumentPickerException implements Exception {
+final class DocumentPickerException extends FeatureException {
   final String code;
-  final String message;
-
-  const DocumentPickerException(this.code, this.message);
+  const DocumentPickerException(this.code, super.message, {super.cause});
 
   /// Whether the device has no document provider at all.
   bool get hasNoPicker => code == 'no_picker';
@@ -122,7 +121,7 @@ class DocumentPickerChannel {
   Future<String?> copyToCache(String uri, {int? maxBytes}) {
     return _invoke<String>('copyToCache', <String, dynamic>{
       'uri': uri,
-      if (maxBytes != null) 'maxBytes': maxBytes,
+      'maxBytes': ?maxBytes,
     });
   }
 

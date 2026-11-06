@@ -1,6 +1,6 @@
 import 'package:in_sreerajp_imgvidgal/models/flashback_memory.dart';
 import 'package:in_sreerajp_imgvidgal/models/media_item.dart';
-import 'package:in_sreerajp_imgvidgal/services/timeline/timeline_grouping_service.dart';
+import 'package:in_sreerajp_imgvidgal/core/domain/timeline/timeline_grouping_service.dart';
 
 /// Builds the "On This Day" memories shown above the timeline.
 ///
@@ -37,7 +37,7 @@ class FlashbackService {
       final date = item.effectiveDate;
       if (date.year >= today.year) continue;
       if (date.month != today.month || date.day != today.day) continue;
-      byYear.putIfAbsent(date.year, () => <MediaItem>[])..add(item);
+      byYear.putIfAbsent(date.year, () => <MediaItem>[]).add(item);
     }
     if (byYear.isEmpty) return const <FlashbackMemory>[];
 

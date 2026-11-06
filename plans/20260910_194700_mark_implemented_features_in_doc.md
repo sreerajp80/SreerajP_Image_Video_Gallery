@@ -1,6 +1,6 @@
 # Plan: Mark Implemented Editor Features in Feature Improvements Document
 
-**Status:** Approved
+**Status:** completed
 
 ## Summary
 

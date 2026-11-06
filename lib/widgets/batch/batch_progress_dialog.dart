@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:in_sreerajp_imgvidgal/l10n/generated/app_localizations.dart';
 import 'package:in_sreerajp_imgvidgal/providers/batch_providers.dart';
@@ -30,7 +30,7 @@ class BatchProgressDialog extends ConsumerWidget {
     return PopScope(
       canPop: false,
       child: AlertDialog(
-        title: Text(l10n.batchRunning),
+        title: Text(l10n.titleBatchRunning),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -45,7 +45,7 @@ class BatchProgressDialog extends ConsumerWidget {
             const SizedBox(height: 16),
             if (progress != null)
               Text(
-                l10n.batchProgress(progress.done, progress.total),
+                l10n.bodyBatchProgress(progress.done, progress.total),
                 style: theme.textTheme.bodyMedium,
               ),
             if (progress?.currentName != null) ...[
@@ -62,7 +62,7 @@ class BatchProgressDialog extends ConsumerWidget {
             if (progress?.isCancelled ?? false) ...[
               const SizedBox(height: 8),
               Text(
-                l10n.batchCancelling,
+                l10n.bodyBatchCancelling,
                 style: theme.textTheme.bodySmall?.copyWith(
                   color: theme.colorScheme.error,
                 ),
@@ -76,7 +76,7 @@ class BatchProgressDialog extends ConsumerWidget {
             // behind, which is why the batch does not stop instantly.
             onPressed: () =>
                 ref.read(batchControllerProvider.notifier).cancel(),
-            child: Text(l10n.batchCancel),
+            child: Text(l10n.labelBatchCancel),
           ),
         ],
       ),

@@ -1,9 +1,9 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:in_sreerajp_imgvidgal/l10n/generated/app_localizations.dart';
 import 'package:in_sreerajp_imgvidgal/models/playback_state.dart';
 import 'package:in_sreerajp_imgvidgal/providers/viewer_providers.dart';
-import 'package:in_sreerajp_imgvidgal/services/video/playback_speed_service.dart';
+import 'package:in_sreerajp_imgvidgal/core/domain/video/playback_speed_service.dart';
 
 /// The control bar under a playing clip.
 ///
@@ -93,13 +93,13 @@ class VideoControlsBar extends ConsumerWidget {
                     onPressed: state.isReady ? onStepBackward : null,
                     icon: const Icon(Icons.skip_previous_outlined),
                     color: Colors.white,
-                    tooltip: l10n.frameBackward,
+                    tooltip: l10n.tooltipFrameBackward,
                   ),
                   IconButton(
                     onPressed: state.isReady ? onSkipBackward : null,
                     icon: const Icon(Icons.replay_10_outlined),
                     color: Colors.white,
-                    tooltip: l10n.skipBackward,
+                    tooltip: l10n.tooltipSkipBackward,
                   ),
                   IconButton.filled(
                     onPressed: state.isReady ? onTogglePlay : null,
@@ -108,19 +108,21 @@ class VideoControlsBar extends ConsumerWidget {
                           ? Icons.pause_rounded
                           : Icons.play_arrow_rounded,
                     ),
-                    tooltip: state.isPlaying ? l10n.pause : l10n.play,
+                    tooltip: state.isPlaying
+                        ? l10n.actionPause
+                        : l10n.actionPlay,
                   ),
                   IconButton(
                     onPressed: state.isReady ? onSkipForward : null,
                     icon: const Icon(Icons.forward_10_outlined),
                     color: Colors.white,
-                    tooltip: l10n.skipForward,
+                    tooltip: l10n.tooltipSkipForward,
                   ),
                   IconButton(
                     onPressed: state.isReady ? onStepForward : null,
                     icon: const Icon(Icons.skip_next_outlined),
                     color: Colors.white,
-                    tooltip: l10n.frameForward,
+                    tooltip: l10n.tooltipFrameForward,
                   ),
                 ],
               ),
@@ -137,11 +139,11 @@ class VideoControlsBar extends ConsumerWidget {
                     color: state.isLooping
                         ? Colors.lightBlueAccent
                         : Colors.white,
-                    tooltip: l10n.loopPlayback,
+                    tooltip: l10n.tooltipLoopPlayback,
                   ),
                   PopupMenuButton<double>(
                     enabled: state.isReady,
-                    tooltip: l10n.playbackSpeed,
+                    tooltip: l10n.tooltipPlaybackSpeed,
                     onSelected: onSpeedSelected,
                     itemBuilder: (context) => [
                       for (final speed in PlaybackSpeedService.speeds)

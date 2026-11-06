@@ -1,6 +1,6 @@
 # Plan: Expand Media Format Support in Project Idea
 
-**Status:** Implemented
+**Status:** completed
 
 ## 1. Issue / Goal
 The current `docs/Project_Idea.md` only mentions JPEG, PNG, and WEBP for image format conversion. It needs to be updated with comprehensive format support across viewing (images, videos, animations, RAW), playback, conversion/export, and video tooling.

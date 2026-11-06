@@ -6,8 +6,8 @@ import 'package:in_sreerajp_imgvidgal/repositories/album_repository.dart';
 import 'package:in_sreerajp_imgvidgal/repositories/database/album_dao.dart';
 import 'package:in_sreerajp_imgvidgal/repositories/database/database_helper.dart';
 import 'package:in_sreerajp_imgvidgal/repositories/database/media_dao.dart';
-import 'package:in_sreerajp_imgvidgal/services/albums/album_name_rules.dart';
-import 'package:in_sreerajp_imgvidgal/services/albums/smart_album_service.dart';
+import 'package:in_sreerajp_imgvidgal/core/domain/albums/album_name_rules.dart';
+import 'package:in_sreerajp_imgvidgal/core/domain/albums/smart_album_service.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 void main() {
@@ -370,7 +370,7 @@ void main() {
     test('recently added drops anything past the window', () async {
       final today = DateTime(2026, 8, 30);
       await mediaDao.insertMediaItem(media('new', added: today));
-      await mediaDao.insertMediaItem(media('old', added: DateTime(2020, 1, 1)));
+      await mediaDao.insertMediaItem(media('old', added: DateTime(2020)));
 
       final items = await repository.getSmartAlbumMedia(
         SmartAlbumService.forType(AlbumType.smartRecentlyAdded),

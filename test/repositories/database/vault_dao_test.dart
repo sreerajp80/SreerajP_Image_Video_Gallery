@@ -15,7 +15,7 @@ void main() {
     late DatabaseHelper dbHelper;
     late VaultDao vaultDao;
 
-    final now = DateTime(2026, 8, 29, 10, 0, 0);
+    final now = DateTime(2026, 8, 29, 10);
 
     final testVaultItem = VaultItem(
       id: 'vault_record_1',
@@ -209,9 +209,7 @@ void main() {
         );
 
         test('skips a record with no preview', () async {
-          await vaultDao.insertVaultItem(
-            testVaultItem.copyWith(encryptedThumbnailFilename: null),
-          );
+          await vaultDao.insertVaultItem(testVaultItem.copyWith());
 
           // copyWith cannot clear a nullable field, so the row is written
           // directly to make the case real.

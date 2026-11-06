@@ -43,9 +43,7 @@ void main() {
     });
 
     test('request invokes channel requestPermissions', () async {
-      final channel = _TrackingFakeMediaStoreChannel(
-        permissionStatus: MediaPermissionStatus.granted,
-      );
+      final channel = _TrackingFakeMediaStoreChannel();
       final service = MediaPermissionService(channel: channel);
 
       final status = await service.request();
@@ -78,9 +76,7 @@ void main() {
     });
 
     test('ensureGranted returns immediately if already granted', () async {
-      final channel = _TrackingFakeMediaStoreChannel(
-        permissionStatus: MediaPermissionStatus.granted,
-      );
+      final channel = _TrackingFakeMediaStoreChannel();
       final service = MediaPermissionService(channel: channel);
 
       final status = await service.ensureGranted();

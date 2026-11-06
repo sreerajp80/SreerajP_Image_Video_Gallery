@@ -1,5 +1,5 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+import 'package:in_sreerajp_imgvidgal/core/logging/app_logger.dart';
 
 enum AppFlavor {
   dev,
@@ -33,9 +33,9 @@ class AppFlavorConfig {
   static AppFlavor get current => _current;
 
   static void initialize() {
-    final rawFlavor =
+    const rawFlavor =
         appFlavor ??
-        const String.fromEnvironment(
+        String.fromEnvironment(
           'APP_FLAVOR',
           defaultValue: String.fromEnvironment(
             'FLUTTER_APP_FLAVOR',
@@ -53,10 +53,6 @@ class AppFlavorConfig {
         break;
     }
 
-    if (kDebugMode) {
-      debugPrint(
-        'AppFlavor initialized: ${_current.name} (${_current.displayName})',
-      );
-    }
+    AppLogger.info('App flavor initialized: ${_current.name}');
   }
 }

@@ -4,6 +4,7 @@ import 'package:image/image.dart' as img;
 import 'package:in_sreerajp_imgvidgal/core/constants/app_constants.dart';
 import 'package:in_sreerajp_imgvidgal/models/media_item.dart';
 import 'package:in_sreerajp_imgvidgal/services/video/video_tools_channel.dart';
+import 'package:in_sreerajp_imgvidgal/core/logging/app_logger.dart';
 
 /// Builds the small preview shown on a vault tile.
 ///
@@ -29,7 +30,8 @@ class VaultPreviewService {
         return await _videoPreview(item);
       }
       return await _imagePreview(item);
-    } catch (_) {
+    } catch (error) {
+      AppLogger.debug('Building a vault preview failed');
       // Hard rule: never crash on bad input. A corrupt or unusual file loses
       // its preview and keeps everything else.
       return null;

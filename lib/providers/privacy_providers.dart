@@ -6,6 +6,8 @@ import 'package:in_sreerajp_imgvidgal/services/platform/share_service.dart';
 import 'package:in_sreerajp_imgvidgal/services/privacy/exif_scrubber_service.dart';
 import 'package:in_sreerajp_imgvidgal/services/privacy/forensic_inspector_service.dart';
 import 'package:in_sreerajp_imgvidgal/services/privacy/gps_geofence_service.dart';
+import 'package:in_sreerajp_imgvidgal/services/privacy/privacy_export_service.dart';
+import 'package:path_provider/path_provider.dart';
 
 /// Provider for metadata scrubbing operations.
 final exifScrubberServiceProvider = Provider<ExifScrubberService>((ref) {
@@ -27,6 +29,22 @@ final forensicInspectorServiceProvider = Provider<ForensicInspectorService>((
 /// Provider for offline Android native file sharing.
 final shareServiceProvider = Provider<ShareService>((ref) {
   return const ShareService();
+});
+
+/// Makes cleaned copies of a photo and shares or saves them.
+///
+/// The privacy sheet goes through this rather than touching the repository,
+/// the file system or MediaStore itself.
+final privacyExportServiceProvider = Provider<PrivacyExportService>((ref) {
+  final repository = ref.watch(mediaRepositoryProvider);
+  return PrivacyExportService(
+    readOriginal: (item) => repository.readOriginalBytes(item),
+    channel: ref.watch(mediaStoreChannelProvider),
+    share: ref.watch(shareServiceProvider),
+    scrubber: ref.watch(exifScrubberServiceProvider),
+    geofence: ref.watch(gpsGeofenceServiceProvider),
+    tempDirectory: getTemporaryDirectory,
+  );
 });
 
 /// Deep forensic optical, hardware, and sensor metadata for an item.

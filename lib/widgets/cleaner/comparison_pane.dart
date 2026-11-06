@@ -1,8 +1,9 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:in_sreerajp_imgvidgal/l10n/generated/app_localizations.dart';
 import 'package:in_sreerajp_imgvidgal/models/media_item.dart';
 import 'package:in_sreerajp_imgvidgal/widgets/media/media_thumbnail.dart';
 import 'package:in_sreerajp_imgvidgal/widgets/viewer/media_details_sheet.dart';
+import 'package:in_sreerajp_imgvidgal/widgets/common/unit_format_context.dart';
 
 /// One candidate copy, shown beside the others.
 ///
@@ -63,7 +64,7 @@ class ComparisonPane extends StatelessWidget {
                   Positioned(
                     top: 8,
                     left: 8,
-                    child: _Badge(label: l10n.compareBestBadge),
+                    child: _Badge(label: l10n.labelCompareBestBadge),
                   ),
               ],
             ),
@@ -79,18 +80,24 @@ class ComparisonPane extends StatelessWidget {
                     style: theme.textTheme.labelLarge,
                   ),
                   const SizedBox(height: 8),
-                  _Fact(label: l10n.compareFieldPixels, value: _pixels(l10n)),
                   _Fact(
-                    label: l10n.compareFieldSize,
-                    value: formatFileSize(item.size),
+                    label: l10n.labelCompareFieldPixels,
+                    value: _pixels(l10n),
                   ),
                   _Fact(
-                    label: l10n.compareFieldDate,
+                    label: l10n.labelCompareFieldSize,
+                    value: context.units.bytes(item.size),
+                  ),
+                  _Fact(
+                    label: l10n.labelCompareFieldDate,
                     value: item.dateTaken == null
-                        ? l10n.compareUnknown
+                        ? l10n.labelCompareUnknown
                         : formatDetailDate(context, item.dateTaken!),
                   ),
-                  _Fact(label: l10n.compareFieldCamera, value: _camera(l10n)),
+                  _Fact(
+                    label: l10n.labelCompareFieldCamera,
+                    value: _camera(l10n),
+                  ),
                   const SizedBox(height: 8),
                   SizedBox(
                     width: double.infinity,
@@ -98,11 +105,11 @@ class ComparisonPane extends StatelessWidget {
                         ? FilledButton.icon(
                             onPressed: null,
                             icon: const Icon(Icons.check),
-                            label: Text(l10n.compareKeepThis),
+                            label: Text(l10n.actionCompareKeepThis),
                           )
                         : OutlinedButton(
                             onPressed: onKeep,
-                            child: Text(l10n.compareKeepThis),
+                            child: Text(l10n.actionCompareKeepThis),
                           ),
                   ),
                 ],
@@ -118,19 +125,19 @@ class ComparisonPane extends StatelessWidget {
     final width = item.width;
     final height = item.height;
     if (width == null || height == null || width <= 0 || height <= 0) {
-      return l10n.compareUnknown;
+      return l10n.labelCompareUnknown;
     }
     return '$width x $height';
   }
 
   String _camera(AppLocalizations l10n) {
     final exif = item.exifData;
-    if (exif == null) return l10n.compareUnknown;
+    if (exif == null) return l10n.labelCompareUnknown;
     final parts = <String>[
       if (exif.make != null && exif.make!.isNotEmpty) exif.make!,
       if (exif.model != null && exif.model!.isNotEmpty) exif.model!,
     ];
-    if (parts.isEmpty) return l10n.compareUnknown;
+    if (parts.isEmpty) return l10n.labelCompareUnknown;
     return parts.join(' ');
   }
 }

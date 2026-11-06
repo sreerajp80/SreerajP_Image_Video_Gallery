@@ -1,6 +1,6 @@
 # Media Format Capabilities Matrix Plan
 
-**Status:** Completed
+**Status:** completed
 
 ## 1. Overview
 Clarify and formalize format support boundaries in the Project Idea document by adding a dedicated Media Format Capability Matrix defining View-Only, Editable, and Convertible formats.

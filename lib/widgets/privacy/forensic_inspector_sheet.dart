@@ -1,10 +1,11 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:in_sreerajp_imgvidgal/l10n/generated/app_localizations.dart';
 import 'package:in_sreerajp_imgvidgal/models/media_item.dart';
 import 'package:in_sreerajp_imgvidgal/models/privacy/forensic_metadata.dart';
 import 'package:in_sreerajp_imgvidgal/providers/privacy_providers.dart';
 import 'package:in_sreerajp_imgvidgal/widgets/common/adaptive_directionality.dart';
+import 'package:in_sreerajp_imgvidgal/widgets/common/unit_format_context.dart';
 
 /// Modal sheet displaying comprehensive optical, hardware, and sensor forensic metadata.
 class ForensicInspectorSheet extends ConsumerWidget {
@@ -65,13 +66,13 @@ class ForensicInspectorSheet extends ConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        l10n.forensicInspectorTitle,
+                        l10n.titleForensicInspector,
                         style: theme.textTheme.titleLarge?.copyWith(
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                       Text(
-                        l10n.forensicInspectorSubtitle,
+                        l10n.descForensicInspectorSubtitle,
                         style: theme.textTheme.bodySmall?.copyWith(
                           color: theme.colorScheme.onSurfaceVariant,
                         ),
@@ -90,7 +91,7 @@ class ForensicInspectorSheet extends ConsumerWidget {
               error: (err, _) => Padding(
                 padding: const EdgeInsets.symmetric(vertical: 24),
                 child: Text(
-                  l10n.forensicNoData,
+                  l10n.bodyForensicNoData,
                   style: theme.textTheme.bodyMedium,
                 ),
               ),
@@ -117,38 +118,41 @@ class _ForensicContent extends StatelessWidget {
       children: [
         // Sensor & Optical Section
         _SectionCard(
-          title: l10n.forensicSectionSensorOptics,
+          title: l10n.bodyForensicSectionSensorOptics,
           icon: Icons.camera_outlined,
           children: [
             if (data.sensorFormat != null)
               _ForensicRow(
-                label: l10n.forensicSensorFormat,
+                label: l10n.labelForensicSensorFormat,
                 value: data.sensorFormat!,
                 badge: true,
               ),
             if (data.cropFactor != null)
               _ForensicRow(
-                label: l10n.forensicCropFactor,
-                value: '${data.cropFactor!.toStringAsFixed(2)}x',
+                label: l10n.labelForensicCropFactor,
+                value: context.units.cropFactor(data.cropFactor!),
               ),
             if (data.focalLength35mm != null)
               _ForensicRow(
-                label: l10n.forensicFocal35mm,
-                value: '${data.focalLength35mm!.toStringAsFixed(0)} mm',
+                label: l10n.labelForensicFocal35mm,
+                value: context.units.millimetres(data.focalLength35mm!),
               ),
             if (data.physicalFocalLength != null)
               _ForensicRow(
-                label: l10n.forensicPhysicalFocalLength,
-                value: '${data.physicalFocalLength!.toStringAsFixed(1)} mm',
+                label: l10n.labelForensicPhysicalFocalLength,
+                value: context.units.millimetres(
+                  data.physicalFocalLength!,
+                  decimals: 1,
+                ),
               ),
             if (data.hyperfocalDistanceMeters != null)
               _ForensicRow(
-                label: l10n.forensicHyperfocalDistance,
-                value: '${data.hyperfocalDistanceMeters!.toStringAsFixed(1)} m',
+                label: l10n.labelForensicHyperfocalDistance,
+                value: context.units.metres(data.hyperfocalDistanceMeters!),
               ),
             if (data.exposureBiasString != null)
               _ForensicRow(
-                label: l10n.forensicExposureBias,
+                label: l10n.labelForensicExposureBias,
                 value: data.exposureBiasString!,
                 highlight: true,
               ),
@@ -158,43 +162,43 @@ class _ForensicContent extends StatelessWidget {
 
         // Shutter & Color Profile Section
         _SectionCard(
-          title: l10n.forensicSectionMechanicsColor,
+          title: l10n.bodyForensicSectionMechanicsColor,
           icon: Icons.shutter_speed_outlined,
           children: [
             _ForensicRow(
-              label: l10n.forensicShutterActuations,
+              label: l10n.labelForensicShutterActuations,
               value: data.shutterActuations != null
-                  ? '${data.shutterActuations!} releases'
-                  : l10n.forensicShutterNotReported,
+                  ? l10n.bodyForensicShutterCount(data.shutterActuations!)
+                  : l10n.bodyForensicShutterNotReported,
             ),
             if (data.colorProfile != null)
               _ForensicRow(
-                label: l10n.forensicColorProfile,
+                label: l10n.labelForensicColorProfile,
                 value: data.colorProfile!,
               ),
             if (data.exposureProgram != null)
               _ForensicRow(
-                label: l10n.forensicExposureProgram,
+                label: l10n.labelForensicExposureProgram,
                 value: data.exposureProgram!,
               ),
             if (data.meteringMode != null)
               _ForensicRow(
-                label: l10n.forensicMeteringMode,
+                label: l10n.labelForensicMeteringMode,
                 value: data.meteringMode!,
               ),
             if (data.sensingMethod != null)
               _ForensicRow(
-                label: l10n.forensicSensingMethod,
+                label: l10n.labelForensicSensingMethod,
                 value: data.sensingMethod!,
               ),
             if (data.sceneCaptureType != null)
               _ForensicRow(
-                label: l10n.forensicSceneCaptureType,
+                label: l10n.labelForensicSceneCaptureType,
                 value: data.sceneCaptureType!,
               ),
             if (data.flashDetails != null)
               _ForensicRow(
-                label: l10n.forensicFlashStatus,
+                label: l10n.labelForensicFlashStatus,
                 value: data.flashDetails!,
               ),
           ],
@@ -203,26 +207,28 @@ class _ForensicContent extends StatelessWidget {
 
         // Hardware & Serial Identity Section
         _SectionCard(
-          title: l10n.forensicSectionHardwareIdentity,
+          title: l10n.bodyForensicSectionHardwareIdentity,
           icon: Icons.fingerprint_outlined,
           children: [
             _ForensicRow(
-              label: l10n.forensicCameraSerial,
-              value: data.bodySerialNumber ?? l10n.forensicSerialNotEmbedded,
+              label: l10n.labelForensicCameraSerial,
+              value:
+                  data.bodySerialNumber ?? l10n.bodyForensicSerialNotEmbedded,
             ),
             if (data.lensModel != null)
               _ForensicRow(
-                label: l10n.forensicLensModel,
+                label: l10n.labelForensicLensModel,
                 value: data.lensModel!,
               ),
             if (data.lensSpecification != null)
               _ForensicRow(
-                label: l10n.forensicLensSpecification,
+                label: l10n.labelForensicLensSpecification,
                 value: data.lensSpecification!,
               ),
             _ForensicRow(
-              label: l10n.forensicLensSerial,
-              value: data.lensSerialNumber ?? l10n.forensicSerialNotEmbedded,
+              label: l10n.labelForensicLensSerial,
+              value:
+                  data.lensSerialNumber ?? l10n.bodyForensicSerialNotEmbedded,
             ),
           ],
         ),

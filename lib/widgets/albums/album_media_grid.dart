@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:in_sreerajp_imgvidgal/core/routing/app_router.dart';
@@ -82,8 +82,8 @@ class AlbumMediaGrid extends ConsumerWidget {
               item: item,
               size: tileSize,
               semanticLabel: item.displayName,
-              isSelected: selectable ? selected.contains(item.id) : false,
-              selectionMode: selectable ? selecting : false,
+              isSelected: selectable && selected.contains(item.id),
+              selectionMode: selectable && selecting,
               onTap: (tapped) {
                 if (selectable && selecting) {
                   ref.read(selectionProvider.notifier).toggle(tapped.id);
@@ -100,9 +100,9 @@ class AlbumMediaGrid extends ConsumerWidget {
                   final selection = ref.read(selectionProvider.notifier);
                   if (!selection.contains(tapped.id) && selection.isFull) {
                     final l10n = AppLocalizations.of(context)!;
-                    ScaffoldMessenger.of(
-                      context,
-                    ).showSnackBar(SnackBar(content: Text(l10n.selectionFull)));
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text(l10n.bodySelectionFull)),
+                    );
                     return;
                   }
                   selection.toggle(tapped.id);
@@ -185,7 +185,7 @@ class AlbumErrorState extends StatelessWidget {
             Icon(Icons.error_outline, size: 48, color: theme.colorScheme.error),
             const SizedBox(height: 16),
             Text(
-              message ?? l10n.albumsLoadFailed,
+              message ?? l10n.errorAlbumsLoadFailed,
               textAlign: TextAlign.center,
               style: theme.textTheme.titleMedium,
             ),

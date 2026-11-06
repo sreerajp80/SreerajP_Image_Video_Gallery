@@ -1,7 +1,7 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:in_sreerajp_imgvidgal/l10n/generated/app_localizations.dart';
 import 'package:in_sreerajp_imgvidgal/models/convert/size_estimate.dart';
-import 'package:in_sreerajp_imgvidgal/services/convert/compression_service.dart';
+import 'package:in_sreerajp_imgvidgal/widgets/common/unit_format_context.dart';
 
 /// Shows what the converted copy would weigh, before anything is written.
 ///
@@ -47,15 +47,13 @@ class SizePreviewCard extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: <Widget>[
                 _Figure(
-                  label: l10n.convertOriginalSize,
-                  value: CompressionService.formatBytes(originalBytes),
+                  label: l10n.labelConvertOriginalSize,
+                  value: context.units.bytes(originalBytes),
                 ),
                 const Icon(Icons.arrow_forward_rounded, size: 18),
                 _Figure(
-                  label: l10n.convertNewSize,
-                  value: value == null
-                      ? '—'
-                      : CompressionService.formatBytes(value.bytes),
+                  label: l10n.labelConvertNewSize,
+                  value: value == null ? '—' : context.units.bytes(value.bytes),
                   emphasis: true,
                 ),
               ],
@@ -73,7 +71,7 @@ class SizePreviewCard extends StatelessWidget {
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      l10n.convertEstimating,
+                      l10n.bodyConvertEstimating,
                       style: theme.textTheme.bodySmall,
                     ),
                   ],
@@ -81,27 +79,29 @@ class SizePreviewCard extends StatelessWidget {
               ),
             if (!isWorking && hasFailed && value == null)
               Text(
-                l10n.convertNoEstimate,
+                l10n.bodyConvertNoEstimate,
                 style: theme.textTheme.bodySmall?.copyWith(
                   color: theme.colorScheme.error,
                 ),
               ),
             if (value != null) ...<Widget>[
               Text(
-                l10n.convertPixelSize(value.width, value.height),
+                l10n.bodyConvertPixelSize(value.width, value.height),
                 style: theme.textTheme.bodySmall,
               ),
               const SizedBox(height: 4),
               if (value.isLarger)
                 Text(
-                  l10n.convertLargerWarning,
+                  l10n.bodyConvertLargerWarning,
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: theme.colorScheme.error,
                   ),
                 )
               else if (value.savedFraction > 0)
                 Text(
-                  l10n.convertSmallerBy((value.savedFraction * 100).round()),
+                  l10n.bodyConvertSmallerBy(
+                    (value.savedFraction * 100).round(),
+                  ),
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: theme.colorScheme.primary,
                   ),
@@ -109,7 +109,7 @@ class SizePreviewCard extends StatelessWidget {
             ],
             const SizedBox(height: 8),
             Text(
-              l10n.convertOriginalKept,
+              l10n.bodyConvertOriginalKept,
               style: theme.textTheme.bodySmall?.copyWith(
                 color: theme.colorScheme.onSurfaceVariant,
               ),

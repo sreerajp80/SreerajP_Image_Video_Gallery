@@ -1,6 +1,6 @@
 # Build Metadata Generation and About Screen Build Date
 
-**Status:** Completed
+**Status:** completed
 
 ## Files to Change
 

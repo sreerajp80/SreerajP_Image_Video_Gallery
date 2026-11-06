@@ -35,7 +35,7 @@ void main() {
 
   group('frameDelayMs', () {
     test('the gap between frames follows the frame rate', () {
-      expect(const GifExportOptions(frameRate: 10).frameDelayMs, 100);
+      expect(const GifExportOptions().frameDelayMs, 100);
       expect(const GifExportOptions(frameRate: 20).frameDelayMs, 50);
     });
   });
@@ -43,10 +43,7 @@ void main() {
   group('copyWith', () {
     test('only the named field changes', () {
       const original = GifExportOptions(
-        frameRate: 10,
-        maxSide: 320,
         range: TrimRange(startMs: 0, endMs: 5000),
-        loop: true,
       );
 
       final changed = original.copyWith(loop: false);

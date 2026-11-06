@@ -6,6 +6,7 @@ import 'package:in_sreerajp_imgvidgal/models/ocr/ocr_language.dart';
 import 'package:in_sreerajp_imgvidgal/models/ocr/ocr_result.dart';
 import 'package:in_sreerajp_imgvidgal/services/ocr/ocr_engine.dart';
 import 'package:in_sreerajp_imgvidgal/services/ocr/ocr_text_cleaner.dart';
+import 'package:in_sreerajp_imgvidgal/core/logging/app_logger.dart';
 
 /// Reads the text out of a picture.
 ///
@@ -60,7 +61,8 @@ class OcrService {
       if (size > _maxImageBytes) {
         return OcrResult.failed(OcrFailure.imageTooLarge, language: language);
       }
-    } catch (_) {
+    } catch (error) {
+      AppLogger.debug('OCR could not read the image file');
       return OcrResult.failed(OcrFailure.unreadableImage, language: language);
     }
 
@@ -79,6 +81,7 @@ class OcrService {
     } on TimeoutException {
       return OcrResult.failed(OcrFailure.timedOut, language: language);
     } catch (error) {
+      AppLogger.warning('The OCR engine failed', error: error);
       // A missing traineddata file is worth telling apart from a general
       // failure: it means the app was built wrong, and the message the user
       // needs is a different one.

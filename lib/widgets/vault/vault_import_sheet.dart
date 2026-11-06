@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:in_sreerajp_imgvidgal/l10n/generated/app_localizations.dart';
 import 'package:in_sreerajp_imgvidgal/models/media_item.dart';
@@ -70,16 +70,16 @@ class _VaultImportSheetState extends ConsumerState<VaultImportSheet> {
     final agreed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: Text(l10n.vaultShredConfirmTitle(count)),
-        content: Text(l10n.vaultShredConfirmBody),
+        title: Text(l10n.bodyVaultShredConfirmTitle(count)),
+        content: Text(l10n.bodyVaultShredConfirm),
         actions: <Widget>[
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: Text(l10n.vaultCancel),
+            child: Text(l10n.actionVaultCancel),
           ),
           FilledButton(
             onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: Text(l10n.vaultShredConfirmAction),
+            child: Text(l10n.actionVaultShredConfirm),
           ),
         ],
       ),
@@ -107,21 +107,21 @@ class _VaultImportSheetState extends ConsumerState<VaultImportSheet> {
         children: <Widget>[
           ListTile(
             title: Text(
-              l10n.vaultImportTitle,
+              l10n.titleVaultImport,
               style: theme.textTheme.titleLarge,
             ),
-            subtitle: Text(l10n.vaultImportBody),
+            subtitle: Text(l10n.bodyVaultImport),
             trailing: IconButton(
               onPressed: () => Navigator.of(context).pop(),
               icon: const Icon(Icons.close),
-              tooltip: l10n.vaultCancel,
+              tooltip: l10n.actionVaultCancel,
             ),
           ),
           const Divider(height: 1),
           Expanded(
             child: items.when(
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (_, _) => Center(child: Text(l10n.vaultImportFailed)),
+              error: (_, _) => Center(child: Text(l10n.errorVaultImportFailed)),
               data: (list) => _buildGrid(list, l10n),
             ),
           ),
@@ -137,8 +137,8 @@ class _VaultImportSheetState extends ConsumerState<VaultImportSheet> {
                     : () => _confirm(items.value ?? const <MediaItem>[]),
                 child: Text(
                   _selectedIds.isEmpty
-                      ? l10n.vaultImportNothingSelected
-                      : l10n.vaultImportConfirm(_selectedIds.length),
+                      ? l10n.labelVaultImportNothingSelected
+                      : l10n.bodyVaultImportConfirm(_selectedIds.length),
                 ),
               ),
             ),
@@ -150,7 +150,7 @@ class _VaultImportSheetState extends ConsumerState<VaultImportSheet> {
 
   Widget _buildGrid(List<MediaItem> list, AppLocalizations l10n) {
     if (list.isEmpty) {
-      return Center(child: Text(l10n.vaultEmptyBody));
+      return Center(child: Text(l10n.bodyVaultEmpty));
     }
 
     return GridView.builder(
@@ -210,14 +210,14 @@ class _VaultImportSheetState extends ConsumerState<VaultImportSheet> {
         children: <Widget>[
           RadioListTile<bool>(
             value: false,
-            title: Text(l10n.vaultImportKeepOriginal),
-            subtitle: Text(l10n.vaultImportKeepOriginalBody),
+            title: Text(l10n.titleVaultImportKeepOriginal),
+            subtitle: Text(l10n.bodyVaultImportKeepOriginal),
             dense: true,
           ),
           RadioListTile<bool>(
             value: true,
-            title: Text(l10n.vaultImportShredOriginal),
-            subtitle: Text(l10n.vaultImportShredOriginalBody),
+            title: Text(l10n.titleVaultImportShredOriginal),
+            subtitle: Text(l10n.bodyVaultImportShredOriginal),
             dense: true,
           ),
         ],

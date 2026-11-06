@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:in_sreerajp_imgvidgal/core/routing/app_router.dart';
@@ -64,9 +64,9 @@ class _VaultScreenState extends ConsumerState<VaultScreen> {
 
     final l10n = AppLocalizations.of(context)!;
     final agreed = await _confirm(
-      title: l10n.vaultRestoreConfirmTitle(chosen.length),
-      body: l10n.vaultRestoreConfirmBody,
-      action: l10n.vaultRestoreConfirmAction,
+      title: l10n.bodyVaultRestoreConfirmTitle(chosen.length),
+      body: l10n.bodyVaultRestoreConfirm,
+      action: l10n.actionVaultRestoreConfirm,
     );
     if (!agreed || !mounted) return;
 
@@ -80,9 +80,9 @@ class _VaultScreenState extends ConsumerState<VaultScreen> {
 
     final l10n = AppLocalizations.of(context)!;
     final agreed = await _confirm(
-      title: l10n.vaultDeleteConfirmTitle(chosen.length),
-      body: l10n.vaultDeleteConfirmBody,
-      action: l10n.vaultDeleteForever,
+      title: l10n.bodyVaultDeleteConfirmTitle(chosen.length),
+      body: l10n.bodyVaultDeleteConfirm,
+      action: l10n.tooltipVaultDeleteForever,
       destructive: true,
     );
     if (!agreed || !mounted) return;
@@ -107,7 +107,7 @@ class _VaultScreenState extends ConsumerState<VaultScreen> {
         actions: <Widget>[
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: Text(l10n.vaultCancel),
+            child: Text(l10n.actionVaultCancel),
           ),
           FilledButton(
             style: destructive
@@ -143,18 +143,15 @@ class _VaultScreenState extends ConsumerState<VaultScreen> {
                 ? IconButton(
                     onPressed: _clearSelection,
                     icon: const Icon(Icons.close),
-                    tooltip: l10n.vaultClearSelection,
+                    tooltip: l10n.tooltipVaultClearSelection,
                   )
                 : null,
             title: Text(
               _selectionMode
-                  ? l10n.vaultSelectedCount(_selectedIds.length)
-                  : l10n.vaultTitle,
+                  ? l10n.bodyVaultSelectedCount(_selectedIds.length)
+                  : l10n.titleVault,
             ),
-            actions: _buildActions(
-              items.valueOrNull ?? const <VaultItem>[],
-              l10n,
-            ),
+            actions: _buildActions(items.value ?? const <VaultItem>[], l10n),
             bottom: progress == null
                 ? null
                 : PreferredSize(
@@ -167,13 +164,15 @@ class _VaultScreenState extends ConsumerState<VaultScreen> {
               : FloatingActionButton.extended(
                   onPressed: progress == null ? _openImportSheet : null,
                   icon: const Icon(Icons.add),
-                  label: Text(l10n.vaultAddItems),
+                  label: Text(l10n.labelVaultAddItems),
                 ),
-          body: items.when(
-            loading: () => const Center(child: CircularProgressIndicator()),
-            error: (_, _) => Center(child: Text(l10n.vaultAuthError)),
-            data: (list) =>
-                list.isEmpty ? _EmptyVault(l10n: l10n) : _buildGrid(list),
+          body: SafeArea(
+            child: items.when(
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (_, _) => Center(child: Text(l10n.errorVaultAuth)),
+              data: (list) =>
+                  list.isEmpty ? _EmptyVault(l10n: l10n) : _buildGrid(list),
+            ),
           ),
         ),
       ),
@@ -186,12 +185,12 @@ class _VaultScreenState extends ConsumerState<VaultScreen> {
         IconButton(
           onPressed: () => _restoreSelected(all),
           icon: const Icon(Icons.drive_file_move_outline),
-          tooltip: l10n.vaultRestore,
+          tooltip: l10n.tooltipVaultRestore,
         ),
         IconButton(
           onPressed: () => _deleteSelected(all),
           icon: const Icon(Icons.delete_forever_outlined),
-          tooltip: l10n.vaultDeleteForever,
+          tooltip: l10n.tooltipVaultDeleteForever,
         ),
       ];
     }
@@ -200,12 +199,12 @@ class _VaultScreenState extends ConsumerState<VaultScreen> {
       IconButton(
         onPressed: () => ref.read(vaultLockControllerProvider.notifier).lock(),
         icon: const Icon(Icons.lock_outline),
-        tooltip: l10n.vaultLockNow,
+        tooltip: l10n.tooltipVaultLockNow,
       ),
       IconButton(
         onPressed: () => context.push(kRouteVaultSettings),
         icon: const Icon(Icons.tune),
-        tooltip: l10n.vaultSettingsAction,
+        tooltip: l10n.tooltipVaultSettingsAction,
       ),
     ];
   }
@@ -257,7 +256,7 @@ class _VaultScreenState extends ConsumerState<VaultScreen> {
         error: (_, _) {
           ScaffoldMessenger.of(
             context,
-          ).showSnackBar(SnackBar(content: Text(l10n.vaultImportFailed)));
+          ).showSnackBar(SnackBar(content: Text(l10n.errorVaultImportFailed)));
           ref.read(vaultBatchControllerProvider.notifier).clearResult();
         },
       );
@@ -265,11 +264,14 @@ class _VaultScreenState extends ConsumerState<VaultScreen> {
   }
 
   String _messageForResult(VaultBatchResult result, AppLocalizations l10n) {
-    if (result.isTotalFailure) return l10n.vaultImportFailed;
+    if (result.isTotalFailure) return l10n.errorVaultImportFailed;
     if (result.isPartial) {
-      return l10n.vaultImportPartial(result.succeededCount, result.failedCount);
+      return l10n.bodyVaultImportPartial(
+        result.succeededCount,
+        result.failedCount,
+      );
     }
-    return l10n.vaultImportDone(result.succeededCount);
+    return l10n.bodyVaultImportDone(result.succeededCount);
   }
 }
 
@@ -294,10 +296,10 @@ class _EmptyVault extends StatelessWidget {
               color: theme.colorScheme.onSurfaceVariant,
             ),
             const SizedBox(height: 16),
-            Text(l10n.vaultEmptyTitle, style: theme.textTheme.titleMedium),
+            Text(l10n.titleVaultEmpty, style: theme.textTheme.titleMedium),
             const SizedBox(height: 8),
             Text(
-              l10n.vaultEmptyBody,
+              l10n.bodyVaultEmpty,
               style: theme.textTheme.bodyMedium,
               textAlign: TextAlign.center,
             ),

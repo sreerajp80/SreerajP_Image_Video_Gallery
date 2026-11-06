@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:in_sreerajp_imgvidgal/l10n/generated/app_localizations.dart';
 
 /// The search box, with a clear button and a filter button beside it.
@@ -47,14 +47,14 @@ class SearchFieldBar extends StatelessWidget {
                   onChanged: onChanged,
                   onSubmitted: onSubmitted,
                   decoration: InputDecoration(
-                    hintText: l10n.searchHint,
+                    hintText: l10n.helpSearchHint,
                     prefixIcon: const Icon(Icons.search),
                     isDense: true,
                     border: const OutlineInputBorder(),
                     suffixIcon: value.text.isEmpty
                         ? null
                         : IconButton(
-                            tooltip: l10n.searchClear,
+                            tooltip: l10n.tooltipSearchClear,
                             icon: const Icon(Icons.close),
                             onPressed: () {
                               controller.clear();
@@ -68,7 +68,7 @@ class SearchFieldBar extends StatelessWidget {
           ),
           const SizedBox(width: 8),
           IconButton.filledTonal(
-            tooltip: l10n.searchFilters,
+            tooltip: l10n.tooltipSearchFilters,
             onPressed: onOpenFilters,
             icon: Icon(
               hasActiveFilters ? Icons.filter_alt : Icons.filter_alt_outlined,

@@ -15,7 +15,6 @@ void main() {
 
     test('a fixed page keeps the chosen border', () {
       const options = PdfExportOptions(
-        pageSize: PdfPageSize.a4,
         marginPoints: AppConstants.pdfMediumMarginPoints,
       );
 
@@ -23,19 +22,13 @@ void main() {
     });
 
     test('an over-large border is pulled back to the largest offered', () {
-      const options = PdfExportOptions(
-        pageSize: PdfPageSize.a4,
-        marginPoints: 5000,
-      );
+      const options = PdfExportOptions(marginPoints: 5000);
 
       expect(options.effectiveMargin, AppConstants.pdfLargeMarginPoints);
     });
 
     test('a negative border is pulled up to none', () {
-      const options = PdfExportOptions(
-        pageSize: PdfPageSize.a4,
-        marginPoints: -20,
-      );
+      const options = PdfExportOptions(marginPoints: -20);
 
       expect(options.effectiveMargin, 0);
     });
@@ -69,7 +62,7 @@ void main() {
     });
 
     test('unknown names fall back to the defaults', () {
-      final options = PdfExportOptions.fromMap(<String, dynamic>{
+      final options = PdfExportOptions.fromMap(const <String, dynamic>{
         'pageSize': 'a3',
         'orientation': 'diagonal',
         'fitMode': 'squash',

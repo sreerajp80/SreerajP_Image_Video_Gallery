@@ -1,11 +1,10 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:in_sreerajp_imgvidgal/l10n/generated/app_localizations.dart';
 import 'package:in_sreerajp_imgvidgal/models/media_item.dart';
 import 'package:in_sreerajp_imgvidgal/models/playback_state.dart';
 import 'package:in_sreerajp_imgvidgal/providers/viewer_providers.dart';
-import 'package:in_sreerajp_imgvidgal/services/device/screen_settings_service.dart';
-import 'package:in_sreerajp_imgvidgal/services/video/video_gesture_service.dart';
+import 'package:in_sreerajp_imgvidgal/core/domain/video/video_gesture_service.dart';
 import 'package:in_sreerajp_imgvidgal/widgets/viewer/gesture_hud.dart';
 import 'package:in_sreerajp_imgvidgal/widgets/viewer/video_controls_bar.dart';
 import 'package:video_player/video_player.dart';
@@ -55,13 +54,18 @@ class _VideoPlayerViewState extends ConsumerState<VideoPlayerView> {
   /// Seek target while a horizontal drag is running.
   Duration _seekTarget = Duration.zero;
 
-  /// Held in a field because `dispose` may no longer read providers.
-  late final ScreenSettingsService _screenSettings;
+  /// Held in fields because `dispose` may no longer read providers.
+  late final Future<void> Function(bool keepOn) _setKeepScreenOn;
+  late final Future<double> Function() _getBrightness;
+  late final Future<void> Function(double value) _setBrightness;
 
   @override
   void initState() {
     super.initState();
-    _screenSettings = ref.read(screenSettingsServiceProvider);
+    final screenSettings = ref.read(screenSettingsServiceProvider);
+    _setKeepScreenOn = screenSettings.setKeepScreenOn;
+    _getBrightness = screenSettings.getBrightness;
+    _setBrightness = screenSettings.setBrightness;
     // The provider is read after the first frame so the notifier exists before
     // anything asks it to load.
     WidgetsBinding.instance.addPostFrameCallback((_) => _initialize());
@@ -72,14 +76,14 @@ class _VideoPlayerViewState extends ConsumerState<VideoPlayerView> {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.isActive && !widget.isActive) {
       _notifier.pause();
-      _screenSettings.setKeepScreenOn(false);
+      _setKeepScreenOn(false);
     }
   }
 
   @override
   void dispose() {
     // The screen may sleep again as soon as this clip goes away.
-    _screenSettings.setKeepScreenOn(false);
+    _setKeepScreenOn(false);
     super.dispose();
   }
 
@@ -90,7 +94,7 @@ class _VideoPlayerViewState extends ConsumerState<VideoPlayerView> {
     if (!mounted) return;
     await _notifier.initialize(autoPlay: widget.isActive);
     if (!mounted) return;
-    await _screenSettings.setKeepScreenOn(true);
+    await _setKeepScreenOn(true);
   }
 
   void _onDragStart(DragStartDetails details) {
@@ -103,7 +107,6 @@ class _VideoPlayerViewState extends ConsumerState<VideoPlayerView> {
     if (size == null) return;
 
     final gestures = ref.read(videoGestureServiceProvider);
-    final settings = _screenSettings;
     final state = ref.read(videoPlaybackControllerProvider(widget.item));
 
     // The first movement decides what the whole drag does, so the gesture does
@@ -119,7 +122,7 @@ class _VideoPlayerViewState extends ConsumerState<VideoPlayerView> {
       _gestureKind = kind;
       switch (kind) {
         case VideoGestureKind.brightness:
-          _gestureLevel = await settings.getBrightness();
+          _gestureLevel = await _getBrightness();
         case VideoGestureKind.volume:
           _gestureLevel = state.volume;
         case VideoGestureKind.seek:
@@ -136,7 +139,7 @@ class _VideoPlayerViewState extends ConsumerState<VideoPlayerView> {
           currentLevel: _gestureLevel,
           deltaY: details.delta.dy,
         );
-        await settings.setBrightness(next);
+        await _setBrightness(next);
         if (mounted) setState(() => _gestureLevel = next);
       case VideoGestureKind.volume:
         final next = gestures.applyLevelDrag(
@@ -237,8 +240,8 @@ class _VideoPlayerViewState extends ConsumerState<VideoPlayerView> {
     if (state.hasError) {
       return _PlaybackErrorMessage(
         message: state.error == PlaybackError.unsupportedFormat
-            ? l10n.videoFormatUnsupported
-            : l10n.videoCannotPlay,
+            ? l10n.bodyVideoFormatUnsupported
+            : l10n.bodyVideoCannotPlay,
       );
     }
 

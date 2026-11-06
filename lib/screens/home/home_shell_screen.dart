@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:in_sreerajp_imgvidgal/l10n/generated/app_localizations.dart';
 import 'package:in_sreerajp_imgvidgal/providers/media_providers.dart';
@@ -6,7 +6,7 @@ import 'package:in_sreerajp_imgvidgal/providers/selection_providers.dart';
 import 'package:in_sreerajp_imgvidgal/screens/home/albums_tab.dart';
 import 'package:in_sreerajp_imgvidgal/screens/home/folders_tab.dart';
 import 'package:in_sreerajp_imgvidgal/screens/timeline/timeline_screen.dart';
-import 'package:in_sreerajp_imgvidgal/services/media/media_store_channel.dart';
+import 'package:in_sreerajp_imgvidgal/models/media/media_permission_status.dart';
 
 /// The top-level home screen with three tabs: Timeline, Folders, Albums.
 ///
@@ -45,8 +45,8 @@ class _HomeShellScreenState extends ConsumerState<HomeShellScreen> {
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (error, _) => _PermissionMessage(
           icon: Icons.error_outline,
-          title: l10n.scanFailed,
-          actionLabel: l10n.scanMedia,
+          title: l10n.errorScanFailed,
+          actionLabel: l10n.labelScanMedia,
           onAction: () => ref.invalidate(mediaPermissionStatusProvider),
         ),
         data: (status) {
@@ -55,11 +55,11 @@ class _HomeShellScreenState extends ConsumerState<HomeShellScreen> {
                 status == MediaPermissionStatus.permanentlyDenied;
             return _PermissionMessage(
               icon: Icons.photo_library_outlined,
-              title: l10n.permissionRequired,
-              body: l10n.permissionRequiredBody,
+              title: l10n.labelPermissionRequired,
+              body: l10n.bodyPermissionRequired,
               actionLabel: isPermanentlyDenied
-                  ? l10n.openSettings
-                  : l10n.grantPermission,
+                  ? l10n.labelOpenSettings
+                  : l10n.labelGrantPermission,
               onAction: () async {
                 if (isPermanentlyDenied) {
                   await ref.read(mediaPermissionServiceProvider).openSettings();
@@ -90,7 +90,16 @@ class _HomeShellScreenState extends ConsumerState<HomeShellScreen> {
           ? NavigationBar(
               selectedIndex: _tabIndex,
               onDestinationSelected: (index) {
+                final returningToTimeline = index == 0 && _tabIndex != 0;
                 setState(() => _tabIndex = index);
+                // The tabs stay alive in an IndexedStack, so coming back to
+                // the timeline would otherwise show what was indexed before.
+                // The controller ignores this while a scan is already running.
+                if (returningToTimeline) {
+                  ref
+                      .read(mediaScanControllerProvider.notifier)
+                      .scan(incremental: true);
+                }
               },
               destinations: <NavigationDestination>[
                 NavigationDestination(

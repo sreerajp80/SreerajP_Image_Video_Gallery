@@ -62,14 +62,14 @@ void main() {
 
     test('an edited file gives a different key', () {
       expect(
-        ThumbnailDiskCache.buildKey(buildItem(modifiedMs: 1000), 256),
+        ThumbnailDiskCache.buildKey(buildItem(), 256),
         isNot(ThumbnailDiskCache.buildKey(buildItem(modifiedMs: 2000), 256)),
       );
     });
 
     test('a changed file size gives a different key', () {
       expect(
-        ThumbnailDiskCache.buildKey(buildItem(size: 2048), 256),
+        ThumbnailDiskCache.buildKey(buildItem(), 256),
         isNot(ThumbnailDiskCache.buildKey(buildItem(size: 4096), 256)),
       );
     });

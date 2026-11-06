@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:in_sreerajp_imgvidgal/models/tag.dart';
-import 'package:in_sreerajp_imgvidgal/services/tags/tag_color_palette.dart';
+import 'package:in_sreerajp_imgvidgal/core/domain/tags/tag_color_palette.dart';
 import 'package:in_sreerajp_imgvidgal/widgets/common/adaptive_directionality.dart';
 
 /// One tag drawn as a coloured chip.

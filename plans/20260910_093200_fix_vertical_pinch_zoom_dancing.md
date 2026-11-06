@@ -1,6 +1,6 @@
 # Fix vertical pinch-to-zoom causing image to "dance"
 
-**Status:** Proposed
+**Status:** completed
 
 ## Problem
 

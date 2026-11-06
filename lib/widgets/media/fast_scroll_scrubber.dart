@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:in_sreerajp_imgvidgal/l10n/generated/app_localizations.dart';
 
 /// Height of the draggable thumb.
@@ -174,12 +174,11 @@ class _FastScrollScrubberState extends State<FastScrollScrubber> {
                         },
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
-                          crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
                             if (_dragging && label != null)
                               _DateBubble(label: label),
                             Semantics(
-                              label: l10n.scrollToDate,
+                              label: l10n.labelScrollToDate,
                               value: label,
                               child: Container(
                                 width: kScrubberThumbWidth,

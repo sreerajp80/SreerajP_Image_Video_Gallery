@@ -1,0 +1,40 @@
+# Static analysis rules for this project. `flutter analyze` must stay clean.
+# See https://dart.dev/tools/analysis for how to customize this file.
+
+include: package:flutter_lints/flutter.yaml
+
+analyzer:
+  exclude:
+    - lib/l10n/generated/**
+    - "**/*.g.dart"
+    - build/**
+    - android/**
+
+# The engineering standard's recommended extra rules (§16.1, G40). Each one
+# is on by choice; turning one off needs a written reason here.
+linter:
+  rules:
+    avoid_print: true
+    prefer_single_quotes: true
+    prefer_const_constructors: true
+    prefer_const_declarations: true
+    prefer_final_fields: true
+    prefer_final_locals: true
+    avoid_unnecessary_containers: true
+    sized_box_for_whitespace: true
+    use_key_in_widget_constructors: true
+    prefer_is_empty: true
+    avoid_empty_else: true
+    unnecessary_brace_in_string_interps: true
+    unnecessary_this: true
+    no_duplicate_case_values: true
+    avoid_redundant_argument_values: true
+    sort_child_properties_last: true
+    use_full_hex_values_for_flutter_colors: true
+    always_use_package_imports: true
+    cancel_subscriptions: true
+    close_sinks: true
+    use_decorated_box: true
+    avoid_bool_literals_in_conditional_expressions: true
+    noop_primitive_operations: true
+    use_enums: true

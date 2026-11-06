@@ -3,7 +3,7 @@ import 'package:in_sreerajp_imgvidgal/models/tag.dart';
 
 void main() {
   group('Tag Domain Model', () {
-    final now = DateTime(2026, 8, 29, 9, 0, 0);
+    final now = DateTime(2026, 8, 29, 9);
     final testTag = Tag(
       id: 'tag_001',
       name: 'Mountains',

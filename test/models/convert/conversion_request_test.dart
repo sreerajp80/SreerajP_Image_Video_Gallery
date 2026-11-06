@@ -36,7 +36,7 @@ void main() {
     });
 
     test('an empty map gives a usable default request', () {
-      final request = ConversionRequest.fromMap(<String, dynamic>{});
+      final request = ConversionRequest.fromMap(const <String, dynamic>{});
 
       expect(request.format, ImageOutputFormat.jpeg);
       expect(request.quality, AppConstants.convertDefaultQuality);

@@ -5,6 +5,7 @@ import 'package:in_sreerajp_imgvidgal/providers/backup_providers.dart';
 import 'package:in_sreerajp_imgvidgal/providers/media_providers.dart';
 import 'package:in_sreerajp_imgvidgal/services/pdf/pdf_extraction_service.dart';
 import 'package:in_sreerajp_imgvidgal/services/pdf/pdf_image_extractor.dart';
+import 'package:flutter_riverpod/legacy.dart';
 
 /// Reads the image objects out of PDF bytes.
 final pdfImageExtractorProvider = Provider<PdfImageExtractor>((ref) {

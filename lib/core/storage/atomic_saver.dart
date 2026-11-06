@@ -3,6 +3,7 @@ import 'dart:io';
 import 'dart:typed_data';
 import 'package:in_sreerajp_imgvidgal/core/errors/app_exception.dart';
 import 'package:path/path.dart' as p;
+import 'package:in_sreerajp_imgvidgal/core/logging/app_logger.dart';
 
 /// Utility for safe, atomic, non-destructive file operations.
 ///
@@ -64,7 +65,10 @@ class AtomicSaver {
       if (await tempFile.exists()) {
         try {
           await tempFile.delete();
-        } catch (_) {}
+        } catch (_) {
+          // Safe to ignore: the temporary file is in app-private space and the
+          // original error is rethrown below.
+        }
       }
 
       if (e is AtomicSaveException) {
@@ -125,7 +129,8 @@ class AtomicSaver {
         return true;
       }
       return false;
-    } catch (_) {
+    } catch (error) {
+      AppLogger.debug('Deleting a file failed');
       return false;
     }
   }

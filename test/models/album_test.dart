@@ -3,12 +3,11 @@ import 'package:in_sreerajp_imgvidgal/models/album.dart';
 
 void main() {
   group('Album Domain Model', () {
-    final now = DateTime(2026, 8, 29, 9, 0, 0);
+    final now = DateTime(2026, 8, 29, 9);
     final testAlbum = Album(
       id: 'album_001',
       name: 'Kerala Trip',
       albumType: AlbumType.virtualAlbum,
-      relativeFolderPath: null,
       coverMediaId: 'media_001',
       coverPath: '/storage/emulated/0/DCIM/Camera/IMG_001.jpg',
       itemCount: 42,
@@ -23,7 +22,6 @@ void main() {
         id: 'album_001',
         name: 'Kerala Trip',
         albumType: AlbumType.virtualAlbum,
-        relativeFolderPath: null,
         coverMediaId: 'media_001',
         coverPath: '/storage/emulated/0/DCIM/Camera/IMG_001.jpg',
         itemCount: 42,

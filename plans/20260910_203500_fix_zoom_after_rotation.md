@@ -1,6 +1,6 @@
 # Fix Zoom and Layout After Rotating in Media Viewer
 
-**Status:** Completed
+**Status:** completed
 
 ## Problem
 

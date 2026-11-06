@@ -6,6 +6,7 @@ import 'package:in_sreerajp_imgvidgal/models/media_item.dart';
 import 'package:in_sreerajp_imgvidgal/repositories/album_repository.dart';
 import 'package:in_sreerajp_imgvidgal/repositories/database/media_dao.dart';
 import 'package:in_sreerajp_imgvidgal/repositories/tag_repository.dart';
+import 'package:in_sreerajp_imgvidgal/core/logging/app_logger.dart';
 
 /// Writes a [RestorePlan] into the database.
 ///
@@ -76,7 +77,8 @@ class BackupApplyService {
         );
         tagIdMap[tag.id] = created.id;
         tagsCreated++;
-      } catch (_) {
+      } catch (error) {
+        AppLogger.warning('Restoring a tag failed', error: error);
         // A name the rules refuse, or one taken since the preview. The link
         // that wanted it is skipped below rather than written to nothing.
         tagIdMap.remove(tag.id);
@@ -95,7 +97,8 @@ class BackupApplyService {
         if (album.isPinned) {
           await _albumRepository.setAlbumPinned(created.id, true);
         }
-      } catch (_) {
+      } catch (error) {
+        AppLogger.warning('Restoring an album failed', error: error);
         albumIdMap.remove(album.id);
       }
     }
@@ -121,7 +124,8 @@ class BackupApplyService {
 
         await _tagRepository.setTagsForMedia(entry.key, merged);
         tagLinksAdded += added;
-      } catch (_) {
+      } catch (error) {
+        AppLogger.warning('Restoring tags for one photo failed', error: error);
         // This one photo keeps the tags it had.
       }
     }
@@ -144,7 +148,11 @@ class BackupApplyService {
 
         await _albumRepository.addMediaToAlbums(entry.key, toAdd);
         albumLinksAdded += toAdd.length;
-      } catch (_) {
+      } catch (error) {
+        AppLogger.warning(
+          'Restoring albums for one photo failed',
+          error: error,
+        );
         // This one photo stays in the albums it was already in.
       }
     }
@@ -170,7 +178,11 @@ class BackupApplyService {
           longitude: changes['longitude'] as double?,
         );
         mediaUpdated++;
-      } catch (_) {
+      } catch (error) {
+        AppLogger.warning(
+          'Restoring details for one photo failed',
+          error: error,
+        );
         // This one row keeps what it had.
       }
     }

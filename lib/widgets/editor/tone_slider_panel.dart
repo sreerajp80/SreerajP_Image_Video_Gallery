@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:in_sreerajp_imgvidgal/l10n/generated/app_localizations.dart';
 import 'package:in_sreerajp_imgvidgal/models/editor/hsl_adjustments.dart';
 import 'package:in_sreerajp_imgvidgal/models/editor/tone_adjustments.dart';
@@ -51,42 +51,42 @@ class ToneSliderPanel extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 16),
       children: [
         slider(
-          l10n.toneExposure,
+          l10n.labelToneExposure,
           adjustments.exposure,
           (v) => adjustments.copyWith(exposure: v),
         ),
         slider(
-          l10n.toneContrast,
+          l10n.labelToneContrast,
           adjustments.contrast,
           (v) => adjustments.copyWith(contrast: v),
         ),
         slider(
-          l10n.toneHighlights,
+          l10n.labelToneHighlights,
           adjustments.highlights,
           (v) => adjustments.copyWith(highlights: v),
         ),
         slider(
-          l10n.toneShadows,
+          l10n.labelToneShadows,
           adjustments.shadows,
           (v) => adjustments.copyWith(shadows: v),
         ),
         slider(
-          l10n.toneTemperature,
+          l10n.labelToneTemperature,
           adjustments.temperature,
           (v) => adjustments.copyWith(temperature: v),
         ),
         slider(
-          l10n.toneTint,
+          l10n.labelToneTint,
           adjustments.tint,
           (v) => adjustments.copyWith(tint: v),
         ),
         slider(
-          l10n.toneVibrance,
+          l10n.labelToneVibrance,
           adjustments.vibrance,
           (v) => adjustments.copyWith(vibrance: v),
         ),
         slider(
-          l10n.toneSaturation,
+          l10n.labelToneSaturation,
           adjustments.saturation,
           (v) => adjustments.copyWith(saturation: v),
         ),
@@ -108,7 +108,7 @@ class ToneSliderPanel extends StatelessWidget {
             child: TextButton.icon(
               onPressed: onReset,
               icon: const Icon(Icons.restart_alt),
-              label: Text(l10n.toneReset),
+              label: Text(l10n.actionToneReset),
             ),
           ),
         ),

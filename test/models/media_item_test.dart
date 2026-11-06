@@ -4,7 +4,7 @@ import 'package:in_sreerajp_imgvidgal/models/media_item.dart';
 
 void main() {
   group('MediaItem Domain Model', () {
-    final itemDate = DateTime(2026, 8, 29, 9, 30, 0);
+    final itemDate = DateTime(2026, 8, 29, 9, 30);
     final testItem = MediaItem(
       id: 'media_001',
       path: '/storage/emulated/0/DCIM/Camera/IMG_20260829_093000.jpg',
@@ -16,13 +16,9 @@ void main() {
       dateAdded: itemDate,
       dateModified: itemDate,
       dateTaken: itemDate,
-      durationMs: null,
       width: 4000,
       height: 3000,
-      orientation: 0,
       isFavorite: true,
-      isVaulted: false,
-      isTrash: false,
       exifData: const ExifData(make: 'Google', model: 'Pixel 8 Pro'),
       tags: const ['Nature', 'Vacation'],
       userNotes: 'Morning hike photograph',
@@ -45,13 +41,9 @@ void main() {
         dateAdded: itemDate,
         dateModified: itemDate,
         dateTaken: itemDate,
-        durationMs: null,
         width: 4000,
         height: 3000,
-        orientation: 0,
         isFavorite: true,
-        isVaulted: false,
-        isTrash: false,
         exifData: const ExifData(make: 'Google', model: 'Pixel 8 Pro'),
         tags: const ['Nature', 'Vacation'],
         userNotes: 'Morning hike photograph',
@@ -97,7 +89,6 @@ void main() {
         size: 1000,
         dateAdded: modifiedDate,
         dateModified: modifiedDate,
-        dateTaken: null,
       );
       expect(itemWithoutTaken.effectiveDate, equals(modifiedDate));
       expect(testItem.effectiveDate, equals(itemDate));

@@ -40,16 +40,12 @@ class DuplicateScanState {
   /// The groups found so far.
   final List<DuplicateGroup> groups;
 
-  /// A message to show when [stage] is `failed`.
-  final String? errorMessage;
-
   const DuplicateScanState({
     this.stage = DuplicateScanStage.idle,
     this.processed = 0,
     this.total = 0,
     this.failures = 0,
     this.groups = const <DuplicateGroup>[],
-    this.errorMessage,
   });
 
   /// True while the scan is still working.
@@ -78,7 +74,6 @@ class DuplicateScanState {
     int? total,
     int? failures,
     List<DuplicateGroup>? groups,
-    String? errorMessage,
   }) {
     return DuplicateScanState(
       stage: stage ?? this.stage,
@@ -86,7 +81,6 @@ class DuplicateScanState {
       total: total ?? this.total,
       failures: failures ?? this.failures,
       groups: groups ?? this.groups,
-      errorMessage: errorMessage ?? this.errorMessage,
     );
   }
 
@@ -99,16 +93,9 @@ class DuplicateScanState {
           processed == other.processed &&
           total == other.total &&
           failures == other.failures &&
-          listEquals(groups, other.groups) &&
-          errorMessage == other.errorMessage;
+          listEquals(groups, other.groups);
 
   @override
-  int get hashCode => Object.hash(
-    stage,
-    processed,
-    total,
-    failures,
-    Object.hashAll(groups),
-    errorMessage,
-  );
+  int get hashCode =>
+      Object.hash(stage, processed, total, failures, Object.hashAll(groups));
 }

@@ -4,6 +4,7 @@ import 'dart:typed_data';
 
 import 'package:in_sreerajp_imgvidgal/core/constants/app_constants.dart';
 import 'package:in_sreerajp_imgvidgal/services/vault/vault_channel.dart';
+import 'package:in_sreerajp_imgvidgal/core/logging/app_logger.dart';
 
 /// Overwrites a file's bytes before deleting it.
 ///
@@ -104,7 +105,11 @@ class VaultShredderService {
           await handle.close();
         }
       }
-    } catch (_) {
+    } catch (error) {
+      AppLogger.warning(
+        'Overwriting a file before deletion failed',
+        error: error,
+      );
       // An overwrite that failed part way still leaves a file that has to go.
       // Deleting it is strictly better than keeping it.
     }
@@ -112,7 +117,8 @@ class VaultShredderService {
     try {
       await file.delete();
       return true;
-    } catch (_) {
+    } catch (error) {
+      AppLogger.warning('Deleting a shredded file failed', error: error);
       return false;
     }
   }

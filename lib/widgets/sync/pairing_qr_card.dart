@@ -1,7 +1,7 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:in_sreerajp_imgvidgal/l10n/generated/app_localizations.dart';
 import 'package:in_sreerajp_imgvidgal/models/sync/pairing_payload.dart';
-import 'package:in_sreerajp_imgvidgal/services/sync/pairing_codec.dart';
+import 'package:in_sreerajp_imgvidgal/core/domain/sync/pairing_codec.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
 /// Shows the pairing code, as a QR image and as text to read aloud.
@@ -34,7 +34,7 @@ class PairingQrCard extends StatelessWidget {
     return Column(
       children: [
         Text(
-          l10n.syncPairingHeading,
+          l10n.titleSyncPairingHeading,
           textAlign: TextAlign.center,
           style: theme.textTheme.titleMedium,
         ),
@@ -49,7 +49,6 @@ class PairingQrCard extends StatelessWidget {
           ),
           child: QrImageView(
             data: PairingCodec.encode(pairing),
-            version: QrVersions.auto,
             size: 240,
             backgroundColor: Colors.white,
             // Medium correction: enough to survive a smudged screen without
@@ -61,7 +60,7 @@ class PairingQrCard extends StatelessWidget {
 
         const SizedBox(height: 24),
         Text(
-          l10n.syncManualCodeHeading,
+          l10n.titleSyncManualCodeHeading,
           style: theme.textTheme.bodyMedium?.copyWith(
             color: theme.colorScheme.onSurfaceVariant,
           ),

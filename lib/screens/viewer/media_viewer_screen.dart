@@ -1,18 +1,16 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:in_sreerajp_imgvidgal/core/constants/app_constants.dart';
 import 'package:in_sreerajp_imgvidgal/core/routing/app_router.dart';
 import 'package:in_sreerajp_imgvidgal/l10n/generated/app_localizations.dart';
-import 'package:in_sreerajp_imgvidgal/widgets/common/adaptive_directionality.dart';
 import 'package:in_sreerajp_imgvidgal/models/media_item.dart';
 import 'package:in_sreerajp_imgvidgal/models/viewer_transform.dart';
 import 'package:in_sreerajp_imgvidgal/providers/media_intent_providers.dart';
 import 'package:in_sreerajp_imgvidgal/providers/media_providers.dart';
-import 'package:in_sreerajp_imgvidgal/providers/album_providers.dart';
 import 'package:in_sreerajp_imgvidgal/providers/timeline_providers.dart';
 import 'package:in_sreerajp_imgvidgal/providers/trash_providers.dart';
 import 'package:in_sreerajp_imgvidgal/providers/vault_providers.dart';
@@ -22,6 +20,9 @@ import 'package:in_sreerajp_imgvidgal/widgets/albums/album_picker_sheet.dart';
 import 'package:in_sreerajp_imgvidgal/widgets/compare/photo_selector_sheet.dart';
 import 'package:in_sreerajp_imgvidgal/widgets/tags/media_tag_sheet.dart';
 import 'package:in_sreerajp_imgvidgal/widgets/viewer/media_details_sheet.dart';
+import 'package:in_sreerajp_imgvidgal/widgets/viewer/viewer_app_bar.dart';
+import 'package:in_sreerajp_imgvidgal/widgets/viewer/viewer_bottom_bar.dart';
+import 'package:in_sreerajp_imgvidgal/widgets/viewer/viewer_dialogs.dart';
 import 'package:in_sreerajp_imgvidgal/widgets/viewer/video_player_view.dart';
 import 'package:in_sreerajp_imgvidgal/widgets/privacy/media_privacy_sheet.dart';
 
@@ -156,56 +157,26 @@ class _MediaViewerScreenState extends ConsumerState<MediaViewerScreen> {
   }
 
   Future<void> _toggleFavorite(MediaItem item) async {
-    await ref.read(mediaRepositoryProvider).toggleFavorite(item.id);
-    // Reload the list so the star in the app bar and the grid agree.
-    ref.invalidate(mediaItemsProvider);
+    await ref.read(viewerActionsProvider).toggleFavorite(item.id);
   }
 
   /// Moves this item into the trash with a confirmation and undo action.
   Future<void> _moveToTrash(MediaItem item) async {
     final l10n = AppLocalizations.of(context)!;
 
-    final agreed = await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: Text(l10n.viewerTrashConfirmTitle),
-        content: Text(l10n.viewerTrashConfirmBody),
-        actions: <Widget>[
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: Text(l10n.vaultCancel),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(dialogContext).pop(true),
-            style: FilledButton.styleFrom(
-              backgroundColor: Theme.of(dialogContext).colorScheme.error,
-              foregroundColor: Theme.of(dialogContext).colorScheme.onError,
-            ),
-            child: Text(l10n.batchActionMoveToTrash),
-          ),
-        ],
-      ),
-    );
-    if (agreed != true || !mounted) return;
+    final agreed = await confirmViewerMoveToTrash(context);
+    if (!agreed || !mounted) return;
 
-    final repo = ref.read(mediaRepositoryProvider);
-    await repo.setTrash(item.id, true);
-    ref.read(trashRevisionProvider.notifier).state++;
-    ref.read(albumRevisionProvider.notifier).state++;
-    ref.invalidate(mediaItemsProvider);
+    final actions = ref.read(viewerActionsProvider);
+    await actions.moveToTrash(item.id);
 
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(l10n.viewerTrashSuccess),
+        content: Text(l10n.bodyViewerTrashSuccess),
         action: SnackBarAction(
-          label: l10n.viewerTrashUndo,
-          onPressed: () async {
-            await repo.setTrash(item.id, false);
-            ref.read(trashRevisionProvider.notifier).state++;
-            ref.read(albumRevisionProvider.notifier).state++;
-            ref.invalidate(mediaItemsProvider);
-          },
+          label: l10n.actionViewerTrashUndo,
+          onPressed: () => actions.restoreFromTrash(item.id),
         ),
       ),
     );
@@ -222,7 +193,7 @@ class _MediaViewerScreenState extends ConsumerState<MediaViewerScreen> {
     if (!mounted) return;
     ScaffoldMessenger.of(
       context,
-    ).showSnackBar(SnackBar(content: Text(l10n.trashRestoredSnackbar)));
+    ).showSnackBar(SnackBar(content: Text(l10n.bodyTrashRestoredSnackbar)));
     if (Navigator.of(context).canPop()) {
       Navigator.of(context).pop();
     }
@@ -231,31 +202,8 @@ class _MediaViewerScreenState extends ConsumerState<MediaViewerScreen> {
   /// Permanently removes this trashed item from device storage and the gallery.
   Future<void> _deletePermanently(MediaItem item) async {
     final l10n = AppLocalizations.of(context)!;
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        icon: Icon(
-          Icons.delete_forever,
-          color: Theme.of(dialogContext).colorScheme.error,
-        ),
-        title: Text(l10n.trashDeletePermanentlyConfirmTitle),
-        content: Text(l10n.trashDeletePermanentlyConfirmBody),
-        actions: <Widget>[
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: Text(l10n.settingsCancel),
-          ),
-          FilledButton(
-            style: FilledButton.styleFrom(
-              backgroundColor: Theme.of(dialogContext).colorScheme.error,
-            ),
-            onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: Text(l10n.trashDeletePermanentlyAction),
-          ),
-        ],
-      ),
-    );
-    if (confirmed != true || !mounted) return;
+    final confirmed = await confirmViewerDeletePermanently(context);
+    if (!confirmed || !mounted) return;
 
     final success = await ref
         .read(trashControllerProvider.notifier)
@@ -263,7 +211,7 @@ class _MediaViewerScreenState extends ConsumerState<MediaViewerScreen> {
     if (!mounted) return;
     if (success) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.trashDeletedPermanentlySnackbar)),
+        SnackBar(content: Text(l10n.bodyTrashDeletedPermanentlySnackbar)),
       );
       if (Navigator.of(context).canPop()) {
         Navigator.of(context).pop();
@@ -289,24 +237,8 @@ class _MediaViewerScreenState extends ConsumerState<MediaViewerScreen> {
       if (!ref.read(vaultLockControllerProvider).isUnlocked) return;
     }
 
-    final agreed = await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: Text(l10n.vaultMoveToVault),
-        content: Text(l10n.vaultImportKeepOriginalBody),
-        actions: <Widget>[
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: Text(l10n.vaultCancel),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: Text(l10n.vaultMoveToVault),
-          ),
-        ],
-      ),
-    );
-    if (agreed != true || !mounted) return;
+    final agreed = await confirmViewerMoveToVault(context);
+    if (!agreed || !mounted) return;
 
     await ref.read(vaultBatchControllerProvider.notifier).import(<MediaItem>[
       item,
@@ -318,13 +250,12 @@ class _MediaViewerScreenState extends ConsumerState<MediaViewerScreen> {
     ref.invalidate(mediaItemsProvider);
     ScaffoldMessenger.of(
       context,
-    ).showSnackBar(SnackBar(content: Text(l10n.vaultImportDone(1))));
+    ).showSnackBar(SnackBar(content: Text(l10n.bodyVaultImportDone(1))));
     if (Navigator.of(context).canPop()) Navigator.of(context).pop();
   }
 
   Future<void> _comparePhoto(MediaItem currentItem) async {
-    final l10n = AppLocalizations.of(context)!;
-    final items = ref.read(timelineItemsProvider).valueOrNull ?? <MediaItem>[];
+    final items = ref.read(timelineItemsProvider).value ?? <MediaItem>[];
     final currentIndex = items.indexWhere((i) => i.id == currentItem.id);
 
     MediaItem? prevItem;
@@ -338,60 +269,15 @@ class _MediaViewerScreenState extends ConsumerState<MediaViewerScreen> {
       if (candidate.isImage) nextItem = candidate;
     }
 
-    final choice = await showModalBottomSheet<String>(
-      context: context,
-      showDragHandle: true,
-      builder: (sheetContext) {
-        return SafeArea(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 8,
-                ),
-                child: Row(
-                  children: [
-                    const Icon(Icons.compare_arrows),
-                    const SizedBox(width: 12),
-                    Text(
-                      l10n.comparePhotosTitle,
-                      style: Theme.of(sheetContext).textTheme.titleMedium
-                          ?.copyWith(fontWeight: FontWeight.bold),
-                    ),
-                  ],
-                ),
-              ),
-              const Divider(height: 1),
-              if (prevItem != null)
-                ListTile(
-                  leading: const Icon(Icons.arrow_back),
-                  title: Text(l10n.compareWithPrevious),
-                  subtitle: Text(prevItem.displayName),
-                  onTap: () => Navigator.of(sheetContext).pop(prevItem!.id),
-                ),
-              if (nextItem != null)
-                ListTile(
-                  leading: const Icon(Icons.arrow_forward),
-                  title: Text(l10n.compareWithNext),
-                  subtitle: Text(nextItem.displayName),
-                  onTap: () => Navigator.of(sheetContext).pop(nextItem!.id),
-                ),
-              ListTile(
-                leading: const Icon(Icons.photo_library_outlined),
-                title: Text(l10n.compareChooseFromGallery),
-                onTap: () => Navigator.of(sheetContext).pop('pick'),
-              ),
-            ],
-          ),
-        );
-      },
+    final choice = await showCompareChoiceSheet(
+      context,
+      prevItem: prevItem,
+      nextItem: nextItem,
     );
 
     if (!mounted || choice == null) return;
 
-    if (choice == 'pick') {
+    if (choice == compareChoicePick) {
       final picked = await PhotoSelectorSheet.show(
         context,
         excludeMediaId: currentItem.id,
@@ -515,7 +401,7 @@ class _MediaViewerScreenState extends ConsumerState<MediaViewerScreen> {
     final l10n = AppLocalizations.of(context)!;
     final externalItem = ref.watch(externalMediaItemProvider(widget.mediaId));
     final singleItemAsync = ref.watch(mediaItemProvider(widget.mediaId));
-    final singleItem = externalItem ?? singleItemAsync.valueOrNull;
+    final singleItem = externalItem ?? singleItemAsync.value;
 
     final items = ref.watch(timelineItemsProvider);
 
@@ -535,7 +421,7 @@ class _MediaViewerScreenState extends ConsumerState<MediaViewerScreen> {
           if (singleItem != null) {
             return _buildContent(context, <MediaItem>[singleItem], 0, l10n);
           }
-          return _ViewerMessageScreen(message: l10n.scanFailed);
+          return _ViewerMessageScreen(message: l10n.errorScanFailed);
         },
         data: (list) {
           final startIndex = list.indexWhere(
@@ -548,7 +434,7 @@ class _MediaViewerScreenState extends ConsumerState<MediaViewerScreen> {
                     : const <MediaItem>[]);
 
           if (displayList.isEmpty) {
-            return _ViewerMessageScreen(message: l10n.mediaUnavailable);
+            return _ViewerMessageScreen(message: l10n.labelMediaUnavailable);
           }
 
           final effectiveStartIndex = startIndex >= 0 ? startIndex : 0;
@@ -643,7 +529,7 @@ class _MediaViewerScreenState extends ConsumerState<MediaViewerScreen> {
                 opacity: isChromeVisible ? 1.0 : 0.0,
                 child: IgnorePointer(
                   ignoring: !isChromeVisible,
-                  child: _ViewerAppBar(
+                  child: ViewerAppBar(
                     item: currentItem,
                     onToggleFavorite: () => _toggleFavorite(currentItem),
                     onShowDetails: () =>
@@ -684,7 +570,7 @@ class _MediaViewerScreenState extends ConsumerState<MediaViewerScreen> {
                   opacity: isChromeVisible ? 1.0 : 0.0,
                   child: IgnorePointer(
                     ignoring: !isChromeVisible,
-                    child: _ImageViewerBottomBar(
+                    child: ImageViewerBottomBar(
                       item: currentItem,
                       onEdit: () =>
                           context.push(imageEditorPath(currentItem.id)),
@@ -705,508 +591,6 @@ class _MediaViewerScreenState extends ConsumerState<MediaViewerScreen> {
       ),
     );
   }
-}
-
-/// The high-contrast bar across the top of the viewer.
-class _ViewerAppBar extends StatelessWidget {
-  final MediaItem item;
-  final VoidCallback onToggleFavorite;
-  final VoidCallback onShowDetails;
-  final VoidCallback onMoveToTrash;
-  final VoidCallback onEdit;
-  final VoidCallback onCompare;
-  final VoidCallback onConvert;
-  final VoidCallback onVideoTools;
-  final VoidCallback onEditTags;
-  final VoidCallback onAddToAlbum;
-  final VoidCallback onMoveToVault;
-  final VoidCallback onScanCodes;
-  final VoidCallback onExtractText;
-  final VoidCallback onOpenNotes;
-  final VoidCallback onPrivacyScrubber;
-
-  const _ViewerAppBar({
-    required this.item,
-    required this.onToggleFavorite,
-    required this.onShowDetails,
-    required this.onMoveToTrash,
-    required this.onEdit,
-    required this.onCompare,
-    required this.onConvert,
-    required this.onVideoTools,
-    required this.onEditTags,
-    required this.onAddToAlbum,
-    required this.onMoveToVault,
-    required this.onScanCodes,
-    required this.onExtractText,
-    required this.onOpenNotes,
-    required this.onPrivacyScrubber,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-
-    return Align(
-      alignment: Alignment.topCenter,
-      child: DecoratedBox(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [Colors.black87, Colors.black54, Colors.transparent],
-            stops: [0.0, 0.6, 1.0],
-          ),
-        ),
-        child: SafeArea(
-          bottom: false,
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(8, 4, 8, 24),
-            child: Row(
-              children: [
-                _ViewerCircleButton(
-                  icon: Icons.arrow_back,
-                  tooltip: l10n.viewerClose,
-                  onPressed: () {
-                    if (Navigator.of(context).canPop()) {
-                      Navigator.of(context).pop();
-                    } else {
-                      SystemNavigator.pop();
-                    }
-                  },
-                ),
-                const SizedBox(width: 4),
-                Expanded(
-                  child: AdaptiveDirectionality(
-                    text: item.displayName,
-                    child: Text(
-                      item.displayName,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        shadows: [
-                          Shadow(color: Colors.black87, blurRadius: 8),
-                          Shadow(color: Colors.black, blurRadius: 2),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 4),
-                if (item.isTrash)
-                  _ViewerCircleButton(
-                    icon: Icons.info_outline,
-                    tooltip: l10n.detailsTitle,
-                    onPressed: onShowDetails,
-                  )
-                else ...[
-                  _ViewerCircleButton(
-                    icon: item.isFavorite ? Icons.star : Icons.star_border,
-                    color: item.isFavorite ? Colors.amber : Colors.white,
-                    tooltip: item.isFavorite
-                        ? l10n.viewerRemoveFavorite
-                        : l10n.viewerAddFavorite,
-                    onPressed: onToggleFavorite,
-                  ),
-                  _ViewerCircleButton(
-                    icon: Icons.shield_outlined,
-                    tooltip: l10n.privacyScrubberTitle,
-                    onPressed: onPrivacyScrubber,
-                  ),
-                  Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 4),
-                    decoration: const BoxDecoration(
-                      color: Colors.black38,
-                      shape: BoxShape.circle,
-                    ),
-                    child: PopupMenuButton<_ViewerMenuAction>(
-                      icon: const Icon(Icons.more_vert, color: Colors.white),
-                      tooltip: l10n.viewerMoreActions,
-                      onSelected: (action) {
-                        switch (action) {
-                          case _ViewerMenuAction.edit:
-                            onEdit();
-                          case _ViewerMenuAction.compare:
-                            onCompare();
-                          case _ViewerMenuAction.scanCodes:
-                            onScanCodes();
-                          case _ViewerMenuAction.extractText:
-                            onExtractText();
-                          case _ViewerMenuAction.notes:
-                            onOpenNotes();
-                          case _ViewerMenuAction.convert:
-                            onConvert();
-                          case _ViewerMenuAction.videoTools:
-                            onVideoTools();
-                          case _ViewerMenuAction.editTags:
-                            onEditTags();
-                          case _ViewerMenuAction.addToAlbum:
-                            onAddToAlbum();
-                          case _ViewerMenuAction.moveToVault:
-                            onMoveToVault();
-                          case _ViewerMenuAction.privacyScrubber:
-                            onPrivacyScrubber();
-                          case _ViewerMenuAction.details:
-                            onShowDetails();
-                          case _ViewerMenuAction.trash:
-                            onMoveToTrash();
-                        }
-                      },
-                      itemBuilder: (context) =>
-                          <PopupMenuEntry<_ViewerMenuAction>>[
-                            PopupMenuItem<_ViewerMenuAction>(
-                              value: _ViewerMenuAction.privacyScrubber,
-                              child: ListTile(
-                                contentPadding: EdgeInsets.zero,
-                                leading: const Icon(Icons.shield_outlined),
-                                title: Text(l10n.privacyScrubberMenu),
-                              ),
-                            ),
-                            if (item.isVideo)
-                              PopupMenuItem<_ViewerMenuAction>(
-                                value: _ViewerMenuAction.videoTools,
-                                child: ListTile(
-                                  contentPadding: EdgeInsets.zero,
-                                  leading: const Icon(
-                                    Icons.movie_filter_outlined,
-                                  ),
-                                  title: Text(l10n.videoToolsOpen),
-                                ),
-                              ),
-                            PopupMenuItem<_ViewerMenuAction>(
-                              value: _ViewerMenuAction.addToAlbum,
-                              child: ListTile(
-                                contentPadding: EdgeInsets.zero,
-                                leading: const Icon(Icons.photo_album_outlined),
-                                title: Text(l10n.albumPickerTitle),
-                              ),
-                            ),
-                            PopupMenuItem<_ViewerMenuAction>(
-                              value: _ViewerMenuAction.editTags,
-                              child: ListTile(
-                                contentPadding: EdgeInsets.zero,
-                                leading: const Icon(Icons.label_outline),
-                                title: Text(l10n.tagSheetOpen),
-                              ),
-                            ),
-                            PopupMenuItem<_ViewerMenuAction>(
-                              value: _ViewerMenuAction.moveToVault,
-                              child: ListTile(
-                                contentPadding: EdgeInsets.zero,
-                                leading: const Icon(Icons.lock_outline),
-                                title: Text(l10n.vaultMoveToVault),
-                              ),
-                            ),
-                            if (item.isImage) ...<
-                              PopupMenuEntry<_ViewerMenuAction>
-                            >[
-                              PopupMenuItem<_ViewerMenuAction>(
-                                value: _ViewerMenuAction.compare,
-                                child: ListTile(
-                                  contentPadding: EdgeInsets.zero,
-                                  leading: const Icon(Icons.compare_arrows),
-                                  title: Text(l10n.comparePhotosTitle),
-                                ),
-                              ),
-                              PopupMenuItem<_ViewerMenuAction>(
-                                value: _ViewerMenuAction.convert,
-                                child: ListTile(
-                                  contentPadding: EdgeInsets.zero,
-                                  leading: const Icon(Icons.transform),
-                                  title: Text(l10n.convertOpen),
-                                ),
-                              ),
-                            ],
-                            if (item.isImage) ...<
-                              PopupMenuEntry<_ViewerMenuAction>
-                            >[
-                              PopupMenuItem<_ViewerMenuAction>(
-                                value: _ViewerMenuAction.scanCodes,
-                                child: ListTile(
-                                  contentPadding: EdgeInsets.zero,
-                                  leading: const Icon(
-                                    Icons.qr_code_scanner_outlined,
-                                  ),
-                                  title: Text(l10n.codeScanOpen),
-                                ),
-                              ),
-                              PopupMenuItem<_ViewerMenuAction>(
-                                value: _ViewerMenuAction.extractText,
-                                child: ListTile(
-                                  contentPadding: EdgeInsets.zero,
-                                  leading: const Icon(
-                                    Icons.text_fields_outlined,
-                                  ),
-                                  title: Text(l10n.ocrOpen),
-                                ),
-                              ),
-                            ],
-                            PopupMenuItem<_ViewerMenuAction>(
-                              value: _ViewerMenuAction.notes,
-                              child: ListTile(
-                                contentPadding: EdgeInsets.zero,
-                                leading: const Icon(
-                                  Icons.sticky_note_2_outlined,
-                                ),
-                                title: Text(l10n.notesOpen),
-                              ),
-                            ),
-                            if (item.isVideo) ...[
-                              const PopupMenuDivider(),
-                              PopupMenuItem<_ViewerMenuAction>(
-                                value: _ViewerMenuAction.details,
-                                child: ListTile(
-                                  contentPadding: EdgeInsets.zero,
-                                  leading: const Icon(Icons.info_outline),
-                                  title: Text(l10n.detailsTitle),
-                                ),
-                              ),
-                              PopupMenuItem<_ViewerMenuAction>(
-                                value: _ViewerMenuAction.trash,
-                                child: ListTile(
-                                  contentPadding: EdgeInsets.zero,
-                                  leading: const Icon(Icons.delete_outline),
-                                  title: Text(l10n.batchActionMoveToTrash),
-                                ),
-                              ),
-                            ],
-                          ],
-                    ),
-                  ),
-                ],
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-/// Circular button with high-contrast background for viewer chrome.
-class _ViewerCircleButton extends StatelessWidget {
-  final IconData icon;
-  final Color? color;
-  final String tooltip;
-  final VoidCallback onPressed;
-
-  const _ViewerCircleButton({
-    required this.icon,
-    this.color,
-    required this.tooltip,
-    required this.onPressed,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 4),
-      decoration: const BoxDecoration(
-        color: Colors.black38,
-        shape: BoxShape.circle,
-      ),
-      child: IconButton(
-        onPressed: onPressed,
-        icon: Icon(icon, color: color ?? Colors.white),
-        tooltip: tooltip,
-      ),
-    );
-  }
-}
-
-/// The bottom bar with quick action buttons for images.
-class _ImageViewerBottomBar extends StatelessWidget {
-  final MediaItem item;
-  final VoidCallback onEdit;
-  final VoidCallback onRotateLeft;
-  final VoidCallback onRotateRight;
-  final VoidCallback onShowDetails;
-  final VoidCallback onMoveToTrash;
-  final VoidCallback? onRestore;
-  final VoidCallback? onDeletePermanently;
-
-  const _ImageViewerBottomBar({
-    required this.item,
-    required this.onEdit,
-    required this.onRotateLeft,
-    required this.onRotateRight,
-    required this.onShowDetails,
-    required this.onMoveToTrash,
-    this.onRestore,
-    this.onDeletePermanently,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-
-    if (item.isTrash) {
-      return Align(
-        alignment: Alignment.bottomCenter,
-        child: DecoratedBox(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.bottomCenter,
-              end: Alignment.topCenter,
-              colors: [Colors.black87, Colors.black54, Colors.transparent],
-              stops: [0.0, 0.7, 1.0],
-            ),
-          ),
-          child: SafeArea(
-            top: false,
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: Colors.white,
-                        side: const BorderSide(color: Colors.white70),
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                      ),
-                      icon: const Icon(Icons.restore),
-                      label: Text(l10n.trashRestoreAction),
-                      onPressed: onRestore,
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: FilledButton.icon(
-                      style: FilledButton.styleFrom(
-                        backgroundColor: Theme.of(context).colorScheme.error,
-                        foregroundColor: Theme.of(context).colorScheme.onError,
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                      ),
-                      icon: const Icon(Icons.delete_forever),
-                      label: Text(l10n.trashDeletePermanentlyAction),
-                      onPressed: onDeletePermanently,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      );
-    }
-
-    return Align(
-      alignment: Alignment.bottomCenter,
-      child: DecoratedBox(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.bottomCenter,
-            end: Alignment.topCenter,
-            colors: [Colors.black87, Colors.black54, Colors.transparent],
-            stops: [0.0, 0.7, 1.0],
-          ),
-        ),
-        child: SafeArea(
-          top: false,
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(16, 24, 16, 12),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                _ViewerBottomAction(
-                  icon: Icons.tune,
-                  label: l10n.editorOpen,
-                  onPressed: onEdit,
-                ),
-                _ViewerBottomAction(
-                  icon: Icons.rotate_left,
-                  label: l10n.viewerRotateLeft,
-                  onPressed: onRotateLeft,
-                ),
-                _ViewerBottomAction(
-                  icon: Icons.rotate_right,
-                  label: l10n.viewerRotateRight,
-                  onPressed: onRotateRight,
-                ),
-                _ViewerBottomAction(
-                  icon: Icons.info_outline,
-                  label: l10n.detailsTitle,
-                  onPressed: onShowDetails,
-                ),
-                _ViewerBottomAction(
-                  icon: Icons.delete_outline,
-                  label: l10n.batchActionMoveToTrash,
-                  onPressed: onMoveToTrash,
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-/// Action item in the image viewer bottom bar.
-class _ViewerBottomAction extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final VoidCallback onPressed;
-
-  const _ViewerBottomAction({
-    required this.icon,
-    required this.label,
-    required this.onPressed,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onPressed,
-      borderRadius: BorderRadius.circular(12),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: const BoxDecoration(
-                color: Colors.black38,
-                shape: BoxShape.circle,
-              ),
-              child: Icon(icon, color: Colors.white, size: 22),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              label,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 11,
-                fontWeight: FontWeight.w500,
-                shadows: [Shadow(color: Colors.black87, blurRadius: 4)],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-/// What the viewer's overflow menu can do.
-enum _ViewerMenuAction {
-  edit,
-  compare,
-  scanCodes,
-  extractText,
-  notes,
-  convert,
-  videoTools,
-  editTags,
-  addToAlbum,
-  moveToVault,
-  privacyScrubber,
-  details,
-  trash,
 }
 
 /// Full-screen message used when the viewer has nothing to show.
@@ -1235,7 +619,7 @@ class _ViewerMessageScreen extends StatelessWidget {
             const SizedBox(height: 20),
             TextButton(
               onPressed: () => Navigator.of(context).maybePop(),
-              child: Text(l10n.viewerClose),
+              child: Text(l10n.tooltipViewerClose),
             ),
           ],
         ),

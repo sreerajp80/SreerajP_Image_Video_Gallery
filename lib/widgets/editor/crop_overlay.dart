@@ -1,4 +1,5 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
+import 'package:flutter/semantics.dart';
 import 'package:in_sreerajp_imgvidgal/l10n/generated/app_localizations.dart';
 import 'package:in_sreerajp_imgvidgal/models/editor/crop_transform.dart';
 import 'package:in_sreerajp_imgvidgal/widgets/editor/editor_slider_row.dart';
@@ -96,33 +97,105 @@ class _CropOverlayState extends State<CropOverlay> {
     widget.onChanged(next);
   }
 
+  /// How far one screen-reader action moves or resizes the box.
+  static const double _step = 0.05;
+
+  /// The smallest box a screen-reader action may leave.
+  static const double _minSide = 0.1;
+
+  /// One screen-reader action is one change and one undo step.
+  void _apply(NormalizedRect next) {
+    widget.onChanged(next);
+    widget.onChangeEnd(next);
+  }
+
+  void _shift(double dx, double dy) {
+    final rect = widget.rect;
+    final shiftX = dx.clamp(-rect.left, 1 - rect.right);
+    final shiftY = dy.clamp(-rect.top, 1 - rect.bottom);
+    _apply(
+      NormalizedRect(
+        left: rect.left + shiftX,
+        top: rect.top + shiftY,
+        right: rect.right + shiftX,
+        bottom: rect.bottom + shiftY,
+      ),
+    );
+  }
+
+  void _resize(double inset) {
+    final rect = widget.rect;
+    final next = NormalizedRect(
+      left: (rect.left + inset).clamp(0.0, 1.0),
+      top: (rect.top + inset).clamp(0.0, 1.0),
+      right: (rect.right - inset).clamp(0.0, 1.0),
+      bottom: (rect.bottom - inset).clamp(0.0, 1.0),
+    );
+    if (next.width < _minSide || next.height < _minSide) return;
+    _apply(next);
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
+    final rect = widget.rect;
+    int percent(double value) => (value * 100).round();
 
     return LayoutBuilder(
       builder: (context, constraints) {
         final size = Size(constraints.maxWidth, constraints.maxHeight);
-        return GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          onPanStart: (details) {
-            _handle = _handleAt(details.localPosition, size);
-          },
-          onPanUpdate: (details) => _drag(details.delta, size),
-          onPanEnd: (_) {
-            _handle = null;
-            widget.onChangeEnd(widget.rect);
-          },
-          child: CustomPaint(
-            painter: _CropPainter(
-              rect: widget.rect,
-              lineColor: theme.colorScheme.onInverseSurface,
-              shadeColor: Colors.black.withValues(alpha: 0.45),
-            ),
-            size: size,
+        // A screen reader cannot drag a corner, so the box can also be moved
+        // and resized with actions (standard §7.3).
+        return Semantics(
+          container: true,
+          label: l10n.labelA11yCropArea,
+          value: l10n.bodyA11yCropAreaValue(
+            percent(rect.left),
+            percent(rect.top),
+            percent(rect.width),
+            percent(rect.height),
           ),
+          hint: l10n.helpA11yCropAreaHint,
+          customSemanticsActions: <CustomSemanticsAction, VoidCallback>{
+            CustomSemanticsAction(label: l10n.labelA11yMoveLeft): () =>
+                _shift(-_step, 0),
+            CustomSemanticsAction(label: l10n.labelA11yMoveRight): () =>
+                _shift(_step, 0),
+            CustomSemanticsAction(label: l10n.labelA11yMoveUp): () =>
+                _shift(0, -_step),
+            CustomSemanticsAction(label: l10n.labelA11yMoveDown): () =>
+                _shift(0, _step),
+            CustomSemanticsAction(label: l10n.labelA11yMakeSmaller): () =>
+                _resize(_step / 2),
+            CustomSemanticsAction(label: l10n.labelA11yMakeLarger): () =>
+                _resize(-_step / 2),
+          },
+          child: _gestures(size, theme),
         );
       },
+    );
+  }
+
+  Widget _gestures(Size size, ThemeData theme) {
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onPanStart: (details) {
+        _handle = _handleAt(details.localPosition, size);
+      },
+      onPanUpdate: (details) => _drag(details.delta, size),
+      onPanEnd: (_) {
+        _handle = null;
+        widget.onChangeEnd(widget.rect);
+      },
+      child: CustomPaint(
+        painter: _CropPainter(
+          rect: widget.rect,
+          lineColor: theme.colorScheme.onInverseSurface,
+          shadeColor: Colors.black.withValues(alpha: 0.45),
+        ),
+        size: size,
+      ),
     );
   }
 }
@@ -226,23 +299,23 @@ class CropControlsPanel extends StatelessWidget {
   static String aspectLabel(AppLocalizations l10n, CropAspectPreset preset) {
     switch (preset) {
       case CropAspectPreset.free:
-        return l10n.cropAspectFree;
+        return l10n.labelCropAspectFree;
       case CropAspectPreset.original:
-        return l10n.cropAspectOriginal;
+        return l10n.labelCropAspectOriginal;
       case CropAspectPreset.square:
-        return l10n.cropAspectSquare;
+        return l10n.labelCropAspectSquare;
       case CropAspectPreset.ratio4x3:
-        return l10n.cropAspect4x3;
+        return l10n.labelCropAspect4x3;
       case CropAspectPreset.ratio3x4:
-        return l10n.cropAspect3x4;
+        return l10n.labelCropAspect3x4;
       case CropAspectPreset.ratio16x9:
-        return l10n.cropAspect16x9;
+        return l10n.labelCropAspect16x9;
       case CropAspectPreset.ratio9x16:
-        return l10n.cropAspect9x16;
+        return l10n.labelCropAspect9x16;
       case CropAspectPreset.ratio3x2:
-        return l10n.cropAspect3x2;
+        return l10n.labelCropAspect3x2;
       case CropAspectPreset.ratio2x3:
-        return l10n.cropAspect2x3;
+        return l10n.labelCropAspect2x3;
     }
   }
 
@@ -253,8 +326,9 @@ class CropControlsPanel extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.only(bottom: 16),
       children: [
+        // 48 dp for the chips plus 6 dp above and below (standard §7.1).
         SizedBox(
-          height: 52,
+          height: 60,
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
@@ -276,29 +350,29 @@ class CropControlsPanel extends StatelessWidget {
             IconButton(
               onPressed: onRotateLeft,
               icon: const Icon(Icons.rotate_left),
-              tooltip: l10n.cropRotateLeft,
+              tooltip: l10n.tooltipCropRotateLeft,
             ),
             IconButton(
               onPressed: onRotateRight,
               icon: const Icon(Icons.rotate_right),
-              tooltip: l10n.cropRotateRight,
+              tooltip: l10n.tooltipCropRotateRight,
             ),
             IconButton(
               onPressed: onFlipHorizontal,
               icon: const Icon(Icons.flip),
               isSelected: transform.flipHorizontal,
-              tooltip: l10n.cropFlipHorizontal,
+              tooltip: l10n.tooltipCropFlipHorizontal,
             ),
             IconButton(
               onPressed: onFlipVertical,
               icon: const RotatedBox(quarterTurns: 1, child: Icon(Icons.flip)),
               isSelected: transform.flipVertical,
-              tooltip: l10n.cropFlipVertical,
+              tooltip: l10n.tooltipCropFlipVertical,
             ),
           ],
         ),
         EditorSliderRow(
-          label: l10n.cropStraighten,
+          label: l10n.labelCropStraighten,
           value: transform.straightenDegrees,
           min: -45,
           max: 45,
@@ -307,7 +381,7 @@ class CropControlsPanel extends StatelessWidget {
           formatValue: (value) => '${value.round()}°',
         ),
         EditorSliderRow(
-          label: l10n.cropPerspectiveVertical,
+          label: l10n.labelCropPerspectiveVertical,
           value: transform.perspective.topInset,
           min: -0.35,
           max: 0.35,
@@ -318,7 +392,7 @@ class CropControlsPanel extends StatelessWidget {
               onPerspectiveEnd(transform.perspective.copyWith(topInset: value)),
         ),
         EditorSliderRow(
-          label: l10n.cropPerspectiveHorizontal,
+          label: l10n.labelCropPerspectiveHorizontal,
           value: transform.perspective.leftInset,
           min: -0.35,
           max: 0.35,
@@ -336,7 +410,7 @@ class CropControlsPanel extends StatelessWidget {
             child: TextButton.icon(
               onPressed: onReset,
               icon: const Icon(Icons.restart_alt),
-              label: Text(l10n.cropReset),
+              label: Text(l10n.actionCropReset),
             ),
           ),
         ),

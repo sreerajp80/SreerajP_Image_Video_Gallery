@@ -164,7 +164,10 @@ class VaultItem {
         if (decoded is List) {
           parsedTags = decoded.map((e) => e.toString()).toList();
         }
-      } catch (_) {}
+      } catch (_) {
+        // Safe to ignore: corrupt stored tags read as none rather than hiding
+        // the item.
+      }
     } else if (rawTags is List) {
       parsedTags = rawTags.map((e) => e.toString()).toList();
     }

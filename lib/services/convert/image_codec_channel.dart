@@ -1,14 +1,10 @@
 import 'package:flutter/services.dart';
 import 'package:in_sreerajp_imgvidgal/core/constants/app_constants.dart';
+import 'package:in_sreerajp_imgvidgal/core/errors/app_exception.dart';
 
 /// Thrown when the platform encoder cannot produce a picture.
-class ImageCodecException implements Exception {
-  final String message;
-
-  const ImageCodecException(this.message);
-
-  @override
-  String toString() => 'ImageCodecException: $message';
+final class ImageCodecException extends FeatureException {
+  const ImageCodecException(super.message, {super.cause});
 }
 
 /// Dart side of the small native encoder channel.

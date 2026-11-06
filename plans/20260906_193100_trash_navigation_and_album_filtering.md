@@ -1,6 +1,6 @@
 # Plan: Connect Trash Navigation and Ensure Correct Album Filtering
 
-**Status:** Approved
+**Status:** completed
 
 ## Issues
 1. **Trash Navigation from Albums Tab**: Tapping the "Trash" smart album card on the Albums screen currently routes to generic `SmartAlbumScreen` (`/albums/auto/trash`) instead of the dedicated `TrashScreen` (`/trash`), preventing users from accessing the "Empty trash" and "Restore all" controls.

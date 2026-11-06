@@ -3,13 +3,14 @@ import 'package:in_sreerajp_imgvidgal/models/backup/restore_summary.dart';
 import 'package:in_sreerajp_imgvidgal/providers/album_providers.dart';
 import 'package:in_sreerajp_imgvidgal/providers/media_providers.dart';
 import 'package:in_sreerajp_imgvidgal/providers/tag_providers.dart';
+import 'package:in_sreerajp_imgvidgal/providers/settings_providers.dart';
 import 'package:in_sreerajp_imgvidgal/services/backup/backup_apply_service.dart';
 import 'package:in_sreerajp_imgvidgal/services/backup/backup_collector_service.dart';
 import 'package:in_sreerajp_imgvidgal/services/backup/backup_crypto_channel.dart';
 import 'package:in_sreerajp_imgvidgal/services/backup/backup_service.dart';
 import 'package:in_sreerajp_imgvidgal/services/backup/document_picker_channel.dart';
 import 'package:in_sreerajp_imgvidgal/services/backup/restore_service.dart';
-import 'package:package_info_plus/package_info_plus.dart';
+import 'package:flutter_riverpod/legacy.dart';
 
 /// Password-derived ciphers, on the Android side.
 final backupCryptoChannelProvider = Provider<BackupCryptoChannel>((ref) {
@@ -61,15 +62,12 @@ final restoreServiceProvider = Provider<RestoreService>((ref) {
 });
 
 /// The app's own version, for the archive manifest.
+///
+/// The manifest records this for the user's benefit, not the app's. An
+/// unknown version is a worse detail line, not a reason to refuse a backup.
 final appVersionProvider = FutureProvider<String>((ref) async {
-  try {
-    final info = await PackageInfo.fromPlatform();
-    return '${info.version}+${info.buildNumber}';
-  } catch (_) {
-    // The manifest records this for the user's benefit, not the app's. An
-    // unknown version is a worse detail line, not a reason to refuse a backup.
-    return 'unknown';
-  }
+  final info = await ref.watch(appInfoServiceProvider).load();
+  return info?.fullVersion ?? 'unknown';
 });
 
 /// Which stage a running backup has reached, or null when none is running.
@@ -150,7 +148,7 @@ class RestoreController extends StateNotifier<AsyncValue<OpenedArchive?>> {
 
   /// Writes the opened archive into the database.
   Future<RestoreSummary?> applyOpened() async {
-    final archive = state.valueOrNull;
+    final archive = state.value;
     if (archive == null) return null;
 
     try {

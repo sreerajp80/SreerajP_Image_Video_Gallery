@@ -8,6 +8,7 @@ import 'package:in_sreerajp_imgvidgal/models/pdf/pdf_image_entry.dart';
 import 'package:in_sreerajp_imgvidgal/services/backup/document_picker_channel.dart';
 import 'package:in_sreerajp_imgvidgal/services/media/media_store_channel.dart';
 import 'package:in_sreerajp_imgvidgal/services/pdf/pdf_image_extractor.dart';
+import 'package:in_sreerajp_imgvidgal/core/logging/app_logger.dart';
 
 /// Where one extracted picture ended up.
 class SavedPdfImage {
@@ -100,12 +101,14 @@ class PdfExtractionService {
       final bytes = await File(copyPath).readAsBytes();
       return _extractor.extract(bytes);
     } on DocumentPickerException catch (error) {
+      AppLogger.debug('The document picker refused the PDF');
       return PdfExtractionResult.refused(
         error.code == 'too_large'
             ? PdfRefusalReason.fileTooLarge
             : PdfRefusalReason.unreadable,
       );
-    } catch (_) {
+    } catch (error) {
+      AppLogger.warning('Opening a PDF failed', error: error);
       return const PdfExtractionResult.refused(PdfRefusalReason.unreadable);
     } finally {
       if (copyPath != null) await _deleteQuietly(copyPath);
@@ -158,7 +161,8 @@ class PdfExtractionService {
             location: published.path ?? published.uri,
           ),
         );
-      } catch (_) {
+      } catch (error) {
+        AppLogger.warning('Saving one picture from a PDF failed', error: error);
         failed++;
       } finally {
         // The staged copy has done its job. Leaving it would quietly double
@@ -213,6 +217,8 @@ class PdfExtractionService {
       final file = File(path);
       if (await file.exists()) await file.delete();
     } catch (_) {
+      // Safe to ignore: an app-private temporary file that the cache clean-up
+      // removes.
       // A leftover file in app-private cache is a small problem; throwing here
       // and losing the pictures that were just extracted is a large one.
     }

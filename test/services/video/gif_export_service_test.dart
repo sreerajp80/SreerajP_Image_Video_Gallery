@@ -13,7 +13,7 @@ import 'fake_video_tools_channel.dart';
 
 /// A small solid picture, encoded as JPEG, standing in for a real frame.
 Uint8List sampleJpeg({int width = 64, int height = 36}) {
-  final image = img.Image(width: width, height: height, numChannels: 3);
+  final image = img.Image(width: width, height: height);
   img.fill(image, color: img.ColorRgb8(40, 160, 90));
   return img.encodeJpg(image, quality: 90);
 }

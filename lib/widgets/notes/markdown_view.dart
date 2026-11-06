@@ -1,9 +1,9 @@
 import 'package:flutter/gestures.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:in_sreerajp_imgvidgal/core/constants/app_constants.dart';
 import 'package:in_sreerajp_imgvidgal/models/notes/markdown_block.dart';
 import 'package:in_sreerajp_imgvidgal/models/notes/markdown_span.dart';
-import 'package:in_sreerajp_imgvidgal/services/notes/markdown_parser.dart';
+import 'package:in_sreerajp_imgvidgal/core/domain/notes/markdown_parser.dart';
 import 'package:in_sreerajp_imgvidgal/widgets/common/adaptive_directionality.dart';
 
 /// Draws a parsed note.

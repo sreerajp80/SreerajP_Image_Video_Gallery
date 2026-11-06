@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:in_sreerajp_imgvidgal/l10n/generated/app_localizations.dart';
 import 'package:in_sreerajp_imgvidgal/providers/editor_providers.dart';
 
@@ -22,20 +22,20 @@ class EditorToolBar extends StatelessWidget {
     final theme = Theme.of(context);
 
     final entries = <(EditorTool, IconData, String)>[
-      (EditorTool.crop, Icons.crop_rotate, l10n.editorToolCrop),
-      (EditorTool.tune, Icons.tune, l10n.editorToolTune),
-      (EditorTool.masks, Icons.gradient, l10n.editorToolMasks),
+      (EditorTool.crop, Icons.crop_rotate, l10n.labelEditorToolCrop),
+      (EditorTool.tune, Icons.tune, l10n.labelEditorToolTune),
+      (EditorTool.masks, Icons.gradient, l10n.labelEditorToolMasks),
       (
         EditorTool.filters,
         Icons.filter_vintage_outlined,
-        l10n.editorToolFilters,
+        l10n.labelEditorToolFilters,
       ),
-      (EditorTool.markup, Icons.draw_outlined, l10n.editorToolMarkup),
-      (EditorTool.redact, Icons.blur_on, l10n.editorToolRedact),
+      (EditorTool.markup, Icons.draw_outlined, l10n.labelEditorToolMarkup),
+      (EditorTool.redact, Icons.blur_on, l10n.labelEditorToolRedact),
       (
         EditorTool.watermark,
         Icons.branding_watermark_outlined,
-        l10n.editorToolWatermark,
+        l10n.labelEditorToolWatermark,
       ),
     ];
 

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:in_sreerajp_imgvidgal/core/constants/app_constants.dart';
 import 'package:in_sreerajp_imgvidgal/l10n/generated/app_localizations.dart';
 import 'package:in_sreerajp_imgvidgal/models/convert/pdf_export_options.dart';
@@ -26,25 +26,25 @@ class PdfOptionsPanel extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
-        _Title(text: l10n.pdfPageSizeLabel),
+        _Title(text: l10n.labelPdfPageSize),
         Wrap(
           spacing: 8,
           runSpacing: 8,
           children: <Widget>[
             _chip(
-              label: l10n.pdfPageA4,
+              label: l10n.labelPdfPageA4,
               selected: options.pageSize == PdfPageSize.a4,
               onSelected: () =>
                   onChanged(options.copyWith(pageSize: PdfPageSize.a4)),
             ),
             _chip(
-              label: l10n.pdfPageLetter,
+              label: l10n.labelPdfPageLetter,
               selected: options.pageSize == PdfPageSize.letter,
               onSelected: () =>
                   onChanged(options.copyWith(pageSize: PdfPageSize.letter)),
             ),
             _chip(
-              label: l10n.pdfPageFitImage,
+              label: l10n.labelPdfPageFitImage,
               selected: options.pageSize == PdfPageSize.fitImage,
               onSelected: () =>
                   onChanged(options.copyWith(pageSize: PdfPageSize.fitImage)),
@@ -54,27 +54,27 @@ class PdfOptionsPanel extends StatelessWidget {
 
         if (isFixedPage) ...<Widget>[
           const SizedBox(height: 16),
-          _Title(text: l10n.pdfOrientationLabel),
+          _Title(text: l10n.labelPdfOrientation),
           Wrap(
             spacing: 8,
             runSpacing: 8,
             children: <Widget>[
               _chip(
-                label: l10n.pdfOrientationAuto,
+                label: l10n.labelPdfOrientationAuto,
                 selected: options.orientation == PdfOrientation.auto,
                 onSelected: () => onChanged(
                   options.copyWith(orientation: PdfOrientation.auto),
                 ),
               ),
               _chip(
-                label: l10n.pdfOrientationPortrait,
+                label: l10n.labelPdfOrientationPortrait,
                 selected: options.orientation == PdfOrientation.portrait,
                 onSelected: () => onChanged(
                   options.copyWith(orientation: PdfOrientation.portrait),
                 ),
               ),
               _chip(
-                label: l10n.pdfOrientationLandscape,
+                label: l10n.labelPdfOrientationLandscape,
                 selected: options.orientation == PdfOrientation.landscape,
                 onSelected: () => onChanged(
                   options.copyWith(orientation: PdfOrientation.landscape),
@@ -83,19 +83,19 @@ class PdfOptionsPanel extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 16),
-          _Title(text: l10n.pdfFitLabel),
+          _Title(text: l10n.labelPdfFit),
           Wrap(
             spacing: 8,
             runSpacing: 8,
             children: <Widget>[
               _chip(
-                label: l10n.pdfFitContain,
+                label: l10n.labelPdfFitContain,
                 selected: options.fitMode == PdfFitMode.contain,
                 onSelected: () =>
                     onChanged(options.copyWith(fitMode: PdfFitMode.contain)),
               ),
               _chip(
-                label: l10n.pdfFitFill,
+                label: l10n.labelPdfFitFill,
                 selected: options.fitMode == PdfFitMode.fill,
                 onSelected: () =>
                     onChanged(options.copyWith(fitMode: PdfFitMode.fill)),
@@ -103,22 +103,25 @@ class PdfOptionsPanel extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 16),
-          _Title(text: l10n.pdfMarginLabel),
+          _Title(text: l10n.labelPdfMargin),
           Wrap(
             spacing: 8,
             runSpacing: 8,
             children: <Widget>[
-              _marginChip(l10n.pdfMarginNone, AppConstants.pdfNoMarginPoints),
               _marginChip(
-                l10n.pdfMarginSmall,
+                l10n.labelPdfMarginNone,
+                AppConstants.pdfNoMarginPoints,
+              ),
+              _marginChip(
+                l10n.labelPdfMarginSmall,
                 AppConstants.pdfSmallMarginPoints,
               ),
               _marginChip(
-                l10n.pdfMarginMedium,
+                l10n.labelPdfMarginMedium,
                 AppConstants.pdfMediumMarginPoints,
               ),
               _marginChip(
-                l10n.pdfMarginLarge,
+                l10n.labelPdfMarginLarge,
                 AppConstants.pdfLargeMarginPoints,
               ),
             ],
@@ -126,7 +129,7 @@ class PdfOptionsPanel extends StatelessWidget {
         ],
 
         const SizedBox(height: 16),
-        _Title(text: l10n.pdfQualityLabel),
+        _Title(text: l10n.labelPdfQuality),
         Slider(
           value: options.effectiveQuality.toDouble(),
           min: AppConstants.convertMinQuality.toDouble(),

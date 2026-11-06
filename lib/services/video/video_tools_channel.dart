@@ -1,19 +1,15 @@
 import 'package:flutter/services.dart';
 import 'package:in_sreerajp_imgvidgal/core/constants/app_constants.dart';
 import 'package:in_sreerajp_imgvidgal/models/video/video_clip_info.dart';
+import 'package:in_sreerajp_imgvidgal/core/errors/app_exception.dart';
 
 /// Thrown when a video tool cannot finish its job.
 ///
 /// Damaged clips, formats the device cannot demux, and files that have been
 /// deleted since the scan all arrive here. The screen turns it into a
 /// message; it never takes the app down.
-class VideoToolsException implements Exception {
-  final String message;
-
-  const VideoToolsException(this.message);
-
-  @override
-  String toString() => 'VideoToolsException: $message';
+final class VideoToolsException extends FeatureException {
+  const VideoToolsException(super.message, {super.cause});
 }
 
 /// Dart side of the native video tools channel.

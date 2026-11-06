@@ -2,7 +2,7 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:in_sreerajp_imgvidgal/core/device/device_memory_service.dart';
+import 'package:in_sreerajp_imgvidgal/services/device/device_memory_service.dart';
 import 'package:in_sreerajp_imgvidgal/models/media_item.dart';
 import 'package:in_sreerajp_imgvidgal/services/thumbnail/thumbnail_decoder_isolate.dart';
 import 'package:in_sreerajp_imgvidgal/services/thumbnail/thumbnail_disk_cache.dart';

@@ -1,7 +1,9 @@
 package `in`.sreerajp.imgvidgal
 
 import `in`.sreerajp.imgvidgal.backup.BackupChannelHandler
+import `in`.sreerajp.imgvidgal.barcode.BarcodeChannelHandler
 import `in`.sreerajp.imgvidgal.backup.DocumentPickerChannelHandler
+import `in`.sreerajp.imgvidgal.device.AppInfoChannelHandler
 import `in`.sreerajp.imgvidgal.media.MediaStoreChannelHandler
 import `in`.sreerajp.imgvidgal.playback.PlaybackChannelHandler
 import `in`.sreerajp.imgvidgal.tools.HashToolsChannelHandler
@@ -24,6 +26,8 @@ class MainActivity : FlutterFragmentActivity() {
     private var vaultHandler: VaultChannelHandler? = null
     private var backupHandler: BackupChannelHandler? = null
     private var documentPickerHandler: DocumentPickerChannelHandler? = null
+    private var appInfoHandler: AppInfoChannelHandler? = null
+    private var barcodeHandler: BarcodeChannelHandler? = null
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
@@ -59,6 +63,13 @@ class MainActivity : FlutterFragmentActivity() {
         )
         documentPickerHandler = DocumentPickerChannelHandler(
             this,
+            flutterEngine.dartExecutor.binaryMessenger
+        )
+        appInfoHandler = AppInfoChannelHandler(
+            applicationContext,
+            flutterEngine.dartExecutor.binaryMessenger
+        )
+        barcodeHandler = BarcodeChannelHandler(
             flutterEngine.dartExecutor.binaryMessenger
         )
     }
@@ -127,6 +138,10 @@ class MainActivity : FlutterFragmentActivity() {
         backupHandler = null
         documentPickerHandler?.dispose()
         documentPickerHandler = null
+        appInfoHandler?.dispose()
+        appInfoHandler = null
+        barcodeHandler?.dispose()
+        barcodeHandler = null
         super.onDestroy()
     }
 }

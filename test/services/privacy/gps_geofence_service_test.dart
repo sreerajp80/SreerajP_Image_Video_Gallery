@@ -1,5 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:image/image.dart' as img;
+import 'dart:typed_data';
+
+import 'package:in_sreerajp_imgvidgal/models/privacy/gps_fuzz_result.dart';
+import 'package:in_sreerajp_imgvidgal/services/privacy/exif_scrubber_service.dart';
 import 'package:in_sreerajp_imgvidgal/services/privacy/gps_geofence_service.dart';
 
 void main() {
@@ -14,8 +18,6 @@ void main() {
         final result = service.calculateFuzz(
           latitude: originalLat,
           longitude: originalLon,
-          minDistanceKm: 2.0,
-          maxDistanceKm: 5.0,
         );
 
         // Verify distance falls within 2.0 and 5.0 km
@@ -105,5 +107,24 @@ void main() {
       expect(decodedExif, isNotNull);
       expect(!decodedExif!.gpsIfd.isEmpty, isTrue);
     });
+  });
+
+  test('moving the location of bytes that are not a picture throws', () {
+    const fuzz = GpsFuzzResult(
+      originalLatitude: 10,
+      originalLongitude: 76,
+      fuzzedLatitude: 10.02,
+      fuzzedLongitude: 76.01,
+      offsetDistanceKm: 2.5,
+      bearingDegrees: 30,
+      cardinalDirection: 'NE',
+    );
+    expect(
+      () => GpsGeofenceService().applyFuzzToImageBytes(
+        bytes: Uint8List.fromList(List<int>.filled(64, 7)),
+        fuzzResult: fuzz,
+      ),
+      throwsA(isA<PrivacyProcessingException>()),
+    );
   });
 }

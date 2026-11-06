@@ -1,26 +1,10 @@
 import 'package:flutter/services.dart';
 import 'package:in_sreerajp_imgvidgal/core/constants/app_constants.dart';
 import 'package:in_sreerajp_imgvidgal/models/scan/wifi_credentials.dart';
+import 'package:in_sreerajp_imgvidgal/models/scan/intent_exception.dart';
 
-/// Thrown when handing something to another app did not work.
-class IntentException implements Exception {
-  final String code;
-  final String message;
-
-  const IntentException(this.code, this.message);
-
-  /// Whether no app on the device can open it.
-  bool get hasNoApp => code == 'no_app';
-
-  /// Whether the scheme was refused, rather than merely failing.
-  ///
-  /// This one is a bug, not a device limit: the resolver should never have
-  /// offered an action the channel then refuses.
-  bool get wasBlocked => code == 'blocked_scheme';
-
-  @override
-  String toString() => 'IntentException($code): $message';
-}
+// Moved to models so the UI can use it without importing a service (G46).
+export 'package:in_sreerajp_imgvidgal/models/scan/intent_exception.dart';
 
 /// Hands a scanned code to another app.
 ///

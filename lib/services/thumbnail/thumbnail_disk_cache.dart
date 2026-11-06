@@ -5,6 +5,7 @@ import 'package:crypto/crypto.dart';
 import 'package:in_sreerajp_imgvidgal/core/constants/app_constants.dart';
 import 'package:in_sreerajp_imgvidgal/models/media_item.dart';
 import 'package:path/path.dart' as p;
+import 'package:in_sreerajp_imgvidgal/core/logging/app_logger.dart';
 
 /// Stores generated thumbnails as JPEG files in the app cache directory.
 ///
@@ -49,6 +50,7 @@ class ThumbnailDiskCache {
       await _touch(file);
       return bytes;
     } catch (_) {
+      // Safe to ignore: a cache miss; the thumbnail is made again.
       return null;
     }
   }
@@ -69,7 +71,8 @@ class ThumbnailDiskCache {
 
       await evictIfOverBudget();
       return true;
-    } catch (_) {
+    } catch (error) {
+      AppLogger.debug('Writing a thumbnail to the disk cache failed');
       return false;
     }
   }
@@ -81,7 +84,7 @@ class ThumbnailDiskCache {
       try {
         total += await file.length();
       } catch (_) {
-        // Ignore files that vanished mid-scan.
+        // Safe to ignore: a file removed while the cache was being measured.
       }
     }
     return total;
@@ -101,6 +104,7 @@ class ThumbnailDiskCache {
           total += stat.size;
           stats.add(_CacheEntry(file, stat.modified, stat.size));
         } catch (_) {
+          // Safe to ignore: a file removed while the cache was being measured.
           continue;
         }
       }
@@ -116,11 +120,14 @@ class ThumbnailDiskCache {
           total -= entry.size;
           removed++;
         } catch (_) {
+          // Safe to ignore: a file that will not delete is tried again at the
+          // next eviction.
           continue;
         }
       }
       return removed;
-    } catch (_) {
+    } catch (error) {
+      AppLogger.warning('Thumbnail cache eviction failed', error: error);
       return 0;
     }
   }
@@ -131,7 +138,8 @@ class ThumbnailDiskCache {
       if (await rootDirectory.exists()) {
         await rootDirectory.delete(recursive: true);
       }
-    } catch (_) {
+    } catch (error) {
+      AppLogger.warning('Clearing the thumbnail cache failed', error: error);
       // Clearing the cache is best effort only.
     }
   }
@@ -144,7 +152,8 @@ class ThumbnailDiskCache {
           .whereType<File>()
           .where((file) => p.extension(file.path) == '.jpg')
           .toList(growable: false);
-    } catch (_) {
+    } catch (error) {
+      AppLogger.warning('Listing the thumbnail cache failed', error: error);
       return const <File>[];
     }
   }
@@ -153,7 +162,8 @@ class ThumbnailDiskCache {
     try {
       await file.setLastModified(DateTime.now());
     } catch (_) {
-      // Not all filesystems allow this; recency then falls back to write time.
+      // Safe to ignore: some file systems refuse this; recency then falls back
+      // to write time.
     }
   }
 

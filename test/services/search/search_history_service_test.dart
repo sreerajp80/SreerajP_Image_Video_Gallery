@@ -33,7 +33,7 @@ void main() {
     });
 
     test('keeps the newest search first', () async {
-      await service.record('one', now: DateTime(2026, 1, 1));
+      await service.record('one', now: DateTime(2026));
       await service.record('two', now: DateTime(2026, 1, 2));
 
       final entries = await service.load();
@@ -44,7 +44,7 @@ void main() {
     test(
       'running an old search moves it up rather than repeating it',
       () async {
-        await service.record('one', now: DateTime(2026, 1, 1));
+        await service.record('one', now: DateTime(2026));
         await service.record('two', now: DateTime(2026, 1, 2));
         await service.record('ONE ', now: DateTime(2026, 1, 3));
 
@@ -78,7 +78,7 @@ void main() {
     });
 
     test('one search can be forgotten', () async {
-      await service.record('one', now: DateTime(2026, 1, 1));
+      await service.record('one', now: DateTime(2026));
       await service.record('two', now: DateTime(2026, 1, 2));
 
       final left = await service.remove('ONE');

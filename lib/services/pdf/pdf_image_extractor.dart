@@ -183,8 +183,9 @@ class PdfImageExtractor {
     if (bits != 8) return skipped(PdfImageSkipReason.unsupportedBitDepth);
 
     final components = _componentsFor(colorSpace);
-    if (components == 0)
+    if (components == 0) {
       return skipped(PdfImageSkipReason.unsupportedColorSpace);
+    }
 
     final expected = width * height * components;
     if (expected > AppConstants.pdfExtractMaxImageBytes) {
@@ -217,7 +218,6 @@ class PdfImageExtractor {
       filter: filterLabel.isEmpty ? 'none' : filterLabel,
       colorSpace: colorSpace,
       bytes: png,
-      format: PdfImageFormat.png,
     );
   }
 
@@ -241,12 +241,15 @@ class PdfImageExtractor {
       final out = ZLibDecoder().convert(data);
       return out is Uint8List ? out : Uint8List.fromList(out);
     } catch (_) {
+      // Safe to ignore: the stream is tried again as raw deflate just below.
       // Some writers leave the zlib header off. Try again as a bare deflate
       // stream before giving up, because that file is otherwise fine.
       try {
         final out = ZLibDecoder(raw: true).convert(data);
         return out is Uint8List ? out : Uint8List.fromList(out);
       } catch (_) {
+        // Safe to ignore: a stream that will not inflate leaves this picture
+        // listed as unreadable (hard rule 5).
         return null;
       }
     }
@@ -287,6 +290,8 @@ class PdfImageExtractor {
 
       return img.encodePng(image);
     } catch (_) {
+      // Safe to ignore: a picture that will not convert is listed as unreadable
+      // (hard rule 5).
       return null;
     }
   }

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:in_sreerajp_imgvidgal/core/routing/app_router.dart';
@@ -7,6 +7,8 @@ import 'package:in_sreerajp_imgvidgal/models/media_item.dart';
 import 'package:in_sreerajp_imgvidgal/providers/media_providers.dart';
 import 'package:in_sreerajp_imgvidgal/providers/trash_providers.dart';
 import 'package:in_sreerajp_imgvidgal/widgets/albums/album_media_grid.dart';
+import 'package:in_sreerajp_imgvidgal/widgets/common/unit_format_context.dart';
+import 'package:in_sreerajp_imgvidgal/widgets/common/sized_memory_image.dart';
 
 /// Shows every item the user has moved to the trash.
 ///
@@ -23,19 +25,18 @@ class TrashScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(l10n.trashTitle),
+        title: Text(l10n.titleTrash),
         actions: <Widget>[
-          if (trashCount.valueOrNull != null &&
-              trashCount.valueOrNull! > 0) ...<Widget>[
+          if (trashCount.value != null && trashCount.value! > 0) ...<Widget>[
             IconButton(
               onPressed: () => _confirmRestoreAll(context, ref),
               icon: const Icon(Icons.restore),
-              tooltip: l10n.trashRestoreAllAction,
+              tooltip: l10n.tooltipTrashRestoreAllAction,
             ),
             IconButton(
               onPressed: () => _confirmEmptyTrash(context, ref),
               icon: const Icon(Icons.delete_forever),
-              tooltip: l10n.trashEmptyAction,
+              tooltip: l10n.tooltipTrashEmptyAction,
             ),
           ],
         ],
@@ -43,7 +44,7 @@ class TrashScreen extends ConsumerWidget {
       body: SafeArea(
         child: trashMedia.when(
           loading: () => const Center(child: CircularProgressIndicator()),
-          error: (_, _) => Center(child: Text(l10n.trashEmpty)),
+          error: (_, _) => Center(child: Text(l10n.emptyTrash)),
           data: (items) {
             if (items.isEmpty) {
               return _TrashEmptyState(l10n: l10n);
@@ -62,7 +63,7 @@ class TrashScreen extends ConsumerWidget {
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
-                          l10n.trashItemCount(items.length),
+                          l10n.bodyTrashItemCount(items.length),
                           style: Theme.of(context).textTheme.bodySmall
                               ?.copyWith(
                                 color: Theme.of(
@@ -77,7 +78,7 @@ class TrashScreen extends ConsumerWidget {
                 Expanded(
                   child: AlbumMediaGrid(
                     items: items,
-                    emptyTitle: l10n.trashEmpty,
+                    emptyTitle: l10n.emptyTrash,
                     onItemLongPress: (item) =>
                         _showItemOptions(context, ref, item),
                     onItemTap: (item) => _showItemOptions(context, ref, item),
@@ -99,7 +100,7 @@ class TrashScreen extends ConsumerWidget {
   ) async {
     final l10n = AppLocalizations.of(context)!;
     final thumbnailAsync = ref.read(thumbnailProvider(item));
-    final thumbBytes = thumbnailAsync.valueOrNull;
+    final thumbBytes = thumbnailAsync.value;
 
     await showModalBottomSheet<void>(
       context: context,
@@ -119,7 +120,7 @@ class TrashScreen extends ConsumerWidget {
                       width: 48,
                       height: 48,
                       child: thumbBytes != null
-                          ? Image.memory(thumbBytes, fit: BoxFit.cover)
+                          ? SizedMemoryImage(thumbBytes)
                           : Container(
                               color: Theme.of(
                                 context,
@@ -146,7 +147,7 @@ class TrashScreen extends ConsumerWidget {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          _formatSize(item.size),
+                          context.units.bytes(item.size),
                           style: Theme.of(context).textTheme.bodySmall
                               ?.copyWith(
                                 color: Theme.of(
@@ -163,7 +164,7 @@ class TrashScreen extends ConsumerWidget {
             const Divider(),
             ListTile(
               leading: const Icon(Icons.fullscreen),
-              title: Text(l10n.editorOpen),
+              title: Text(l10n.titleEditorOpen),
               onTap: () {
                 Navigator.of(sheetContext).pop();
                 context.push(mediaViewerPath(item.id));
@@ -171,7 +172,7 @@ class TrashScreen extends ConsumerWidget {
             ),
             ListTile(
               leading: const Icon(Icons.restore),
-              title: Text(l10n.trashRestoreAction),
+              title: Text(l10n.actionTrashRestore),
               onTap: () async {
                 Navigator.of(sheetContext).pop();
                 await ref
@@ -179,7 +180,7 @@ class TrashScreen extends ConsumerWidget {
                     .restoreItem(item.id);
                 if (!context.mounted) return;
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text(l10n.trashRestoredSnackbar)),
+                  SnackBar(content: Text(l10n.bodyTrashRestoredSnackbar)),
                 );
               },
             ),
@@ -189,7 +190,7 @@ class TrashScreen extends ConsumerWidget {
                 color: Theme.of(context).colorScheme.error,
               ),
               title: Text(
-                l10n.trashDeletePermanentlyAction,
+                l10n.titleTrashDeletePermanentlyAction,
                 style: TextStyle(color: Theme.of(context).colorScheme.error),
               ),
               onTap: () {
@@ -220,19 +221,19 @@ class TrashScreen extends ConsumerWidget {
           Icons.delete_forever,
           color: Theme.of(dialogContext).colorScheme.error,
         ),
-        title: Text(l10n.trashDeletePermanentlyConfirmTitle),
-        content: Text(l10n.trashDeletePermanentlyConfirmBody),
+        title: Text(l10n.titleTrashDeletePermanentlyConfirm),
+        content: Text(l10n.bodyTrashDeletePermanentlyConfirm),
         actions: <Widget>[
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: Text(l10n.settingsCancel),
+            child: Text(l10n.actionSettingsCancel),
           ),
           FilledButton(
             style: FilledButton.styleFrom(
               backgroundColor: Theme.of(dialogContext).colorScheme.error,
             ),
             onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: Text(l10n.trashDeletePermanentlyAction),
+            child: Text(l10n.titleTrashDeletePermanentlyAction),
           ),
         ],
       ),
@@ -244,16 +245,9 @@ class TrashScreen extends ConsumerWidget {
         .deletePermanently(item);
     if (success) {
       messenger.showSnackBar(
-        SnackBar(content: Text(l10n.trashDeletedPermanentlySnackbar)),
+        SnackBar(content: Text(l10n.bodyTrashDeletedPermanentlySnackbar)),
       );
     }
-  }
-
-  static String _formatSize(int bytes) {
-    if (bytes <= 0) return '0 B';
-    if (bytes < 1024) return '$bytes B';
-    if (bytes < 1024 * 1024) return '${(bytes / 1024).toStringAsFixed(1)} KB';
-    return '${(bytes / (1024 * 1024)).toStringAsFixed(1)} MB';
   }
 
   /// Asks before restoring every item back to the library.
@@ -264,16 +258,16 @@ class TrashScreen extends ConsumerWidget {
     final bool? confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: Text(l10n.trashRestoreAllAction),
-        content: Text(l10n.trashRestoreAllConfirmBody),
+        title: Text(l10n.tooltipTrashRestoreAllAction),
+        content: Text(l10n.bodyTrashRestoreAllConfirm),
         actions: <Widget>[
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: Text(l10n.settingsCancel),
+            child: Text(l10n.actionSettingsCancel),
           ),
           FilledButton(
             onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: Text(l10n.trashRestoreAction),
+            child: Text(l10n.actionTrashRestore),
           ),
         ],
       ),
@@ -283,7 +277,7 @@ class TrashScreen extends ConsumerWidget {
     final count = await ref.read(trashControllerProvider.notifier).restoreAll();
     if (count > 0) {
       messenger.showSnackBar(
-        SnackBar(content: Text(l10n.trashRestoredSnackbar)),
+        SnackBar(content: Text(l10n.bodyTrashRestoredSnackbar)),
       );
     }
   }
@@ -300,19 +294,19 @@ class TrashScreen extends ConsumerWidget {
           Icons.delete_forever,
           color: Theme.of(dialogContext).colorScheme.error,
         ),
-        title: Text(l10n.trashEmptyConfirmTitle),
-        content: Text(l10n.trashEmptyConfirmBody),
+        title: Text(l10n.titleTrashEmptyConfirm),
+        content: Text(l10n.bodyTrashEmptyConfirm),
         actions: <Widget>[
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: Text(l10n.settingsCancel),
+            child: Text(l10n.actionSettingsCancel),
           ),
           FilledButton(
             style: FilledButton.styleFrom(
               backgroundColor: Theme.of(dialogContext).colorScheme.error,
             ),
             onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: Text(l10n.trashEmptyAction),
+            child: Text(l10n.tooltipTrashEmptyAction),
           ),
         ],
       ),
@@ -322,7 +316,7 @@ class TrashScreen extends ConsumerWidget {
     final count = await ref.read(trashControllerProvider.notifier).emptyTrash();
     if (count > 0) {
       messenger.showSnackBar(
-        SnackBar(content: Text(l10n.trashEmptiedSnackbar)),
+        SnackBar(content: Text(l10n.bodyTrashEmptiedSnackbar)),
       );
     }
   }
@@ -351,14 +345,14 @@ class _TrashEmptyState extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             Text(
-              l10n.trashEmpty,
+              l10n.emptyTrash,
               style: theme.textTheme.titleMedium?.copyWith(
                 color: theme.colorScheme.onSurfaceVariant,
               ),
             ),
             const SizedBox(height: 8),
             Text(
-              l10n.trashEmptySubtitle,
+              l10n.descTrashEmptySubtitle,
               textAlign: TextAlign.center,
               style: theme.textTheme.bodySmall?.copyWith(
                 color: theme.colorScheme.onSurfaceVariant.withValues(

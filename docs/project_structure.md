@@ -1,10 +1,12 @@
-# Project Structure — Image & Video Gallery
+# Project Structure — SreerajP Image Video Gallery
 
-This document outlines the directory structure, file naming conventions, and layer ownership rules for the Image & Video Gallery repository.
+This document shows the folder layout of the SreerajP Image Video Gallery repository and what
+each folder is for. Read it to find where something lives, or before you add a new folder. The
+layer rules themselves live in [architecture.md](architecture.md) §4; this file only maps them
+onto folders.
 
 ### Read first
-- [AGENTS.md](../AGENTS.md)
-- [CLAUDE.md](../CLAUDE.md)
+- [CLAUDE.md](../CLAUDE.md) / [AGENTS.md](../AGENTS.md)
 - [architecture.md](architecture.md)
 
 ---
@@ -13,101 +15,140 @@ This document outlines the directory structure, file naming conventions, and lay
 
 ```text
 .
-|-- .agents/              # Agent customizations and workspace rules
-|-- android/              # Native Android project configuration and Gradle scripts
-|-- assets/               # Static assets (icons, config files)
-|   `-- config/           # App configuration (app_config.json)
-|-- change_log/           # Historical change logs for every completed plan
-|-- docs/                 # Project documentation and architectural guidelines
-|   `-- guidelines/       # Shared Flutter guidelines Git submodule
-|-- lib/                  # Application source code (Tier 1 layer-first)
-|-- plans/                # Dated implementation plans requiring user approval
-|-- test/                 # Automated unit, widget, and integration test suite
-|-- AGENTS.md             # Project rules and architectural guidelines for AI agents
-|-- CLAUDE.md             # Claude Code workflow instructions
-|-- README.md             # Project overview, setup, build, and test guide
-|-- l10n.yaml             # Localization generator configuration
-`-- pubspec.yaml          # Project dependencies, assets, and metadata
+|-- android/              # Native Android project: Gradle, manifest, Kotlin channel handlers
+|-- assets/
+|   |-- config/           # app_config.json (About-screen data)
+|   |-- tessdata/         # Tesseract OCR data: eng.traineddata, mal.traineddata
+|   `-- tessdata_config.json  # OCR file list; the plugin hard-codes this exact path
+|-- change_log/           # One change log per implemented plan
+|-- docs/                 # Project documentation
+|   `-- guidelines/       # Shared Flutter guidelines (Git submodule — never edit from here)
+|-- lib/                  # App source (Tier 1 layer-first)
+|-- plans/                # One plan per change, with a Status line
+|-- test/                 # Unit and widget tests, mirroring lib/
+|-- tool/                 # Build helpers: app version and build date generators
+|   `-- ocr_eval/         # Dev-only OCR accuracy tool (CER/WER); samples and results stay local
+|-- AGENTS.md             # Project rules for AI agents / LLMs
+|-- CLAUDE.md             # Project rules for Claude Code
+|-- README.md             # Setup, run, test and build guide
+|-- analysis_options.yaml # Lint rules (flutter_lints); generated files excluded
+|-- l10n.yaml             # gen-l10n configuration
+|-- pubspec.yaml          # Packages, assets and version
+`-- pubspec.lock          # Locked package versions (committed)
 ```
 
 ---
 
 ## 2. Source Code Architecture (`lib/`)
 
+Feature folders inside each layer share the same names, so a feature is easy to follow from
+screen to service (for example `screens/sync/` → `providers/sync_providers.dart` →
+`services/sync/` → `models/sync/`).
+
 ```text
 lib/
-|-- core/                                # App-wide utilities, error handling, config
-|   |-- config/                          # AppFlavorConfig and ConfigService
-|   |-- errors/                          # Domain exceptions and failure types
-|   |-- storage/                         # AtomicSaver and file safety utilities
-|   `-- utils/                           # RAM policy, date formatters, directionality
-|-- models/                              # Immutable data entities
-|   |-- album.dart                       # Virtual and physical album models
-|   |-- exif_data.dart                   # Camera metadata and EXIF properties
-|   |-- media_filter.dart                # Filtering and query parameter models
-|   |-- media_item.dart                  # Image and Video core domain entity
-|   |-- tag.dart                         # User-defined custom tag model
-|   `-- vault_item.dart                  # Encrypted vault file model
-|-- repositories/                        # Persistence and MediaStore queries
-|   |-- album_repository.dart
-|   |-- database/                        # sqflite connection, migrations, FTS5
-|   |-- media_repository.dart            # Android MediaStore query abstraction
-|   |-- tag_repository.dart
-|   `-- vault_repository.dart            # Encrypted file persistence
-|-- services/                            # Pure computational and native services
-|   |-- crypto/                          # AES-256-GCM and Android Keystore wrapper
-|   |-- editor/                          # Image transformations, filters, markup
-|   |-- hash/                            # SHA-256 and pHash perceptual hashing
-|   |-- intelligence/                    # In-Image QR scanner and offline OCR
-|   |-- metadata/                        # EXIF parser and privacy stripper
-|   `-- video/                           # Video frame grabber and trimming
-|-- providers/                           # Riverpod state notifiers and providers
-|   |-- album_providers.dart
-|   |-- cleaner_providers.dart           # Duplicate finder state
-|   |-- editor_providers.dart            # Active image editing session state
-|   |-- media_providers.dart             # Timeline and thumbnail loading state
-|   |-- search_providers.dart            # FTS5 search query state
-|   `-- vault_providers.dart             # Vault lock/unlock and media state
-|-- screens/                             # App navigation destinations
-|   |-- albums/                          # Albums grid and album detail views
-|   |-- cleaner/                         # Duplicate and similar photo cleanup screen
-|   |-- editor/                          # Fullscreen non-destructive image editor
-|   |-- search/                          # Multi-criteria FTS5 search screen
-|   |-- settings/                        # App settings and About screen
-|   |-- timeline/                        # Main chronological timeline & flashback
-|   |-- vault/                           # Biometric unlock & private vault gallery
-|   `-- viewer/                          # Fullscreen image viewer and video player
-|-- widgets/                             # Reusable visual components
-|   |-- common/                          # Adaptive directionality, buttons, badges
-|   |-- editor/                          # Markup canvas, crop overlays, tone sliders
-|   |-- media/                           # Dynamic grid, thumbnail tile, fast scrubber
-|   `-- viewer/                          # Video controls, gesture zoom, EXIF drawer
-|-- theme/                               # Material 3 themes and palettes
-|   |-- app_theme.dart
+|-- core/
+|   |-- config/           # AppConfig, AppFlavorConfig, ConfigService
+|   |-- constants/        # AppConstants; app_version.g.dart and build_date.g.dart (generated by Gradle)
+|   |-- domain/           # Pure rules with no I/O, usable from any layer (album/tag names,
+|   |                     # editor geometry, grouping, pairing codec, local address rules)
+|   |-- errors/           # AppException hierarchy
+|   |-- l10n/             # formattingLocale helper, Sanskrit fallback delegates
+|   |-- logging/          # AppLogger
+|   |-- routing/          # app_router.dart (go_router)
+|   |-- storage/          # AtomicSaver
+|   `-- text/             # Text direction detection
+|-- models/               # Immutable entities. Top level: album, album_summary, exif_data,
+|   |                     # filter_options, flashback_memory, media_item, playback_state,
+|   |                     # smart_album, tag, timeline_group, vault_item, viewer_transform
+|   `-- backup/ batch/ convert/ duplicate/ editor/ help/ notes/ ocr/ pdf/ privacy/
+|       scan/ search/ settings/ sync/ vault/ video/
+|-- repositories/         # album, media, search, tag and vault repositories
+|   `-- database/         # database_helper, database_constants, album/media/tag/vault DAOs
+|-- services/             # Pure logic and one wrapper per method channel
+|   |                     # (device/ holds DeviceMemoryService, AppInfoService, screen and
+|   |                     # secure-window services)
+|   `-- albums/ backup/ batch/ convert/ device/ duplicates/ editor/ intent/ media/ notes/
+|       ocr/ pdf/ platform/ privacy/ scan/ search/ settings/ sync/ tags/ thumbnail/
+|       timeline/ vault/ video/ viewer/
+|-- providers/            # One file per area: album, backup, batch, convert, duplicate,
+|                         # editor, media_intent, media, notes, ocr, pdf_tools, privacy, scan,
+|                         # search, selection, settings, sync, tag, theme, timeline, trash,
+|                         # vault, video_tools, viewer
+|-- screens/              # Route destinations
+|   `-- albums/ backup/ cleaner/ compare/ convert/ editor/ help/ home/ notes/ ocr/ pdf/
+|       scan/ search/ settings/ sync/ tags/ timeline/ trash/ vault/ video/ viewer/
+|-- widgets/              # Reusable UI
+|   |-- made_with_love.dart  # The fixed About-screen badge (guideline.md §1.7)
+|   `-- albums/ backup/ batch/ cleaner/ common/ compare/ convert/ dev/ editor/ help/ media/
+|       notes/ pdf/ privacy/ scan/ search/ sync/ tags/ timeline/ vault/ video/ viewer/
+|                         # (common/ holds AdaptiveDirectionality, SafeErrorFallback and
+|                         # AppScreenProtection)
+|-- theme/
+|   |-- app_theme.dart    # Light, dark and AMOLED themes
 |   `-- color_schemes.dart
-|-- l10n/                                # ARB localization templates
-|   |-- app_en.arb                       # English translations (source of truth)
-|   `-- app_ml.arb                       # Malayalam translations
-`-- main.dart                            # Application entry point and ProviderScope
+|-- l10n/
+|   |-- app_en.arb        # English (template, source of truth)
+|   |-- app_ml.arb        # Malayalam
+|   |-- app_sa.arb        # Sanskrit
+|   `-- generated/        # AppLocalizations (generated — never edit)
+`-- main.dart             # Start-up and the root MaterialApp
 ```
+
+> `assets/tessdata_config.json` is the one asset outside `assets/config/`. The OCR plugin
+> reads it from this exact path, so it must stay at the `assets/` root.
 
 ---
 
 ## 3. Directory Responsibility & Boundary Rules
 
-1. **`models/`**:
-   - Must contain only pure Dart immutable classes with `const` constructors and `copyWith`.
-   - Never import Flutter widgets, UI packages, or databases in `models/`.
-2. **`services/`**:
-   - Perform specific computations (e.g. image filtering, hashing, cryptography).
-   - Never reference `BuildContext` or navigation logic in `services/`.
-3. **`repositories/`**:
-   - Abstract the underlying storage mechanism (`sqflite`, Android MediaStore, encrypted vault files).
-   - Return domain models or Result/Either types.
-4. **`providers/`**:
-   - Riverpod StateNotifiers coordinate data loading from repositories and invoke services.
-   - Expose immutable state objects to screens.
-5. **`screens/` & `widgets/`**:
-   - Render UI and capture user interactions.
-   - All user-visible strings must use `AppLocalizations.of(context)!`.
-   - No direct database queries or raw file writes from widgets.
+1. **`models/`**
+   - Pure Dart immutable classes with `const` constructors and `copyWith`.
+   - Never import Flutter widgets, UI packages or the database.
+2. **`services/`**
+   - Computation (image filters, hashing, crypto, parsing) and one wrapper per method channel.
+   - Never use `BuildContext`, routes or UI strings.
+3. **`repositories/`**
+   - Hide `sqflite`, the FTS table and the MediaStore query builder.
+   - Return domain models.
+4. **`providers/`**
+   - Riverpod providers load data through repositories and call services.
+   - Expose immutable state to screens.
+5. **`screens/` and `widgets/`**
+   - Draw UI and pass user actions to providers.
+   - All user-visible text uses `AppLocalizations.of(context)`.
+   - No database queries, file writes, crypto or intent parsing.
+6. **Generated files** (`lib/l10n/generated/`, `*.g.dart`)
+   - Never edit by hand. Re-run `flutter gen-l10n`, or rebuild for the Gradle-generated files.
+
+---
+
+## 4. Test Layout (`test/`)
+
+`test/` mirrors `lib/`: a test for `lib/<layer>/<area>/<file>.dart` lives at
+`test/<layer>/<area>/<file>_test.dart`. For example, the About screen is
+`lib/screens/settings/about_screen.dart`, so its test is
+`test/screens/settings/about_screen_test.dart`.
+
+```text
+test/
+|-- core/                 # config, l10n, logging, routing, storage, text
+|-- helpers/              # Shared test fakes (not a lib/ mirror)
+|-- l10n/                 # Cross-file language checks (not a lib/ mirror): ARB parity,
+|                         # label length, About config, Sanskrit Hindi markers, sa widgets
+|-- models/
+|-- providers/
+|-- repositories/
+|   `-- database/
+|-- screens/              # Full-screen widget tests
+|-- services/
+|-- theme/
+`-- widgets/              # Reusable-widget tests
+```
+
+- A test that covers several files of one area (for example
+  `test/core/routing/vault_routes_test.dart`) sits in that area's folder.
+- Screen tests go under `test/screens/`, never under `test/widgets/`.
+- Shared fakes are imported with `../` paths. Dart cannot import `test/` files by `package:` URI,
+  so this is the one accepted exception to the `package:`-imports rule
+  ([known_gaps.md](known_gaps.md) §3).

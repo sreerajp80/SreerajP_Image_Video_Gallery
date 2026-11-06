@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:in_sreerajp_imgvidgal/core/routing/app_router.dart';
@@ -22,12 +22,12 @@ class SyncHomeScreen extends ConsumerWidget {
     final outbox = ref.watch(transferOutboxProvider);
 
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.syncTitle)),
+      appBar: AppBar(title: Text(l10n.titleSync)),
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.all(16),
           children: [
-            Text(l10n.syncIntro, style: theme.textTheme.bodyLarge),
+            Text(l10n.bodySyncIntro, style: theme.textTheme.bodyLarge),
             const SizedBox(height: 16),
 
             // The promise, said on the screen that makes it, not only in the
@@ -46,7 +46,7 @@ class SyncHomeScreen extends ConsumerWidget {
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(
-                        l10n.syncPrivacyNote,
+                        l10n.bodySyncPrivacyNote,
                         style: theme.textTheme.bodySmall?.copyWith(
                           color: theme.colorScheme.onSecondaryContainer,
                         ),
@@ -60,20 +60,20 @@ class SyncHomeScreen extends ConsumerWidget {
 
             address.when(
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (_, __) => _NoNetwork(message: l10n.syncErrorNoNetwork),
+              error: (_, _) => _NoNetwork(message: l10n.bodySyncErrorNoNetwork),
               data: (found) {
                 if (found == null) {
-                  return _NoNetwork(message: l10n.syncErrorNoNetwork);
+                  return _NoNetwork(message: l10n.bodySyncErrorNoNetwork);
                 }
 
                 return Column(
                   children: [
                     _RoleCard(
                       icon: Icons.upload_outlined,
-                      title: l10n.syncSend,
+                      title: l10n.labelSyncSend,
                       body: outbox.isEmpty
-                          ? l10n.syncNothingSelected
-                          : l10n.syncOfferHeading(outbox.length),
+                          ? l10n.bodySyncNothingSelected
+                          : l10n.bodySyncOfferHeading(outbox.length),
                       // Sending needs something to send. Offering the button
                       // with an empty outbox would only lead to a dead end.
                       onTap: outbox.isEmpty
@@ -87,8 +87,8 @@ class SyncHomeScreen extends ConsumerWidget {
                     const SizedBox(height: 12),
                     _RoleCard(
                       icon: Icons.download_outlined,
-                      title: l10n.syncReceive,
-                      body: l10n.syncReceiveBody,
+                      title: l10n.labelSyncReceive,
+                      body: l10n.bodySyncReceive,
                       onTap: () {
                         ref.read(syncRoleProvider.notifier).state =
                             SyncRole.receive;
@@ -98,8 +98,8 @@ class SyncHomeScreen extends ConsumerWidget {
                     const SizedBox(height: 12),
                     _RoleCard(
                       icon: Icons.qr_code_scanner,
-                      title: l10n.syncScanCode,
-                      body: l10n.syncSendBody,
+                      title: l10n.actionSyncScanCode,
+                      body: l10n.bodySyncSend,
                       onTap: () => context.push(kRouteSyncSend),
                     ),
                   ],

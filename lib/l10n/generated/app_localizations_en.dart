@@ -9,1291 +9,1265 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
-  String get appTitle => 'SreerajP Gallery';
+  String get titleApp => 'SreerajP Gallery';
 
   @override
-  String get devBanner => 'DEV BUILD';
+  String get labelDevBanner => 'DEV BUILD';
 
   @override
-  String get settings => 'Settings';
+  String get titleSettings => 'Settings';
 
   @override
-  String get about => 'About';
+  String get titleAbout => 'About';
 
   @override
-  String get theme => 'Theme';
+  String get labelTheme => 'Theme';
 
   @override
-  String get themeSystem => 'System Default';
+  String get actionThemeSystem => 'System Default';
 
   @override
-  String get themeLight => 'Light';
+  String get actionThemeLight => 'Light';
 
   @override
-  String get themeDark => 'Dark';
+  String get actionThemeDark => 'Dark';
 
   @override
-  String get themeAmoled => 'AMOLED True Black';
+  String get actionThemeAmoled => 'AMOLED True Black';
 
   @override
-  String get currentFlavor => 'Current Flavor';
+  String get titleVersion => 'Version';
 
   @override
-  String get version => 'Version';
+  String get labelPermissionRequired => 'Media access needed';
 
   @override
-  String get offlineStatus => '100% Offline (No Internet)';
-
-  @override
-  String get permissionRequired => 'Media access needed';
-
-  @override
-  String get permissionRequiredBody =>
+  String get bodyPermissionRequired =>
       'Allow access to your photos and videos so the gallery can show them. Nothing ever leaves your device.';
 
   @override
-  String get grantPermission => 'Allow access';
+  String get labelGrantPermission => 'Allow access';
 
   @override
-  String get openSettings => 'Open settings';
+  String get labelOpenSettings => 'Open settings';
 
   @override
-  String get permissionPartial =>
+  String get bodyPermissionPartial =>
       'Only selected media is visible. Allow all media to see everything.';
 
   @override
-  String get scanMedia => 'Scan device media';
+  String get labelScanMedia => 'Scan device media';
 
   @override
-  String get scanningMedia => 'Scanning media...';
+  String get bodyScanningMedia => 'Scanning media...';
 
   @override
-  String scanProgress(int scanned, int total) {
+  String bodyScanProgress(int scanned, int total) {
     return '$scanned of $total scanned';
   }
 
   @override
-  String scanComplete(int count) {
+  String bodyScanComplete(int count) {
     return 'Scan complete: $count items indexed';
   }
 
   @override
-  String get scanFailed => 'Media scan failed';
+  String get errorScanFailed => 'Media scan failed';
 
   @override
-  String indexedItems(int count) {
+  String bodyIndexedItems(int count) {
     return 'Indexed items: $count';
   }
 
   @override
-  String get noMediaFound => 'No photos or videos found';
+  String get bodyNoMediaFound => 'No photos or videos found';
 
   @override
-  String get mediaUnavailable => 'Preview unavailable';
+  String get labelMediaUnavailable => 'Preview unavailable';
 
   @override
-  String get timelineToday => 'Today';
+  String get labelTimelineToday => 'Today';
 
   @override
-  String get timelineYesterday => 'Yesterday';
+  String get labelTimelineYesterday => 'Yesterday';
 
   @override
-  String get timelineTitle => 'Timeline';
+  String get titleTimeline => 'Timeline';
 
   @override
-  String get noMediaInTimeline => 'Your gallery is empty';
+  String get bodyNoMediaInTimeline => 'Your gallery is empty';
 
   @override
-  String get pullToScan => 'Pull down to scan for new photos and videos.';
+  String get bodyPullToScan => 'Pull down to scan for new photos and videos.';
 
   @override
-  String get flashbackTitle => 'On This Day';
+  String get titleFlashback => 'On This Day';
 
   @override
-  String get flashbackOneYearAgo => '1 year ago';
+  String get labelFlashbackOneYearAgo => '1 year ago';
 
   @override
-  String flashbackYearsAgo(int years) {
+  String bodyFlashbackYearsAgo(int years) {
     return '$years years ago';
   }
 
   @override
-  String gridColumns(int count) {
+  String bodyGridColumns(int count) {
     return '$count per row';
   }
 
   @override
-  String get badgeGif => 'GIF';
+  String get labelBadgeGif => 'GIF';
 
   @override
-  String get badgeRaw => 'RAW';
+  String get labelBadgeRaw => 'RAW';
 
   @override
-  String get badgeHd => 'HD';
+  String get labelBadgeHd => 'HD';
 
   @override
-  String badgeVideoDuration(String duration) {
+  String labelBadgeVideoDuration(String duration) {
     return 'Video, $duration';
   }
 
   @override
-  String mediaTileLabel(String name, String date) {
-    return '$name, $date';
-  }
+  String get labelScrollToDate => 'Scroll to date';
 
   @override
-  String get scrollToDate => 'Scroll to date';
+  String get tooltipViewerClose => 'Close';
 
   @override
-  String get viewerClose => 'Close';
+  String get labelViewerRotateLeft => 'Rotate left';
 
   @override
-  String get viewerRotateLeft => 'Rotate left';
+  String get labelViewerRotateRight => 'Rotate right';
 
   @override
-  String get viewerRotateRight => 'Rotate right';
+  String get labelViewerAddFavorite => 'Add to favorites';
 
   @override
-  String get viewerAddFavorite => 'Add to favorites';
+  String get bodyViewerRemoveFavorite => 'Remove from favorites';
 
   @override
-  String get viewerRemoveFavorite => 'Remove from favorites';
+  String get actionPlay => 'Play';
 
   @override
-  String get play => 'Play';
+  String get actionPause => 'Pause';
 
   @override
-  String get pause => 'Pause';
+  String get tooltipFrameForward => 'Next frame';
 
   @override
-  String get frameForward => 'Next frame';
+  String get tooltipFrameBackward => 'Previous frame';
 
   @override
-  String get frameBackward => 'Previous frame';
+  String get tooltipSkipForward => 'Forward 10 seconds';
 
   @override
-  String get skipForward => 'Skip forward 10 seconds';
+  String get tooltipSkipBackward => 'Back 10 seconds';
 
   @override
-  String get skipBackward => 'Skip back 10 seconds';
+  String get tooltipLoopPlayback => 'Repeat';
 
   @override
-  String get loopPlayback => 'Repeat';
+  String get tooltipPlaybackSpeed => 'Playback speed';
 
   @override
-  String get playbackSpeed => 'Playback speed';
+  String get bodyVideoCannotPlay => 'This video cannot be played.';
 
   @override
-  String get videoCannotPlay => 'This video cannot be played.';
-
-  @override
-  String get videoFormatUnsupported =>
+  String get bodyVideoFormatUnsupported =>
       'This device cannot play this video format.';
 
   @override
-  String get detailsTitle => 'Details';
+  String get tooltipDetailsTitle => 'Details';
 
   @override
-  String get detailsFileName => 'File name';
+  String get labelDetailsFileName => 'File name';
 
   @override
-  String get detailsFormat => 'Format';
+  String get labelDetailsFormat => 'Format';
 
   @override
-  String get detailsSize => 'Size';
+  String get labelDetailsSize => 'Size';
 
   @override
-  String get detailsDimensions => 'Dimensions';
+  String get labelDetailsDimensions => 'Dimensions';
 
   @override
-  String get detailsDuration => 'Duration';
+  String get labelDetailsDuration => 'Duration';
 
   @override
-  String get detailsDateTaken => 'Date taken';
+  String get labelDetailsDateTaken => 'Date taken';
 
   @override
-  String get detailsDateModified => 'Last modified';
+  String get labelDetailsDateModified => 'Last modified';
 
   @override
-  String get detailsFolder => 'Folder';
+  String get labelDetailsFolder => 'Folder';
 
   @override
-  String get detailsCameraSection => 'Camera and metadata';
+  String get labelDetailsCameraSection => 'Camera and metadata';
 
   @override
-  String get detailsNoMetadata => 'No camera metadata was found in this file.';
+  String get bodyDetailsNoMetadata =>
+      'No camera metadata was found in this file.';
 
   @override
-  String get detailsCamera => 'Camera';
+  String get labelDetailsCamera => 'Camera';
 
   @override
-  String get detailsLens => 'Lens';
+  String get labelDetailsLens => 'Lens';
 
   @override
-  String get detailsAperture => 'Aperture';
+  String get labelDetailsAperture => 'Aperture';
 
   @override
-  String get detailsShutter => 'Shutter';
+  String get labelDetailsShutter => 'Shutter';
 
   @override
-  String get detailsIso => 'ISO';
+  String get labelDetailsIso => 'ISO';
 
   @override
-  String get detailsFocalLength => 'Focal length';
+  String get labelDetailsFocalLength => 'Focal length';
 
   @override
-  String get detailsFlash => 'Flash';
+  String get labelDetailsFlash => 'Flash';
 
   @override
-  String get detailsWhiteBalance => 'White balance';
+  String get labelDetailsWhiteBalance => 'White balance';
 
   @override
-  String get detailsMeteringMode => 'Metering mode';
+  String get labelDetailsMeteringMode => 'Metering mode';
 
   @override
-  String get detailsColorSpace => 'Color space';
+  String get labelDetailsColorSpace => 'Color space';
 
   @override
-  String get detailsSoftware => 'Software';
+  String get labelDetailsSoftware => 'Software';
 
   @override
-  String get detailsLocation => 'Location';
+  String get labelDetailsLocation => 'Location';
 
   @override
-  String get detailsAltitude => 'Altitude';
+  String get labelDetailsAltitude => 'Altitude';
 
   @override
-  String get editorTitle => 'Edit';
+  String get titleEditor => 'Edit';
 
   @override
-  String get editorOpen => 'Edit';
+  String get titleEditorOpen => 'Edit';
 
   @override
-  String get editorSave => 'Save copy';
+  String get labelEditorSave => 'Save copy';
 
   @override
-  String get editorSaving => 'Saving a copy...';
+  String get bodyEditorSaving => 'Saving a copy...';
 
   @override
-  String editorSaved(String fileName) {
+  String bodyEditorSaved(String fileName) {
     return 'Saved a copy: $fileName';
   }
 
   @override
-  String get editorSaveFailed => 'The copy could not be saved';
+  String get errorEditorSaveFailed => 'The copy could not be saved';
 
   @override
-  String get editorOriginalKept => 'Your original photo was not changed';
+  String get bodyEditorOriginalKept => 'Your original photo was not changed';
 
   @override
-  String get editorCannotOpen => 'This photo cannot be edited';
+  String get bodyEditorCannotOpen => 'This photo cannot be edited';
 
   @override
-  String get editorTooLarge => 'This photo is too large to edit on this device';
+  String get bodyEditorTooLarge =>
+      'This photo is too large to edit on this device';
 
   @override
-  String get editorLoading => 'Preparing the photo...';
+  String get errorEditorPreviewFailed => 'The preview could not be drawn';
 
   @override
-  String get editorPreviewFailed => 'The preview could not be drawn';
+  String get tooltipEditorUndo => 'Undo';
 
   @override
-  String get editorUndo => 'Undo';
+  String get tooltipEditorRedo => 'Redo';
 
   @override
-  String get editorRedo => 'Redo';
+  String get tooltipEditorResetAll => 'Reset all';
 
   @override
-  String get editorResetAll => 'Reset all';
+  String get titleEditorDiscard => 'Discard changes?';
 
   @override
-  String get editorDiscardTitle => 'Discard changes?';
-
-  @override
-  String get editorDiscardMessage =>
+  String get bodyEditorDiscardMessage =>
       'Your edits have not been saved. Leaving now will lose them.';
 
   @override
-  String get editorDiscard => 'Discard';
+  String get actionEditorDiscard => 'Discard';
 
   @override
-  String get editorKeepEditing => 'Keep editing';
+  String get actionEditorKeepEditing => 'Keep editing';
 
   @override
-  String get editorToolCrop => 'Crop';
+  String get labelEditorToolCrop => 'Crop';
 
   @override
-  String get editorToolTune => 'Tune';
+  String get labelEditorToolTune => 'Tune';
 
   @override
-  String get editorToolMasks => 'Masks';
+  String get labelEditorToolMasks => 'Masks';
 
   @override
-  String get editorToolFilters => 'Filters';
+  String get labelEditorToolFilters => 'Filters';
 
   @override
-  String get editorToolMarkup => 'Markup';
+  String get labelEditorToolMarkup => 'Markup';
 
   @override
-  String get editorToolRedact => 'Hide';
+  String get labelEditorToolRedact => 'Hide';
 
   @override
-  String get editorToolWatermark => 'Watermark';
+  String get labelEditorToolWatermark => 'Watermark';
 
   @override
-  String get cropAspectFree => 'Free';
+  String get labelCropAspectFree => 'Free';
 
   @override
-  String get cropAspectOriginal => 'Original';
+  String get labelCropAspectOriginal => 'Original';
 
   @override
-  String get cropAspectSquare => 'Square';
+  String get labelCropAspectSquare => 'Square';
 
   @override
-  String get cropAspect4x3 => '4:3';
+  String get labelCropAspect4x3 => '4:3';
 
   @override
-  String get cropAspect3x4 => '3:4';
+  String get labelCropAspect3x4 => '3:4';
 
   @override
-  String get cropAspect16x9 => '16:9';
+  String get labelCropAspect16x9 => '16:9';
 
   @override
-  String get cropAspect9x16 => '9:16';
+  String get labelCropAspect9x16 => '9:16';
 
   @override
-  String get cropAspect3x2 => '3:2';
+  String get labelCropAspect3x2 => '3:2';
 
   @override
-  String get cropAspect2x3 => '2:3';
+  String get labelCropAspect2x3 => '2:3';
 
   @override
-  String get cropRotateLeft => 'Rotate left';
+  String get tooltipCropRotateLeft => 'Rotate left';
 
   @override
-  String get cropRotateRight => 'Rotate right';
+  String get tooltipCropRotateRight => 'Rotate right';
 
   @override
-  String get cropFlipHorizontal => 'Mirror sideways';
+  String get tooltipCropFlipHorizontal => 'Mirror sideways';
 
   @override
-  String get cropFlipVertical => 'Mirror upside down';
+  String get tooltipCropFlipVertical => 'Mirror upside down';
 
   @override
-  String get cropStraighten => 'Straighten';
+  String get labelCropStraighten => 'Straighten';
 
   @override
-  String get cropPerspectiveVertical => 'Vertical tilt';
+  String get labelCropPerspectiveVertical => 'Vertical tilt';
 
   @override
-  String get cropPerspectiveHorizontal => 'Horizontal tilt';
+  String get labelCropPerspectiveHorizontal => 'Horizontal tilt';
 
   @override
-  String get cropReset => 'Reset crop';
+  String get actionCropReset => 'Reset crop';
 
   @override
-  String get toneExposure => 'Exposure';
+  String get labelToneExposure => 'Exposure';
 
   @override
-  String get toneContrast => 'Contrast';
+  String get labelToneContrast => 'Contrast';
 
   @override
-  String get toneHighlights => 'Highlights';
+  String get labelToneHighlights => 'Highlights';
 
   @override
-  String get toneShadows => 'Shadows';
+  String get labelToneShadows => 'Shadows';
 
   @override
-  String get toneTemperature => 'Warmth';
+  String get labelToneTemperature => 'Warmth';
 
   @override
-  String get toneTint => 'Tint';
+  String get labelToneTint => 'Tint';
 
   @override
-  String get toneVibrance => 'Vibrance';
+  String get labelToneVibrance => 'Vibrance';
 
   @override
-  String get toneSaturation => 'Saturation';
+  String get labelToneSaturation => 'Saturation';
 
   @override
-  String get toneReset => 'Reset tune';
+  String get actionToneReset => 'Reset tune';
 
   @override
-  String get toneCurves => 'Curves';
+  String get labelToneCurves => 'Curves';
 
   @override
-  String get curveChannelRgb => 'All';
+  String get labelCurveChannelRgb => 'All';
 
   @override
-  String get curveChannelRed => 'Red';
+  String get labelCurveChannelRed => 'Red';
 
   @override
-  String get curveChannelGreen => 'Green';
+  String get labelCurveChannelGreen => 'Green';
 
   @override
-  String get curveChannelBlue => 'Blue';
+  String get labelCurveChannelBlue => 'Blue';
 
   @override
-  String get curveReset => 'Reset curve';
+  String get actionCurveReset => 'Reset curve';
 
   @override
-  String get curveHint => 'Drag a point to shape the curve';
+  String get helpCurveAddHint => 'Tap to add a point, long-press to remove';
 
   @override
-  String get curveAddHint => 'Tap to add a point, long-press to remove';
+  String get labelMaskShapeLinear => 'Linear';
 
   @override
-  String get maskShapeLinear => 'Linear';
+  String get labelMaskShapeRadial => 'Radial';
 
   @override
-  String get maskShapeRadial => 'Radial';
+  String get labelMaskFeather => 'Feather';
 
   @override
-  String get maskFeather => 'Feather';
+  String get labelMaskInvert => 'Invert';
 
   @override
-  String get maskInvert => 'Invert';
+  String get labelMaskBlur => 'Blur';
 
   @override
-  String get maskBlur => 'Blur';
+  String get tooltipMaskAddLinear => 'Add linear gradient';
 
   @override
-  String get maskAddLinear => 'Add linear gradient';
+  String get tooltipMaskAddRadial => 'Add radial mask';
 
   @override
-  String get maskAddRadial => 'Add radial mask';
+  String get emptyMask => 'Tap + to add a mask';
 
   @override
-  String get maskRemove => 'Remove mask';
+  String get titleHsl => 'HSL Color Tuner';
 
   @override
-  String get maskEmpty => 'Tap + to add a mask';
+  String get labelHslHue => 'Hue';
 
   @override
-  String get hslTitle => 'HSL Color Tuner';
+  String get labelHslSaturation => 'Saturation';
 
   @override
-  String get hslHue => 'Hue';
+  String get labelHslLuminance => 'Luminance';
 
   @override
-  String get hslSaturation => 'Saturation';
+  String get actionHslReset => 'Reset HSL';
 
   @override
-  String get hslLuminance => 'Luminance';
+  String get labelHslRangeRed => 'Red';
 
   @override
-  String get hslReset => 'Reset HSL';
+  String get labelHslRangeOrange => 'Orange';
 
   @override
-  String get hslRangeRed => 'Red';
+  String get labelHslRangeYellow => 'Yellow';
 
   @override
-  String get hslRangeOrange => 'Orange';
+  String get labelHslRangeGreen => 'Green';
 
   @override
-  String get hslRangeYellow => 'Yellow';
+  String get labelHslRangeCyan => 'Cyan';
 
   @override
-  String get hslRangeGreen => 'Green';
+  String get labelHslRangeBlue => 'Blue';
 
   @override
-  String get hslRangeCyan => 'Cyan';
+  String get labelHslRangePurple => 'Purple';
 
   @override
-  String get hslRangeBlue => 'Blue';
+  String get labelHslRangeMagenta => 'Magenta';
 
   @override
-  String get hslRangePurple => 'Purple';
+  String get labelFilterNone => 'Original';
 
   @override
-  String get hslRangeMagenta => 'Magenta';
+  String get labelFilterMono => 'Mono';
 
   @override
-  String get filterNone => 'Original';
+  String get labelFilterSepia => 'Sepia';
 
   @override
-  String get filterMono => 'Mono';
+  String get labelFilterVintage => 'Vintage';
 
   @override
-  String get filterSepia => 'Sepia';
+  String get labelFilterVivid => 'Vivid';
 
   @override
-  String get filterVintage => 'Vintage';
+  String get labelFilterCool => 'Cool';
 
   @override
-  String get filterVivid => 'Vivid';
+  String get labelFilterWarm => 'Warm';
 
   @override
-  String get filterCool => 'Cool';
+  String get labelFilterFade => 'Fade';
 
   @override
-  String get filterWarm => 'Warm';
+  String get labelFilterIntensity => 'Strength';
 
   @override
-  String get filterFade => 'Fade';
+  String get labelMarkupFreehand => 'Draw';
 
   @override
-  String get filterIntensity => 'Strength';
+  String get labelMarkupRectangle => 'Rectangle';
 
   @override
-  String get markupFreehand => 'Draw';
+  String get labelMarkupEllipse => 'Circle';
 
   @override
-  String get markupRectangle => 'Rectangle';
+  String get labelMarkupLine => 'Line';
 
   @override
-  String get markupEllipse => 'Circle';
+  String get labelMarkupArrow => 'Arrow';
 
   @override
-  String get markupLine => 'Line';
+  String get labelMarkupText => 'Text';
 
   @override
-  String get markupArrow => 'Arrow';
+  String get labelMarkupColor => 'Colour';
 
   @override
-  String get markupText => 'Text';
+  String get labelMarkupThickness => 'Thickness';
 
   @override
-  String get markupColor => 'Colour';
+  String get titleMarkupFilled => 'Fill shape';
 
   @override
-  String get markupThickness => 'Thickness';
+  String get actionMarkupUndoLayer => 'Remove last';
 
   @override
-  String get markupFilled => 'Fill shape';
+  String get titleMarkupText => 'Add text';
 
   @override
-  String get markupUndoLayer => 'Remove last';
+  String get helpMarkupTextHint => 'Type your text';
 
   @override
-  String get markupTextTitle => 'Add text';
+  String get actionMarkupTextAdd => 'Add';
 
   @override
-  String get markupTextHint => 'Type your text';
+  String get helpMarkupHint => 'Drag on the photo to draw';
 
   @override
-  String get markupTextAdd => 'Add';
+  String get labelRedactBlur => 'Blur';
 
   @override
-  String get markupHint => 'Drag on the photo to draw';
+  String get labelRedactPixelate => 'Pixelate';
 
   @override
-  String get redactBlur => 'Blur';
+  String get labelRedactBlackout => 'Blackout';
 
   @override
-  String get redactPixelate => 'Pixelate';
+  String get labelRedactStrength => 'Strength';
 
   @override
-  String get redactBlackout => 'Blackout';
+  String get helpRedactHint => 'Drag over anything you want hidden';
 
   @override
-  String get redactStrength => 'Strength';
+  String get actionRedactRemoveLast => 'Remove last';
 
   @override
-  String get redactHint => 'Drag over anything you want hidden';
-
-  @override
-  String get redactRemoveLast => 'Remove last';
-
-  @override
-  String redactCount(int count) {
+  String bodyRedactCount(int count) {
     return '$count areas hidden';
   }
 
   @override
-  String get watermarkNone => 'None';
+  String get labelWatermarkNone => 'None';
 
   @override
-  String get watermarkText => 'Text';
+  String get labelWatermarkText => 'Text';
 
   @override
-  String get watermarkTimestamp => 'Date and time';
+  String get labelWatermarkTimestamp => 'Date and time';
 
   @override
-  String get watermarkLogo => 'Logo';
+  String get labelWatermarkLogo => 'Logo';
 
   @override
-  String get watermarkTextHint => 'Watermark text';
+  String get helpWatermarkTextHint => 'Watermark text';
 
   @override
-  String get watermarkPosition => 'Position';
+  String get labelWatermarkPosition => 'Position';
 
   @override
-  String get watermarkOpacity => 'Opacity';
+  String get labelWatermarkOpacity => 'Opacity';
 
   @override
-  String get watermarkSize => 'Size';
+  String get labelWatermarkSize => 'Size';
 
   @override
-  String get watermarkMargin => 'Edge gap';
+  String get labelWatermarkMargin => 'Edge gap';
 
   @override
-  String get watermarkPickLogo => 'Choose a logo file';
+  String get actionWatermarkPickLogo => 'Choose a logo file';
 
   @override
-  String get watermarkNoLogo => 'No logo chosen yet';
+  String get bodyWatermarkNoLogo => 'No logo chosen yet';
 
   @override
-  String get watermarkClearLogo => 'Remove logo';
+  String get labelPositionTopLeft => 'Top left';
 
   @override
-  String get positionTopLeft => 'Top left';
+  String get labelPositionTopCenter => 'Top centre';
 
   @override
-  String get positionTopCenter => 'Top centre';
+  String get labelPositionTopRight => 'Top right';
 
   @override
-  String get positionTopRight => 'Top right';
+  String get labelPositionCenterLeft => 'Middle left';
 
   @override
-  String get positionCenterLeft => 'Middle left';
+  String get labelPositionCenter => 'Centre';
 
   @override
-  String get positionCenter => 'Centre';
+  String get labelPositionCenterRight => 'Middle right';
 
   @override
-  String get positionCenterRight => 'Middle right';
+  String get labelPositionBottomLeft => 'Bottom left';
 
   @override
-  String get positionBottomLeft => 'Bottom left';
+  String get labelPositionBottomCenter => 'Bottom centre';
 
   @override
-  String get positionBottomCenter => 'Bottom centre';
+  String get labelPositionBottomRight => 'Bottom right';
 
   @override
-  String get positionBottomRight => 'Bottom right';
+  String get titleConvertOpen => 'Convert';
 
   @override
-  String get convertOpen => 'Convert';
+  String get titleConvert => 'Convert and resize';
 
   @override
-  String get convertTitle => 'Convert and resize';
+  String get bodyConvertCannotOpen => 'This file cannot be converted';
 
   @override
-  String get convertCannotOpen => 'This file cannot be converted';
+  String get bodyConvertTooLarge => 'This file is too large to convert';
 
   @override
-  String get convertTooLarge => 'This file is too large to convert';
+  String get bodyConvertUnreadable => 'This picture could not be read';
 
   @override
-  String get convertUnreadable => 'This picture could not be read';
+  String get labelConvertFormat => 'Format';
 
   @override
-  String get convertFormatLabel => 'Format';
+  String get labelConvertQuality => 'Quality';
 
   @override
-  String get convertQualityLabel => 'Quality';
+  String get labelConvertResize => 'Size';
 
   @override
-  String get convertResizeLabel => 'Size';
+  String get labelConvertResizeNone => 'Original';
 
   @override
-  String get convertResizeNone => 'Original';
+  String get labelConvertResizeLongestSide => 'Longest side';
 
   @override
-  String get convertResizeLongestSide => 'Longest side';
+  String get labelConvertResizePercent => 'Percent';
 
   @override
-  String get convertResizePercent => 'Percent';
+  String get labelConvertResizeExact => 'Width and height';
 
   @override
-  String get convertResizeExact => 'Width and height';
+  String get titleConvertKeepAspect => 'Keep the shape';
 
   @override
-  String get convertKeepAspect => 'Keep the shape';
+  String get labelConvertWidth => 'Width';
 
   @override
-  String get convertWidth => 'Width';
+  String get labelConvertHeight => 'Height';
 
   @override
-  String get convertHeight => 'Height';
+  String get labelConvertLongestSide => 'Longest side (px)';
 
   @override
-  String get convertLongestSideLabel => 'Longest side in pixels';
+  String get labelConvertPercent => 'Percent of original';
 
   @override
-  String get convertPercentLabel => 'Percent of the original';
+  String get titleConvertStripMetadata => 'Remove camera info';
 
   @override
-  String get convertStripMetadata => 'Remove camera details';
-
-  @override
-  String get convertStripMetadataHint =>
+  String get helpConvertStripMetadataHint =>
       'Location and camera settings are left out of the copy';
 
   @override
-  String get convertOriginalSize => 'Original';
+  String get labelConvertOriginalSize => 'Original';
 
   @override
-  String get convertNewSize => 'New copy';
+  String get labelConvertNewSize => 'New copy';
 
   @override
-  String get convertEstimating => 'Working out the size';
+  String get bodyConvertEstimating => 'Working out the size';
 
   @override
-  String get convertNoEstimate => 'The size cannot be worked out for this file';
+  String get bodyConvertNoEstimate =>
+      'The size cannot be worked out for this file';
 
   @override
-  String get convertLargerWarning => 'The copy is larger than the original';
+  String get bodyConvertLargerWarning => 'The copy is larger than the original';
 
   @override
-  String get convertSave => 'Save a copy';
+  String get labelConvertSave => 'Save a copy';
 
   @override
-  String get convertSaving => 'Saving';
+  String get labelConvertSaving => 'Saving';
 
   @override
-  String get convertFailed => 'The copy could not be saved';
+  String get errorConvertFailed => 'The copy could not be saved';
 
   @override
-  String get convertOriginalKept => 'Your original file is not changed';
+  String get bodyConvertOriginalKept => 'Your original file is not changed';
 
   @override
-  String get pdfOpen => 'Export as PDF';
+  String get tooltipPdfOpen => 'Export as PDF';
 
   @override
-  String get pdfExportTitle => 'Export as PDF';
+  String get titlePdfExport => 'Export as PDF';
 
   @override
-  String get pdfChoosePhotos => 'Choose photos';
+  String get labelPdfChoosePhotos => 'Choose photos';
 
   @override
-  String get pdfNoSelection => 'Choose at least one photo';
+  String get bodyPdfNoSelection => 'Choose at least one photo';
 
   @override
-  String get pdfNoPhotos => 'There are no photos to choose from';
+  String get bodyPdfNoPhotos => 'There are no photos to choose from';
 
   @override
-  String get pdfPageSizeLabel => 'Page size';
+  String get labelPdfPageSize => 'Page size';
 
   @override
-  String get pdfPageA4 => 'A4';
+  String get labelPdfPageA4 => 'A4';
 
   @override
-  String get pdfPageLetter => 'Letter';
+  String get labelPdfPageLetter => 'Letter';
 
   @override
-  String get pdfPageFitImage => 'Fit the photo';
+  String get labelPdfPageFitImage => 'Fit the photo';
 
   @override
-  String get pdfOrientationLabel => 'Direction';
+  String get labelPdfOrientation => 'Direction';
 
   @override
-  String get pdfOrientationPortrait => 'Upright';
+  String get labelPdfOrientationPortrait => 'Upright';
 
   @override
-  String get pdfOrientationLandscape => 'Sideways';
+  String get labelPdfOrientationLandscape => 'Sideways';
 
   @override
-  String get pdfOrientationAuto => 'Follow the photo';
+  String get labelPdfOrientationAuto => 'Follow the photo';
 
   @override
-  String get pdfFitLabel => 'Placement';
+  String get labelPdfFit => 'Placement';
 
   @override
-  String get pdfFitContain => 'Fit the whole photo';
+  String get labelPdfFitContain => 'Fit the whole photo';
 
   @override
-  String get pdfFitFill => 'Fill the page';
+  String get labelPdfFitFill => 'Fill the page';
 
   @override
-  String get pdfMarginLabel => 'Border';
+  String get labelPdfMargin => 'Border';
 
   @override
-  String get pdfMarginNone => 'None';
+  String get labelPdfMarginNone => 'None';
 
   @override
-  String get pdfMarginSmall => 'Small';
+  String get labelPdfMarginSmall => 'Small';
 
   @override
-  String get pdfMarginMedium => 'Medium';
+  String get labelPdfMarginMedium => 'Medium';
 
   @override
-  String get pdfMarginLarge => 'Large';
+  String get labelPdfMarginLarge => 'Large';
 
   @override
-  String get pdfQualityLabel => 'Photo quality';
+  String get labelPdfQuality => 'Photo quality';
 
   @override
-  String get pdfExportAction => 'Create the PDF';
+  String get actionPdfExport => 'Create the PDF';
 
   @override
-  String get pdfExporting => 'Creating the PDF';
+  String get labelPdfExporting => 'Creating the PDF';
 
   @override
-  String get pdfFailed => 'The PDF could not be created';
+  String get errorPdfFailed => 'The PDF could not be created';
 
   @override
-  String get videoToolsOpen => 'Video tools';
+  String get titleVideoToolsOpen => 'Video tools';
 
   @override
-  String get videoToolsTitle => 'Video tools';
+  String get titleVideoTools => 'Video tools';
 
   @override
-  String get videoToolsUnavailable => 'This clip could not be read';
+  String get bodyVideoToolsUnavailable => 'This clip could not be read';
 
   @override
-  String get videoTabFrame => 'Frame';
+  String get tabVideoTabFrame => 'Frame';
 
   @override
-  String get videoTabGif => 'GIF';
+  String get tabVideoTabGif => 'GIF';
 
   @override
-  String get videoTabTrim => 'Trim';
+  String get tabVideoTabTrim => 'Trim';
 
   @override
-  String get framePositionLabel => 'Position in the clip';
+  String get labelFramePosition => 'Position in the clip';
 
   @override
-  String get frameFormatLabel => 'Save as';
+  String get labelFrameFormat => 'Save as';
 
   @override
-  String get frameSaveAction => 'Save this frame';
+  String get actionFrameSave => 'Save this frame';
 
   @override
-  String get frameUnavailable => 'No frame could be read here';
+  String get bodyFrameUnavailable => 'No frame could be read here';
 
   @override
-  String get gifFrameRateLabel => 'Frames per second';
+  String get labelGifFrameRate => 'Frames per second';
 
   @override
-  String get gifSizeLabel => 'Size';
+  String get labelGifSize => 'Size';
 
   @override
-  String get gifLoopLabel => 'Play on a loop';
+  String get titleGifLoopLabel => 'Play on a loop';
 
   @override
-  String get gifCapped => 'The GIF is shortened to keep the file small';
+  String get bodyGifCapped => 'The GIF is shortened to keep the file small';
 
   @override
-  String get gifExportAction => 'Create the GIF';
+  String get actionGifExport => 'Create the GIF';
 
   @override
-  String get gifExporting => 'Creating the GIF';
+  String get labelGifExporting => 'Creating the GIF';
 
   @override
-  String get trimStartLabel => 'Start';
+  String get labelTrimStart => 'Start';
 
   @override
-  String get trimEndLabel => 'End';
+  String get labelTrimEnd => 'End';
 
   @override
-  String get trimLengthLabel => 'Length';
+  String get labelTrimLength => 'Length';
 
   @override
-  String get trimAction => 'Save the trimmed clip';
+  String get actionTrim => 'Save trimmed clip';
 
   @override
-  String get trimLosslessNote =>
+  String get bodyTrimLosslessNote =>
       'Nothing is re-encoded, so no quality is lost. The cut may begin a moment earlier, at the nearest key frame.';
 
   @override
-  String get trimTooShort => 'The chosen part is too short';
+  String get bodyTrimTooShort => 'The chosen part is too short';
 
   @override
-  String get videoWorking => 'Working';
+  String get labelVideoWorking => 'Working';
 
   @override
-  String get videoJobFailed => 'That could not be finished';
+  String get errorVideoJobFailed => 'That could not be finished';
 
   @override
-  String convertPixelSize(int width, int height) {
+  String bodyConvertPixelSize(int width, int height) {
     return '$width by $height pixels';
   }
 
   @override
-  String convertSmallerBy(int percent) {
+  String bodyConvertSmallerBy(int percent) {
     return '$percent percent smaller';
   }
 
   @override
-  String convertSavedAs(String name) {
+  String bodyConvertSavedAs(String name) {
     return 'Saved as $name';
   }
 
   @override
-  String pdfSelectedCount(int count) {
+  String bodyPdfSelectedCount(int count) {
     return '$count chosen';
   }
 
   @override
-  String pdfMaxPagesReached(int count) {
+  String bodyPdfMaxPagesReached(int count) {
     return 'Only $count photos fit in one PDF';
   }
 
   @override
-  String pdfExportedAs(String name, int pages) {
+  String bodyPdfExportedAs(String name, int pages) {
     return 'Saved $name with $pages pages';
   }
 
   @override
-  String pdfSkippedCount(int count) {
+  String bodyPdfSkippedCount(int count) {
     return '$count photos could not be read and were left out';
   }
 
   @override
-  String gifFrameCount(int count) {
+  String bodyGifFrameCount(int count) {
     return '$count frames';
   }
 
   @override
-  String videoJobSavedAs(String name) {
+  String bodyVideoJobSavedAs(String name) {
     return 'Saved as $name';
   }
 
   @override
-  String get searchTitle => 'Search';
+  String get titleSearch => 'Search';
 
   @override
-  String get searchOpen => 'Search';
+  String get tooltipSearchOpen => 'Search';
 
   @override
-  String get searchHint => 'Search names, tags, notes, places';
+  String get helpSearchHint => 'Search names, tags, notes, places';
 
   @override
-  String get searchClear => 'Clear';
+  String get tooltipSearchClear => 'Clear';
 
   @override
-  String get searchFilters => 'Filters';
+  String get tooltipSearchFilters => 'Filters';
 
   @override
-  String get searchStartTitle => 'Search your library';
+  String get titleSearchStart => 'Search your library';
 
   @override
-  String get searchStartBody =>
+  String get bodySearchStart =>
       'Look through names, tags, notes, camera and place. Start a word with tag:, type:, place:, camera:, before: or after: to narrow the search.';
 
   @override
-  String get searchNoResultsTitle => 'Nothing matched';
+  String get titleSearchNoResults => 'Nothing matched';
 
   @override
-  String get searchNoResultsBody => 'Try fewer words, or check the filters.';
+  String get bodySearchNoResults => 'Try fewer words, or check the filters.';
 
   @override
-  String get searchFailed => 'The search could not run';
+  String get errorSearchFailed => 'The search could not run';
 
   @override
-  String get searchRecentTitle => 'Recent searches';
+  String get titleSearchRecent => 'Recent searches';
 
   @override
-  String get searchRecentClear => 'Clear all';
+  String get actionSearchRecentClear => 'Clear all';
 
   @override
-  String get searchRecentRemove => 'Forget this search';
+  String get tooltipSearchRecentRemove => 'Forget this search';
 
   @override
-  String searchResultCount(int count) {
+  String bodySearchResultCount(int count) {
     return '$count results';
   }
 
   @override
-  String get searchMatchedInName => 'Matched the file name';
+  String get bodySearchMatchedInName => 'Matched the file name';
 
   @override
-  String get searchMatchedInTags => 'Matched a tag';
+  String get labelSearchMatchedInTags => 'Matched a tag';
 
   @override
-  String get searchMatchedInNotes => 'Matched a note';
+  String get labelSearchMatchedInNotes => 'Matched a note';
 
   @override
-  String get searchMatchedInPlace => 'Matched a place';
+  String get labelSearchMatchedInPlace => 'Matched a place';
 
   @override
-  String get searchMatchedInDetails => 'Matched the photo details';
+  String get bodySearchMatchedInDetails => 'Matched the photo details';
 
   @override
-  String get filterTitle => 'Filters';
+  String get tooltipFilterTitle => 'Filters';
 
   @override
-  String get filterMediaType => 'Kind';
+  String get labelFilterMediaType => 'Kind';
 
   @override
-  String get filterTypeImage => 'Photos';
+  String get labelFilterTypeImage => 'Photos';
 
   @override
-  String get filterTypeVideo => 'Videos';
+  String get labelFilterTypeVideo => 'Videos';
 
   @override
-  String get filterTypeGif => 'GIFs';
+  String get labelFilterTypeGif => 'GIFs';
 
   @override
-  String get filterTypeRaw => 'RAW';
+  String get labelFilterTypeRaw => 'RAW';
 
   @override
-  String get filterTypeSvg => 'SVG';
+  String get labelFilterTypeSvg => 'SVG';
 
   @override
-  String get filterFavoritesOnly => 'Favourites only';
+  String get titleFilterFavoritesOnly => 'Favourites only';
 
   @override
-  String get filterHasLocation => 'Has a place';
+  String get titleFilterHasLocation => 'Has a place';
 
   @override
-  String get filterDateRange => 'Date range';
+  String get labelFilterDateRange => 'Date range';
 
   @override
-  String get filterDateAny => 'Any date';
+  String get labelFilterDateAny => 'Any date';
 
   @override
-  String get filterDateChoose => 'Choose dates';
+  String get actionFilterDateChoose => 'Choose dates';
 
   @override
-  String get filterDateClear => 'Clear dates';
+  String get actionFilterDateClear => 'Clear dates';
 
   @override
-  String get filterTags => 'Tags';
+  String get labelFilterTags => 'Tags';
 
   @override
-  String get filterTagModeAll => 'Has all';
+  String get actionFilterTagModeAll => 'Has all';
 
   @override
-  String get filterTagModeAny => 'Has any';
+  String get actionFilterTagModeAny => 'Has any';
 
   @override
-  String get filterNoTags => 'No tags yet';
+  String get labelFilterNoTags => 'No tags yet';
 
   @override
-  String get filterReset => 'Reset';
+  String get actionFilterReset => 'Reset';
 
   @override
-  String get filterApply => 'Apply';
+  String get actionFilterApply => 'Apply';
 
   @override
-  String get tagsTitle => 'Tags';
+  String get titleTags => 'Tags';
 
   @override
-  String get tagsOpen => 'Tags';
+  String get titleTagsOpen => 'Tags';
 
   @override
-  String get tagsEmptyTitle => 'No tags yet';
+  String get titleTagsEmpty => 'No tags yet';
 
   @override
-  String get tagsEmptyBody => 'Make a tag to group photos your own way.';
+  String get bodyTagsEmpty => 'Make a tag to group photos your own way.';
 
   @override
-  String get tagNew => 'New tag';
+  String get actionTagNew => 'New tag';
 
   @override
-  String get tagEditTitle => 'Edit tag';
+  String get tooltipTagEditTitle => 'Edit tag';
 
   @override
-  String get tagNameLabel => 'Tag name';
+  String get labelTagName => 'Tag name';
 
   @override
-  String get tagColorLabel => 'Colour';
+  String get labelTagColor => 'Colour';
 
   @override
-  String get tagSave => 'Save';
+  String get actionTagSave => 'Save';
 
   @override
-  String get tagCancel => 'Cancel';
+  String get actionTagCancel => 'Cancel';
 
   @override
-  String get tagDelete => 'Delete';
+  String get tooltipTagDelete => 'Delete';
 
   @override
-  String get tagDeleteTitle => 'Delete this tag?';
+  String get titleTagDelete => 'Delete this tag?';
 
   @override
-  String get tagDeleteBody =>
+  String get bodyTagDelete =>
       'The tag comes off every photo that has it. No photo is deleted.';
 
   @override
-  String tagItemCount(int count) {
+  String descTagItemCount(int count) {
     return '$count items';
   }
 
   @override
-  String get tagShowMedia => 'Show photos';
+  String get emptyTagError => 'A tag needs a name';
 
   @override
-  String get tagErrorEmpty => 'A tag needs a name';
+  String get bodyTagErrorTooLong => 'That name is too long';
 
   @override
-  String get tagErrorTooLong => 'That name is too long';
+  String get bodyTagErrorDuplicate => 'That tag already exists';
 
   @override
-  String get tagErrorDuplicate => 'That tag already exists';
+  String get errorTagErrorFailed => 'The tag could not be saved';
 
   @override
-  String get tagErrorFailed => 'The tag could not be saved';
+  String get titleTagSheet => 'Tags on this item';
 
   @override
-  String get tagSheetTitle => 'Tags on this item';
+  String get helpTagSheetNewHint => 'Add a new tag';
 
   @override
-  String get tagSheetNewHint => 'Add a new tag';
+  String get actionTagSheetAdd => 'Add';
 
   @override
-  String get tagSheetAdd => 'Add';
+  String get actionTagSheetDone => 'Done';
 
   @override
-  String get tagSheetDone => 'Done';
+  String get titleTagSheetOpen => 'Tags';
 
   @override
-  String get tagSheetOpen => 'Tags';
+  String get titleCleaner => 'Duplicate cleaner';
 
   @override
-  String get cleanerTitle => 'Duplicate cleaner';
+  String get titleCleanerOpen => 'Duplicate cleaner';
 
   @override
-  String get cleanerOpen => 'Duplicate cleaner';
+  String get labelCleanerStart => 'Find duplicates';
 
   @override
-  String get cleanerStart => 'Find duplicates';
+  String get actionCleanerStop => 'Stop';
 
   @override
-  String get cleanerStop => 'Stop';
+  String get labelCleanerRescan => 'Scan again';
 
   @override
-  String get cleanerRescan => 'Scan again';
+  String get titleCleanerIdle => 'Find duplicates';
 
   @override
-  String get cleanerIdleTitle => 'Find duplicate photos';
-
-  @override
-  String get cleanerIdleBody =>
+  String get bodyCleanerIdle =>
       'Each file is read once and what was found is remembered, so scanning again later is quick.';
 
   @override
-  String cleanerScanning(int processed, int total) {
+  String bodyCleanerScanning(int processed, int total) {
     return 'Checked $processed of $total';
   }
 
   @override
-  String get cleanerGrouping => 'Grouping the copies';
+  String get labelCleanerGrouping => 'Grouping the copies';
 
   @override
-  String get cleanerCancelled => 'Scan stopped';
+  String get labelCleanerCancelled => 'Scan stopped';
 
   @override
-  String get cleanerFailed => 'The scan could not finish';
+  String get errorCleanerFailed => 'The scan could not finish';
 
   @override
-  String get cleanerNoneTitle => 'No duplicates found';
+  String get titleCleanerNone => 'No duplicates found';
 
   @override
-  String get cleanerNoneBody =>
+  String get bodyCleanerNone =>
       'Nothing in your library looks like a copy of anything else.';
 
   @override
-  String cleanerGroupsFound(int count) {
+  String bodyCleanerGroupsFound(int count) {
     return '$count groups of copies';
   }
 
   @override
-  String cleanerReclaimable(String size) {
+  String bodyCleanerReclaimable(String size) {
     return 'About $size could be freed';
   }
 
   @override
-  String cleanerFailures(int count) {
+  String bodyCleanerFailures(int count) {
     return '$count files could not be read and were skipped';
   }
 
   @override
-  String get cleanerKindExact => 'Identical files';
+  String get labelCleanerKindExact => 'Identical files';
 
   @override
-  String get cleanerKindSimilar => 'Looks the same';
+  String get labelCleanerKindSimilar => 'Looks the same';
 
   @override
-  String cleanerMemberCount(int count) {
+  String bodyCleanerMemberCount(int count) {
     return '$count copies';
   }
 
   @override
-  String get cleanerCompare => 'Compare';
+  String get actionCleanerCompare => 'Compare';
 
   @override
-  String get compareTitle => 'Compare copies';
+  String get titleCompare => 'Compare copies';
 
   @override
-  String get compareGroupGone => 'This group has already been dealt with';
+  String get bodyCompareGroupGone => 'This group has already been dealt with';
 
   @override
-  String get compareKeepThis => 'Keep this one';
+  String get actionCompareKeepThis => 'Keep this one';
 
   @override
-  String get compareBestBadge => 'Suggested';
+  String get labelCompareBestBadge => 'Suggested';
 
   @override
-  String compareKeepAndTrash(int count) {
+  String bodyCompareKeepAndTrash(int count) {
     return 'Keep 1, move $count to trash';
   }
 
   @override
-  String get compareTrashNotice =>
+  String get bodyCompareTrashNotice =>
       'Nothing is erased. The other copies move to the trash and can be brought back.';
 
   @override
-  String compareConfirmTitle(int count) {
+  String titleCompareConfirm(int count) {
     return 'Move $count copies to the trash?';
   }
 
   @override
-  String get compareConfirmBody =>
+  String get bodyCompareConfirm =>
       'Only the copy you kept stays in the gallery. The files stay on the device and can be brought back.';
 
   @override
-  String get compareConfirm => 'Move to trash';
+  String get actionCompareConfirm => 'Move to trash';
 
   @override
-  String get compareCancel => 'Cancel';
+  String get actionCompareCancel => 'Cancel';
 
   @override
-  String compareMoved(int count) {
+  String bodyCompareMoved(int count) {
     return '$count copies moved to the trash';
   }
 
   @override
-  String get compareFailed => 'The copies could not be moved';
+  String get errorCompareFailed => 'The copies could not be moved';
 
   @override
-  String get compareFieldSize => 'Size';
+  String get labelCompareFieldSize => 'Size';
 
   @override
-  String get compareFieldPixels => 'Pixels';
+  String get labelCompareFieldPixels => 'Pixels';
 
   @override
-  String get compareFieldDate => 'Date';
+  String get labelCompareFieldDate => 'Date';
 
   @override
-  String get compareFieldCamera => 'Camera';
+  String get labelCompareFieldCamera => 'Camera';
 
   @override
-  String get compareUnknown => 'Unknown';
+  String get labelCompareUnknown => 'Unknown';
 
   @override
-  String get albumsTitle => 'Albums';
+  String get titleAlbums => 'Albums';
 
   @override
-  String get albumsOpen => 'Albums';
+  String get labelAlbumsSectionMine => 'My albums';
 
   @override
-  String get albumsSectionMine => 'My albums';
+  String get labelAlbumsSectionSmart => 'Smart albums';
 
   @override
-  String get albumsSectionSmart => 'Smart albums';
+  String get labelAlbumsSectionFolders => 'Device folders';
 
   @override
-  String get albumsSectionFolders => 'Device folders';
+  String get titleAlbumsEmpty => 'No albums yet';
 
   @override
-  String get albumsEmptyTitle => 'No albums yet';
-
-  @override
-  String get albumsEmptyBody =>
+  String get bodyAlbumsEmpty =>
       'Make an album to group photos and videos your own way. The files stay where they are.';
 
   @override
-  String get albumsFoldersEmpty => 'No folders found';
+  String get emptyAlbumsFolders => 'No folders found';
 
   @override
-  String get albumsLoadFailed => 'Albums could not be loaded';
+  String get errorAlbumsLoadFailed => 'Albums could not be loaded';
 
   @override
-  String albumItemCount(int count) {
+  String descAlbumItemCount(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
@@ -1305,248 +1279,243 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get smartAlbumFavorites => 'Favourites';
+  String get labelSmartAlbumFavorites => 'Favourites';
 
   @override
-  String get smartAlbumVideos => 'Videos';
+  String get labelSmartAlbumVideos => 'Videos';
 
   @override
-  String get smartAlbumGifs => 'Animated & GIFs';
+  String get labelSmartAlbumGifs => 'Animated & GIFs';
 
   @override
-  String get smartAlbumRaw => 'RAW captures';
+  String get labelSmartAlbumRaw => 'RAW captures';
 
   @override
-  String get smartAlbumPanoramas => 'Panoramas';
+  String get labelSmartAlbumPanoramas => 'Panoramas';
 
   @override
-  String get smartAlbumRecent => 'Recently added';
+  String get labelSmartAlbumRecent => 'Recently added';
 
   @override
-  String get smartAlbumTrash => 'Trash';
+  String get labelSmartAlbumTrash => 'Trash';
 
   @override
-  String get albumNew => 'New album';
+  String get actionAlbumNew => 'New album';
 
   @override
-  String get albumCreateTitle => 'New album';
+  String get titleAlbumCreate => 'New album';
 
   @override
-  String get albumRenameTitle => 'Rename album';
+  String get titleAlbumRenameTitle => 'Rename album';
 
   @override
-  String get albumNameLabel => 'Album name';
+  String get labelAlbumName => 'Album name';
 
   @override
-  String get albumNameHint => 'Holiday 2026';
+  String get helpAlbumNameHint => 'Holiday 2026';
 
   @override
-  String get albumSave => 'Save';
+  String get labelAlbumSave => 'Save';
 
   @override
-  String get albumCancel => 'Cancel';
+  String get actionAlbumCancel => 'Cancel';
 
   @override
-  String get albumRename => 'Rename';
+  String get titleAlbumRename => 'Rename';
 
   @override
-  String get albumDelete => 'Delete album';
+  String get titleAlbumDelete => 'Delete album';
 
   @override
-  String get albumChooseCover => 'Choose cover';
+  String get titleAlbumChooseCover => 'Choose cover';
 
   @override
-  String get albumReorder => 'Change order';
+  String get titleAlbumReorder => 'Change order';
 
   @override
-  String get albumAddMedia => 'Add photos';
+  String get titleAlbumRemoveMedia => 'Remove from album';
 
   @override
-  String get albumRemoveMedia => 'Remove from album';
+  String get titleAlbumPin => 'Pin to top';
 
   @override
-  String get albumPin => 'Pin to top';
+  String get emptyAlbumError => 'An album needs a name';
 
   @override
-  String get albumUnpin => 'Unpin';
+  String get bodyAlbumErrorTooLong => 'That name is too long';
 
   @override
-  String get albumErrorEmpty => 'An album needs a name';
+  String get bodyAlbumErrorDuplicate =>
+      'An album with that name already exists';
 
   @override
-  String get albumErrorTooLong => 'That name is too long';
+  String get errorAlbumErrorFailed => 'That change could not be saved';
 
   @override
-  String get albumErrorDuplicate => 'An album with that name already exists';
-
-  @override
-  String get albumErrorFailed => 'That change could not be saved';
-
-  @override
-  String albumDeleteConfirmTitle(String name) {
+  String titleAlbumDeleteConfirm(String name) {
     return 'Delete \"$name\"?';
   }
 
   @override
-  String get albumDeleteConfirmBody =>
+  String get bodyAlbumDeleteConfirm =>
       'Only the album goes. Every photo and video stays on the device exactly where it is.';
 
   @override
-  String get albumDeleteConfirm => 'Delete album';
+  String get actionAlbumDeleteConfirm => 'Delete album';
 
   @override
-  String get albumDeleted => 'Album deleted';
+  String get bodyAlbumDeleted => 'Album deleted';
 
   @override
-  String get albumRemovedFromAlbum => 'Removed from the album';
+  String get bodyAlbumRemovedFromAlbum => 'Removed from the album';
 
   @override
-  String get albumCoverSet => 'Cover updated';
+  String get bodyAlbumCoverSet => 'Cover updated';
 
   @override
-  String get albumOrderSaved => 'New order saved';
+  String get bodyAlbumOrderSaved => 'New order saved';
 
   @override
-  String get albumEmptyTitle => 'This album is empty';
+  String get titleAlbumEmpty => 'This album is empty';
 
   @override
-  String get albumEmptyBody =>
+  String get bodyAlbumEmpty =>
       'Add photos and videos from the gallery. They are not moved or copied.';
 
   @override
-  String get albumGone => 'This album is no longer there';
+  String get bodyAlbumGone => 'This album is no longer there';
 
   @override
-  String get albumReorderTitle => 'Change order';
+  String get titleAlbumReorderTitle => 'Change order';
 
   @override
-  String get albumReorderHint =>
+  String get helpAlbumReorderHint =>
       'Drag an item to move it. The new order is saved when you tap Save.';
 
   @override
-  String get albumReorderSave => 'Save order';
+  String get actionAlbumReorderSave => 'Save order';
 
   @override
-  String get albumCoverTitle => 'Choose a cover';
+  String get titleAlbumCover => 'Choose a cover';
 
   @override
-  String get albumCoverClear => 'Use the newest item';
+  String get actionAlbumCoverClear => 'Use the newest item';
 
   @override
-  String get albumPickerTitle => 'Add to album';
+  String get titleAlbumPicker => 'Add to album';
 
   @override
-  String get albumPickerEmpty => 'You have no albums yet';
+  String get emptyAlbumPicker => 'You have no albums yet';
 
   @override
-  String get albumPickerCreate => 'New album';
+  String get actionAlbumPickerCreate => 'New album';
 
   @override
-  String get albumPickerDone => 'Done';
+  String get actionAlbumPickerDone => 'Done';
 
   @override
-  String get albumPickerSaved => 'Albums updated';
+  String get bodyAlbumPickerSaved => 'Albums updated';
 
   @override
-  String get folderEmptyTitle => 'This folder is empty';
+  String get titleFolderEmpty => 'This folder is empty';
 
   @override
-  String get smartAlbumEmptyTitle => 'Nothing here yet';
+  String get titleSmartAlbumEmpty => 'Nothing here yet';
 
   @override
-  String get smartAlbumUnknown => 'That album does not exist';
+  String get bodySmartAlbumUnknown => 'That album does not exist';
 
   @override
-  String get filterHasTags => 'Tagged only';
+  String get titleFilterHasTags => 'Tagged only';
 
   @override
-  String get filterFileSize => 'File size';
+  String get labelFilterFileSize => 'File size';
 
   @override
-  String get filterSizeAny => 'Any size';
+  String get labelFilterSizeAny => 'Any size';
 
   @override
-  String get filterSizeSmall => 'Under 1 MB';
+  String get labelFilterSizeSmall => 'Under 1 MB';
 
   @override
-  String get filterSizeMedium => '1 to 10 MB';
+  String get bodyFilterSizeMedium => '1 to 10 MB';
 
   @override
-  String get filterSizeLarge => 'Over 10 MB';
+  String get labelFilterSizeLarge => 'Over 10 MB';
 
   @override
-  String get filterSortBy => 'Sort by';
+  String get labelFilterSortBy => 'Sort by';
 
   @override
-  String get filterSortDateTaken => 'Date taken';
+  String get labelFilterSortDateTaken => 'Date taken';
 
   @override
-  String get filterSortDateAdded => 'Date added';
+  String get labelFilterSortDateAdded => 'Date added';
 
   @override
-  String get filterSortName => 'Name';
+  String get labelFilterSortName => 'Name';
 
   @override
-  String get filterSortSize => 'Size';
+  String get labelFilterSortSize => 'Size';
 
   @override
-  String get filterSortNewestFirst => 'Newest first';
+  String get actionFilterSortNewestFirst => 'Newest first';
 
   @override
-  String get filterSortOldestFirst => 'Oldest first';
+  String get actionFilterSortOldestFirst => 'Oldest first';
 
   @override
-  String get vaultTitle => 'Private Vault';
+  String get titleVault => 'Private Vault';
 
   @override
-  String get vaultMenuLabel => 'Private Vault';
+  String get titleVaultMenuLabel => 'Private Vault';
 
   @override
-  String get vaultMoveToVault => 'Move to vault';
+  String get titleVaultMoveToVault => 'Move to vault';
 
   @override
-  String get vaultSetUpTitle => 'Create your vault';
+  String get titleVaultSetUp => 'Create your vault';
 
   @override
-  String get vaultSetUpBody =>
+  String get bodyVaultSetUp =>
       'Items you move here are encrypted with a key held by this device and hidden from the gallery.';
 
   @override
-  String get vaultNoRecoveryWarning =>
+  String get bodyVaultNoRecoveryWarning =>
       'There is no way to recover a forgotten PIN. Without it nobody can open the vault, not even this app.';
 
   @override
-  String get vaultChoosePin => 'Choose a PIN';
+  String get labelVaultChoosePin => 'Choose a PIN';
 
   @override
-  String get vaultConfirmPin => 'Enter the PIN again';
+  String get bodyVaultConfirmPin => 'Enter the PIN again';
 
   @override
-  String get vaultEnterPin => 'Enter your PIN';
+  String get labelVaultEnterPin => 'Enter your PIN';
 
   @override
-  String get vaultCreate => 'Create vault';
+  String get labelVaultCreate => 'Create vault';
 
   @override
-  String get vaultUnlock => 'Unlock';
+  String get labelVaultUnlock => 'Unlock';
 
   @override
-  String get vaultUseBiometrics => 'Use fingerprint';
+  String get labelVaultUseBiometrics => 'Use fingerprint';
 
   @override
-  String get vaultUnlockReason => 'Unlock your private vault';
+  String get bodyVaultUnlockReason => 'Unlock your private vault';
 
   @override
-  String get vaultLockNow => 'Lock now';
+  String get tooltipVaultLockNow => 'Lock now';
 
   @override
-  String get vaultPinMismatch => 'The two PINs are not the same';
+  String get bodyVaultPinMismatch => 'The two PINs are not the same';
 
   @override
-  String get vaultWrongPin => 'That PIN is not right';
+  String get bodyVaultWrongPin => 'That PIN is not right';
 
   @override
-  String vaultAttemptsLeft(int count) {
+  String bodyVaultAttemptsLeft(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
@@ -1557,118 +1526,100 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String vaultLockedOut(int seconds) {
+  String bodyVaultLockedOut(int seconds) {
     return 'Too many tries. Wait $seconds seconds.';
   }
 
   @override
-  String vaultPinTooShort(int count) {
+  String bodyVaultPinTooShort(int count) {
     return 'A PIN needs at least $count digits';
   }
 
   @override
-  String vaultPinTooLong(int count) {
+  String bodyVaultPinTooLong(int count) {
     return 'A PIN can have at most $count digits';
   }
 
   @override
-  String get vaultPinNotDigits => 'A PIN can only have digits';
+  String get bodyVaultPinNotDigits => 'A PIN can only have digits';
 
   @override
-  String get vaultPinAllSame => 'Do not use the same digit all the way through';
+  String get bodyVaultPinAllSame =>
+      'Do not use the same digit all the way through';
 
   @override
-  String get vaultPinSequential => 'Do not use digits in a straight run';
+  String get bodyVaultPinSequential => 'Do not use digits in a straight run';
 
   @override
-  String get vaultBiometricFailed => 'Not recognised. Use your PIN.';
+  String get errorVaultBiometricFailed => 'Not recognised. Use your PIN.';
 
   @override
-  String get vaultBiometricUnavailable =>
+  String get bodyVaultBiometricUnavailable =>
       'Fingerprint unlock is not available. Use your PIN.';
 
   @override
-  String get vaultAuthError => 'The vault could not be opened';
+  String get errorVaultAuth => 'The vault could not be opened';
 
   @override
-  String get vaultKeystoreUnavailableTitle =>
-      'This device cannot hold the vault key';
+  String get titleVaultKeystoreUnavailable => 'No safe key storage';
 
   @override
-  String get vaultKeystoreUnavailableBody =>
+  String get bodyVaultKeystoreUnavailable =>
       'The vault needs a hardware-backed key store, and this device does not have a working one. Nothing is encrypted without it, so the vault stays shut.';
 
   @override
-  String get vaultEmptyTitle => 'The vault is empty';
+  String get titleVaultEmpty => 'The vault is empty';
 
   @override
-  String get vaultEmptyBody =>
+  String get bodyVaultEmpty =>
       'Add photos and videos here to encrypt them and take them out of the gallery.';
 
   @override
-  String vaultItemCount(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count items',
-      one: '1 item',
-      zero: 'No items',
-    );
-    return '$_temp0';
-  }
-
-  @override
-  String vaultSelectedCount(int count) {
+  String bodyVaultSelectedCount(int count) {
     return '$count selected';
   }
 
   @override
-  String get vaultAddItems => 'Add items';
+  String get labelVaultAddItems => 'Add items';
 
   @override
-  String get vaultRestore => 'Restore to gallery';
+  String get tooltipVaultRestore => 'Restore to gallery';
 
   @override
-  String get vaultDeleteForever => 'Delete for good';
+  String get tooltipVaultDeleteForever => 'Delete for good';
 
   @override
-  String get vaultSettingsAction => 'Vault settings';
+  String get tooltipVaultSettingsAction => 'Vault settings';
 
   @override
-  String get vaultWorking => 'Working…';
+  String get actionVaultCancel => 'Cancel';
 
   @override
-  String get vaultCancel => 'Cancel';
+  String get tooltipVaultClearSelection => 'Clear selection';
 
   @override
-  String get vaultSelectAll => 'Select all';
+  String get titleVaultImport => 'Move to vault';
 
   @override
-  String get vaultClearSelection => 'Clear selection';
-
-  @override
-  String get vaultImportTitle => 'Move to vault';
-
-  @override
-  String get vaultImportBody =>
+  String get bodyVaultImport =>
       'The items are encrypted and taken out of the gallery. What happens to the originals is up to you.';
 
   @override
-  String get vaultImportKeepOriginal => 'Keep the originals';
+  String get titleVaultImportKeepOriginal => 'Keep the originals';
 
   @override
-  String get vaultImportKeepOriginalBody =>
+  String get bodyVaultImportKeepOriginal =>
       'The originals stay where they are. Delete them yourself later if you want to.';
 
   @override
-  String get vaultImportShredOriginal => 'Shred the originals';
+  String get titleVaultImportShredOriginal => 'Shred the originals';
 
   @override
-  String get vaultImportShredOriginalBody =>
+  String get bodyVaultImportShredOriginal =>
       'The original files are overwritten and deleted. This cannot be undone.';
 
   @override
-  String vaultImportConfirm(int count) {
+  String bodyVaultImportConfirm(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
@@ -1679,10 +1630,10 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get vaultImportNothingSelected => 'Nothing is selected';
+  String get labelVaultImportNothingSelected => 'Nothing is selected';
 
   @override
-  String vaultShredConfirmTitle(int count) {
+  String bodyVaultShredConfirmTitle(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
@@ -1693,14 +1644,14 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get vaultShredConfirmBody =>
+  String get bodyVaultShredConfirm =>
       'The original files will be overwritten and deleted. There is no undo, and no way to get them back.';
 
   @override
-  String get vaultShredConfirmAction => 'Shred them';
+  String get actionVaultShredConfirm => 'Shred them';
 
   @override
-  String vaultImportDone(int count) {
+  String bodyVaultImportDone(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
@@ -1711,15 +1662,15 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String vaultImportPartial(int moved, int failed) {
+  String bodyVaultImportPartial(int moved, int failed) {
     return '$moved moved, $failed could not be read';
   }
 
   @override
-  String get vaultImportFailed => 'Nothing could be moved to the vault';
+  String get errorVaultImportFailed => 'Nothing could be moved to the vault';
 
   @override
-  String vaultRestoreConfirmTitle(int count) {
+  String bodyVaultRestoreConfirmTitle(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
@@ -1730,28 +1681,14 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get vaultRestoreConfirmBody =>
+  String get bodyVaultRestoreConfirm =>
       'The items are written back into your gallery folders and taken out of the vault.';
 
   @override
-  String get vaultRestoreConfirmAction => 'Restore';
+  String get actionVaultRestoreConfirm => 'Restore';
 
   @override
-  String vaultRestoreDone(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count items restored',
-      one: '1 item restored',
-    );
-    return '$_temp0';
-  }
-
-  @override
-  String get vaultRestoreFailed => 'Nothing could be restored';
-
-  @override
-  String vaultDeleteConfirmTitle(int count) {
+  String bodyVaultDeleteConfirmTitle(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
@@ -1762,44 +1699,33 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get vaultDeleteConfirmBody =>
+  String get bodyVaultDeleteConfirm =>
       'The encrypted files are overwritten and deleted. There is no undo, and no copy anywhere else.';
 
   @override
-  String vaultDeleteDone(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count items deleted',
-      one: '1 item deleted',
-    );
-    return '$_temp0';
-  }
+  String get errorVaultViewerFailed => 'This item could not be opened';
 
   @override
-  String get vaultViewerFailed => 'This item could not be opened';
-
-  @override
-  String get vaultViewerTampered =>
+  String get bodyVaultViewerTampered =>
       'This item failed its integrity check and was not opened';
 
   @override
-  String get vaultSettingsTitle => 'Vault settings';
+  String get titleVaultSettings => 'Vault settings';
 
   @override
-  String get vaultAutoLockHeading => 'Auto-lock';
+  String get titleVaultAutoLockHeading => 'Auto-lock';
 
   @override
-  String get vaultAutoLockBody =>
+  String get bodyVaultAutoLock =>
       'The vault always locks when the app leaves the screen. This is how long it waits while you are not touching it.';
 
   @override
-  String vaultAutoLockSeconds(int count) {
+  String bodyVaultAutoLockSeconds(int count) {
     return '$count seconds';
   }
 
   @override
-  String vaultAutoLockMinutes(int count) {
+  String bodyVaultAutoLockMinutes(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
@@ -1810,21 +1736,21 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get vaultBiometricHeading => 'Unlock with fingerprint';
+  String get titleVaultBiometricHeading => 'Fingerprint unlock';
 
   @override
-  String get vaultBiometricBody =>
+  String get bodyVaultBiometric =>
       'A shortcut, not a replacement. Your PIN opens the vault whether this is on or off.';
 
   @override
-  String get vaultShredHeading => 'Shred passes';
+  String get titleVaultShredHeading => 'Shred passes';
 
   @override
-  String get vaultShredBody =>
+  String get bodyVaultShred =>
       'How many times a file is overwritten before it is deleted. More passes take longer. On flash storage an overwrite is a strong measure, not a guarantee.';
 
   @override
-  String vaultShredPassCount(int count) {
+  String bodyVaultShredPassCount(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
@@ -1835,33 +1761,33 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get vaultShredDefaultHeading => 'Shred originals by default';
+  String get titleVaultShredDefaultHeading => 'Shred by default';
 
   @override
-  String get vaultShredDefaultBody =>
+  String get bodyVaultShredDefault =>
       'Pre-selects the shred choice when you add items. It still asks you to confirm every time.';
 
   @override
-  String get vaultChangePin => 'Change PIN';
+  String get titleVaultChangePin => 'Change PIN';
 
   @override
-  String get vaultCurrentPin => 'Current PIN';
+  String get labelVaultCurrentPin => 'Current PIN';
 
   @override
-  String get vaultNewPin => 'New PIN';
+  String get labelVaultNewPin => 'New PIN';
 
   @override
-  String get vaultPinChanged => 'Your PIN has been changed';
+  String get bodyVaultPinChanged => 'Your PIN has been changed';
 
   @override
-  String get vaultSecureScreenHeading => 'Screenshots are blocked';
+  String get titleVaultSecureScreenHeading => 'Screenshots blocked';
 
   @override
-  String get vaultSecureScreenBody =>
+  String get bodyVaultSecureScreen =>
       'While the vault is open, Android blocks screenshots and screen recording, and hides the vault in the app switcher.';
 
   @override
-  String selectionCount(int count) {
+  String bodySelectionCount(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
@@ -1872,92 +1798,82 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get selectionClear => 'Clear selection';
+  String get tooltipSelectionClear => 'Clear selection';
 
   @override
-  String get selectionSelectAll => 'Select all';
+  String get tooltipSelectionSelectAll => 'Select all';
 
   @override
-  String get selectionFull => 'That is as many as one batch can hold';
+  String get bodySelectionFull => 'That is as many as one batch can hold';
 
   @override
-  String get batchTitle => 'Batch actions';
+  String get labelBatchActionConvert => 'Convert';
 
   @override
-  String get batchActionConvert => 'Convert';
+  String get labelBatchActionMore => 'More';
 
   @override
-  String get batchActionWatermark => 'Watermark';
+  String get labelBatchActionWatermark => 'Watermark';
 
   @override
-  String get batchActionExportPdf => 'Make a PDF';
+  String get labelBatchActionExportPdf => 'Make a PDF';
 
   @override
-  String get batchActionAddTags => 'Add tags';
+  String get labelBatchActionAddTags => 'Add tags';
 
   @override
-  String get batchActionRemoveTags => 'Remove tags';
+  String get labelBatchActionRemoveTags => 'Remove tags';
 
   @override
-  String get batchActionAddToAlbum => 'Add to album';
+  String get labelBatchActionAddToAlbum => 'Add to album';
 
   @override
-  String get batchActionFavourite => 'Add to favourites';
+  String get labelBatchActionFavourite => 'Add to favourites';
 
   @override
-  String get batchActionUnfavourite => 'Remove from favourites';
+  String get bodyBatchActionUnfavourite => 'Remove from favourites';
 
   @override
-  String get batchActionMoveToVault => 'Move to vault';
+  String get labelBatchActionMoveToVault => 'Move to vault';
 
   @override
-  String get batchActionTransfer => 'Send to a device';
+  String get bodyBatchActionTransfer => 'Send to a device';
 
   @override
-  String get batchActionMoveToTrash => 'Move to trash';
+  String get titleBatchActionMoveToTrash => 'Move to trash';
 
   @override
-  String get batchBlockedEmpty => 'Select something first';
+  String get emptyBatchBlocked => 'Select something first';
 
   @override
-  String get batchBlockedTooLarge => 'Too many items for one batch';
+  String get bodyBatchBlockedTooLarge => 'Too many items for one batch';
 
   @override
-  String get batchBlockedUnsupported => 'Not available for these files';
+  String get bodyBatchBlockedUnsupported => 'Not available for these files';
 
   @override
-  String get batchBlockedMixed => 'Videos cannot be included in this action';
+  String get bodyBatchBlockedMixed =>
+      'Videos cannot be included in this action';
 
   @override
-  String batchWillSkip(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count files will be skipped',
-      one: '1 file will be skipped',
-    );
-    return '$_temp0';
-  }
+  String get titleBatchRunning => 'Working';
 
   @override
-  String get batchRunning => 'Working';
-
-  @override
-  String batchProgress(int done, int total) {
+  String bodyBatchProgress(int done, int total) {
     return '$done of $total';
   }
 
   @override
-  String get batchCancel => 'Cancel';
+  String get labelBatchCancel => 'Cancel';
 
   @override
-  String get batchCancelling => 'Stopping after this file';
+  String get bodyBatchCancelling => 'Stopping after this file';
 
   @override
-  String get batchDone => 'Finished';
+  String get labelBatchDone => 'Finished';
 
   @override
-  String batchResultSucceeded(int count) {
+  String bodyBatchResultSucceeded(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
@@ -1968,7 +1884,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String batchResultFailed(int count) {
+  String errorBatchResultFailed(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
@@ -1979,7 +1895,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String batchResultSkipped(int count) {
+  String bodyBatchResultSkipped(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
@@ -1990,10 +1906,10 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get batchConfirmTitle => 'Are you sure?';
+  String get titleBatchConfirm => 'Are you sure?';
 
   @override
-  String batchConfirmVault(int count) {
+  String bodyBatchConfirmVault(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
@@ -2004,7 +1920,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String batchConfirmTrash(int count) {
+  String bodyBatchConfirmTrash(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
@@ -2015,7 +1931,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String batchConfirmNewFiles(int count) {
+  String bodyBatchConfirmNewFiles(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
@@ -2026,96 +1942,97 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get batchConfirmContinue => 'Continue';
+  String get actionBatchConfirmContinue => 'Continue';
 
   @override
-  String get batchPickTags => 'Choose tags';
+  String get labelBatchPickTags => 'Choose tags';
 
   @override
-  String get batchPickAlbum => 'Choose an album';
+  String get labelBatchPickAlbum => 'Choose an album';
 
   @override
-  String get backupTitle => 'Backup and restore';
+  String get titleBackup => 'Backup and restore';
 
   @override
-  String get backupOpen => 'Backup and restore';
+  String get titleBackupOpen => 'Backup and restore';
 
   @override
-  String get backupCreateTitle => 'Create a backup';
+  String get titleBackupCreate => 'Create a backup';
 
   @override
-  String get backupCreateBody =>
+  String get bodyBackupCreate =>
       'Saves your tags, albums, favourites and notes into one password-protected file. Photos and videos are not included: send those to another device with Transfer.';
 
   @override
-  String get backupCreateAction => 'Create backup';
+  String get actionBackupCreate => 'Create backup';
 
   @override
-  String get backupRestoreTitle => 'Restore a backup';
+  String get titleBackupRestore => 'Restore a backup';
 
   @override
-  String get backupRestoreBody =>
+  String get bodyBackupRestore =>
       'Brings back tags, albums, favourites and notes for the photos that are on this device. Nothing on this device is deleted.';
 
   @override
-  String get backupRestoreAction => 'Choose a backup file';
+  String get actionBackupRestore => 'Choose a backup file';
 
   @override
-  String get backupPasswordTitle => 'Backup password';
+  String get titleBackupPassword => 'Backup password';
 
   @override
-  String get backupPasswordLabel => 'Password';
+  String get labelBackupPassword => 'Password';
 
   @override
-  String get backupPasswordConfirmLabel => 'Type it again';
+  String get labelBackupPasswordConfirm => 'Type it again';
 
   @override
-  String get backupPasswordWarning =>
+  String get bodyBackupPasswordWarning =>
       'There is no way to recover this password. If you forget it, the backup cannot be opened.';
 
   @override
-  String backupPasswordTooShort(int count) {
+  String bodyBackupPasswordTooShort(int count) {
     return 'At least $count characters';
   }
 
   @override
-  String get backupPasswordMismatch => 'The two do not match';
+  String get bodyBackupPasswordMismatch => 'The two do not match';
 
   @override
-  String get backupStageCollecting => 'Reading your library';
+  String get labelBackupStageCollecting => 'Reading your library';
 
   @override
-  String get backupStagePacking => 'Packing';
+  String get labelBackupStagePacking => 'Packing';
 
   @override
-  String get backupStageChoosing => 'Waiting for you to choose where to save';
+  String get bodyBackupStageChoosing =>
+      'Waiting for you to choose where to save';
 
   @override
-  String get backupStageEncrypting => 'Encrypting';
+  String get labelBackupStageEncrypting => 'Encrypting';
 
   @override
-  String get backupDone => 'Backup saved';
+  String get labelBackupDone => 'Backup saved';
 
   @override
-  String get backupCancelled => 'Backup cancelled';
+  String get labelBackupCancelled => 'Backup cancelled';
 
   @override
-  String get backupNothingToSave =>
+  String get bodyBackupNothingToSave =>
       'There are no tags, albums, notes or favourites to back up yet';
 
   @override
-  String get backupFailed => 'The backup could not be saved';
+  String get errorBackupFailed => 'The backup could not be saved';
 
   @override
-  String get restorePreviewTitle => 'What will be restored';
+  String get titleRestorePreview => 'To be restored';
 
   @override
-  String restoreFromBackupDate(String date) {
+  String bodyRestoreFromBackupDate(String date) {
     return 'Backup from $date';
   }
 
   @override
-  String restorePlanTags(int count) {
+  String bodyRestorePlanTags(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
@@ -2127,7 +2044,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String restorePlanAlbums(int count) {
+  String bodyRestorePlanAlbums(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
@@ -2139,7 +2056,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String restorePlanLinks(int count) {
+  String bodyRestorePlanLinks(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
@@ -2151,7 +2068,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String restorePlanUpdates(int count) {
+  String bodyRestorePlanUpdates(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
@@ -2163,7 +2080,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String restorePlanUnmatched(int count) {
+  String bodyRestorePlanUnmatched(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
@@ -2174,99 +2091,98 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get restorePlanNothing =>
+  String get bodyRestorePlanNothing =>
       'This backup would change nothing on this device';
 
   @override
-  String get restoreApply => 'Restore';
+  String get labelRestoreApply => 'Restore';
 
   @override
-  String get restoreDone => 'Restore finished';
+  String get labelRestoreDone => 'Restore finished';
 
   @override
-  String get restoreWrongPassword => 'Wrong password, or the file is damaged';
+  String get bodyRestoreWrongPassword =>
+      'Wrong password, or the file is damaged';
 
   @override
-  String get restoreNotAnArchive => 'That is not a gallery backup file';
+  String get bodyRestoreNotAnArchive => 'That is not a gallery backup file';
 
   @override
-  String get restoreTooLarge => 'That file is too large to be a gallery backup';
+  String get bodyRestoreTooLarge =>
+      'That file is too large to be a gallery backup';
 
   @override
-  String get restoreTooNew =>
+  String get bodyRestoreTooNew =>
       'That backup was made by a newer version of the app';
 
   @override
-  String get restoreFailed => 'The backup could not be restored';
+  String get errorRestoreFailed => 'The backup could not be restored';
 
   @override
-  String get syncTitle => 'Transfer';
+  String get titleSync => 'Transfer';
 
   @override
-  String get syncOpen => 'Transfer to a device';
+  String get titleSyncOpen => 'Transfer to a device';
 
   @override
-  String get syncIntro =>
+  String get bodySyncIntro =>
       'Send photos straight to another phone on the same Wi-Fi. Nothing goes to the internet, and no account is needed.';
 
   @override
-  String get syncPrivacyNote =>
+  String get bodySyncPrivacyNote =>
       'Both phones must be on the same Wi-Fi. The connection is refused unless the other device is on your local network, and it is closed as soon as you leave this screen.';
 
   @override
-  String get syncSend => 'Send';
+  String get labelSyncSend => 'Send';
 
   @override
-  String get syncReceive => 'Receive';
+  String get labelSyncReceive => 'Receive';
 
   @override
-  String get syncSendBody => 'Show a code on this phone, or scan the other one';
+  String get bodySyncSend => 'Show a code on this phone, or scan the other one';
 
   @override
-  String get syncReceiveBody => 'Show a code for the other phone to scan';
+  String get bodySyncReceive => 'Show a code for the other phone to scan';
 
   @override
-  String get syncShowCode => 'Show a code';
+  String get actionSyncScanCode => 'Scan a code';
 
   @override
-  String get syncScanCode => 'Scan a code';
+  String get titleSyncScan => 'Scan the other phone';
 
   @override
-  String get syncScanTitle => 'Scan the other phone';
+  String get titleSyncPairingHeading => 'Scan on other phone';
 
   @override
-  String get syncPairingHeading => 'Point the other phone at this code';
+  String get titleSyncManualCodeHeading => 'Or type this code';
 
   @override
-  String get syncManualCodeHeading => 'Or type this code';
+  String get labelSyncManualCode => 'Pairing code';
 
   @override
-  String get syncManualCodeLabel => 'Pairing code';
+  String get bodySyncManualCodeInvalid => 'That code is not valid';
 
   @override
-  String get syncManualCodeInvalid => 'That code is not valid';
+  String get bodySyncWaiting => 'Waiting for the other phone';
 
   @override
-  String get syncWaiting => 'Waiting for the other phone';
-
-  @override
-  String syncPairedWith(String name) {
+  String bodySyncPairedWith(String name) {
     return 'Paired with $name';
   }
 
   @override
-  String get syncTransferring => 'Transferring';
+  String get labelSyncTransferring => 'Transferring';
 
   @override
-  String syncProgressFiles(int done, int total) {
+  String bodySyncProgressFiles(int done, int total) {
     return '$done of $total files';
   }
 
   @override
-  String get syncNothingSelected => 'Choose some photos to send first';
+  String get bodySyncNothingSelected => 'Choose some photos to send first';
 
   @override
-  String syncOfferHeading(int count) {
+  String bodySyncOfferHeading(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
@@ -2277,10 +2193,10 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get syncDone => 'Transfer finished';
+  String get labelSyncDone => 'Transfer finished';
 
   @override
-  String syncResultReceived(int count) {
+  String bodySyncResultReceived(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
@@ -2291,7 +2207,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String syncResultSent(int count) {
+  String bodySyncResultSent(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
@@ -2302,7 +2218,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String syncResultSkipped(int count) {
+  String bodySyncResultSkipped(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
@@ -2313,7 +2229,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String syncResultFailed(int count) {
+  String errorSyncResultFailed(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
@@ -2324,72 +2240,72 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get syncSavedToAppFolder =>
+  String get bodySyncSavedToAppFolder =>
       'On this version of Android the files were saved in the app\'s own folder rather than your gallery.';
 
   @override
-  String get syncStop => 'Stop';
+  String get actionSyncStop => 'Stop';
 
   @override
-  String get syncErrorNoNetwork => 'This phone is not on a Wi-Fi network';
+  String get bodySyncErrorNoNetwork => 'This phone is not on a Wi-Fi network';
 
   @override
-  String get syncErrorPairingTimeout => 'No device connected in time';
+  String get bodySyncErrorPairingTimeout => 'No device connected in time';
 
   @override
-  String get syncErrorRefused => 'That device is not on your local network';
+  String get bodySyncErrorRefused => 'That device is not on your local network';
 
   @override
-  String get syncErrorHandshake =>
+  String get bodySyncErrorHandshake =>
       'The other device could not prove it showed that code';
 
   @override
-  String get syncErrorProtocol =>
+  String get bodySyncErrorProtocol =>
       'The other device is running a different version of the app';
 
   @override
-  String get syncErrorConnection =>
+  String get bodySyncErrorConnection =>
       'The connection to the other device was lost';
 
   @override
-  String get syncErrorIdle => 'The other device stopped responding';
+  String get bodySyncErrorIdle => 'The other device stopped responding';
 
   @override
-  String get syncErrorCancelled => 'The transfer was stopped';
+  String get bodySyncErrorCancelled => 'The transfer was stopped';
 
   @override
-  String get syncErrorUnknown => 'The transfer could not be finished';
+  String get bodySyncErrorUnknown => 'The transfer could not be finished';
 
   @override
-  String get syncCameraPermission =>
+  String get bodySyncCameraPermission =>
       'Camera access is needed to scan the code. You can type the code instead.';
 
   @override
-  String get syncTypeCodeInstead => 'Type the code instead';
+  String get actionSyncTypeCodeInstead => 'Type the code';
 
   @override
-  String get viewerMoreActions => 'More';
+  String get tooltipViewerMoreActions => 'More';
 
   @override
-  String get codeScanOpen => 'Scan codes';
+  String get titleCodeScanOpen => 'Scan codes';
 
   @override
-  String get codeScanTitle => 'Codes in this picture';
+  String get titleCodeScan => 'Codes in picture';
 
   @override
-  String get codeScanLooking => 'Looking for codes';
+  String get labelCodeScanLooking => 'Looking for codes';
 
   @override
-  String get codeScanNoCodes => 'No codes were found in this picture';
+  String get bodyCodeScanNoCodes => 'No codes were found in this picture';
 
   @override
-  String get codeScanFailed => 'This picture could not be scanned';
+  String get errorCodeScanFailed => 'This picture could not be scanned';
 
   @override
-  String get codeScanRetry => 'Try again';
+  String get tooltipCodeScanRetry => 'Try again';
 
   @override
-  String codeScanFoundCount(int count) {
+  String bodyCodeScanFoundCount(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
@@ -2400,148 +2316,148 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get codeScanKindUrl => 'Web address';
+  String get labelCodeScanKindUrl => 'Web address';
 
   @override
-  String get codeScanKindWifi => 'Wi-Fi network';
+  String get labelCodeScanKindWifi => 'Wi-Fi network';
 
   @override
-  String get codeScanKindPhone => 'Phone number';
+  String get labelCodeScanKindPhone => 'Phone number';
 
   @override
-  String get codeScanKindEmail => 'Email address';
+  String get labelCodeScanKindEmail => 'Email address';
 
   @override
-  String get codeScanKindSms => 'Text message';
+  String get labelCodeScanKindSms => 'Text message';
 
   @override
-  String get codeScanKindGeo => 'Map point';
+  String get labelCodeScanKindGeo => 'Map point';
 
   @override
-  String get codeScanKindContact => 'Contact card';
+  String get labelCodeScanKindContact => 'Contact card';
 
   @override
-  String get codeScanKindCalendar => 'Calendar entry';
+  String get labelCodeScanKindCalendar => 'Calendar entry';
 
   @override
-  String get codeScanKindText => 'Text';
+  String get labelCodeScanKindText => 'Text';
 
   @override
-  String get codeScanActionCopy => 'Copy';
+  String get labelCodeScanActionCopy => 'Copy';
 
   @override
-  String get codeScanActionOpen => 'Open';
+  String get labelCodeScanActionOpen => 'Open';
 
   @override
-  String get codeScanActionDial => 'Call';
+  String get labelCodeScanActionDial => 'Call';
 
   @override
-  String get codeScanActionEmail => 'Write email';
+  String get labelCodeScanActionEmail => 'Write email';
 
   @override
-  String get codeScanActionSms => 'Send message';
+  String get labelCodeScanActionSms => 'Send message';
 
   @override
-  String get codeScanActionMap => 'Show on map';
+  String get labelCodeScanActionMap => 'Show on map';
 
   @override
-  String get codeScanActionCopyWifiPassword => 'Copy password';
+  String get labelCodeScanActionCopyWifiPassword => 'Copy password';
 
   @override
-  String get codeScanActionConnectWifi => 'Connect';
+  String get labelCodeScanActionConnectWifi => 'Connect';
 
   @override
-  String get codeScanActionSaveToNotes => 'Save to notes';
+  String get labelCodeScanActionSaveToNotes => 'Save to notes';
 
   @override
-  String get codeScanBlockedScheme =>
+  String get bodyCodeScanBlockedScheme =>
       'The app does not open this kind of address';
 
   @override
-  String get codeScanBlockedMalformed => 'This address could not be read';
+  String get bodyCodeScanBlockedMalformed => 'This address could not be read';
 
   @override
-  String get codeScanBlockedIncompleteWifi =>
+  String get bodyCodeScanBlockedIncompleteWifi =>
       'This Wi-Fi code is missing the network name or the password';
 
   @override
-  String get codeScanBlockedTooLong => 'This code is too long to use';
+  String get bodyCodeScanBlockedTooLong => 'This code is too long to use';
 
   @override
-  String get codeScanCopied => 'Copied';
+  String get labelCodeScanCopied => 'Copied';
 
   @override
-  String get codeScanPasswordCopied => 'Password copied';
+  String get labelCodeScanPasswordCopied => 'Password copied';
 
   @override
-  String get codeScanSavedToNotes => 'Saved to notes';
+  String get labelCodeScanSavedToNotes => 'Saved to notes';
 
   @override
-  String get codeScanOpenFailed => 'No app on this device can open it';
+  String get errorCodeScanOpenFailed => 'No app on this device can open it';
 
   @override
-  String get codeScanWifiSuggested =>
+  String get bodyCodeScanWifiSuggested =>
       'The network was offered to Android. Pick it in the Wi-Fi settings.';
 
   @override
-  String get codeScanWifiManual =>
+  String get bodyCodeScanWifiManual =>
       'Open the Wi-Fi settings and pick the network yourself.';
 
   @override
-  String codeScanWifiSecurity(String security) {
+  String bodyCodeScanWifiSecurity(String security) {
     return 'Security: $security';
   }
 
   @override
-  String get codeScanWifiHidden => 'Hidden network';
+  String get labelCodeScanWifiHidden => 'Hidden network';
 
   @override
-  String get codeScanWifiOpen => 'Open network';
+  String get labelCodeScanWifiOpen => 'Open network';
 
   @override
-  String get ocrOpen => 'Extract text';
+  String get titleOcrOpen => 'Extract text';
 
   @override
-  String get ocrTitle => 'Text in this picture';
+  String get titleOcr => 'Text in this picture';
 
   @override
-  String get ocrReading => 'Reading the text';
+  String get labelOcrReading => 'Reading the text';
 
   @override
-  String get ocrSlowHint => 'A large photo can take a few seconds.';
+  String get helpOcrSlowHint => 'A large photo can take a few seconds.';
 
   @override
-  String get ocrLanguage => 'Language';
+  String get labelOcrLanguage => 'Language';
 
   @override
-  String get ocrLanguageEnglish => 'English';
+  String get labelOcrLanguageEnglish => 'English';
 
   @override
-  String get ocrLanguageMalayalam => 'Malayalam';
+  String get labelOcrLanguageMalayalam => 'Malayalam';
 
   @override
-  String get ocrLanguageBoth => 'English and Malayalam';
+  String get bodyOcrLanguageBoth => 'English and Malayalam';
 
   @override
-  String get ocrNoText => 'No text was found in this picture';
+  String get bodyOcrNoText => 'No text was found in this picture';
 
   @override
-  String get ocrCopyAll => 'Copy all';
+  String get actionOcrCopyAll => 'Copy all';
 
   @override
-  String get ocrCopied => 'Text copied';
+  String get labelOcrCopied => 'Text copied';
 
   @override
-  String get ocrSaveToNotes => 'Save to notes';
+  String get labelOcrSaveToNotes => 'Save to notes';
 
   @override
-  String get ocrSavedToNotes => 'Saved to notes';
+  String get labelOcrSavedToNotes => 'Saved to notes';
 
   @override
-  String get ocrReadAgain => 'Read again';
+  String get actionOcrReadAgain => 'Read again';
 
   @override
-  String ocrWordCount(int count) {
+  String bodyOcrWordCount(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
@@ -2552,121 +2468,121 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get ocrFailedUnreadable => 'This picture could not be opened';
+  String get bodyOcrFailedUnreadable => 'This picture could not be opened';
 
   @override
-  String get ocrFailedTooLarge => 'This picture is too large to read';
+  String get bodyOcrFailedTooLarge => 'This picture is too large to read';
 
   @override
-  String get ocrFailedMissingData =>
+  String get bodyOcrFailedMissingData =>
       'The language files are missing from this build';
 
   @override
-  String get ocrFailedTimeout => 'Reading took too long and was stopped';
+  String get bodyOcrFailedTimeout => 'Reading took too long and was stopped';
 
   @override
-  String get ocrFailedEngine => 'The text could not be read';
+  String get bodyOcrFailedEngine => 'The text could not be read';
 
   @override
-  String get notesOpen => 'Notes';
+  String get titleNotesOpen => 'Notes';
 
   @override
-  String get notesTitle => 'Notes';
+  String get titleNotes => 'Notes';
 
   @override
-  String get notesWriteTab => 'Write';
+  String get tabNotesWrite => 'Write';
 
   @override
-  String get notesPreviewTab => 'Preview';
+  String get tabNotesPreview => 'Preview';
 
   @override
-  String get notesHint =>
+  String get helpNotesHint =>
       'Write a note about this item. Markdown is supported.';
 
   @override
-  String get notesEmpty => 'No note yet';
+  String get emptyNotes => 'No note yet';
 
   @override
-  String get notesSave => 'Save';
+  String get tooltipNotesSave => 'Save';
 
   @override
-  String get notesSaved => 'Note saved';
+  String get labelNotesSaved => 'Note saved';
 
   @override
-  String get notesSaveFailed => 'The note could not be saved';
+  String get errorNotesSaveFailed => 'The note could not be saved';
 
   @override
-  String get notesDelete => 'Delete note';
+  String get tooltipNotesDelete => 'Delete note';
 
   @override
-  String get notesDeleteTitle => 'Delete this note?';
+  String get titleNotesDelete => 'Delete this note?';
 
   @override
-  String get notesDeleteBody =>
+  String get bodyNotesDelete =>
       'The note will be removed. The file is not changed.';
 
   @override
-  String get notesDeleted => 'Note deleted';
+  String get labelNotesDeleted => 'Note deleted';
 
   @override
-  String get notesCancel => 'Cancel';
+  String get actionNotesCancel => 'Cancel';
 
   @override
-  String notesCharacterCount(int used, int total) {
+  String bodyNotesCharacterCount(int used, int total) {
     return '$used of $total characters';
   }
 
   @override
-  String get notesTooLong => 'This note is too long to save';
+  String get bodyNotesTooLong => 'This note is too long to save';
 
   @override
-  String get notesDiscardTitle => 'Leave without saving?';
+  String get titleNotesDiscard => 'Leave unsaved?';
 
   @override
-  String get notesDiscardBody => 'Your changes to this note will be lost.';
+  String get bodyNotesDiscard => 'Your changes to this note will be lost.';
 
   @override
-  String get notesDiscardLeave => 'Leave';
+  String get actionNotesDiscardLeave => 'Leave';
 
   @override
-  String get notesDiscardKeep => 'Keep writing';
+  String get actionNotesDiscardKeep => 'Keep writing';
 
   @override
-  String get notesLinkBlocked => 'The app does not open this kind of link';
+  String get bodyNotesLinkBlocked => 'The app does not open this kind of link';
 
   @override
-  String get notesDetailsLabel => 'Note';
+  String get titleNotesDetailsLabel => 'Note';
 
   @override
-  String get notesAddFromDetails => 'Add a note';
+  String get labelNotesAddFromDetails => 'Add a note';
 
   @override
-  String get pdfImagesOpen => 'Extract images from PDF';
+  String get titlePdfImagesOpen => 'Images from PDF';
 
   @override
-  String get pdfImagesTitle => 'Images in a PDF';
+  String get titlePdfImages => 'Images in a PDF';
 
   @override
-  String get pdfImagesPick => 'Choose a PDF';
+  String get actionPdfImagesPick => 'Choose a PDF';
 
   @override
-  String get pdfImagesChooseAnother => 'Choose another PDF';
+  String get tooltipPdfImagesChooseAnother => 'Choose another PDF';
 
   @override
-  String get pdfImagesReading => 'Reading the PDF';
+  String get labelPdfImagesReading => 'Reading the PDF';
 
   @override
-  String get pdfImagesEmptyTitle => 'No PDF chosen yet';
+  String get titlePdfImagesEmpty => 'No PDF chosen yet';
 
   @override
-  String get pdfImagesEmptyBody =>
+  String get bodyPdfImagesEmpty =>
       'Pick a PDF and the app will list the pictures inside it. The PDF itself is never changed.';
 
   @override
-  String get pdfImagesNone => 'This PDF holds no pictures';
+  String get bodyPdfImagesNone => 'This PDF holds no pictures';
 
   @override
-  String pdfImagesFound(int count) {
+  String bodyPdfImagesFound(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
@@ -2677,7 +2593,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String pdfImagesSkippedCount(int count) {
+  String bodyPdfImagesSkippedCount(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
@@ -2688,13 +2604,13 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get pdfImagesSave => 'Save selected';
+  String get labelPdfImagesSave => 'Save selected';
 
   @override
-  String get pdfImagesSaving => 'Saving';
+  String get labelPdfImagesSaving => 'Saving';
 
   @override
-  String pdfImagesSavedCount(int count) {
+  String bodyPdfImagesSavedCount(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
@@ -2705,7 +2621,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String pdfImagesSaveFailedCount(int count) {
+  String bodyPdfImagesSaveFailedCount(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
@@ -2716,173 +2632,167 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get pdfImagesSelectAll => 'Select all';
+  String get actionPdfImagesSelectAll => 'Select all';
 
   @override
-  String get pdfImagesClearSelection => 'Clear';
+  String get labelPdfImagesClearSelection => 'Clear';
 
   @override
-  String get pdfImagesNothingSelected => 'Tick at least one picture to save';
+  String get bodyPdfImagesNothingSelected =>
+      'Tick at least one picture to save';
 
   @override
-  String get pdfImagesTruncated =>
+  String get bodyPdfImagesTruncated =>
       'Only the first pictures were read, because this PDF holds a great many.';
 
   @override
-  String get pdfImagesFallbackDirectory =>
+  String get bodyPdfImagesFallbackDirectory =>
       'Saved to the app folder, because the gallery could not be written to';
 
   @override
-  String pdfImageSize(int width, int height) {
+  String bodyPdfImageSize(int width, int height) {
     return '$width by $height';
   }
 
   @override
-  String get pdfRefusedNotPdf => 'This file is not a PDF';
+  String get bodyPdfRefusedNotPdf => 'This file is not a PDF';
 
   @override
-  String get pdfRefusedEncrypted =>
+  String get bodyPdfRefusedEncrypted =>
       'This PDF is password protected, so it cannot be opened';
 
   @override
-  String get pdfRefusedTooLarge => 'This PDF is too large to open';
+  String get bodyPdfRefusedTooLarge => 'This PDF is too large to open';
 
   @override
-  String get pdfRefusedUnreadable => 'This PDF could not be read';
+  String get bodyPdfRefusedUnreadable => 'This PDF could not be read';
 
   @override
-  String get pdfSkipUnsupportedFilter =>
+  String get bodyPdfSkipUnsupportedFilter =>
       'Compressed in a way the app cannot read';
 
   @override
-  String get pdfSkipUnsupportedColor =>
+  String get bodyPdfSkipUnsupportedColor =>
       'Uses a colour space the app cannot read';
 
   @override
-  String get pdfSkipUnsupportedDepth =>
+  String get bodyPdfSkipUnsupportedDepth =>
       'Uses a colour depth the app cannot read';
 
   @override
-  String get pdfSkipTooLarge => 'Too large to pull out';
+  String get bodyPdfSkipTooLarge => 'Too large to pull out';
 
   @override
-  String get pdfSkipMalformed => 'The picture data is incomplete';
+  String get bodyPdfSkipMalformed => 'The picture data is incomplete';
 
   @override
-  String get pdfSkipDecodeFailed => 'The picture could not be decompressed';
+  String get errorPdfSkipDecodeFailed =>
+      'The picture could not be decompressed';
 
   @override
-  String get settingsAppearance => 'Appearance';
+  String get titleSettingsAppearance => 'Appearance';
 
   @override
-  String get settingsLanguage => 'Language';
+  String get titleSettingsLanguage => 'Language';
 
   @override
-  String get settingsSafety => 'Safety';
+  String get titleSettingsSafety => 'Safety';
 
   @override
-  String get settingsPrivacy => 'Storage and privacy';
+  String get titleSettingsPrivacy => 'Privacy';
 
   @override
-  String get settingsDeveloper => 'Developer';
+  String get titleSettingsDeveloper => 'Developer';
 
   @override
-  String get languageSystem => 'System default';
+  String get titleLanguageSystem => 'System default';
 
   @override
-  String get languageEnglish => 'English';
+  String get titleLanguageEnglish => 'English';
 
   @override
-  String get languageMalayalam => 'മലയാളം';
+  String get titleLanguageMalayalam => 'മലയാളം';
 
   @override
-  String get languageSubtitle =>
+  String get descLanguageSubtitle =>
       'The app changes language at once. No restart is needed.';
 
   @override
-  String get gridDensity => 'Grid density';
+  String get labelGridDensity => 'Grid density';
 
   @override
-  String get gridDensitySubtitle =>
+  String get descGridDensitySubtitle =>
       'How many photos fit across the timeline. Pinching the grid changes it too.';
 
   @override
-  String gridDensityValue(int count) {
+  String labelGridDensityValue(int count) {
     return '$count per row';
   }
 
   @override
-  String get showFlashbacks => 'Show memories';
+  String get titleShowFlashbacks => 'Show memories';
 
   @override
-  String get showFlashbacksSubtitle =>
+  String get descShowFlashbacksSubtitle =>
       'A row of photos from this day in past years, at the top of the timeline.';
 
   @override
-  String get confirmDestructive => 'Ask before deleting';
+  String get titleConfirmDestructive => 'Ask before deleting';
 
   @override
-  String get confirmDestructiveSubtitle =>
+  String get descConfirmDestructiveSubtitle =>
       'Ask one more time before a delete or an overwrite. Some warnings always appear, whatever this is set to.';
 
   @override
-  String get privacyNoServer => 'No remote server';
+  String get titlePrivacyNoServer => 'No remote server';
 
   @override
-  String get privacyNoServerBody =>
+  String get bodyPrivacyNoServer =>
       'Your photos, tags and notes stay on this phone. Nothing is uploaded, and there is no account. Internet access is used only by the transfer screen, to reach another phone on your own Wi-Fi.';
 
   @override
-  String get aboutOpen => 'About this app';
-
-  @override
-  String get aboutOpenSubtitle => 'Version, author and licence';
-
-  @override
-  String aboutBuild(String build) {
+  String bodyAboutBuild(String build) {
     return 'Build $build';
   }
 
   @override
-  String get aboutBuildDate => 'Build date';
+  String get titleAboutBuildDate => 'Build date';
 
   @override
-  String get aboutMailFailed => 'No app on this phone can open that address.';
+  String get errorAboutMailFailed =>
+      'No app on this phone can open that address.';
 
   @override
-  String get aboutAppName => 'App';
+  String get descVaultSettingsOpenSubtitle => 'Lock timing, PIN and shredding';
 
   @override
-  String get vaultSettingsOpenSubtitle => 'Lock timing, PIN and shredding';
+  String get descBackupOpenSubtitle => 'Password-protected backup and restore';
 
   @override
-  String get backupOpenSubtitle => 'Password-protected backup and restore';
+  String get titleSettingsReset => 'Reset settings';
 
   @override
-  String get settingsResetTitle => 'Reset settings';
-
-  @override
-  String get settingsResetBody =>
+  String get bodySettingsReset =>
       'Put every setting on this screen back to how it started. Your photos, tags, albums and vault are not touched.';
 
   @override
-  String get settingsResetDone => 'Settings put back to the defaults.';
+  String get bodySettingsResetDone => 'Settings put back to the defaults.';
 
   @override
-  String get settingsCancel => 'Cancel';
+  String get actionSettingsCancel => 'Cancel';
 
   @override
-  String get settingsResetConfirm => 'Reset';
+  String get actionSettingsResetConfirm => 'Reset';
 
   @override
-  String get settingsHelp => 'Help & Guides';
+  String get helpSettings => 'Help & Guides';
 
   @override
-  String get settingsHelpSubtitle =>
+  String get descSettingsHelpSubtitle =>
       'Explore guides, pro-tips and offline guarantees for every feature';
 
   @override
-  String get settingsAbout => 'About';
+  String get labelSettingsAbout => 'About';
 
   @override
   String get helpOverview => 'Overview';
@@ -3185,73 +3095,70 @@ class AppLocalizationsEn extends AppLocalizations {
       'All barcode decoding and OCR processing are executed locally on your device. Untrusted QR payloads are validated before launching external apps.';
 
   @override
-  String get settingsDefaultApp => 'Default Gallery App';
+  String get titleSettingsDefaultApp => 'Default Gallery App';
 
   @override
-  String get settingsDefaultAppSubtitle =>
+  String get descSettingsDefaultAppSubtitle =>
       'Set as default app for viewing photos and videos';
 
   @override
-  String get defaultAppDialogTitle => 'Set as Default Gallery';
+  String get titleDefaultAppDialog => 'Set Default Gallery';
 
   @override
-  String get defaultAppDialogBody =>
-      'To make this your default gallery:\n\n1. Open any photo or video on your device (e.g. from Files, Downloads, or messages).\n2. Choose SreerajP Image Video Gallery and tap \'Always\'.\n\nYou can also configure defaults in Android Settings.';
+  String get bodyDefaultAppDialog =>
+      'To make this your default gallery:\n\n1. Open any photo or video on your device (e.g. from Files, Downloads, or messages).\n2. Choose SreerajP Image Video Gallery and tap \'Always\'.\n\nIf another app already opens your photos, first clear its default: Android Settings → Apps → that app → Open by default.';
 
   @override
-  String get defaultAppOpenSettings => 'Open Android Settings';
+  String get titleTrash => 'Trash';
 
   @override
-  String get trashTitle => 'Trash';
+  String get emptyTrash => 'Trash is empty';
 
   @override
-  String get trashEmpty => 'Trash is empty';
-
-  @override
-  String get trashEmptySubtitle =>
+  String get descTrashEmptySubtitle =>
       'Items you delete are kept here until you empty the trash.';
 
   @override
-  String get trashEmptyAction => 'Empty trash';
+  String get tooltipTrashEmptyAction => 'Empty trash';
 
   @override
-  String get trashEmptyConfirmTitle => 'Empty trash?';
+  String get titleTrashEmptyConfirm => 'Empty trash?';
 
   @override
-  String get trashEmptyConfirmBody =>
+  String get bodyTrashEmptyConfirm =>
       'This will permanently delete all trashed items from your device storage. This action cannot be undone.';
 
   @override
-  String get trashDeletePermanentlyAction => 'Delete permanently';
+  String get titleTrashDeletePermanentlyAction => 'Delete permanently';
 
   @override
-  String get trashDeletePermanentlyConfirmTitle => 'Delete permanently?';
+  String get titleTrashDeletePermanentlyConfirm => 'Delete permanently?';
 
   @override
-  String get trashDeletePermanentlyConfirmBody =>
+  String get bodyTrashDeletePermanentlyConfirm =>
       'This item will be permanently deleted from your device storage. This action cannot be undone.';
 
   @override
-  String get trashDeletedPermanentlySnackbar => 'Item permanently deleted';
+  String get bodyTrashDeletedPermanentlySnackbar => 'Item permanently deleted';
 
   @override
-  String get trashRestoreAction => 'Restore';
+  String get actionTrashRestore => 'Restore';
 
   @override
-  String get trashRestoreAllAction => 'Restore all';
+  String get tooltipTrashRestoreAllAction => 'Restore all';
 
   @override
-  String get trashRestoreAllConfirmBody =>
+  String get bodyTrashRestoreAllConfirm =>
       'Every item in the trash will be moved back to your library.';
 
   @override
-  String get trashRestoredSnackbar => 'Restored from trash';
+  String get bodyTrashRestoredSnackbar => 'Restored from trash';
 
   @override
-  String get trashEmptiedSnackbar => 'Trash emptied';
+  String get bodyTrashEmptiedSnackbar => 'Trash emptied';
 
   @override
-  String trashItemCount(int count) {
+  String bodyTrashItemCount(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
@@ -3262,133 +3169,119 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get settingsAppearanceSubtitle => 'Theme, grid density, memories';
+  String get descSettingsAppearanceSubtitle => 'Theme, grid density, memories';
 
   @override
-  String get settingsLanguageSubtitle => 'System, English, Malayalam';
+  String get descSettingsLanguageSubtitle =>
+      'System, English, Malayalam, Sanskrit';
 
   @override
-  String get settingsSafetySubtitle =>
+  String get descSettingsSafetySubtitle =>
       'Confirmation before destructive actions';
 
   @override
-  String get settingsDefaultAppCardSubtitle => 'Set as default gallery app';
+  String get descSettingsDefaultAppCardSubtitle => 'Set as default gallery app';
 
   @override
-  String get settingsPrivacySubtitle => 'Vault, backup, network policy';
+  String get descSettingsPrivacySubtitle => 'Hide content and vault';
 
   @override
-  String get settingsHelpCardSubtitle =>
+  String get descSettingsHelpCardSubtitle =>
       'Guides and privacy guarantees for every feature';
 
   @override
-  String get settingsAboutSubtitle => 'Version, author and licence';
+  String get descSettingsAboutSubtitle => 'Version, author and licence';
 
   @override
-  String get settingsDeveloperSubtitle => 'Media scanner tools';
+  String get descSettingsDeveloperSubtitle => 'Media scanner tools';
 
   @override
-  String get viewerTrashTooltip => 'Move to trash';
+  String get titleViewerTrashConfirm => 'Move to trash?';
 
   @override
-  String get viewerTrashConfirmTitle => 'Move to trash?';
-
-  @override
-  String get viewerTrashConfirmBody =>
+  String get bodyViewerTrashConfirm =>
       'This item will be moved to the trash. You can restore it anytime from the Trash album.';
 
   @override
-  String get viewerTrashSuccess => 'Moved to trash';
+  String get bodyViewerTrashSuccess => 'Moved to trash';
 
   @override
-  String get viewerTrashUndo => 'Undo';
+  String get actionViewerTrashUndo => 'Undo';
 
   @override
-  String get comparePhotosTitle => 'A/B Comparison';
+  String get titleComparePhotos => 'A/B Comparison';
 
   @override
-  String get compareModeSplit => 'Split View';
+  String get labelCompareModeSplit => 'Split View';
 
   @override
-  String get compareModeCurtain => 'Sliding Curtain';
+  String get labelCompareModeCurtain => 'Sliding Curtain';
 
   @override
-  String get compareSplitHorizontal => 'Side by Side';
+  String get labelCompareSplitHorizontal => 'Side by Side';
 
   @override
-  String get compareSplitVertical => 'Top and Bottom';
+  String get labelCompareSplitVertical => 'Top and Bottom';
 
   @override
-  String get compareSyncLocked => 'Pan & Zoom Locked';
+  String get bodyCompareSyncLocked => 'Pan & Zoom Locked';
 
   @override
-  String get compareSyncUnlocked => 'Independent Pan & Zoom';
+  String get bodyCompareSyncUnlocked => 'Independent Pan & Zoom';
 
   @override
-  String get compareSwap => 'Swap Photos';
+  String get tooltipCompareSwap => 'Swap Photos';
 
   @override
-  String get compareResetZoom => 'Reset Zoom';
+  String get tooltipCompareResetZoom => 'Reset Zoom';
 
   @override
-  String get compareDetails => 'Compare Details';
+  String get tooltipCompareDetails => 'Compare Details';
 
   @override
-  String get comparePickPhoto => 'Choose Photo';
+  String get labelComparePhotoA => 'Photo A';
 
   @override
-  String get comparePhotoA => 'Photo A';
+  String get labelComparePhotoB => 'Photo B';
 
   @override
-  String get comparePhotoB => 'Photo B';
+  String get titleCompareWithPrevious => 'Compare previous';
 
   @override
-  String get compareWithPrevious => 'Compare with previous photo';
+  String get titleCompareWithNext => 'Compare next';
 
   @override
-  String get compareWithNext => 'Compare with next photo';
+  String get titleCompareChooseFromGallery => 'Pick from gallery';
 
   @override
-  String get compareChooseFromGallery => 'Pick photo from gallery';
+  String get tooltipCompare => 'Compare photos';
 
   @override
-  String get compareAction => 'Compare';
+  String get bodyCompareSelectSecondPhoto => 'Select a photo to compare with';
 
   @override
-  String get compareTooltip => 'Compare photos side-by-side';
+  String get labelCompareDimensions => 'Dimensions';
 
   @override
-  String get compareSelectSecondPhoto => 'Select a photo to compare with';
+  String get labelCompareFileSize => 'File Size';
 
   @override
-  String get compareDimensions => 'Dimensions';
+  String get labelCompareDateTaken => 'Date Taken';
 
   @override
-  String get compareFileSize => 'File Size';
+  String get labelCompareCamera => 'Camera';
 
   @override
-  String get compareDateTaken => 'Date Taken';
+  String get labelCompareIso => 'ISO';
 
   @override
-  String get compareCamera => 'Camera';
+  String get labelCompareAperture => 'Aperture';
 
   @override
-  String get compareExposure => 'Exposure';
+  String get labelCompareShutterSpeed => 'Shutter Speed';
 
   @override
-  String get compareIso => 'ISO';
-
-  @override
-  String get compareAperture => 'Aperture';
-
-  @override
-  String get compareShutterSpeed => 'Shutter Speed';
-
-  @override
-  String get compareFocalLength => 'Focal Length';
-
-  @override
-  String get compareNoExif => 'No EXIF data available';
+  String get labelCompareFocalLength => 'Focal Length';
 
   @override
   String get tabTimeline => 'Timeline';
@@ -3400,249 +3293,651 @@ class AppLocalizationsEn extends AppLocalizations {
   String get tabAlbums => 'Albums';
 
   @override
-  String get foldersTitle => 'Folders';
+  String get titleFolders => 'Folders';
 
   @override
-  String get foldersEmpty => 'No folders found';
+  String get emptyFolders => 'No folders found';
 
   @override
-  String get foldersEmptyBody =>
+  String get bodyFoldersEmpty =>
       'Pull down to scan for photos and videos on your device.';
 
   @override
-  String folderItemCount(int count) {
+  String get tooltipPrivacyScrubberTitle => 'Privacy Scrubber';
+
+  @override
+  String get descPrivacyScrubberSubtitle =>
+      'Strip sensitive EXIF metadata and fuzz GPS coordinates before sharing';
+
+  @override
+  String get titlePrivacyScrubberMenu => 'Privacy Scrubber';
+
+  @override
+  String get titlePrivacyCard => 'Media Privacy & EXIF';
+
+  @override
+  String get bodyPrivacyCard =>
+      'Protect your privacy by stripping GPS location, camera serial numbers, and device identifiers before sharing.';
+
+  @override
+  String get bodyPrivacyOpenScrubber => 'Open Privacy Controls';
+
+  @override
+  String get labelPrivacyTabStripper => 'EXIF Stripper';
+
+  @override
+  String get labelPrivacyTabGeofence => 'GPS Geofence Shifter';
+
+  @override
+  String get actionPrivacyStripAndShare => 'Strip & Share';
+
+  @override
+  String get actionPrivacySaveSanitized => 'Save Clean Copy';
+
+  @override
+  String get titlePrivacyGranular => 'Choose What to Strip';
+
+  @override
+  String get labelPrivacyStripAll => 'Strip All';
+
+  @override
+  String get labelPrivacyCustom => 'Custom';
+
+  @override
+  String get titlePrivacyOptionGps => 'GPS Location';
+
+  @override
+  String get titlePrivacyOptionSerials => 'Serial Numbers';
+
+  @override
+  String get titlePrivacyOptionTimestamps => 'Capture Dates';
+
+  @override
+  String get titlePrivacyOptionAuthor => 'Author & Software';
+
+  @override
+  String get bodyPrivacyErrorReadingFile =>
+      'Unable to read image data for privacy processing';
+
+  @override
+  String get titlePrivacyShare => 'Share Clean Copy';
+
+  @override
+  String get errorPrivacyShareFailed => 'Sharing could not be initiated';
+
+  @override
+  String get errorPrivacyProcess => 'An error occurred while sanitizing media';
+
+  @override
+  String get bodyPrivacySavedToGallery => 'Sanitized copy saved to gallery';
+
+  @override
+  String get errorPrivacySaveFailed => 'Failed to save sanitized image';
+
+  @override
+  String get bodyPrivacyNoLocation =>
+      'No embedded GPS location found in this photo';
+
+  @override
+  String get bodyGeofenceOffsetDistance => 'Shift Distance Offset';
+
+  @override
+  String get tooltipGeofenceReroll => 'Reroll random shift';
+
+  @override
+  String get labelGeofenceRandomPreset => 'Random (2–5 km)';
+
+  @override
+  String bodyGeofenceShiftSummary(String summary) {
+    return 'Shifted $summary';
+  }
+
+  @override
+  String bodyGeofenceFuzzedCoordinates(String lat, String lon) {
+    return 'Shifted to $lat, $lon';
+  }
+
+  @override
+  String get descGeofenceExplanation =>
+      'Adds an offset within 2–5 km to preserve general regional travel context while hiding exact residential street coordinates.';
+
+  @override
+  String get titleGeofenceShare => 'Share Fuzzed Photo';
+
+  @override
+  String get actionGeofenceShare => 'Fuzz & Share';
+
+  @override
+  String get actionGeofenceSave => 'Save Fuzzed Copy';
+
+  @override
+  String get bodyGeofenceSavedToGallery => 'Geofuzzed copy saved to gallery';
+
+  @override
+  String get labelGeofenceNoCoordinates => 'No Location Found';
+
+  @override
+  String get bodyGeofenceNoCoordinates =>
+      'This media item does not have embedded GPS coordinates to shift.';
+
+  @override
+  String get bodyPrivacyAuditSensitiveDetected => 'Sensitive Metadata Detected';
+
+  @override
+  String get bodyPrivacyAuditClean => 'No Sensitive Metadata Detected';
+
+  @override
+  String bodyPrivacyAuditSensitiveDetails(String gps, String camera) {
+    return 'Contains $gps $camera';
+  }
+
+  @override
+  String get labelPrivacyAuditGps => 'GPS Coordinates';
+
+  @override
+  String get labelPrivacyAuditCamera => 'Device Identifiers';
+
+  @override
+  String get bodyPrivacyAuditCleanDetails =>
+      'This file does not contain embedded location or camera serial identifiers.';
+
+  @override
+  String get titleForensicInspector => 'Lens & Sensor Data';
+
+  @override
+  String get descForensicInspectorSubtitle =>
+      'Deep technical optical and hardware forensic insights';
+
+  @override
+  String get actionForensicInspector => 'Inspect Lens Data';
+
+  @override
+  String get helpForensicInspectorQuickHint =>
+      'Sensor crop factor, 35mm equivalent, shutter actuation, exposure bias';
+
+  @override
+  String get bodyForensicNoData =>
+      'No forensic lens or sensor metadata found in this item.';
+
+  @override
+  String get bodyForensicSectionSensorOptics =>
+      'Sensor & Optical Characteristics';
+
+  @override
+  String get bodyForensicSectionMechanicsColor =>
+      'Mechanical Actuations & Color Space';
+
+  @override
+  String get bodyForensicSectionHardwareIdentity =>
+      'Hardware & Lens Serial Identity';
+
+  @override
+  String get labelForensicSensorFormat => 'Sensor Format';
+
+  @override
+  String get labelForensicCropFactor => 'Crop Factor';
+
+  @override
+  String get labelForensicFocal35mm => '35mm Equivalent';
+
+  @override
+  String get labelForensicPhysicalFocalLength => 'Real Focal Length';
+
+  @override
+  String get labelForensicHyperfocalDistance => 'Hyperfocal Distance';
+
+  @override
+  String get labelForensicExposureBias => 'Exposure Bias (EV)';
+
+  @override
+  String get labelForensicShutterActuations => 'Shutter Releases';
+
+  @override
+  String get bodyForensicShutterNotReported =>
+      'Electronic shutter / Not reported';
+
+  @override
+  String get labelForensicColorProfile => 'Color Profile';
+
+  @override
+  String get labelForensicExposureProgram => 'Exposure Program';
+
+  @override
+  String get labelForensicMeteringMode => 'Metering Mode';
+
+  @override
+  String get labelForensicSensingMethod => 'Sensing Method';
+
+  @override
+  String get labelForensicSceneCaptureType => 'Scene Capture Type';
+
+  @override
+  String get labelForensicFlashStatus => 'Flash Status';
+
+  @override
+  String get labelForensicCameraSerial => 'Camera Serial Number';
+
+  @override
+  String get labelForensicLensModel => 'Lens Model';
+
+  @override
+  String get labelForensicLensSpecification => 'Lens Specification';
+
+  @override
+  String get labelForensicLensSerial => 'Lens Serial Number';
+
+  @override
+  String get bodyForensicSerialNotEmbedded => 'Not embedded in headers';
+
+  @override
+  String get tooltipShowPassword => 'Show password';
+
+  @override
+  String get tooltipHidePassword => 'Hide password';
+
+  @override
+  String labelDistanceKm(String distance) {
+    return '$distance km';
+  }
+
+  @override
+  String labelCompareBadge(String photo, String name) {
+    return '$photo: $name';
+  }
+
+  @override
+  String get aboutDetailAuthor => 'Author';
+
+  @override
+  String get aboutDetailLicense => 'License';
+
+  @override
+  String get aboutDetailIdeUsed => 'IDE used';
+
+  @override
+  String get aboutDetailAiUsed => 'AI used';
+
+  @override
+  String get aboutDetailStorageModel => 'Storage model';
+
+  @override
+  String get aboutDetailNetworkPolicy => 'Network policy';
+
+  @override
+  String get aboutDetailSecurity => 'Security';
+
+  @override
+  String get aboutDetailLanguages => 'Languages';
+
+  @override
+  String madeWithLove(String heart) {
+    return 'Made with $heart from India';
+  }
+
+  @override
+  String get madeWithLoveA11y => 'Made with love from India';
+
+  @override
+  String get titleLanguageSanskrit => 'संस्कृतम्';
+
+  @override
+  String bodyUnitBytes(String value) {
+    return '$value B';
+  }
+
+  @override
+  String bodyUnitKilobytes(String value) {
+    return '$value KB';
+  }
+
+  @override
+  String bodyUnitMegabytes(String value) {
+    return '$value MB';
+  }
+
+  @override
+  String bodyUnitGigabytes(String value) {
+    return '$value GB';
+  }
+
+  @override
+  String bodyUnitTerabytes(String value) {
+    return '$value TB';
+  }
+
+  @override
+  String bodyUnitMillimetres(String value) {
+    return '$value mm';
+  }
+
+  @override
+  String bodyUnitMetres(String value) {
+    return '$value m';
+  }
+
+  @override
+  String bodyUnitIsoValue(String value) {
+    return 'ISO $value';
+  }
+
+  @override
+  String bodyUnitCropFactor(String value) {
+    return '${value}x';
+  }
+
+  @override
+  String bodyForensicShutterCount(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count items',
-      one: '1 item',
-      zero: 'Empty',
+      other: '$count releases',
+      one: '1 release',
     );
     return '$_temp0';
   }
 
   @override
-  String get privacyScrubberTitle => 'Media Privacy & Scrubber';
-
-  @override
-  String get privacyScrubberSubtitle =>
-      'Strip sensitive EXIF metadata and fuzz GPS coordinates before sharing';
-
-  @override
-  String get privacyScrubberMenu => 'Privacy & EXIF Scrubber';
-
-  @override
-  String get privacyCardTitle => 'Media Privacy & EXIF';
-
-  @override
-  String get privacyCardBody =>
-      'Protect your privacy by stripping GPS location, camera serial numbers, and device identifiers before sharing.';
-
-  @override
-  String get privacyOpenScrubber => 'Open Privacy Controls';
-
-  @override
-  String get privacyTabStripper => 'EXIF Stripper';
-
-  @override
-  String get privacyTabGeofence => 'GPS Geofence Shifter';
-
-  @override
-  String get privacyStripAndShareAction => 'One-Tap Strip & Share';
-
-  @override
-  String get privacySaveSanitizedAction => 'Save Sanitized Copy to Gallery';
-
-  @override
-  String get privacyGranularTitle => 'Selective Metadata Scrubbing';
-
-  @override
-  String get privacyStripAll => 'Strip All';
-
-  @override
-  String get privacyCustom => 'Custom';
-
-  @override
-  String get privacyOptionGps => 'Strip GPS Coordinates & Altitude';
-
-  @override
-  String get privacyOptionSerials => 'Strip Camera & Lens Serial Numbers';
-
-  @override
-  String get privacyOptionTimestamps => 'Strip Capture & Digitization Dates';
-
-  @override
-  String get privacyOptionAuthor => 'Strip Author & Software Info';
-
-  @override
-  String get privacyErrorReadingFile =>
-      'Unable to read image data for privacy processing';
-
-  @override
-  String get privacyShareTitle => 'Share Sanitized Media';
-
-  @override
-  String get privacyShareFailed => 'Sharing could not be initiated';
-
-  @override
-  String get privacyProcessError => 'An error occurred while sanitizing media';
-
-  @override
-  String get privacySavedToGallery => 'Sanitized copy saved to gallery';
-
-  @override
-  String get privacySaveFailed => 'Failed to save sanitized image';
-
-  @override
-  String get privacyNoLocation =>
-      'No embedded GPS location found in this photo';
-
-  @override
-  String get geofenceOffsetDistance => 'Shift Distance Offset';
-
-  @override
-  String get geofenceReroll => 'Reroll random shift';
-
-  @override
-  String get geofenceRandomPreset => 'Random (2–5 km)';
-
-  @override
-  String geofenceShiftSummary(String summary) {
-    return 'Shifted $summary';
+  String bodyTransferBytesProgress(String done, String total) {
+    return '$done of $total';
   }
 
   @override
-  String geofenceFuzzedCoordinates(String lat, String lon) {
-    return 'Shifted to $lat, $lon';
+  String bodyPdfImageFormatAndSize(String format, String size) {
+    return '$format · $size';
   }
 
   @override
-  String get geofenceExplanation =>
-      'Adds an offset within 2–5 km to preserve general regional travel context while hiding exact residential street coordinates.';
+  String get labelColorRed => 'Red';
 
   @override
-  String get geofenceShareTitle => 'Share Geofuzzed Photo';
+  String get labelColorPink => 'Pink';
 
   @override
-  String get geofenceShareAction => 'Fuzz Location & Share';
+  String get labelColorPurple => 'Purple';
 
   @override
-  String get geofenceSaveAction => 'Save Geofuzzed Copy to Gallery';
+  String get labelColorDeepPurple => 'Deep purple';
 
   @override
-  String get geofenceSavedToGallery => 'Geofuzzed copy saved to gallery';
+  String get labelColorIndigo => 'Indigo';
 
   @override
-  String get geofenceNoCoordinates => 'No Location Found';
+  String get labelColorBlue => 'Blue';
 
   @override
-  String get geofenceNoCoordinatesBody =>
-      'This media item does not have embedded GPS coordinates to shift.';
+  String get labelColorTeal => 'Teal';
 
   @override
-  String get privacyAuditSensitiveDetected => 'Sensitive Metadata Detected';
+  String get labelColorGreen => 'Green';
 
   @override
-  String get privacyAuditClean => 'No Sensitive Metadata Detected';
+  String get labelColorLightGreen => 'Light green';
 
   @override
-  String privacyAuditSensitiveDetails(String gps, String camera) {
-    return 'Contains $gps $camera';
+  String get labelColorAmber => 'Amber';
+
+  @override
+  String get labelColorDeepOrange => 'Deep orange';
+
+  @override
+  String get labelColorBrown => 'Brown';
+
+  @override
+  String get labelColorYellow => 'Yellow';
+
+  @override
+  String get labelColorWhite => 'White';
+
+  @override
+  String get labelColorBlack => 'Black';
+
+  @override
+  String get labelA11yCropArea => 'Crop area';
+
+  @override
+  String bodyA11yCropAreaValue(int left, int top, int width, int height) {
+    return 'Left $left%, top $top%, width $width%, height $height%';
   }
 
   @override
-  String get privacyAuditGps => 'GPS Coordinates';
+  String get helpA11yCropAreaHint =>
+      'Drag the corners, or use the actions to move or resize';
 
   @override
-  String get privacyAuditCamera => 'Device Identifiers';
+  String get labelA11yMoveLeft => 'Move left';
 
   @override
-  String get privacyAuditCleanDetails =>
-      'This file does not contain embedded location or camera serial identifiers.';
+  String get labelA11yMoveRight => 'Move right';
 
   @override
-  String get forensicInspectorTitle => 'Forensic Lens & Sensor Inspector';
+  String get labelA11yMoveUp => 'Move up';
 
   @override
-  String get forensicInspectorSubtitle =>
-      'Deep technical optical and hardware forensic insights';
+  String get labelA11yMoveDown => 'Move down';
 
   @override
-  String get forensicInspectorButton => 'Inspect Lens & Sensor Forensics';
+  String get labelA11yMakeSmaller => 'Make smaller';
 
   @override
-  String get forensicInspectorQuickHint =>
-      'Sensor crop factor, 35mm equivalent, shutter actuation, exposure bias';
+  String get labelA11yMakeLarger => 'Make larger';
 
   @override
-  String get forensicNoData =>
-      'No forensic lens or sensor metadata found in this item.';
+  String get labelA11yCurveArea => 'Tone curve';
 
   @override
-  String get forensicSectionSensorOptics => 'Sensor & Optical Characteristics';
+  String bodyA11yCurveValue(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count points',
+      one: '1 point',
+    );
+    return '$_temp0';
+  }
 
   @override
-  String get forensicSectionMechanicsColor =>
-      'Mechanical Actuations & Color Space';
+  String get labelA11yMarkupArea => 'Drawing area';
 
   @override
-  String get forensicSectionHardwareIdentity =>
-      'Hardware & Lens Serial Identity';
+  String bodyA11yMarkupValue(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count marks',
+      one: '1 mark',
+      zero: 'Nothing drawn',
+    );
+    return '$_temp0';
+  }
 
   @override
-  String get forensicSensorFormat => 'Sensor Format';
+  String get helpA11yDrawingNeedsTouchHint =>
+      'Drawing needs touch. Use the panel below to change or remove marks.';
 
   @override
-  String get forensicCropFactor => 'Crop Factor';
+  String get labelA11yRedactionArea => 'Hide area';
 
   @override
-  String get forensicFocal35mm => '35mm Equivalent';
+  String bodyA11yRedactionValue(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count areas hidden',
+      one: '1 area hidden',
+      zero: 'Nothing hidden',
+    );
+    return '$_temp0';
+  }
 
   @override
-  String get forensicPhysicalFocalLength => 'Physical Focal Length';
+  String get labelA11yMaskArea => 'Mask position';
 
   @override
-  String get forensicHyperfocalDistance => 'Hyperfocal Distance';
+  String bodyA11yMaskValue(String shape, int x, int y) {
+    return '$shape, centre at $x% across, $y% down';
+  }
 
   @override
-  String get forensicExposureBias => 'Exposure Bias (EV)';
+  String get helpA11yMaskHint =>
+      'Drag the handles, or use the actions to move the mask';
 
   @override
-  String get forensicShutterActuations => 'Shutter Releases';
+  String get labelA11yCompareDivider => 'Comparison divider';
 
   @override
-  String get forensicShutterNotReported => 'Electronic shutter / Not reported';
+  String bodyA11yPercentValue(int percent) {
+    return '$percent%';
+  }
 
   @override
-  String get forensicColorProfile => 'Color Space / Profile';
+  String get errorOpenWithRefused =>
+      'This file can\'t be opened here. Open it from the gallery instead.';
 
   @override
-  String get forensicExposureProgram => 'Exposure Program';
+  String get errorOpenWithFailed =>
+      'The file couldn\'t be opened. It may have been moved or deleted.';
 
   @override
-  String get forensicMeteringMode => 'Metering Mode';
+  String get bodyCleanerFailed =>
+      'Something went wrong while comparing photos. Try again.';
 
   @override
-  String get forensicSensingMethod => 'Sensing Method';
+  String get aboutDetailEmail => 'Email';
 
   @override
-  String get forensicSceneCaptureType => 'Scene Capture Type';
+  String get aboutDetailPrivacyPolicy => 'Privacy policy';
 
   @override
-  String get forensicFlashStatus => 'Flash & Strobe Status';
+  String get titleSettingsProtectScreens => 'Hide content';
 
   @override
-  String get forensicCameraSerial => 'Camera Serial Number';
+  String get descSettingsProtectScreens =>
+      'Block screenshots and screen recording, and show a blank card in recent apps, on every screen. The vault is always protected.';
 
   @override
-  String get forensicLensModel => 'Lens Model';
+  String get titleSettingsPermissions => 'Permissions';
 
   @override
-  String get forensicLensSpecification => 'Lens Specification';
+  String get descSettingsPermissionsSubtitle => 'What the app can use, and why';
 
   @override
-  String get forensicLensSerial => 'Lens Serial Number';
+  String get labelPermissionsExplicit => 'You allow these';
 
   @override
-  String get forensicSerialNotEmbedded => 'Not embedded in headers';
+  String get labelPermissionsImplicit => 'Granted at install';
+
+  @override
+  String get labelPermissionsRemoved => 'Removed on purpose';
+
+  @override
+  String get descPermissionsExplicit =>
+      'Android asks you before the app can use these. You can change them at any time in Android settings.';
+
+  @override
+  String get descPermissionsImplicit =>
+      'Android gives these when the app is installed, without asking. None of them gives access to your photos or files.';
+
+  @override
+  String get descPermissionsRemoved =>
+      'Some libraries the app is built with ask for these. The app removes them, so it never holds them.';
+
+  @override
+  String get descPermissionsManage =>
+      'To change what you allow, open this app\'s page in Android settings.';
+
+  @override
+  String get labelPermPhotosVideos => 'Photos and videos';
+
+  @override
+  String get labelPermCamera => 'Camera';
+
+  @override
+  String get labelPermBiometric => 'Fingerprint unlock';
+
+  @override
+  String get labelPermNetwork => 'Local network';
+
+  @override
+  String get labelPermWifiState => 'Wi-Fi details';
+
+  @override
+  String get labelPermNetworkState => 'Network state';
+
+  @override
+  String get labelPermChangeWifi => 'Wi-Fi suggestions';
+
+  @override
+  String get labelPermReceiverPrivate => 'App-private messages';
+
+  @override
+  String get labelPermWakeLock => 'Keep phone awake';
+
+  @override
+  String get labelPermRecordAudio => 'Record sound';
+
+  @override
+  String get labelPermWriteStorage => 'Write to storage';
+
+  @override
+  String get descPermPhotosVideos =>
+      'Shows the photos and videos on this phone. On Android 14 and up you can allow only the ones you pick.';
+
+  @override
+  String get descPermCamera =>
+      'Scans the pairing QR code on the transfer screen only. The app never takes a photo.';
+
+  @override
+  String get descPermBiometric =>
+      'Unlocks the vault with your fingerprint. Your PIN always works too.';
+
+  @override
+  String get descPermNetwork =>
+      'Used only by the transfer screen, to reach another phone on your own Wi-Fi. The app never goes on the internet.';
+
+  @override
+  String get descPermWifiState =>
+      'Reads this phone\'s own Wi-Fi address to make the pairing code.';
+
+  @override
+  String get descPermNetworkState =>
+      'Part of the local transfer set. The app does not use it to go online.';
+
+  @override
+  String get descPermChangeWifi =>
+      'Offers a Wi-Fi code you scanned to Android. You still choose the network yourself.';
+
+  @override
+  String get descPermReceiverPrivate =>
+      'Added by an Android library. It keeps the app\'s own internal messages private and gives no access to anything.';
+
+  @override
+  String get descPermWakeLock =>
+      'The video player asks for it for streaming. The app plays only files on this phone.';
+
+  @override
+  String get descPermRecordAudio =>
+      'The camera library asks for it. The QR scanner never records sound.';
+
+  @override
+  String get descPermWriteStorage =>
+      'The camera library asks for it. The QR scanner never saves a file.';
+
+  @override
+  String get labelPermAllowed => 'Allowed';
+
+  @override
+  String get labelPermSelectedOnly => 'Selected only';
+
+  @override
+  String get labelPermNotAllowed => 'Not allowed';
+
+  @override
+  String labelPermAndroidFrom(String version) {
+    return 'Android $version+';
+  }
+
+  @override
+  String labelPermAndroidUpTo(String version) {
+    return 'Up to Android $version';
+  }
 }

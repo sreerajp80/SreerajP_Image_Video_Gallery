@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:in_sreerajp_imgvidgal/theme/color_schemes.dart';
 
 enum ThemePreference {
@@ -12,6 +12,18 @@ enum ThemePreference {
 
 class AppTheme {
   AppTheme._();
+
+  /// Fonts tried, in order, for a glyph the default font lacks.
+  ///
+  /// Android 7+ ships Noto fonts for both scripts, so nothing is bundled
+  /// (decision D2 in `plans/20260926_112415_code-guideline-conformance.md`).
+  /// Naming them keeps Malayalam and Devanagari text on the Noto faces rather
+  /// than whatever an OEM puts first. Check a clean device in `ml` and `sa`
+  /// for every release (engineering standard §8.3.3).
+  static const List<String> fontFamilyFallback = <String>[
+    'Noto Sans Malayalam',
+    'Noto Sans Devanagari',
+  ];
 
   static ThemeData get lightTheme {
     return _buildTheme(AppColorSchemes.lightColorScheme);
@@ -33,6 +45,7 @@ class AppTheme {
 
     return ThemeData(
       useMaterial3: true,
+      fontFamilyFallback: fontFamilyFallback,
       colorScheme: colorScheme,
       scaffoldBackgroundColor: scaffoldBg,
       canvasColor: scaffoldBg,
@@ -44,7 +57,7 @@ class AppTheme {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
           side: isAmoled
-              ? const BorderSide(color: Color(0xFF242424), width: 1)
+              ? const BorderSide(color: Color(0xFF242424))
               : BorderSide.none,
         ),
       ),

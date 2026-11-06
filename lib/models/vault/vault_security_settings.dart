@@ -74,18 +74,21 @@ class VaultSecuritySettings {
               AppConstants.vaultAutoLockChoicesSeconds.contains(timeout)
           ? timeout
           : AppConstants.vaultAutoLockTimeoutSeconds,
-      biometricEnabled: json['biometric_enabled'] is bool
-          ? json['biometric_enabled'] as bool
-          : true,
+      // The stored value when it is a real bool, otherwise the safe default.
+      biometricEnabled: switch (json['biometric_enabled']) {
+        final bool value => value,
+        _ => true,
+      },
       shredPasses: json['shred_passes'] is int
           ? (json['shred_passes'] as int).clamp(
               AppConstants.vaultMinShredPasses,
               AppConstants.vaultMaxShredPasses,
             )
           : AppConstants.vaultDefaultShredPasses,
-      shredOnImportByDefault: json['shred_on_import'] is bool
-          ? json['shred_on_import'] as bool
-          : false,
+      shredOnImportByDefault: switch (json['shred_on_import']) {
+        final bool value => value,
+        _ => false,
+      },
     );
   }
 

@@ -1,9 +1,10 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:in_sreerajp_imgvidgal/l10n/generated/app_localizations.dart';
 import 'package:in_sreerajp_imgvidgal/models/filter_options.dart';
 import 'package:in_sreerajp_imgvidgal/models/media_item.dart';
 import 'package:in_sreerajp_imgvidgal/providers/media_providers.dart';
+import 'package:in_sreerajp_imgvidgal/widgets/common/sized_memory_image.dart';
 
 /// Modal bottom sheet allowing the user to select an alternate photo from
 /// the gallery to compare against.
@@ -33,7 +34,6 @@ class PhotoSelectorSheet extends ConsumerWidget {
     final theme = Theme.of(context);
     const filter = FilterOptions(
       mediaTypes: {MediaType.image, MediaType.rawImage},
-      sortDirection: SortDirection.descending,
     );
     final mediaAsync = ref.watch(mediaItemsProvider(filter));
 
@@ -53,7 +53,7 @@ class PhotoSelectorSheet extends ConsumerWidget {
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
-                      l10n.compareSelectSecondPhoto,
+                      l10n.bodyCompareSelectSecondPhoto,
                       style: theme.textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.bold,
                       ),
@@ -70,7 +70,7 @@ class PhotoSelectorSheet extends ConsumerWidget {
                   child: Padding(
                     padding: const EdgeInsets.all(16),
                     child: Text(
-                      l10n.mediaUnavailable,
+                      l10n.labelMediaUnavailable,
                       style: theme.textTheme.bodyMedium,
                     ),
                   ),
@@ -83,7 +83,7 @@ class PhotoSelectorSheet extends ConsumerWidget {
                   if (filtered.isEmpty) {
                     return Center(
                       child: Text(
-                        l10n.noMediaFound,
+                        l10n.bodyNoMediaFound,
                         style: theme.textTheme.bodyMedium,
                       ),
                     );
@@ -126,7 +126,7 @@ class _PhotoGridTile extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final thumbAsync = ref.watch(thumbnailProvider(item));
-    final bytes = thumbAsync.valueOrNull;
+    final bytes = thumbAsync.value;
 
     return InkWell(
       onTap: onTap,
@@ -136,7 +136,7 @@ class _PhotoGridTile extends ConsumerWidget {
         child: Container(
           color: Theme.of(context).colorScheme.surfaceContainerHighest,
           child: bytes != null && bytes.isNotEmpty
-              ? Image.memory(bytes, fit: BoxFit.cover, gaplessPlayback: true)
+              ? SizedMemoryImage(bytes, gaplessPlayback: true)
               : (thumbAsync.isLoading
                     ? const Center(
                         child: SizedBox(

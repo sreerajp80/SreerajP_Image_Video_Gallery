@@ -2,10 +2,7 @@ import 'dart:typed_data';
 
 import 'package:in_sreerajp_imgvidgal/core/constants/app_constants.dart';
 import 'package:in_sreerajp_imgvidgal/models/batch/batch_action.dart';
-import 'package:in_sreerajp_imgvidgal/models/convert/conversion_request.dart';
-import 'package:in_sreerajp_imgvidgal/models/convert/pdf_export_options.dart';
 import 'package:in_sreerajp_imgvidgal/models/editor/edit_session.dart';
-import 'package:in_sreerajp_imgvidgal/models/editor/watermark_config.dart';
 import 'package:in_sreerajp_imgvidgal/models/media_item.dart';
 import 'package:in_sreerajp_imgvidgal/repositories/album_repository.dart';
 import 'package:in_sreerajp_imgvidgal/repositories/media_repository.dart';
@@ -16,44 +13,11 @@ import 'package:in_sreerajp_imgvidgal/services/convert/output_naming_service.dar
 import 'package:in_sreerajp_imgvidgal/services/convert/pdf_export_service.dart';
 import 'package:in_sreerajp_imgvidgal/services/editor/image_render_pipeline.dart';
 import 'package:in_sreerajp_imgvidgal/services/vault/vault_import_service.dart';
+import 'package:in_sreerajp_imgvidgal/core/errors/app_exception.dart';
+import 'package:in_sreerajp_imgvidgal/models/batch/batch_options.dart';
 
-/// What a batch action needs beyond the selection itself.
-///
-/// Gathered by the action bar before the batch starts — which tags, which
-/// album, which output format — so the runner never has to stop half way and
-/// ask. A batch that paused for a dialog on file seventeen would be a batch
-/// nobody could walk away from.
-class BatchOptions {
-  /// Tag ids for [BatchAction.addTags] and [BatchAction.removeTags].
-  final Set<String> tagIds;
-
-  /// Album id for [BatchAction.addToAlbum].
-  final String? albumId;
-
-  /// Output settings for [BatchAction.convert].
-  final ConversionRequest conversion;
-
-  /// The stamp for [BatchAction.watermark].
-  final WatermarkConfig watermark;
-
-  /// Page settings for [BatchAction.exportPdf].
-  final PdfExportOptions pdf;
-
-  /// Whether a vault import shreds the originals.
-  ///
-  /// Off unless the user chose it and confirmed it, exactly as in the vault
-  /// screen: it destroys a file for good.
-  final bool shredOriginals;
-
-  const BatchOptions({
-    this.tagIds = const <String>{},
-    this.albumId,
-    this.conversion = const ConversionRequest(),
-    this.watermark = const WatermarkConfig(),
-    this.pdf = const PdfExportOptions(),
-    this.shredOriginals = false,
-  });
-}
+// Moved to models so the UI can use it without importing a service (G46).
+export 'package:in_sreerajp_imgvidgal/models/batch/batch_options.dart';
 
 /// Does the actual work behind each batch action.
 ///
@@ -155,7 +119,7 @@ class GalleryBatchHandler extends BatchItemHandler {
           item,
         ], shredOriginals: options.shredOriginals);
         if (result.succeededIds.isEmpty) {
-          throw StateError('The vault would not take ${item.displayName}');
+          throw const BatchItemException('The vault would not take the item');
         }
         return null;
 
@@ -184,7 +148,7 @@ class GalleryBatchHandler extends BatchItemHandler {
       maxBytes: AppConstants.convertMaxSourceBytes,
     );
     if (bytes == null || bytes.isEmpty) {
-      throw StateError('${item.displayName} could not be read');
+      throw const BatchItemException('The item could not be read');
     }
 
     final encoded = await _conversion.convert(
@@ -208,7 +172,7 @@ class GalleryBatchHandler extends BatchItemHandler {
       maxBytes: AppConstants.editorMaxSourceBytes,
     );
     if (bytes == null || bytes.isEmpty) {
-      throw StateError('${item.displayName} could not be read');
+      throw const BatchItemException('The item could not be read');
     }
 
     // An edit session carrying nothing but the stamp. The pipeline runs its

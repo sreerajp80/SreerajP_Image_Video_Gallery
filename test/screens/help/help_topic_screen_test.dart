@@ -1,23 +1,21 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:in_sreerajp_imgvidgal/l10n/generated/app_localizations.dart';
 import 'package:in_sreerajp_imgvidgal/models/help/help_topic.dart';
 import 'package:in_sreerajp_imgvidgal/screens/help/help_topic_screen.dart';
 import 'package:in_sreerajp_imgvidgal/widgets/help/help_topic_card.dart';
+import 'package:in_sreerajp_imgvidgal/core/l10n/sanskrit_fallback_delegates.dart';
+import '../../helpers/locale_checks.dart';
 
 void main() {
   group('HelpTopicCard', () {
     testWidgets('renders topic info and reacts to taps', (tester) async {
       bool tapped = false;
-      const topic = HelpTopic(
-        id: 'timeline',
-        icon: Icons.timeline,
-        badge: HelpBadge.offline,
-      );
+      const topic = HelpTopic(id: 'timeline', badge: HelpBadge.offline);
 
       await tester.pumpWidget(
         MaterialApp(
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          localizationsDelegates: appLocalizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           home: Scaffold(
             body: HelpTopicCard(topic: topic, onTap: () => tapped = true),
@@ -26,7 +24,7 @@ void main() {
       );
 
       expect(find.text('Timeline & Memories'), findsOneWidget);
-      expect(find.byIcon(Icons.timeline), findsOneWidget);
+      expect(find.byIcon(Icons.timeline_outlined), findsOneWidget);
       expect(find.byIcon(Icons.chevron_right), findsOneWidget);
 
       await tester.tap(find.byType(HelpTopicCard));
@@ -42,7 +40,7 @@ void main() {
 
       await tester.pumpWidget(
         const MaterialApp(
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          localizationsDelegates: appLocalizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           home: HelpTopicScreen(topicId: 'vault'),
         ),
@@ -59,7 +57,7 @@ void main() {
     testWidgets('falls back to default topic for unknown id', (tester) async {
       await tester.pumpWidget(
         const MaterialApp(
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          localizationsDelegates: appLocalizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           home: HelpTopicScreen(topicId: 'unknown_topic_id'),
         ),
@@ -76,7 +74,7 @@ void main() {
       await tester.pumpWidget(
         const MaterialApp(
           locale: Locale('ml'),
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          localizationsDelegates: appLocalizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           home: HelpTopicScreen(topicId: 'sync'),
         ),
@@ -89,5 +87,27 @@ void main() {
       expect(find.text('സ്വകാര്യതയും ഓഫ്‌ലൈൻ ഉറപ്പും'), findsOneWidget);
       expect(find.text('ലോക്കൽ വൈ-ഫൈ മാത്രം'), findsOneWidget);
     });
+  });
+
+  group('every declared language', () {
+    for (final locale in declaredLocales) {
+      testWidgets('HelpTopicScreen renders cleanly in ${locale.languageCode}', (
+        tester,
+      ) async {
+        tester.view.physicalSize = const Size(1200, 3600);
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(tester.view.reset);
+        await tester.pumpWidget(
+          MaterialApp(
+            locale: locale,
+            localizationsDelegates: appLocalizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: const HelpTopicScreen(topicId: 'vault'),
+          ),
+        );
+        await tester.pumpAndSettle();
+        expectLocaleClean(tester, locale);
+      });
+    }
   });
 }

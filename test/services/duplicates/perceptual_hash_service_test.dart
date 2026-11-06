@@ -2,6 +2,7 @@ import 'dart:math' as math;
 import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:in_sreerajp_imgvidgal/core/errors/app_exception.dart';
 import 'package:in_sreerajp_imgvidgal/services/duplicates/perceptual_hash_service.dart';
 
 /// Builds a 32x32 grid from a function of the pixel position.
@@ -31,7 +32,7 @@ void main() {
     test('handles a hash with the top bit set', () {
       // A 64-bit hash with bit 63 set is a negative Dart integer, so this
       // would be the first thing to break if the shifting were signed.
-      final high = 1 << 63;
+      const high = 1 << 63;
       expect(PerceptualHashService.hammingDistance(high, 0), 1);
       expect(PerceptualHashService.hammingDistance(high, high), 0);
       expect(PerceptualHashService.hammingDistance(high, high | 1), 1);
@@ -77,7 +78,7 @@ void main() {
     test('rejects a grid of the wrong size', () {
       expect(
         () => service.computeDHash(Uint8List(10)),
-        throwsA(isA<ArgumentError>()),
+        throwsA(isA<ValidationException>()),
       );
     });
   });
@@ -150,7 +151,7 @@ void main() {
     test('rejects a grid of the wrong size', () {
       expect(
         () => service.computePHash(Uint8List(100)),
-        throwsA(isA<ArgumentError>()),
+        throwsA(isA<ValidationException>()),
       );
     });
   });
@@ -158,7 +159,7 @@ void main() {
   group('bands', () {
     test('splits a hash into equal slices that rebuild it', () {
       const hash = 0x1234567890ABCDEF;
-      final bands = PerceptualHashService.bands(hash, bandCount: 4);
+      final bands = PerceptualHashService.bands(hash);
 
       expect(bands.length, 4);
       var rebuilt = 0;

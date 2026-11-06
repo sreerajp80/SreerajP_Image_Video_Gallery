@@ -1,10 +1,11 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:in_sreerajp_imgvidgal/l10n/generated/app_localizations.dart';
 import 'package:in_sreerajp_imgvidgal/models/filter_options.dart';
 import 'package:in_sreerajp_imgvidgal/models/media_item.dart';
 import 'package:in_sreerajp_imgvidgal/providers/tag_providers.dart';
 import 'package:in_sreerajp_imgvidgal/widgets/tags/tag_filter_bar.dart';
+import 'package:flutter_riverpod/legacy.dart';
 
 /// One megabyte, used by the file size choices.
 const int _kMegabyte = 1024 * 1024;
@@ -67,19 +68,19 @@ class SmartFilterSheet extends ConsumerWidget {
                 children: <Widget>[
                   Expanded(
                     child: Text(
-                      l10n.filterTitle,
+                      l10n.tooltipFilterTitle,
                       style: Theme.of(context).textTheme.titleMedium,
                     ),
                   ),
                   TextButton(
                     onPressed: () => _reset(ref),
-                    child: Text(l10n.filterReset),
+                    child: Text(l10n.actionFilterReset),
                   ),
                 ],
               ),
               const SizedBox(height: 8),
 
-              _SectionLabel(l10n.filterMediaType),
+              _SectionLabel(l10n.labelFilterMediaType),
               Wrap(
                 spacing: 8,
                 children: <Widget>[
@@ -95,7 +96,7 @@ class SmartFilterSheet extends ConsumerWidget {
 
               SwitchListTile(
                 contentPadding: EdgeInsets.zero,
-                title: Text(l10n.filterFavoritesOnly),
+                title: Text(l10n.titleFilterFavoritesOnly),
                 value: filter.isFavoriteOnly == true,
                 onChanged: (on) => _write(
                   ref,
@@ -106,7 +107,7 @@ class SmartFilterSheet extends ConsumerWidget {
               ),
               SwitchListTile(
                 contentPadding: EdgeInsets.zero,
-                title: Text(l10n.filterHasLocation),
+                title: Text(l10n.titleFilterHasLocation),
                 value: filter.hasGpsOnly == true,
                 onChanged: (on) => _write(
                   ref,
@@ -117,7 +118,7 @@ class SmartFilterSheet extends ConsumerWidget {
               ),
               SwitchListTile(
                 contentPadding: EdgeInsets.zero,
-                title: Text(l10n.filterHasTags),
+                title: Text(l10n.titleFilterHasTags),
                 value: filter.hasTagsOnly == true,
                 onChanged: (on) => _write(
                   ref,
@@ -127,7 +128,7 @@ class SmartFilterSheet extends ConsumerWidget {
                 ),
               ),
 
-              _SectionLabel(l10n.filterDateRange),
+              _SectionLabel(l10n.labelFilterDateRange),
               Row(
                 children: <Widget>[
                   Expanded(
@@ -138,18 +139,18 @@ class SmartFilterSheet extends ConsumerWidget {
                   ),
                   TextButton(
                     onPressed: () => _pickDates(context, ref, filter),
-                    child: Text(l10n.filterDateChoose),
+                    child: Text(l10n.actionFilterDateChoose),
                   ),
                   if (filter.startDate != null || filter.endDate != null)
                     TextButton(
                       onPressed: () =>
                           _write(ref, filter.copyWith(clearDates: true)),
-                      child: Text(l10n.filterDateClear),
+                      child: Text(l10n.actionFilterDateClear),
                     ),
                 ],
               ),
 
-              _SectionLabel(l10n.filterFileSize),
+              _SectionLabel(l10n.labelFilterFileSize),
               Wrap(
                 spacing: 8,
                 children: <Widget>[
@@ -162,7 +163,7 @@ class SmartFilterSheet extends ConsumerWidget {
                 ],
               ),
 
-              _SectionLabel(l10n.filterSortBy),
+              _SectionLabel(l10n.labelFilterSortBy),
               Wrap(
                 spacing: 8,
                 children: <Widget>[
@@ -180,11 +181,11 @@ class SmartFilterSheet extends ConsumerWidget {
                 segments: <ButtonSegment<SortDirection>>[
                   ButtonSegment<SortDirection>(
                     value: SortDirection.descending,
-                    label: Text(l10n.filterSortNewestFirst),
+                    label: Text(l10n.actionFilterSortNewestFirst),
                   ),
                   ButtonSegment<SortDirection>(
                     value: SortDirection.ascending,
-                    label: Text(l10n.filterSortOldestFirst),
+                    label: Text(l10n.actionFilterSortOldestFirst),
                   ),
                 ],
                 selected: <SortDirection>{filter.sortDirection},
@@ -195,7 +196,7 @@ class SmartFilterSheet extends ConsumerWidget {
               ),
 
               if (showTags) ...<Widget>[
-                _SectionLabel(l10n.filterTags),
+                _SectionLabel(l10n.labelFilterTags),
                 _TagSection(),
               ],
 
@@ -204,7 +205,7 @@ class SmartFilterSheet extends ConsumerWidget {
                 alignment: Alignment.centerRight,
                 child: FilledButton(
                   onPressed: () => Navigator.of(context).pop(),
-                  child: Text(l10n.filterApply),
+                  child: Text(l10n.actionFilterApply),
                 ),
               ),
             ],
@@ -314,44 +315,45 @@ class SmartFilterSheet extends ConsumerWidget {
   ) {
     final start = filter.startDate;
     final end = filter.endDate;
-    if (start == null && end == null) return l10n.filterDateAny;
+    if (start == null && end == null) return l10n.labelFilterDateAny;
 
     // `formatShortDate` follows the app's locale, so the label reads the same
     // way as the rest of the screen without any date formatting of our own.
     final material = MaterialLocalizations.of(context);
-    String format(DateTime? value) =>
-        value == null ? l10n.filterDateAny : material.formatShortDate(value);
+    String format(DateTime? value) => value == null
+        ? l10n.labelFilterDateAny
+        : material.formatShortDate(value);
     return '${format(start)} — ${format(end)}';
   }
 
   String _typeLabel(AppLocalizations l10n, MediaType type) {
     return switch (type) {
-      MediaType.image => l10n.filterTypeImage,
-      MediaType.video => l10n.filterTypeVideo,
-      MediaType.gif => l10n.filterTypeGif,
-      MediaType.rawImage => l10n.filterTypeRaw,
-      MediaType.svg => l10n.filterTypeSvg,
+      MediaType.image => l10n.labelFilterTypeImage,
+      MediaType.video => l10n.labelFilterTypeVideo,
+      MediaType.gif => l10n.labelFilterTypeGif,
+      MediaType.rawImage => l10n.labelFilterTypeRaw,
+      MediaType.svg => l10n.labelFilterTypeSvg,
     };
   }
 
   String _sizeLabel(AppLocalizations l10n, _SizeChoice choice) {
     return switch (choice) {
-      _SizeChoice.any => l10n.filterSizeAny,
-      _SizeChoice.small => l10n.filterSizeSmall,
-      _SizeChoice.medium => l10n.filterSizeMedium,
-      _SizeChoice.large => l10n.filterSizeLarge,
+      _SizeChoice.any => l10n.labelFilterSizeAny,
+      _SizeChoice.small => l10n.labelFilterSizeSmall,
+      _SizeChoice.medium => l10n.bodyFilterSizeMedium,
+      _SizeChoice.large => l10n.labelFilterSizeLarge,
     };
   }
 
   String _sortLabel(AppLocalizations l10n, MediaSortField field) {
     return switch (field) {
-      MediaSortField.dateTaken => l10n.filterSortDateTaken,
-      MediaSortField.dateAdded => l10n.filterSortDateAdded,
-      MediaSortField.displayName => l10n.filterSortName,
-      MediaSortField.size => l10n.filterSortSize,
+      MediaSortField.dateTaken => l10n.labelFilterSortDateTaken,
+      MediaSortField.dateAdded => l10n.labelFilterSortDateAdded,
+      MediaSortField.displayName => l10n.labelFilterSortName,
+      MediaSortField.size => l10n.labelFilterSortSize,
       // Not offered as chips; the labels exist so the switch stays total.
-      MediaSortField.dateModified => l10n.filterSortDateAdded,
-      MediaSortField.duration => l10n.filterSortSize,
+      MediaSortField.dateModified => l10n.labelFilterSortDateAdded,
+      MediaSortField.duration => l10n.labelFilterSortSize,
     };
   }
 }
@@ -381,7 +383,7 @@ class _TagSection extends ConsumerWidget {
             padding: EdgeInsets.symmetric(vertical: 16),
             child: Center(child: CircularProgressIndicator()),
           ),
-          error: (_, _) => Text(l10n.tagErrorFailed),
+          error: (_, _) => Text(l10n.errorTagErrorFailed),
           data: (tags) => TagFilterBar(
             tags: tags,
             selectedTagIds: selection.tagIds,

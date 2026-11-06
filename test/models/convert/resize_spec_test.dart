@@ -8,7 +8,7 @@ void main() {
     });
 
     test('a percent of exactly 100 changes nothing', () {
-      const spec = ResizeSpec(mode: ResizeMode.percent, percent: 100);
+      const spec = ResizeSpec(mode: ResizeMode.percent);
       expect(spec.isIdentity, isTrue);
     });
 
@@ -56,11 +56,16 @@ void main() {
     });
 
     test('a map missing everything gives the defaults', () {
-      expect(ResizeSpec.fromMap(<String, dynamic>{}), ResizeSpec.original);
+      expect(
+        ResizeSpec.fromMap(const <String, dynamic>{}),
+        ResizeSpec.original,
+      );
     });
 
     test('an unknown mode name falls back to no resize', () {
-      final spec = ResizeSpec.fromMap(<String, dynamic>{'mode': 'stretchy'});
+      final spec = ResizeSpec.fromMap(const <String, dynamic>{
+        'mode': 'stretchy',
+      });
       expect(spec.mode, ResizeMode.none);
     });
   });

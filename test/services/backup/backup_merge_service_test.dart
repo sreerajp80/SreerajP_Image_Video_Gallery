@@ -40,8 +40,8 @@ MediaItem _local({
     mediaType: MediaType.image,
     mimeType: 'image/jpeg',
     size: size,
-    dateAdded: DateTime(2026, 1, 1),
-    dateModified: DateTime(2026, 1, 1),
+    dateAdded: DateTime(2026),
+    dateModified: DateTime(2026),
     dateTaken: dateTaken,
     sha256Hash: sha256,
     isFavorite: isFavorite,
@@ -89,8 +89,8 @@ Album _album(
     id: id,
     name: name,
     albumType: type,
-    dateCreated: DateTime(2026, 1, 1),
-    dateModified: DateTime(2026, 1, 1),
+    dateCreated: DateTime(2026),
+    dateModified: DateTime(2026),
   );
 }
 
@@ -98,7 +98,7 @@ Tag _tag(String id, String name) => Tag(
   id: id,
   name: name,
   colorValue: 0xFF2196F3,
-  dateCreated: DateTime(2026, 1, 1),
+  dateCreated: DateTime(2026),
 );
 
 RestorePlan _plan({
@@ -530,7 +530,7 @@ void main() {
           manifest: _manifest,
           mediaRecords: <BackupMediaRecord>[_record(id: 'm', isFavorite: true)],
         ),
-        localMedia: <MediaItem>[_local(id: 'm', isFavorite: false)],
+        localMedia: <MediaItem>[_local(id: 'm')],
       );
 
       expect(plan.mediaUpdateCount, 1);
@@ -552,9 +552,7 @@ void main() {
       final plan = _plan(
         payload: BackupPayload(
           manifest: _manifest,
-          mediaRecords: <BackupMediaRecord>[
-            _record(id: 'm', isFavorite: false),
-          ],
+          mediaRecords: <BackupMediaRecord>[_record(id: 'm')],
         ),
         localMedia: <MediaItem>[_local(id: 'm', isFavorite: true)],
       );

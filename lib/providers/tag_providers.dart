@@ -4,6 +4,7 @@ import 'package:in_sreerajp_imgvidgal/models/tag.dart';
 import 'package:in_sreerajp_imgvidgal/providers/media_providers.dart';
 import 'package:in_sreerajp_imgvidgal/repositories/database/tag_dao.dart';
 import 'package:in_sreerajp_imgvidgal/repositories/tag_repository.dart';
+import 'package:flutter_riverpod/legacy.dart';
 
 /// Data access object over the tag tables.
 final tagDaoProvider = Provider<TagDao>((ref) => TagDao());

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:in_sreerajp_imgvidgal/l10n/generated/app_localizations.dart';
 import 'package:in_sreerajp_imgvidgal/models/editor/watermark_config.dart';
 import 'package:in_sreerajp_imgvidgal/widgets/editor/editor_slider_row.dart';
@@ -50,23 +50,23 @@ class _WatermarkPanelState extends State<WatermarkPanel> {
   ) {
     switch (position) {
       case WatermarkPosition.topLeft:
-        return l10n.positionTopLeft;
+        return l10n.labelPositionTopLeft;
       case WatermarkPosition.topCenter:
-        return l10n.positionTopCenter;
+        return l10n.labelPositionTopCenter;
       case WatermarkPosition.topRight:
-        return l10n.positionTopRight;
+        return l10n.labelPositionTopRight;
       case WatermarkPosition.centerLeft:
-        return l10n.positionCenterLeft;
+        return l10n.labelPositionCenterLeft;
       case WatermarkPosition.center:
-        return l10n.positionCenter;
+        return l10n.labelPositionCenter;
       case WatermarkPosition.centerRight:
-        return l10n.positionCenterRight;
+        return l10n.labelPositionCenterRight;
       case WatermarkPosition.bottomLeft:
-        return l10n.positionBottomLeft;
+        return l10n.labelPositionBottomLeft;
       case WatermarkPosition.bottomCenter:
-        return l10n.positionBottomCenter;
+        return l10n.labelPositionBottomCenter;
       case WatermarkPosition.bottomRight:
-        return l10n.positionBottomRight;
+        return l10n.labelPositionBottomRight;
     }
   }
 
@@ -77,10 +77,10 @@ class _WatermarkPanelState extends State<WatermarkPanel> {
     final config = widget.config;
 
     final modeLabels = <WatermarkMode, String>{
-      WatermarkMode.none: l10n.watermarkNone,
-      WatermarkMode.text: l10n.watermarkText,
-      WatermarkMode.timestamp: l10n.watermarkTimestamp,
-      WatermarkMode.logo: l10n.watermarkLogo,
+      WatermarkMode.none: l10n.labelWatermarkNone,
+      WatermarkMode.text: l10n.labelWatermarkText,
+      WatermarkMode.timestamp: l10n.labelWatermarkTimestamp,
+      WatermarkMode.logo: l10n.labelWatermarkLogo,
     };
 
     final logoPath = config.logoPath;
@@ -108,7 +108,7 @@ class _WatermarkPanelState extends State<WatermarkPanel> {
             child: TextField(
               controller: _textController,
               decoration: InputDecoration(
-                labelText: l10n.watermarkTextHint,
+                labelText: l10n.helpWatermarkTextHint,
                 border: const OutlineInputBorder(),
               ),
               onChanged: (value) =>
@@ -128,7 +128,7 @@ class _WatermarkPanelState extends State<WatermarkPanel> {
                     // Only the file name is shown; the full path would give
                     // away more of the user's device than it needs to.
                     logoPath == null || logoPath.isEmpty
-                        ? l10n.watermarkNoLogo
+                        ? l10n.bodyWatermarkNoLogo
                         : p.basename(logoPath),
                     style: theme.textTheme.bodyMedium,
                     overflow: TextOverflow.ellipsis,
@@ -137,7 +137,7 @@ class _WatermarkPanelState extends State<WatermarkPanel> {
                 TextButton.icon(
                   onPressed: widget.onPickLogo,
                   icon: const Icon(Icons.image_outlined),
-                  label: Text(l10n.watermarkPickLogo),
+                  label: Text(l10n.actionWatermarkPickLogo),
                 ),
               ],
             ),
@@ -148,7 +148,10 @@ class _WatermarkPanelState extends State<WatermarkPanel> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(l10n.watermarkPosition, style: theme.textTheme.labelLarge),
+                Text(
+                  l10n.labelWatermarkPosition,
+                  style: theme.textTheme.labelLarge,
+                ),
                 const SizedBox(height: 8),
                 Wrap(
                   spacing: 8,
@@ -167,10 +170,9 @@ class _WatermarkPanelState extends State<WatermarkPanel> {
             ),
           ),
           EditorSliderRow(
-            label: l10n.watermarkOpacity,
+            label: l10n.labelWatermarkOpacity,
             value: config.opacity,
             min: 0,
-            max: 1,
             neutral: 0.7,
             onChanged: (value) =>
                 widget.onChanged(config.copyWith(opacity: value)),
@@ -178,7 +180,7 @@ class _WatermarkPanelState extends State<WatermarkPanel> {
                 widget.onChangeEnd(config.copyWith(opacity: value)),
           ),
           EditorSliderRow(
-            label: l10n.watermarkSize,
+            label: l10n.labelWatermarkSize,
             value: config.scale,
             min: 0.02,
             max: 0.25,
@@ -190,7 +192,7 @@ class _WatermarkPanelState extends State<WatermarkPanel> {
             formatValue: (value) => (value * 100).round().toString(),
           ),
           EditorSliderRow(
-            label: l10n.watermarkMargin,
+            label: l10n.labelWatermarkMargin,
             value: config.margin,
             min: 0,
             max: 0.15,

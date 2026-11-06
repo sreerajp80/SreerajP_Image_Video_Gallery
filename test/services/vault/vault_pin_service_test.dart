@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:math';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:in_sreerajp_imgvidgal/core/errors/app_exception.dart';
 import 'package:in_sreerajp_imgvidgal/core/constants/app_constants.dart';
 import 'package:in_sreerajp_imgvidgal/services/vault/vault_pin_service.dart';
 
@@ -191,7 +192,7 @@ void main() {
             iterations: 0,
             keyLength: 32,
           ),
-          throwsArgumentError,
+          throwsA(isA<ValidationException>()),
         );
         expect(
           () => VaultPinService.pbkdf2(
@@ -200,7 +201,7 @@ void main() {
             iterations: 1,
             keyLength: 0,
           ),
-          throwsArgumentError,
+          throwsA(isA<ValidationException>()),
         );
       });
     });

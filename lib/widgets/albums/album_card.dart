@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:in_sreerajp_imgvidgal/l10n/generated/app_localizations.dart';
 import 'package:in_sreerajp_imgvidgal/models/album.dart';
 import 'package:in_sreerajp_imgvidgal/models/album_summary.dart';
@@ -11,13 +11,13 @@ import 'package:in_sreerajp_imgvidgal/widgets/common/adaptive_directionality.dar
 /// [AppLocalizations], so the translation happens at the edge, here.
 String smartAlbumLabel(AppLocalizations l10n, AlbumType type) {
   return switch (type) {
-    AlbumType.smartFavorites => l10n.smartAlbumFavorites,
-    AlbumType.smartVideos => l10n.smartAlbumVideos,
-    AlbumType.smartGifs => l10n.smartAlbumGifs,
-    AlbumType.smartRaw => l10n.smartAlbumRaw,
-    AlbumType.smartPanoramas => l10n.smartAlbumPanoramas,
-    AlbumType.smartRecentlyAdded => l10n.smartAlbumRecent,
-    AlbumType.smartTrash => l10n.smartAlbumTrash,
+    AlbumType.smartFavorites => l10n.labelSmartAlbumFavorites,
+    AlbumType.smartVideos => l10n.labelSmartAlbumVideos,
+    AlbumType.smartGifs => l10n.labelSmartAlbumGifs,
+    AlbumType.smartRaw => l10n.labelSmartAlbumRaw,
+    AlbumType.smartPanoramas => l10n.labelSmartAlbumPanoramas,
+    AlbumType.smartRecentlyAdded => l10n.labelSmartAlbumRecent,
+    AlbumType.smartTrash => l10n.labelSmartAlbumTrash,
     _ => '',
   };
 }
@@ -78,7 +78,7 @@ class AlbumCard extends StatelessWidget {
 
     return Semantics(
       button: onTap != null,
-      label: '$name, ${l10n.albumItemCount(summary.itemCount)}',
+      label: '$name, ${l10n.descAlbumItemCount(summary.itemCount)}',
       child: InkWell(
         borderRadius: BorderRadius.circular(12),
         onTap: onTap,
@@ -104,7 +104,7 @@ class AlbumCard extends StatelessWidget {
                 ),
               ),
               Text(
-                l10n.albumItemCount(summary.itemCount),
+                l10n.descAlbumItemCount(summary.itemCount),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: theme.textTheme.bodySmall?.copyWith(

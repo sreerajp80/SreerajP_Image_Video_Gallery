@@ -1,7 +1,8 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:in_sreerajp_imgvidgal/l10n/generated/app_localizations.dart';
 import 'package:in_sreerajp_imgvidgal/models/backup/restore_plan.dart';
 import 'package:intl/intl.dart';
+import 'package:in_sreerajp_imgvidgal/core/l10n/formatting_locale.dart';
 
 /// Shows what a restore would do, before anything is written.
 ///
@@ -31,7 +32,9 @@ class RestorePreviewSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
-    final date = DateFormat.yMMMd().add_Hm().format(plan.manifest.createdAt);
+    final date = DateFormat.yMMMd(
+      formattingLocale(Localizations.localeOf(context)),
+    ).add_Hm().format(plan.manifest.createdAt);
 
     return SafeArea(
       child: Padding(
@@ -41,10 +44,10 @@ class RestorePreviewSheet extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(l10n.restorePreviewTitle, style: theme.textTheme.titleLarge),
+              Text(l10n.titleRestorePreview, style: theme.textTheme.titleLarge),
               const SizedBox(height: 4),
               Text(
-                l10n.restoreFromBackupDate(date),
+                l10n.bodyRestoreFromBackupDate(date),
                 style: theme.textTheme.bodySmall?.copyWith(
                   color: theme.colorScheme.onSurfaceVariant,
                 ),
@@ -52,25 +55,28 @@ class RestorePreviewSheet extends StatelessWidget {
               const SizedBox(height: 20),
 
               if (plan.isEmpty)
-                Text(l10n.restorePlanNothing, style: theme.textTheme.bodyMedium)
+                Text(
+                  l10n.bodyRestorePlanNothing,
+                  style: theme.textTheme.bodyMedium,
+                )
               else ...[
                 _Line(
                   icon: Icons.label_outline,
-                  text: l10n.restorePlanTags(plan.tagsToCreate.length),
+                  text: l10n.bodyRestorePlanTags(plan.tagsToCreate.length),
                 ),
                 _Line(
                   icon: Icons.photo_album_outlined,
-                  text: l10n.restorePlanAlbums(plan.albumsToCreate.length),
+                  text: l10n.bodyRestorePlanAlbums(plan.albumsToCreate.length),
                 ),
                 _Line(
                   icon: Icons.link,
-                  text: l10n.restorePlanLinks(
+                  text: l10n.bodyRestorePlanLinks(
                     plan.tagLinkCount + plan.albumLinkCount,
                   ),
                 ),
                 _Line(
                   icon: Icons.edit_note,
-                  text: l10n.restorePlanUpdates(plan.mediaUpdateCount),
+                  text: l10n.bodyRestorePlanUpdates(plan.mediaUpdateCount),
                 ),
               ],
 
@@ -82,13 +88,13 @@ class RestorePreviewSheet extends StatelessWidget {
                 _Line(
                   icon: Icons.help_outline,
                   colour: theme.colorScheme.onSurfaceVariant,
-                  text: l10n.restorePlanUnmatched(plan.unmatchedCount),
+                  text: l10n.bodyRestorePlanUnmatched(plan.unmatchedCount),
                 ),
               ],
 
               const SizedBox(height: 16),
               Text(
-                l10n.backupRestoreBody,
+                l10n.bodyBackupRestore,
                 style: theme.textTheme.bodySmall?.copyWith(
                   color: theme.colorScheme.onSurfaceVariant,
                 ),
@@ -109,7 +115,7 @@ class RestorePreviewSheet extends StatelessWidget {
                     onPressed: plan.isEmpty
                         ? null
                         : () => Navigator.of(context).pop(true),
-                    child: Text(l10n.restoreApply),
+                    child: Text(l10n.labelRestoreApply),
                   ),
                 ],
               ),

@@ -11,24 +11,10 @@ import 'package:in_sreerajp_imgvidgal/services/backup/backup_serializer.dart';
 import 'package:in_sreerajp_imgvidgal/services/backup/document_picker_channel.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
+import 'package:in_sreerajp_imgvidgal/models/backup/backup_status.dart';
 
-/// How far a backup has got.
-enum BackupStage {
-  /// Reading the database.
-  collecting,
-
-  /// Turning it into JSON and compressing it.
-  packing,
-
-  /// Waiting for the user to choose where it goes.
-  choosingDestination,
-
-  /// Encrypting into the chosen file.
-  encrypting,
-
-  /// Finished.
-  done,
-}
+// Moved to models so the UI can use it without importing a service (G46).
+export 'package:in_sreerajp_imgvidgal/models/backup/backup_status.dart';
 
 /// What a finished backup produced.
 class BackupResult {
@@ -49,19 +35,6 @@ class BackupResult {
 
   /// Whether the user chose not to save after all.
   bool get wasCancelled => destinationUri == null;
-}
-
-/// Thrown when a backup cannot be made.
-class BackupException implements Exception {
-  final String message;
-
-  /// True when the archive holds nothing worth saving.
-  final bool isEmpty;
-
-  const BackupException(this.message, {this.isEmpty = false});
-
-  @override
-  String toString() => 'BackupException: $message';
 }
 
 /// Writes the whole `.gallerybak` archive.
@@ -192,7 +165,8 @@ class BackupService {
     try {
       if (await file.exists()) await file.delete();
     } catch (_) {
-      // Nothing useful to do. It is app-private and will go with the cache.
+      // Safe to ignore: an app-private temporary file that the cache clean-up
+      // removes.
     }
   }
 }

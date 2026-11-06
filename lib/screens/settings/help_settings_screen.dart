@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:go_router/go_router.dart';
 import 'package:in_sreerajp_imgvidgal/core/routing/app_router.dart';
 import 'package:in_sreerajp_imgvidgal/l10n/generated/app_localizations.dart';
@@ -15,25 +15,27 @@ class HelpSettingsScreen extends StatelessWidget {
     final theme = Theme.of(context);
 
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.settingsHelp)),
-      body: ListView(
-        padding: const EdgeInsets.only(top: 8, bottom: 32),
-        children: <Widget>[
-          Padding(
-            padding: const EdgeInsets.fromLTRB(20, 8, 20, 12),
-            child: Text(
-              l10n.settingsHelpSubtitle,
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: theme.colorScheme.onSurfaceVariant,
+      appBar: AppBar(title: Text(l10n.helpSettings)),
+      body: SafeArea(
+        child: ListView(
+          padding: const EdgeInsets.only(top: 8, bottom: 32),
+          children: <Widget>[
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 8, 20, 12),
+              child: Text(
+                l10n.descSettingsHelpSubtitle,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
               ),
             ),
-          ),
-          for (final topic in HelpTopic.all)
-            HelpTopicCard(
-              topic: topic,
-              onTap: () => context.push(helpTopicPath(topic.id)),
-            ),
-        ],
+            for (final topic in HelpTopic.all)
+              HelpTopicCard(
+                topic: topic,
+                onTap: () => context.push(helpTopicPath(topic.id)),
+              ),
+          ],
+        ),
       ),
     );
   }

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:in_sreerajp_imgvidgal/l10n/generated/app_localizations.dart';
 import 'package:in_sreerajp_imgvidgal/models/video/trim_range.dart';
 
@@ -38,7 +38,6 @@ class TrimRangeBar extends StatelessWidget {
             range.startMs.toDouble().clamp(0, max),
             range.endMs.toDouble().clamp(0, max),
           ),
-          min: 0,
           max: max,
           labels: RangeLabels(
             formatDuration(range.startMs),
@@ -57,18 +56,18 @@ class TrimRangeBar extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: <Widget>[
             _Figure(
-              label: l10n.trimStartLabel,
+              label: l10n.labelTrimStart,
               value: formatDuration(range.startMs),
             ),
             _Figure(
-              label: l10n.trimLengthLabel,
+              label: l10n.labelTrimLength,
               value: formatDuration(range.durationMs),
               style: theme.textTheme.titleSmall?.copyWith(
                 color: theme.colorScheme.primary,
               ),
             ),
             _Figure(
-              label: l10n.trimEndLabel,
+              label: l10n.labelTrimEnd,
               value: formatDuration(range.endMs),
             ),
           ],

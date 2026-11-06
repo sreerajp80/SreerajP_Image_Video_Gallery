@@ -9,7 +9,7 @@ import 'package:in_sreerajp_imgvidgal/models/editor/markup_layer.dart';
 import 'package:in_sreerajp_imgvidgal/models/editor/redaction_region.dart';
 import 'package:in_sreerajp_imgvidgal/models/editor/tone_adjustments.dart';
 import 'package:in_sreerajp_imgvidgal/models/editor/watermark_config.dart';
-import 'package:in_sreerajp_imgvidgal/services/editor/crop_transform_service.dart';
+import 'package:in_sreerajp_imgvidgal/core/domain/editor/crop_transform_service.dart';
 import 'package:in_sreerajp_imgvidgal/services/editor/image_render_pipeline.dart';
 
 /// A picture with a distinct colour in each quarter.
@@ -359,7 +359,6 @@ void main() {
             watermark: const WatermarkConfig(
               mode: WatermarkMode.text,
               text: 'MINE',
-              position: WatermarkPosition.bottomRight,
               colorArgb: 0xFF000000,
               opacity: 1,
               scale: 0.2,

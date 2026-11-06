@@ -11,7 +11,6 @@ void main() {
     test('frames are spaced by the chosen frame rate', () {
       final times = planner.plan(
         options: const GifExportOptions(
-          frameRate: 10,
           range: TrimRange(startMs: 0, endMs: 500),
         ),
         clipDurationMs: 5000,
@@ -36,7 +35,6 @@ void main() {
     test('a range running past the clip is cut at the clip end', () {
       final times = planner.plan(
         options: const GifExportOptions(
-          frameRate: 10,
           range: TrimRange(startMs: 0, endMs: 999999),
         ),
         clipDurationMs: 300,
@@ -47,10 +45,7 @@ void main() {
 
     test('an end of zero means the whole clip', () {
       final times = planner.plan(
-        options: const GifExportOptions(
-          frameRate: 5,
-          range: TrimRange(startMs: 0, endMs: 0),
-        ),
+        options: const GifExportOptions(frameRate: 5),
         clipDurationMs: 600,
       );
 
@@ -105,7 +100,6 @@ void main() {
   group('frameCount and isCapped', () {
     test('the count matches the plan', () {
       const options = GifExportOptions(
-        frameRate: 10,
         range: TrimRange(startMs: 0, endMs: 1000),
       );
 

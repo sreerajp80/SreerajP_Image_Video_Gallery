@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:in_sreerajp_imgvidgal/core/constants/app_constants.dart';
 import 'package:in_sreerajp_imgvidgal/l10n/generated/app_localizations.dart';
@@ -71,10 +71,13 @@ class _ResizePanelState extends State<ResizePanel> {
           spacing: 8,
           runSpacing: 8,
           children: <Widget>[
-            _modeChip(ResizeMode.none, l10n.convertResizeNone),
-            _modeChip(ResizeMode.longestSide, l10n.convertResizeLongestSide),
-            _modeChip(ResizeMode.percent, l10n.convertResizePercent),
-            _modeChip(ResizeMode.exact, l10n.convertResizeExact),
+            _modeChip(ResizeMode.none, l10n.labelConvertResizeNone),
+            _modeChip(
+              ResizeMode.longestSide,
+              l10n.labelConvertResizeLongestSide,
+            ),
+            _modeChip(ResizeMode.percent, l10n.labelConvertResizePercent),
+            _modeChip(ResizeMode.exact, l10n.labelConvertResizeExact),
           ],
         ),
         const SizedBox(height: 12),
@@ -98,7 +101,7 @@ class _ResizePanelState extends State<ResizePanel> {
       case ResizeMode.none:
         return <Widget>[
           Text(
-            l10n.convertPixelSize(widget.sourceWidth, widget.sourceHeight),
+            l10n.bodyConvertPixelSize(widget.sourceWidth, widget.sourceHeight),
             style: Theme.of(context).textTheme.bodySmall,
           ),
         ];
@@ -107,7 +110,7 @@ class _ResizePanelState extends State<ResizePanel> {
         return <Widget>[
           _numberField(
             controller: _longestSide,
-            label: l10n.convertLongestSideLabel,
+            label: l10n.labelConvertLongestSide,
             onSubmitted: widget.onLongestSideChanged,
           ),
         ];
@@ -115,7 +118,7 @@ class _ResizePanelState extends State<ResizePanel> {
       case ResizeMode.percent:
         return <Widget>[
           Text(
-            l10n.convertPercentLabel,
+            l10n.labelConvertPercent,
             style: Theme.of(context).textTheme.labelMedium,
           ),
           Slider(
@@ -139,7 +142,7 @@ class _ResizePanelState extends State<ResizePanel> {
               Expanded(
                 child: _numberField(
                   controller: _width,
-                  label: l10n.convertWidth,
+                  label: l10n.labelConvertWidth,
                   onSubmitted: (value) => widget.onExactChanged(width: value),
                 ),
               ),
@@ -147,7 +150,7 @@ class _ResizePanelState extends State<ResizePanel> {
               Expanded(
                 child: _numberField(
                   controller: _height,
-                  label: l10n.convertHeight,
+                  label: l10n.labelConvertHeight,
                   onSubmitted: (value) => widget.onExactChanged(height: value),
                 ),
               ),
@@ -155,7 +158,7 @@ class _ResizePanelState extends State<ResizePanel> {
           ),
           SwitchListTile(
             contentPadding: EdgeInsets.zero,
-            title: Text(l10n.convertKeepAspect),
+            title: Text(l10n.titleConvertKeepAspect),
             value: widget.spec.keepAspect,
             onChanged: widget.onKeepAspectChanged,
           ),

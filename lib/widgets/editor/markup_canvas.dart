@@ -1,9 +1,10 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:in_sreerajp_imgvidgal/l10n/generated/app_localizations.dart';
 import 'package:in_sreerajp_imgvidgal/models/editor/markup_layer.dart';
 import 'package:in_sreerajp_imgvidgal/providers/editor_providers.dart';
-import 'package:in_sreerajp_imgvidgal/services/editor/crop_transform_service.dart';
-import 'package:in_sreerajp_imgvidgal/services/editor/markup_geometry_service.dart';
+import 'package:in_sreerajp_imgvidgal/core/domain/editor/crop_transform_service.dart';
+import 'package:in_sreerajp_imgvidgal/core/domain/editor/markup_geometry_service.dart';
+import 'package:in_sreerajp_imgvidgal/widgets/common/color_swatch_button.dart';
 import 'package:in_sreerajp_imgvidgal/widgets/editor/editor_slider_row.dart';
 
 /// The drawing surface laid over the preview.
@@ -94,26 +95,32 @@ class _MarkupCanvasState extends State<MarkupCanvas> {
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final size = Size(constraints.maxWidth, constraints.maxHeight);
-        return GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          onPanStart: (details) => _start(details.localPosition, size),
-          onPanUpdate: (details) => _update(details.localPosition, size),
-          onPanEnd: (_) => _finish(),
-          onPanCancel: _finish,
-          child: CustomPaint(
-            painter: MarkupPainter(
-              layers: <MarkupLayer>[
-                ...widget.layers,
-                if (_inProgress != null) _inProgress!,
-              ],
+    final l10n = AppLocalizations.of(context)!;
+    // Freehand drawing cannot be done with a screen reader. The surface says
+    // so and points to the controls panel, which is fully accessible.
+    return Semantics(
+      container: true,
+      label: l10n.labelA11yMarkupArea,
+      value: l10n.bodyA11yMarkupValue(widget.layers.length),
+      hint: l10n.helpA11yDrawingNeedsTouchHint,
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final size = Size(constraints.maxWidth, constraints.maxHeight);
+          return GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onPanStart: (details) => _start(details.localPosition, size),
+            onPanUpdate: (details) => _update(details.localPosition, size),
+            onPanEnd: (_) => _finish(),
+            onPanCancel: _finish,
+            child: CustomPaint(
+              painter: MarkupPainter(
+                layers: <MarkupLayer>[...widget.layers, ?_inProgress],
+              ),
+              size: size,
             ),
-            size: size,
-          ),
-        );
-      },
+          );
+        },
+      ),
     );
   }
 }
@@ -309,18 +316,18 @@ class MarkupControlsPanel extends StatelessWidget {
             runSpacing: 8,
             children: [
               ChoiceChip(
-                label: Text(l10n.markupFreehand),
+                label: Text(l10n.labelMarkupFreehand),
                 selected: settings.freehand,
                 onSelected: (_) =>
                     onSettingsChanged(settings.copyWith(freehand: true)),
               ),
-              _shapeChip(l10n.markupRectangle, ShapeKind.rectangle),
-              _shapeChip(l10n.markupEllipse, ShapeKind.ellipse),
-              _shapeChip(l10n.markupLine, ShapeKind.line),
-              _shapeChip(l10n.markupArrow, ShapeKind.arrow),
+              _shapeChip(l10n.labelMarkupRectangle, ShapeKind.rectangle),
+              _shapeChip(l10n.labelMarkupEllipse, ShapeKind.ellipse),
+              _shapeChip(l10n.labelMarkupLine, ShapeKind.line),
+              _shapeChip(l10n.labelMarkupArrow, ShapeKind.arrow),
               ActionChip(
                 avatar: const Icon(Icons.text_fields, size: 18),
-                label: Text(l10n.markupText),
+                label: Text(l10n.labelMarkupText),
                 onPressed: onAddText,
               ),
             ],
@@ -330,14 +337,15 @@ class MarkupControlsPanel extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Row(
             children: [
-              Text(l10n.markupColor, style: theme.textTheme.labelLarge),
+              Text(l10n.labelMarkupColor, style: theme.textTheme.labelLarge),
               const SizedBox(width: 12),
               Expanded(
                 child: Wrap(
-                  spacing: 10,
                   children: penColors.map((argb) {
                     final isSelected = settings.colorArgb == argb;
-                    return GestureDetector(
+                    return ColorSwatchButton(
+                      argb: argb,
+                      selected: isSelected,
                       onTap: () =>
                           onSettingsChanged(settings.copyWith(colorArgb: argb)),
                       child: Container(
@@ -362,7 +370,7 @@ class MarkupControlsPanel extends StatelessWidget {
           ),
         ),
         EditorSliderRow(
-          label: l10n.markupThickness,
+          label: l10n.labelMarkupThickness,
           value: settings.strokeWidth,
           min: 0.002,
           max: 0.04,
@@ -375,7 +383,7 @@ class MarkupControlsPanel extends StatelessWidget {
             settings.shape != ShapeKind.line &&
             settings.shape != ShapeKind.arrow)
           SwitchListTile(
-            title: Text(l10n.markupFilled),
+            title: Text(l10n.titleMarkupFilled),
             value: settings.filled,
             onChanged: (value) =>
                 onSettingsChanged(settings.copyWith(filled: value)),
@@ -387,7 +395,7 @@ class MarkupControlsPanel extends StatelessWidget {
             children: [
               Flexible(
                 child: Text(
-                  l10n.markupHint,
+                  l10n.helpMarkupHint,
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: theme.colorScheme.onSurfaceVariant,
                   ),
@@ -396,7 +404,7 @@ class MarkupControlsPanel extends StatelessWidget {
               TextButton.icon(
                 onPressed: canRemove ? onRemoveLast : null,
                 icon: const Icon(Icons.undo),
-                label: Text(l10n.markupUndoLayer),
+                label: Text(l10n.actionMarkupUndoLayer),
               ),
             ],
           ),

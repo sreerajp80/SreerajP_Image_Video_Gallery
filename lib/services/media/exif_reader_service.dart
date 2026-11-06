@@ -30,6 +30,8 @@ class ExifReaderService {
       if (bytes.length < 256 * 1024) return parseBytes(bytes);
       return await Isolate.run(() => parseBytes(bytes));
     } catch (_) {
+      // Safe to ignore: many photos have no readable EXIF; the details simply
+      // show as empty (hard rule 5).
       return null;
     }
   }
@@ -43,6 +45,8 @@ class ExifReaderService {
       if (raw == null || raw.isEmpty) return null;
       return _map(raw);
     } catch (_) {
+      // Safe to ignore: many photos have no readable EXIF; the details simply
+      // show as empty (hard rule 5).
       return null;
     }
   }
@@ -140,7 +144,7 @@ class ExifReaderService {
 
     double decimal;
     if (value.length >= 3) {
-      final degrees = value.toDouble(0);
+      final degrees = value.toDouble();
       final minutes = value.toDouble(1);
       final seconds = value.toDouble(2);
       if (degrees.isNaN || minutes.isNaN || seconds.isNaN) return null;

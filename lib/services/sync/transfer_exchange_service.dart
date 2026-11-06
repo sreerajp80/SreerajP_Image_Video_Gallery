@@ -7,6 +7,7 @@ import 'package:in_sreerajp_imgvidgal/models/sync/transfer_progress.dart';
 import 'package:in_sreerajp_imgvidgal/services/sync/p2p_connection.dart';
 import 'package:in_sreerajp_imgvidgal/services/sync/transfer_crypto_service.dart';
 import 'package:in_sreerajp_imgvidgal/services/sync/transfer_protocol.dart';
+import 'package:in_sreerajp_imgvidgal/core/logging/app_logger.dart';
 
 /// Where an arriving file should be written, and what to do once it is there.
 ///
@@ -360,7 +361,8 @@ class TransferExchangeService {
       await _sink.commit(entry, staged);
       await _sendAck(index, true);
       return true;
-    } catch (_) {
+    } catch (error) {
+      AppLogger.warning('Saving a received file failed', error: error);
       await _deleteQuietly(staged);
       await _sendAck(index, false);
       return false;
@@ -436,7 +438,7 @@ class TransferExchangeService {
       await sink.flush();
       await sink.close();
     } catch (_) {
-      // Nothing useful to do; the staging file is deleted either way.
+      // Safe to ignore: the staging file is deleted either way.
     }
   }
 
@@ -444,7 +446,7 @@ class TransferExchangeService {
     try {
       if (await file.exists()) await file.delete();
     } catch (_) {
-      // App-private staging; it goes with the cache.
+      // Safe to ignore: app-private staging space that goes with the cache.
     }
   }
 }

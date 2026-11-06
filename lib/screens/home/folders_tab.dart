@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:in_sreerajp_imgvidgal/core/routing/app_router.dart';
@@ -22,12 +22,12 @@ class FoldersTab extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(l10n.foldersTitle),
+        title: Text(l10n.titleFolders),
         actions: <Widget>[
           IconButton(
             onPressed: () => context.push(kRouteSearch),
             icon: const Icon(Icons.search),
-            tooltip: l10n.searchOpen,
+            tooltip: l10n.tooltipSearchOpen,
           ),
         ],
       ),
@@ -42,7 +42,7 @@ class FoldersTab extends ConsumerWidget {
                   child: Padding(
                     padding: const EdgeInsets.all(32),
                     child: Text(
-                      l10n.albumsLoadFailed,
+                      l10n.errorAlbumsLoadFailed,
                       textAlign: TextAlign.center,
                       style: Theme.of(context).textTheme.titleMedium,
                     ),
@@ -77,7 +77,7 @@ class FoldersTab extends ConsumerWidget {
                                         ),
                                         const SizedBox(height: 16),
                                         Text(
-                                          l10n.foldersEmpty,
+                                          l10n.emptyFolders,
                                           textAlign: TextAlign.center,
                                           style: Theme.of(context)
                                               .textTheme
@@ -88,7 +88,7 @@ class FoldersTab extends ConsumerWidget {
                                         ),
                                         const SizedBox(height: 8),
                                         Text(
-                                          l10n.foldersEmptyBody,
+                                          l10n.bodyFoldersEmpty,
                                           textAlign: TextAlign.center,
                                           style: Theme.of(context)
                                               .textTheme

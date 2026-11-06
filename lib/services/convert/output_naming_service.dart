@@ -4,15 +4,11 @@ import 'dart:typed_data';
 import 'package:in_sreerajp_imgvidgal/core/constants/app_constants.dart';
 import 'package:in_sreerajp_imgvidgal/core/storage/atomic_saver.dart';
 import 'package:path/path.dart' as p;
+import 'package:in_sreerajp_imgvidgal/core/errors/app_exception.dart';
 
 /// Thrown when an output file cannot be named or written.
-class OutputSaveException implements Exception {
-  final String message;
-
-  const OutputSaveException(this.message);
-
-  @override
-  String toString() => 'OutputSaveException: $message';
+final class OutputSaveException extends FeatureException {
+  const OutputSaveException(super.message, {super.cause});
 }
 
 /// Names and writes every file Phase 7 produces.
@@ -90,7 +86,7 @@ class OutputNamingService {
     } on OutputSaveException {
       rethrow;
     } catch (error) {
-      throw OutputSaveException('The file could not be saved: $error');
+      throw OutputSaveException('The file could not be saved', cause: error);
     }
   }
 

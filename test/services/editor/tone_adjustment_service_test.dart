@@ -2,7 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:in_sreerajp_imgvidgal/models/editor/tone_adjustments.dart';
 import 'package:in_sreerajp_imgvidgal/models/editor/tone_curve.dart';
 import 'package:in_sreerajp_imgvidgal/services/editor/tone_adjustment_service.dart';
-import 'package:in_sreerajp_imgvidgal/services/editor/tone_curve_service.dart';
+import 'package:in_sreerajp_imgvidgal/core/domain/editor/tone_curve_service.dart';
 
 void main() {
   const curveService = ToneCurveService();
@@ -42,7 +42,7 @@ void main() {
     test('a NaN point is thrown away rather than breaking the table', () {
       final cleaned = curveService.sanitize(<CurvePoint>[
         const CurvePoint(0, 0),
-        CurvePoint(double.nan, 100),
+        const CurvePoint(double.nan, 100),
         const CurvePoint(255, 255),
       ]);
 

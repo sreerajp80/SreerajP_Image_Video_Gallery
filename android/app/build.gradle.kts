@@ -2,7 +2,10 @@ import java.io.File
 import java.io.FileInputStream
 import java.time.LocalDate
 import java.util.Properties
+import javax.inject.Inject
 import org.gradle.api.GradleException
+import org.gradle.process.ExecOperations
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     id("com.android.application")
@@ -31,6 +34,16 @@ val dartExecutable = File(
 )
 val projectRootDir = rootProject.projectDir.parentFile
 
+// Gradle 9 removed `project.exec { }`. A task that runs a process gets
+// ExecOperations injected instead; this works on Gradle 8 and 9 alike
+// (standard 5.3, flavors guide "Android Toolchain Baseline").
+interface InjectedExecOperations {
+    @get:Inject
+    val execOperations: ExecOperations
+}
+
+val buildMetadataExec = objects.newInstance<InjectedExecOperations>().execOperations
+
 val generateBuildMetadata = tasks.register("generateBuildMetadata") {
     group = "build setup"
     description = "Generates About-screen build metadata before Android builds."
@@ -50,11 +63,11 @@ val generateBuildMetadata = tasks.register("generateBuildMetadata") {
             )
         }
 
-        project.exec {
+        buildMetadataExec.exec {
             workingDir = projectRootDir
             commandLine(dartExecutable.absolutePath, "run", "tool/generate_app_version.dart")
         }
-        project.exec {
+        buildMetadataExec.exec {
             workingDir = projectRootDir
             commandLine(dartExecutable.absolutePath, "run", "tool/generate_build_date.dart")
         }
@@ -81,14 +94,10 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
 
-    kotlinOptions {
-        jvmTarget = "17"
-    }
-
     defaultConfig {
         applicationId = "in.sreerajp.imgvidgal"
         minSdk = 24
-        targetSdk = 35
+        targetSdk = 36
         versionCode = flutter.versionCode
         versionName = flutter.versionName
     }
@@ -129,20 +138,75 @@ android {
     }
 
     flavorDimensions += "environment"
+    // The app name per flavor and language lives in src/<flavor>/res/values*/
+    // strings.xml, never in resValue(...): a resValue cannot be translated, and
+    // AGP 9 turns the feature off (flavors guide, guideline.md 1.8).
     productFlavors {
         create("dev") {
             dimension = "environment"
             applicationIdSuffix = ".dev"
             versionNameSuffix = "-dev"
-            resValue("string", "app_name", "SreerajP Gallery Dev")
         }
         create("prod") {
             dimension = "environment"
-            resValue("string", "app_name", "SreerajP Image Video Gallery")
+        }
+    }
+
+    // Keep every language in the App Bundle. The language is picked inside
+    // the app, so a Play install on an English phone must still carry the
+    // Malayalam and Sanskrit resources (engineering standard §8.1).
+    bundle {
+        language {
+            enableSplit = false
         }
     }
 }
 
 flutter {
     source = "../.."
+}
+
+// A prod release must never build without the release key. The check runs when
+// the task graph is ready, so it fails at the start and not after a full build.
+gradle.taskGraph.whenReady {
+    val isProdRelease = allTasks.any { task ->
+        task.name == "assembleProdRelease" || task.name == "bundleProdRelease"
+    }
+    if (isProdRelease) {
+        val props = Properties()
+        if (keystorePropertiesFile.exists()) {
+            keystorePropertiesFile.inputStream().use(props::load)
+        }
+        val missing = listOf("storeFile", "storePassword", "keyAlias", "keyPassword")
+            .filter { props.getProperty(it).isNullOrBlank() }
+        val storeFilePath = props.getProperty("storeFile")
+        val storeFileFound = storeFilePath.isNullOrBlank() ||
+            file(storeFilePath).exists() ||
+            rootProject.file(storeFilePath).exists()
+        if (missing.isNotEmpty() || !storeFileFound) {
+            throw GradleException(
+                "Prod release blocked: signing details are not complete. " +
+                    "Check android/key.properties. Missing: $missing. " +
+                    "Keystore file found: $storeFileFound. " +
+                    "See docs/guidelines/flutter_build_flavors_guide.md."
+            )
+        }
+    }
+}
+
+dependencies {
+    // Barcode and QR decoding (BarcodeChannelHandler). The original ZXing
+    // library: Apache-2.0, plain Java, no dependencies and no network code.
+    // It replaced Google's closed-source ML Kit (G47). Never add
+    // com.google.mlkit or com.google.android.gms here.
+    implementation("com.google.zxing:core:3.5.3")
+}
+
+// The Kotlin JVM target. The old `kotlinOptions { }` inside `android { }` is
+// deprecated and fails on AGP 9 (standard 5.3). Keep it equal to
+// compileOptions above.
+kotlin {
+    compilerOptions {
+        jvmTarget.set(JvmTarget.JVM_17)
+    }
 }

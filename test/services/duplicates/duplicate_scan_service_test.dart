@@ -10,7 +10,7 @@ import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'fake_hash_tools_channel.dart';
 
 MediaItem item(String id, {MediaType type = MediaType.image}) {
-  final when = DateTime(2026, 1, 1);
+  final when = DateTime(2026);
   return MediaItem(
     id: id,
     path: '/storage/DCIM/$id.jpg',
@@ -86,7 +86,7 @@ void main() {
         channel.digests['content://media/item$i'] = 'digest$i';
       }
 
-      final state = await build(pageSize: 2).run();
+      final state = await build().run();
 
       expect(state.processed, 5);
       expect(state.stage, DuplicateScanStage.done);
@@ -153,7 +153,7 @@ void main() {
         channel.digests['content://media/item$i'] = 'digest$i';
       }
 
-      final service = build(pageSize: 2);
+      final service = build();
       final state = await service.run(
         onProgress: (s) {
           if (s.processed >= 2) service.cancel();
@@ -171,9 +171,7 @@ void main() {
       }
 
       final seen = <int>[];
-      await build(
-        pageSize: 2,
-      ).run(onProgress: (state) => seen.add(state.processed));
+      await build().run(onProgress: (state) => seen.add(state.processed));
 
       expect(seen, contains(2));
       expect(seen.last, 4);

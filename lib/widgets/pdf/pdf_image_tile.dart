@@ -1,6 +1,8 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:in_sreerajp_imgvidgal/l10n/generated/app_localizations.dart';
 import 'package:in_sreerajp_imgvidgal/models/pdf/pdf_image_entry.dart';
+import 'package:in_sreerajp_imgvidgal/widgets/common/unit_format_context.dart';
+import 'package:in_sreerajp_imgvidgal/widgets/common/sized_memory_image.dart';
 
 /// One picture found inside a PDF.
 ///
@@ -45,14 +47,16 @@ class PdfImageTile extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
                     Text(
-                      l10n.pdfImageSize(entry.width, entry.height),
+                      l10n.bodyPdfImageSize(entry.width, entry.height),
                       style: theme.textTheme.bodyMedium,
                     ),
                     const SizedBox(height: 2),
                     Text(
                       usable
-                          ? '${entry.format.extension.toUpperCase()} · '
-                                '${_readableSize(entry.byteCount)}'
+                          ? l10n.bodyPdfImageFormatAndSize(
+                              entry.format.extension.toUpperCase(),
+                              context.units.bytes(entry.byteCount),
+                            )
                           : _skipReason(l10n, entry.skipReason!),
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: usable
@@ -89,9 +93,10 @@ class PdfImageTile extends StatelessWidget {
         width: 64,
         height: 64,
         child: usable
-            ? Image.memory(
+            ? SizedMemoryImage(
                 entry.bytes!,
-                fit: BoxFit.cover,
+                width: 64,
+                height: 64,
                 // A picture pulled out of an untrusted PDF may not decode, and
                 // that must not take the list down with it.
                 errorBuilder: (context, error, stack) => ColoredBox(
@@ -110,20 +115,16 @@ class PdfImageTile extends StatelessWidget {
     );
   }
 
-  String _readableSize(int bytes) {
-    if (bytes < 1024) return '$bytes B';
-    if (bytes < 1024 * 1024) return '${(bytes / 1024).round()} KB';
-    return '${(bytes / (1024 * 1024)).toStringAsFixed(1)} MB';
-  }
-
   String _skipReason(AppLocalizations l10n, PdfImageSkipReason reason) {
     return switch (reason) {
-      PdfImageSkipReason.unsupportedFilter => l10n.pdfSkipUnsupportedFilter,
-      PdfImageSkipReason.unsupportedColorSpace => l10n.pdfSkipUnsupportedColor,
-      PdfImageSkipReason.unsupportedBitDepth => l10n.pdfSkipUnsupportedDepth,
-      PdfImageSkipReason.tooLarge => l10n.pdfSkipTooLarge,
-      PdfImageSkipReason.malformed => l10n.pdfSkipMalformed,
-      PdfImageSkipReason.decodeFailed => l10n.pdfSkipDecodeFailed,
+      PdfImageSkipReason.unsupportedFilter => l10n.bodyPdfSkipUnsupportedFilter,
+      PdfImageSkipReason.unsupportedColorSpace =>
+        l10n.bodyPdfSkipUnsupportedColor,
+      PdfImageSkipReason.unsupportedBitDepth =>
+        l10n.bodyPdfSkipUnsupportedDepth,
+      PdfImageSkipReason.tooLarge => l10n.bodyPdfSkipTooLarge,
+      PdfImageSkipReason.malformed => l10n.bodyPdfSkipMalformed,
+      PdfImageSkipReason.decodeFailed => l10n.errorPdfSkipDecodeFailed,
     };
   }
 }

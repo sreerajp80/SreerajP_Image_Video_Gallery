@@ -46,8 +46,8 @@ void main() {
         mediaType: MediaType.image,
         mimeType: 'image/jpeg',
         size: 1024,
-        dateAdded: DateTime(2026, 1, 1),
-        dateModified: DateTime(2026, 1, 1),
+        dateAdded: DateTime(2026),
+        dateModified: DateTime(2026),
       ),
     );
   });

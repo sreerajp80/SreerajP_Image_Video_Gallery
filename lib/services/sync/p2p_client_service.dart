@@ -4,7 +4,7 @@ import 'dart:typed_data';
 import 'package:in_sreerajp_imgvidgal/core/constants/app_constants.dart';
 import 'package:in_sreerajp_imgvidgal/models/sync/pairing_payload.dart';
 import 'package:in_sreerajp_imgvidgal/models/sync/transfer_outcome.dart';
-import 'package:in_sreerajp_imgvidgal/services/sync/local_address_rules.dart';
+import 'package:in_sreerajp_imgvidgal/core/domain/sync/local_address_rules.dart';
 import 'package:in_sreerajp_imgvidgal/services/sync/p2p_connection.dart';
 
 /// Connects to the device whose pairing code was scanned.
@@ -94,7 +94,7 @@ class P2pClientService {
     try {
       _socket?.destroy();
     } catch (_) {
-      // Already gone.
+      // Safe to ignore: the socket is already gone.
     }
     _socket = null;
   }

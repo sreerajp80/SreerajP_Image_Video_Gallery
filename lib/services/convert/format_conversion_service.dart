@@ -4,19 +4,15 @@ import 'package:in_sreerajp_imgvidgal/models/convert/conversion_request.dart';
 import 'package:in_sreerajp_imgvidgal/models/convert/image_output_format.dart';
 import 'package:in_sreerajp_imgvidgal/services/convert/image_codec_channel.dart';
 import 'package:in_sreerajp_imgvidgal/services/convert/image_resize_service.dart';
+import 'package:in_sreerajp_imgvidgal/core/errors/app_exception.dart';
 
 /// Thrown when a picture cannot be converted.
 ///
 /// A corrupt or unsupported file is a normal thing to meet on a device, so
 /// this is a plain exception the screen turns into a message rather than
 /// something that takes the app down.
-class ConversionException implements Exception {
-  final String message;
-
-  const ConversionException(this.message);
-
-  @override
-  String toString() => 'ConversionException: $message';
+final class ConversionException extends FeatureException {
+  const ConversionException(super.message, {super.cause});
 }
 
 /// Everything one conversion needs, in a shape that can cross into an
@@ -165,7 +161,7 @@ class FormatConversionService {
     } on ConversionException {
       rethrow;
     } catch (error) {
-      throw ConversionException('The picture could not be read: $error');
+      throw ConversionException('The picture could not be read', cause: error);
     }
   }
 
@@ -188,7 +184,7 @@ class FormatConversionService {
     } on ConversionException {
       rethrow;
     } catch (error) {
-      throw ConversionException('The picture could not be saved: $error');
+      throw ConversionException('The picture could not be saved', cause: error);
     }
   }
 
@@ -197,13 +193,9 @@ class FormatConversionService {
   /// JPEG and BMP have no transparency. Without this step every clear pixel
   /// would come out black, which surprises people who convert a logo PNG.
   img.Image flattenOntoWhite(img.Image image) {
-    final canvas = img.Image(
-      width: image.width,
-      height: image.height,
-      numChannels: 3,
-    );
+    final canvas = img.Image(width: image.width, height: image.height);
     img.fill(canvas, color: img.ColorRgb8(255, 255, 255));
-    return img.compositeImage(canvas, image, blend: img.BlendMode.alpha);
+    return img.compositeImage(canvas, image);
   }
 
   /// Straight RGBA bytes for the platform encoder.

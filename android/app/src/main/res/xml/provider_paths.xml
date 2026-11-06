@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- The only folder the file provider may hand to other apps. ShareService
+     writes every file it shares into cache/shared_media/, and the Kotlin
+     shareFile handler refuses any path outside it. Keep this as narrow as it
+     is (engineering standard 15.1, "FileProvider paths are as narrow as
+     possible"). -->
 <paths xmlns:android="http://schemas.android.com/apk/res/android">
-    <cache-path name="shared_cache" path="." />
-    <external-cache-path name="shared_external_cache" path="." />
+    <cache-path name="shared_media" path="shared_media/" />
 </paths>

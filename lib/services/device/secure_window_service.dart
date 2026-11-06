@@ -12,9 +12,10 @@ import 'package:in_sreerajp_imgvidgal/services/vault/vault_channel.dart';
 /// viewer opening on top of the vault grid asks for the flag too, and when the
 /// viewer closes the grid is still on screen and still needs it.
 ///
-/// Deliberately scoped to the vault screens. Setting it for the whole app
-/// would stop the user screenshotting an ordinary holiday photo, which is not
-/// what anybody asked for.
+/// Always on for the vault screens (`SecureScreen`). For the rest of the app
+/// it is the user's choice, off by default ("Hide content" in privacy
+/// settings, `AppScreenProtection`): blocking a screenshot of an ordinary
+/// holiday photo is not what most people want.
 abstract class SecureWindowService {
   /// Asks for the secure flag. Every call must be matched by a [release].
   Future<void> acquire();

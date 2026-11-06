@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:in_sreerajp_imgvidgal/l10n/generated/app_localizations.dart';
 import 'package:in_sreerajp_imgvidgal/providers/album_providers.dart';
@@ -40,7 +40,9 @@ class AlbumCoverPicker extends ConsumerWidget {
     navigator.pop();
     messenger.showSnackBar(
       SnackBar(
-        content: Text(failed ? l10n.albumErrorFailed : l10n.albumCoverSet),
+        content: Text(
+          failed ? l10n.errorAlbumErrorFailed : l10n.bodyAlbumCoverSet,
+        ),
       ),
     );
   }
@@ -58,7 +60,7 @@ class AlbumCoverPicker extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
             Text(
-              l10n.albumCoverTitle,
+              l10n.titleAlbumCover,
               style: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: 8),
@@ -70,13 +72,13 @@ class AlbumCoverPicker extends ConsumerWidget {
                 ),
                 error: (_, _) => Padding(
                   padding: const EdgeInsets.symmetric(vertical: 32),
-                  child: Text(l10n.albumsLoadFailed),
+                  child: Text(l10n.errorAlbumsLoadFailed),
                 ),
                 data: (items) {
                   if (items.isEmpty) {
                     return Padding(
                       padding: const EdgeInsets.symmetric(vertical: 32),
-                      child: Text(l10n.albumEmptyTitle),
+                      child: Text(l10n.titleAlbumEmpty),
                     );
                   }
                   return GridView.builder(
@@ -102,7 +104,7 @@ class AlbumCoverPicker extends ConsumerWidget {
               alignment: Alignment.centerLeft,
               child: TextButton(
                 onPressed: () => _choose(context, ref, null),
-                child: Text(l10n.albumCoverClear),
+                child: Text(l10n.actionAlbumCoverClear),
               ),
             ),
           ],

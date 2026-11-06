@@ -10,6 +10,7 @@ import 'package:in_sreerajp_imgvidgal/services/duplicates/content_hash_service.d
 import 'package:in_sreerajp_imgvidgal/services/duplicates/duplicate_group_service.dart';
 import 'package:in_sreerajp_imgvidgal/services/duplicates/duplicate_scan_service.dart';
 import 'package:in_sreerajp_imgvidgal/services/duplicates/hash_tools_channel.dart';
+import 'package:flutter_riverpod/legacy.dart';
 
 /// Platform bridge for streamed digests and downsampled grayscale decoding.
 final hashToolsChannelProvider = Provider<HashToolsChannel>((ref) {

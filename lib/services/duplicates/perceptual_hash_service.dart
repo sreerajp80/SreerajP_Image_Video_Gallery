@@ -2,6 +2,7 @@ import 'dart:math' as math;
 import 'dart:typed_data';
 
 import 'package:in_sreerajp_imgvidgal/core/constants/app_constants.dart';
+import 'package:in_sreerajp_imgvidgal/core/errors/app_exception.dart';
 
 /// Works out the two 64-bit fingerprints that say whether two pictures look
 /// alike.
@@ -162,9 +163,10 @@ class PerceptualHashService {
   /// Turns the flat grayscale bytes into a square of doubles.
   List<List<double>> _toMatrix(Uint8List grayscale) {
     if (grayscale.length != gridSize * gridSize) {
-      throw ArgumentError(
+      throw ValidationException(
+        'grayscale',
         'Expected ${gridSize * gridSize} grayscale bytes, '
-        'got ${grayscale.length}',
+            'got ${grayscale.length}',
       );
     }
     return <List<double>>[
@@ -246,9 +248,10 @@ class PerceptualHashService {
   /// is looking for.
   Uint8List _resizeGrid(Uint8List grayscale, int columns, int rows) {
     if (grayscale.length != gridSize * gridSize) {
-      throw ArgumentError(
+      throw ValidationException(
+        'grayscale',
         'Expected ${gridSize * gridSize} grayscale bytes, '
-        'got ${grayscale.length}',
+            'got ${grayscale.length}',
       );
     }
     final out = Uint8List(columns * rows);
