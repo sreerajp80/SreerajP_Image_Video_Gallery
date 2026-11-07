@@ -38,6 +38,14 @@ class AppSettings {
   /// (G28, `docs/security.md` §10).
   final bool protectAllScreens;
 
+  /// Whether a permanent delete writes over each file before removing it,
+  /// so undelete tools cannot get it back.
+  ///
+  /// Covers "Delete permanently" from the gallery and every delete from the
+  /// trash. Off by default: it is slower and Android asks for permission to
+  /// modify the files first. Vault deletes ignore this and always shred.
+  final bool secureDelete;
+
   const AppSettings({
     this.theme = ThemePreference.system,
     this.localeCode,
@@ -45,6 +53,7 @@ class AppSettings {
     this.showFlashbacks = true,
     this.confirmDestructive = true,
     this.protectAllScreens = false,
+    this.secureDelete = false,
   });
 
   /// What a phone that has never opened the Settings screen uses.
@@ -58,6 +67,7 @@ class AppSettings {
     bool? showFlashbacks,
     bool? confirmDestructive,
     bool? protectAllScreens,
+    bool? secureDelete,
   }) {
     return AppSettings(
       theme: theme ?? this.theme,
@@ -68,6 +78,7 @@ class AppSettings {
       showFlashbacks: showFlashbacks ?? this.showFlashbacks,
       confirmDestructive: confirmDestructive ?? this.confirmDestructive,
       protectAllScreens: protectAllScreens ?? this.protectAllScreens,
+      secureDelete: secureDelete ?? this.secureDelete,
     );
   }
 
@@ -79,6 +90,7 @@ class AppSettings {
       'showFlashbacks': showFlashbacks,
       'confirmDestructive': confirmDestructive,
       'protectAllScreens': protectAllScreens,
+      'secureDelete': secureDelete,
     };
   }
 
@@ -107,6 +119,7 @@ class AppSettings {
         raw['protectAllScreens'],
         defaults.protectAllScreens,
       ),
+      secureDelete: _parseBool(raw['secureDelete'], defaults.secureDelete),
     );
   }
 
@@ -146,7 +159,8 @@ class AppSettings {
         other.gridColumns == gridColumns &&
         other.showFlashbacks == showFlashbacks &&
         other.confirmDestructive == confirmDestructive &&
-        other.protectAllScreens == protectAllScreens;
+        other.protectAllScreens == protectAllScreens &&
+        other.secureDelete == secureDelete;
   }
 
   @override
@@ -157,5 +171,6 @@ class AppSettings {
     showFlashbacks,
     confirmDestructive,
     protectAllScreens,
+    secureDelete,
   );
 }

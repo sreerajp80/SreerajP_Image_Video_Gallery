@@ -18,6 +18,7 @@ import 'package:path/path.dart' as p;
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 import 'fake_vault_channel.dart';
+import 'fake_vault_folder_writer.dart';
 
 void main() {
   setUpAll(() {
@@ -35,6 +36,7 @@ void main() {
     late VaultStorageService storage;
     late VaultCryptoService crypto;
     late VaultExportService service;
+    late FakeVaultFolderWriter folderWriter;
 
     setUp(() async {
       root = await Directory.systemTemp.createTemp('vault_export_test');
@@ -48,6 +50,7 @@ void main() {
       mediaDao = MediaDao(dbHelper: dbHelper);
 
       channel = FakeVaultChannel()..nativeShredSucceeds = true;
+      folderWriter = FakeVaultFolderWriter();
       storage = VaultStorageService(rootOverride: root);
       crypto = VaultCryptoService(
         channel: channel,
@@ -60,6 +63,7 @@ void main() {
         shredder: VaultShredderService(channel: channel, random: Random(6)),
         vaultDao: vaultDao,
         mediaDao: mediaDao,
+        folderWriter: folderWriter,
       );
     });
 
@@ -199,14 +203,112 @@ void main() {
         expect(result.succeededCount, 1);
       });
 
-      test('falls back when the original folder no longer exists', () async {
-        final vanished = Directory(p.join(root.path, 'gone'));
-        final item = await addVaultItem(originalDirectory: vanished.path);
+      group('when the original folder no longer exists', () {
+        late VaultItem item;
 
-        final result = await service.exportItems(<VaultItem>[item]);
+        setUp(() async {
+          final vanished = Directory(p.join(root.path, 'gone'));
+          item = await addVaultItem(originalDirectory: vanished.path);
+        });
 
-        // Better than failing the restore over a folder the user deleted.
-        expect(result.succeededCount, 1);
+        List<String> currentFolderNames() => Directory.current
+            .listSync()
+            .map((entity) => p.basename(entity.path))
+            .toList();
+
+        test('is listed by itemsWithMissingFolder', () async {
+          final kept = await addVaultItem(name: 'kept.jpg');
+
+          expect(
+            service.itemsWithMissingFolder(<VaultItem>[item, kept]),
+            <VaultItem>[item],
+          );
+        });
+
+        test(
+          'without a folder, it is skipped and stays in the vault',
+          () async {
+            final before = currentFolderNames();
+            final payloadPath = await storage.pathFor(item.encryptedFilename);
+
+            final result = await service.exportItems(<VaultItem>[item]);
+
+            expect(result.succeededCount, 0);
+            expect(result.skippedCount, 1);
+            expect(result.failedCount, 0);
+            expect(await File(payloadPath).exists(), isTrue);
+            expect(await vaultDao.getVaultItemById(item.id), isNotNull);
+            // The old fallback wrote a bare file name, which landed in the
+            // process's current folder. Nothing may appear there.
+            expect(currentFolderNames(), before);
+          },
+        );
+
+        test(
+          'with a folder, it is written there and leaves the vault',
+          () async {
+            final before = currentFolderNames();
+            final payloadPath = await storage.pathFor(item.encryptedFilename);
+
+            final result = await service.exportItems(<VaultItem>[
+              item,
+            ], fallbackFolderUri: 'content://tree/picked');
+
+            expect(result.succeededCount, 1);
+            expect(folderWriter.writes, hasLength(1));
+            final write = folderWriter.writes.single;
+            expect(write.folderUri, 'content://tree/picked');
+            expect(
+              write.displayName,
+              'photo${AppConstants.vaultExportSuffix}.jpg',
+            );
+            expect(write.mimeType, 'image/jpeg');
+            expect(write.bytes, <int>[1, 2, 3, 4, 5]);
+            // The decrypted working file is shredded once it is out.
+            expect(await File(write.sourcePath).exists(), isFalse);
+            expect(await File(payloadPath).exists(), isFalse);
+            expect(await vaultDao.getVaultItemById(item.id), isNull);
+            expect(currentFolderNames(), before);
+          },
+        );
+
+        test('a failed folder write leaves it in the vault', () async {
+          folderWriter.fail = true;
+          final payloadPath = await storage.pathFor(item.encryptedFilename);
+
+          final result = await service.exportItems(<VaultItem>[
+            item,
+          ], fallbackFolderUri: 'content://tree/picked');
+
+          expect(result.failedCount, 1);
+          expect(await File(payloadPath).exists(), isTrue);
+          expect(await vaultDao.getVaultItemById(item.id), isNotNull);
+          // No decrypted working file is left behind in the vault folder.
+          expect(await storage.findWorkingFiles(), isEmpty);
+        });
+
+        test(
+          'a mixed batch sends only the missing ones to the folder',
+          () async {
+            final kept = await addVaultItem(name: 'kept.jpg');
+
+            final result = await service.exportItems(<VaultItem>[
+              item,
+              kept,
+            ], fallbackFolderUri: 'content://tree/picked');
+
+            expect(result.succeededCount, 2);
+            expect(
+              folderWriter.writes.map((write) => write.displayName),
+              <String>['photo${AppConstants.vaultExportSuffix}.jpg'],
+            );
+            final besideOriginal = gallery
+                .listSync()
+                .map((entity) => p.basename(entity.path))
+                .where((name) => name.startsWith('kept'));
+            expect(besideOriginal, hasLength(1));
+          },
+        );
       });
 
       test('a failed decrypt leaves the item safely in the vault', () async {
@@ -279,6 +381,27 @@ void main() {
         await service.deleteForever(<VaultItem>[item]);
 
         expect(gallery.listSync(), isEmpty);
+      });
+
+      test('always shreds, even when asked for zero passes', () async {
+        // Vault deletes are secure by rule, with no setting to turn that
+        // off. A pass count below the minimum is raised, never skipped.
+        final item = await addVaultItem();
+        final payloadPath = await storage.pathFor(item.encryptedFilename);
+
+        final result = await service.deleteForever(<VaultItem>[
+          item,
+        ], shredPasses: 0);
+
+        expect(result.succeededCount, 1);
+        expect(channel.shredded, contains(payloadPath));
+        expect(channel.shredPassCounts, isNotEmpty);
+        expect(
+          channel.shredPassCounts.every(
+            (passes) => passes >= AppConstants.vaultMinShredPasses,
+          ),
+          isTrue,
+        );
       });
 
       test('handles an item with no preview', () async {

@@ -58,6 +58,7 @@ class TimelineBody extends ConsumerWidget {
     final flashbacks = showFlashbacks
         ? ref.watch(flashbackMemoriesProvider).value
         : null;
+    final flashbackExpanded = ref.watch(flashbackExpandedProvider);
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -90,6 +91,12 @@ class TimelineBody extends ConsumerWidget {
                           key: flashbackKey,
                           memories: flashbacks,
                           onItemTap: onItemTap,
+                          expanded: flashbackExpanded,
+                          onToggle: () =>
+                              ref
+                                      .read(flashbackExpandedProvider.notifier)
+                                      .state =
+                                  !flashbackExpanded,
                         ),
                       ),
                     SliverList.builder(

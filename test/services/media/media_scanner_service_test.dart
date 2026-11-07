@@ -169,6 +169,16 @@ void main() {
       expect(await mediaDao.getMediaItemById('delete_me'), isNull);
     });
 
+    test('a full rescan keeps a favourite', () async {
+      channel.entries = <MediaStoreEntry>[buildEntry(id: 'star')];
+      await scanner.scan();
+      await mediaDao.updateFavorite('star', true);
+
+      await scanner.scan();
+
+      expect((await mediaDao.getMediaItemById('star'))!.isFavorite, isTrue);
+    });
+
     test('a quick scan with matching counts skips the full pass', () async {
       channel.entries = <MediaStoreEntry>[
         buildEntry(id: 'a', dateModifiedMs: 1000),
@@ -254,7 +264,10 @@ void main() {
       final result = await scanner.scan(incremental: true);
 
       expect(result.removed, 0);
-      expect(await mediaDao.getTotalCount(), 2);
+      // Kept, but hidden: limited access always runs a full pass.
+      expect(await mediaDao.getMediaItemById('a'), isNotNull);
+      expect((await mediaDao.getMediaItemById('a'))!.isOutOfReach, isTrue);
+      expect(await mediaDao.getTotalCount(), 1);
     });
 
     test('keeps existing rows when access is only partial', () async {
@@ -269,7 +282,86 @@ void main() {
       final result = await scanner.scan();
 
       expect(result.removed, 0);
-      expect(await mediaDao.getTotalCount(), 2);
+      expect(await mediaDao.getMediaItemById('b'), isNotNull);
+      expect(await mediaDao.getTotalCount(), 1);
+    });
+
+    group('limited and removed access', () {
+      setUp(() async {
+        channel.entries = <MediaStoreEntry>[
+          buildEntry(id: 'picked', dateModifiedMs: 1000),
+          buildEntry(id: 'other', dateModifiedMs: 2000),
+        ];
+        await scanner.scan();
+        await mediaDao.updateFavorite('other', true);
+      });
+
+      test('limited access hides unseen rows and shows seen ones', () async {
+        channel.permissionStatus = MediaPermissionStatus.partial;
+        channel.entries = <MediaStoreEntry>[
+          buildEntry(id: 'picked', dateModifiedMs: 1000),
+        ];
+
+        await scanner.scan();
+
+        final visible = await mediaDao.getMediaItems();
+        expect(visible.map((item) => item.id), <String>['picked']);
+        expect(
+          (await mediaDao.getMediaItemById('other'))!.isOutOfReach,
+          isTrue,
+        );
+      });
+
+      test('full access again shows everything, data intact', () async {
+        channel.permissionStatus = MediaPermissionStatus.partial;
+        channel.entries = <MediaStoreEntry>[
+          buildEntry(id: 'picked', dateModifiedMs: 1000),
+        ];
+        await scanner.scan();
+
+        channel.permissionStatus = MediaPermissionStatus.granted;
+        channel.entries = <MediaStoreEntry>[
+          buildEntry(id: 'picked', dateModifiedMs: 1000),
+          buildEntry(id: 'other', dateModifiedMs: 2000),
+        ];
+        await scanner.scan();
+
+        expect(await mediaDao.getTotalCount(), 2);
+        final other = (await mediaDao.getMediaItemById('other'))!;
+        expect(other.isOutOfReach, isFalse);
+        expect(other.isFavorite, isTrue);
+      });
+
+      test('a quick scan with hidden rows runs a full pass', () async {
+        channel.permissionStatus = MediaPermissionStatus.partial;
+        channel.entries = <MediaStoreEntry>[
+          buildEntry(id: 'picked', dateModifiedMs: 1000),
+        ];
+        await scanner.scan();
+
+        channel.permissionStatus = MediaPermissionStatus.granted;
+        channel.entries = <MediaStoreEntry>[
+          buildEntry(id: 'picked', dateModifiedMs: 1000),
+          buildEntry(id: 'other', dateModifiedMs: 2000),
+        ];
+        channel.receivedSinceValues.clear();
+        await scanner.scan(incremental: true);
+
+        expect(channel.receivedSinceValues.first, isNull);
+        expect(await mediaDao.hasOutOfReach(), isFalse);
+      });
+
+      test('no access hides everything before failing', () async {
+        channel.permissionStatus = MediaPermissionStatus.denied;
+
+        await expectLater(
+          scanner.scan(),
+          throwsA(isA<PermissionDeniedException>()),
+        );
+
+        expect(await mediaDao.getMediaItems(), isEmpty);
+        expect(await mediaDao.getMediaItemById('other'), isNotNull);
+      });
     });
 
     test('throws and reports failure when permission is missing', () async {

@@ -41,6 +41,9 @@ class FakeVaultChannel implements VaultChannel {
   /// Paths the shredder was asked to destroy.
   final List<String> shredded = <String>[];
 
+  /// Pass count each [shredFile] call asked for, in order.
+  final List<int> shredPassCounts = <int>[];
+
   FakeVaultChannel({this.keystoreReady = true});
 
   @override
@@ -113,6 +116,7 @@ class FakeVaultChannel implements VaultChannel {
   @override
   Future<bool> shredFile({required String path, required int passes}) async {
     shredded.add(path);
+    shredPassCounts.add(passes);
     if (!nativeShredSucceeds) return false;
     final file = File(path);
     if (await file.exists()) await file.delete();

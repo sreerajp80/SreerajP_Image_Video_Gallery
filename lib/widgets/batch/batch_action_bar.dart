@@ -7,11 +7,16 @@ import 'package:in_sreerajp_imgvidgal/core/routing/app_router.dart';
 import 'package:in_sreerajp_imgvidgal/l10n/generated/app_localizations.dart';
 import 'package:in_sreerajp_imgvidgal/models/album_summary.dart';
 import 'package:in_sreerajp_imgvidgal/models/batch/batch_action.dart';
+import 'package:in_sreerajp_imgvidgal/models/media_item.dart';
 import 'package:in_sreerajp_imgvidgal/providers/album_providers.dart';
 import 'package:in_sreerajp_imgvidgal/providers/batch_providers.dart';
+import 'package:in_sreerajp_imgvidgal/providers/media_providers.dart';
 import 'package:in_sreerajp_imgvidgal/providers/selection_providers.dart';
+import 'package:in_sreerajp_imgvidgal/providers/settings_providers.dart';
 import 'package:in_sreerajp_imgvidgal/providers/sync_providers.dart';
 import 'package:in_sreerajp_imgvidgal/providers/tag_providers.dart';
+import 'package:in_sreerajp_imgvidgal/providers/trash_providers.dart';
+import 'package:in_sreerajp_imgvidgal/widgets/common/delete_choice_sheet.dart';
 import 'package:in_sreerajp_imgvidgal/core/domain/batch/batch_action_rules.dart';
 import 'package:in_sreerajp_imgvidgal/models/batch/batch_options.dart';
 import 'package:in_sreerajp_imgvidgal/widgets/albums/album_edit_dialog.dart';
@@ -170,11 +175,30 @@ class BatchActionBar extends ConsumerWidget {
       return;
     }
 
+    // Delete asks first how: to the trash, or for good. Picking "Move to
+    // trash" in the sheet is the confirmation, so the usual second question
+    // is skipped for it.
+    var confirmedBySheet = false;
+    if (action == BatchAction.moveToTrash) {
+      final choice = await showDeleteChoiceSheet(
+        context,
+        count: availability.applicableCount,
+        secureDelete: ref.read(appSettingsProvider).secureDelete,
+      );
+      if (choice == null || !context.mounted) return;
+      if (choice == DeleteChoice.permanent) {
+        await _deletePermanently(context, ref, items);
+        return;
+      }
+      confirmedBySheet = true;
+    }
+
     final options = await _gatherOptions(context, ref, action);
     if (options == null) return;
     if (!context.mounted) return;
 
-    if (ref.read(batchActionRulesProvider).needsConfirmation(action)) {
+    if (!confirmedBySheet &&
+        ref.read(batchActionRulesProvider).needsConfirmation(action)) {
       final confirmed = await _confirm(
         context,
         l10n,
@@ -199,8 +223,52 @@ class BatchActionBar extends ConsumerWidget {
     // Anything the batch dealt with is unticked, so the bar does not sit
     // there offering to do it again to the same photos.
     ref.read(selectionProvider.notifier).clear();
+    if (!context.mounted) return;
 
-    if (context.mounted) await BatchResultSheet.show(context, outcome);
+    // A trash that went through cleanly gets a short Undo bar, like the
+    // viewer's, instead of the "Finished" sheet. Anything that failed or was
+    // skipped still gets the sheet, so a problem is never hidden.
+    final cleanTrash =
+        action == BatchAction.moveToTrash &&
+        outcome.succeededIds.isNotEmpty &&
+        outcome.failedIds.isEmpty &&
+        outcome.skippedIds.isEmpty &&
+        !outcome.wasCancelled;
+    if (cleanTrash) {
+      _showTrashUndo(context, l10n, outcome.succeededIds);
+      return;
+    }
+
+    await BatchResultSheet.show(context, outcome);
+  }
+
+  /// "N moved to trash · Undo". Undo puts back exactly [ids].
+  ///
+  /// The bar unmounts once the selection is cleared, so the Undo callback
+  /// uses the provider container, not this widget's `ref`.
+  void _showTrashUndo(
+    BuildContext context,
+    AppLocalizations l10n,
+    List<String> ids,
+  ) {
+    final container = ProviderScope.containerOf(context, listen: false);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(l10n.bodyBatchTrashSuccess(ids.length)),
+        // Hides after the usual few seconds instead of waiting for a tap,
+        // so it cannot end up over another screen's buttons.
+        persist: false,
+        action: SnackBarAction(
+          label: l10n.actionViewerTrashUndo,
+          onPressed: () async {
+            await container
+                .read(trashControllerProvider.notifier)
+                .restoreItems(ids);
+            container.invalidate(mediaItemsProvider);
+          },
+        ),
+      ),
+    );
   }
 
   /// Asks for whatever the action needs before it can start.
@@ -391,6 +459,52 @@ class BatchActionBar extends ConsumerWidget {
     }
   }
 
+  /// Deletes the selection from the device for good, in one go.
+  ///
+  /// Not run through the batch runner: that works one file at a time, and
+  /// Android should be asked once for the whole selection, not per photo.
+  Future<void> _deletePermanently(
+    BuildContext context,
+    WidgetRef ref,
+    List<MediaItem> items,
+  ) async {
+    final l10n = AppLocalizations.of(context)!;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        icon: Icon(
+          Icons.delete_forever,
+          color: Theme.of(dialogContext).colorScheme.error,
+        ),
+        title: Text(l10n.titleTrashDeletePermanentlyConfirm),
+        content: Text(l10n.bodyDeletePermanentlyConfirmCount(items.length)),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: Text(l10n.actionSettingsCancel),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(
+              backgroundColor: Theme.of(dialogContext).colorScheme.error,
+            ),
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: Text(l10n.titleTrashDeletePermanentlyAction),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !context.mounted) return;
+
+    final result = await ref
+        .read(trashControllerProvider.notifier)
+        .deleteItems(items);
+    if (result.anyDeleted) {
+      ref.invalidate(mediaItemsProvider);
+      ref.read(selectionProvider.notifier).clear();
+    }
+    if (context.mounted) _tell(context, deleteResultMessage(l10n, result));
+  }
+
   static void _tell(BuildContext context, String message) {
     ScaffoldMessenger.of(
       context,
@@ -536,7 +650,8 @@ class _ActionButton extends StatelessWidget {
       case BatchAction.transfer:
         return l10n.bodyBatchActionTransfer;
       case BatchAction.moveToTrash:
-        return l10n.titleBatchActionMoveToTrash;
+        // One Delete button; the choice sheet asks trash or permanent.
+        return l10n.titleBatchActionDelete;
     }
   }
 }

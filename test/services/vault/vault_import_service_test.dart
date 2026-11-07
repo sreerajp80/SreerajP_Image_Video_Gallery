@@ -3,6 +3,7 @@ import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:in_sreerajp_imgvidgal/services/media/media_store_channel.dart';
 import 'package:in_sreerajp_imgvidgal/core/errors/app_exception.dart';
 import 'package:in_sreerajp_imgvidgal/models/media_item.dart';
 import 'package:in_sreerajp_imgvidgal/models/vault_item.dart';
@@ -19,6 +20,7 @@ import 'package:path/path.dart' as p;
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 import 'fake_vault_channel.dart';
+import '../media/fake_media_store_channel.dart';
 
 /// A preview builder that never reaches a decoder or a video channel.
 ///
@@ -226,6 +228,149 @@ void main() {
 
         expect(await File(item.path).exists(), isTrue);
         expect(result.shreddedCount, 0);
+      });
+
+      test('goes through MediaStore when a channel is given', () async {
+        // On Android 11+ the app cannot write a public file by its path, so
+        // the shred must go through MediaStore with the item's content URI.
+        final mediaStore = FakeMediaStoreChannel();
+        final withStore = VaultImportService(
+          crypto: VaultCryptoService(
+            channel: channel,
+            storage: storage,
+            naming: VaultNamingService(random: Random(9)),
+          ),
+          storage: storage,
+          shredder: shredder,
+          preview: preview,
+          vaultDao: vaultDao,
+          mediaDao: mediaDao,
+          mediaStore: mediaStore,
+          random: Random(4),
+        );
+        final first = (await addMedia(
+          'a.jpg',
+        )).copyWith(uri: 'content://media/external/images/media/1');
+        final second = (await addMedia(
+          'b.jpg',
+        )).copyWith(uri: 'content://media/external/images/media/2');
+        mediaStore.secureOutcomes = <MediaDeleteOutcome>[
+          MediaDeleteOutcome.overwritten,
+          MediaDeleteOutcome.deleted,
+        ];
+
+        final result = await withStore.importItems(<MediaItem>[
+          first,
+          second,
+        ], shredOriginals: true);
+
+        expect(result.succeededCount, 2);
+        // Both sent in one call; only a real overwrite counts as shredded.
+        expect(mediaStore.securelyDeletedUris, <String>[
+          first.uri!,
+          second.uri!,
+        ]);
+        expect(result.shreddedCount, 1);
+        // The path shredder was not used.
+        expect(channel.shredded, isEmpty);
+      });
+
+      test('a failed import is never sent to be shredded', () async {
+        final mediaStore = FakeMediaStoreChannel();
+        final withStore = VaultImportService(
+          crypto: VaultCryptoService(
+            channel: channel,
+            storage: storage,
+            naming: VaultNamingService(random: Random(9)),
+          ),
+          storage: storage,
+          shredder: shredder,
+          preview: preview,
+          vaultDao: vaultDao,
+          mediaDao: mediaDao,
+          mediaStore: mediaStore,
+          random: Random(4),
+        );
+        final item = (await addMedia(
+          'c.jpg',
+        )).copyWith(uri: 'content://media/external/images/media/3');
+        channel.failEncrypt = true;
+
+        final result = await withStore.importItems(<MediaItem>[
+          item,
+        ], shredOriginals: true);
+
+        expect(result.failedCount, 1);
+        expect(mediaStore.securelyDeletedUris, isEmpty);
+        expect(mediaStore.lastSecurePasses, isNull);
+      });
+
+      test('items imported one by one can be shredded in one call', () async {
+        // The batch path: each photo is imported alone (for progress and
+        // Cancel), then all originals go to MediaStore in a single request
+        // so Android asks once.
+        final mediaStore = FakeMediaStoreChannel();
+        final withStore = VaultImportService(
+          crypto: VaultCryptoService(
+            channel: channel,
+            storage: storage,
+            naming: VaultNamingService(random: Random(9)),
+          ),
+          storage: storage,
+          shredder: shredder,
+          preview: preview,
+          vaultDao: vaultDao,
+          mediaDao: mediaDao,
+          mediaStore: mediaStore,
+          random: Random(4),
+        );
+        final first = (await addMedia(
+          'd.jpg',
+        )).copyWith(uri: 'content://media/external/images/media/4');
+        final second = (await addMedia(
+          'e.jpg',
+        )).copyWith(uri: 'content://media/external/images/media/5');
+        mediaStore.secureOutcomes = <MediaDeleteOutcome>[
+          MediaDeleteOutcome.overwritten,
+          MediaDeleteOutcome.overwritten,
+        ];
+
+        await withStore.importItems(<MediaItem>[first]);
+        await withStore.importItems(<MediaItem>[second]);
+        expect(mediaStore.securelyDeletedUris, isEmpty);
+
+        final shredded = await withStore.shredOriginals(<MediaItem>[
+          first,
+          second,
+        ], passes: 3);
+
+        expect(shredded, 2);
+        expect(mediaStore.securelyDeletedUris, <String>[
+          first.uri!,
+          second.uri!,
+        ]);
+        expect(mediaStore.lastSecurePasses, 3);
+      });
+
+      test('shredding nothing makes no call', () async {
+        final mediaStore = FakeMediaStoreChannel();
+        final withStore = VaultImportService(
+          crypto: VaultCryptoService(
+            channel: channel,
+            storage: storage,
+            naming: VaultNamingService(random: Random(9)),
+          ),
+          storage: storage,
+          shredder: shredder,
+          preview: preview,
+          vaultDao: vaultDao,
+          mediaDao: mediaDao,
+          mediaStore: mediaStore,
+          random: Random(4),
+        );
+
+        expect(await withStore.shredOriginals(const <MediaItem>[]), 0);
+        expect(mediaStore.lastSecurePasses, isNull);
       });
 
       test('is destroyed only when shredding is asked for', () async {

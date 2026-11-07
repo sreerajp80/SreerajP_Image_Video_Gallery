@@ -3,16 +3,19 @@ import 'dart:typed_data';
 import 'package:flutter/foundation.dart' show immutable;
 import 'package:flutter/widgets.dart' show AppLifecycleState;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:in_sreerajp_imgvidgal/core/logging/app_logger.dart';
 import 'package:in_sreerajp_imgvidgal/models/vault/vault_auth_outcome.dart';
 import 'package:in_sreerajp_imgvidgal/models/vault/vault_import_result.dart';
 import 'package:in_sreerajp_imgvidgal/models/vault/vault_lock_state.dart';
 import 'package:in_sreerajp_imgvidgal/models/vault/vault_security_settings.dart';
 import 'package:in_sreerajp_imgvidgal/models/media_item.dart';
 import 'package:in_sreerajp_imgvidgal/models/vault_item.dart';
+import 'package:in_sreerajp_imgvidgal/providers/backup_providers.dart';
 import 'package:in_sreerajp_imgvidgal/providers/media_providers.dart';
 import 'package:in_sreerajp_imgvidgal/providers/video_tools_providers.dart';
 import 'package:in_sreerajp_imgvidgal/repositories/database/vault_dao.dart';
 import 'package:in_sreerajp_imgvidgal/repositories/vault_repository.dart';
+import 'package:in_sreerajp_imgvidgal/services/backup/document_picker_channel.dart';
 import 'package:in_sreerajp_imgvidgal/services/device/secure_window_service.dart';
 import 'package:in_sreerajp_imgvidgal/services/vault/vault_auth_service.dart';
 import 'package:in_sreerajp_imgvidgal/services/vault/vault_biometric_service.dart';
@@ -99,6 +102,9 @@ final vaultImportServiceProvider = Provider<VaultImportService>((ref) {
     preview: ref.watch(vaultPreviewServiceProvider),
     vaultDao: ref.watch(vaultDaoProvider),
     mediaDao: ref.watch(mediaDaoProvider),
+    // Shredding a public original has to go through MediaStore on
+    // Android 11+; a plain path write is refused there.
+    mediaStore: ref.watch(mediaStoreChannelProvider),
   );
 });
 
@@ -110,6 +116,9 @@ final vaultExportServiceProvider = Provider<VaultExportService>((ref) {
     shredder: ref.watch(vaultShredderServiceProvider),
     vaultDao: ref.watch(vaultDaoProvider),
     mediaDao: ref.watch(mediaDaoProvider),
+    folderWriter: DocumentPickerFolderWriter(
+      ref.watch(documentPickerChannelProvider),
+    ),
   );
 });
 
@@ -335,13 +344,39 @@ class VaultBatchController
     );
   }
 
+  /// The items in [items] whose original folder no longer exists.
+  ///
+  /// The screen asks the user for a folder for these before [restore].
+  List<VaultItem> findItemsWithMissingFolder(List<VaultItem> items) =>
+      _repository.itemsWithMissingFolder(items);
+
+  /// Asks the user to pick a folder, or returns null if they backed out.
+  ///
+  /// A device with no folder picker also gives null, which the restore
+  /// treats like Skip: those items stay safely in the vault.
+  Future<String?> pickRestoreFolder() async {
+    try {
+      return await _ref.read(documentPickerChannelProvider).openFolder();
+    } on DocumentPickerException catch (error) {
+      AppLogger.warning('The folder picker could not be shown', error: error);
+      return null;
+    }
+  }
+
   /// Restores vault items to public storage.
-  Future<void> restore(List<VaultItem> items) async {
+  ///
+  /// Items whose original folder is gone go into [fallbackFolderUri]. Without
+  /// one, they stay in the vault and are counted as skipped.
+  Future<void> restore(
+    List<VaultItem> items, {
+    String? fallbackFolderUri,
+  }) async {
     await _run(
       items.length,
       (settings, report) => _repository.exportToGallery(
         items,
         shredPasses: settings.shredPasses,
+        fallbackFolderUri: fallbackFolderUri,
         onProgress: report,
       ),
     );

@@ -158,6 +158,21 @@ void main() {
       );
     });
 
+    test('secure delete is off by default and survives a round trip', () {
+      expect(AppSettings.defaults.secureDelete, isFalse);
+
+      const on = AppSettings(secureDelete: true);
+      expect(AppSettings.fromJson(on.toJson()), on);
+      expect(AppSettings.defaults.copyWith(secureDelete: true), on);
+    });
+
+    test('a secure delete value of the wrong type falls back to off', () {
+      final settings = AppSettings.fromJson(<String, Object?>{
+        'secureDelete': 'yes',
+      });
+      expect(settings.secureDelete, isFalse);
+    });
+
     test('anything that is not a map gives the defaults', () {
       expect(AppSettings.fromJson(null), AppSettings.defaults);
       expect(AppSettings.fromJson('not settings'), AppSettings.defaults);

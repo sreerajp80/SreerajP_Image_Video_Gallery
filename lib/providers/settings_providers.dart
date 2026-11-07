@@ -59,6 +59,9 @@ class AppSettingsNotifier extends StateNotifier<AppSettings> {
   Future<void> setProtectAllScreens(bool value) =>
       _update(state.copyWith(protectAllScreens: value));
 
+  Future<void> setSecureDelete(bool value) =>
+      _update(state.copyWith(secureDelete: value));
+
   /// Puts everything back to how a fresh install starts.
   Future<void> resetToDefaults() => _update(AppSettings.defaults);
 

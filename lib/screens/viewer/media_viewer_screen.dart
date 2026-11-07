@@ -11,12 +11,14 @@ import 'package:in_sreerajp_imgvidgal/models/media_item.dart';
 import 'package:in_sreerajp_imgvidgal/models/viewer_transform.dart';
 import 'package:in_sreerajp_imgvidgal/providers/media_intent_providers.dart';
 import 'package:in_sreerajp_imgvidgal/providers/media_providers.dart';
+import 'package:in_sreerajp_imgvidgal/providers/settings_providers.dart';
 import 'package:in_sreerajp_imgvidgal/providers/timeline_providers.dart';
 import 'package:in_sreerajp_imgvidgal/providers/trash_providers.dart';
 import 'package:in_sreerajp_imgvidgal/providers/vault_providers.dart';
 import 'package:in_sreerajp_imgvidgal/providers/viewer_providers.dart';
 import 'package:in_sreerajp_imgvidgal/widgets/viewer/interactive_image_view.dart';
 import 'package:in_sreerajp_imgvidgal/widgets/albums/album_picker_sheet.dart';
+import 'package:in_sreerajp_imgvidgal/widgets/common/delete_choice_sheet.dart';
 import 'package:in_sreerajp_imgvidgal/widgets/compare/photo_selector_sheet.dart';
 import 'package:in_sreerajp_imgvidgal/widgets/tags/media_tag_sheet.dart';
 import 'package:in_sreerajp_imgvidgal/widgets/viewer/media_details_sheet.dart';
@@ -45,6 +47,13 @@ class MediaViewerScreen extends ConsumerStatefulWidget {
 class _MediaViewerScreenState extends ConsumerState<MediaViewerScreen> {
   PageController? _pageController;
 
+  /// Id of the item in view.
+  ///
+  /// The page index alone is not enough: when the list is rebuilt (after a
+  /// star tap, a scan, or a trash undo) the same index can point at another
+  /// item. The viewer follows this id and moves the page back to it.
+  String? _currentItemId;
+
   /// Whether the app bar and video controls are on screen.
   bool _showChrome = true;
 
@@ -72,6 +81,17 @@ class _MediaViewerScreenState extends ConsumerState<MediaViewerScreen> {
   Duration? _lastMoveTime;
   double _lastMoveDy = 0;
   double _dismissVelocity = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    // A snackbar left over from the last screen (for example "Moved to
+    // trash · Undo") would sit right over the bottom bar's Delete button,
+    // so a tap meant for Delete could press Undo instead. Clear it first.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) ScaffoldMessenger.maybeOf(context)?.hideCurrentSnackBar();
+    });
+  }
 
   @override
   void dispose() {
@@ -135,10 +155,41 @@ class _MediaViewerScreenState extends ConsumerState<MediaViewerScreen> {
   void _onPageChanged(int index, List<MediaItem> list) {
     ref.read(viewerPageIndexProvider.notifier).state = index;
     // A new page starts unzoomed and unrotated.
-    setState(() => _transform = ViewerTransform.initial);
+    setState(() {
+      _transform = ViewerTransform.initial;
+      if (index >= 0 && index < list.length) _currentItemId = list[index].id;
+    });
     if (index >= 0 && index < list.length) {
       _restartChromeTimer(list[index]);
     }
+  }
+
+  /// Moves the page and the stored index to [index] after this frame, if
+  /// either one is somewhere else.
+  ///
+  /// It runs after the frame because a page jump and a provider write are not
+  /// allowed while the widget tree is being built.
+  void _syncPageTo(int index) {
+    bool isOff() {
+      final controller = _pageController;
+      final pageOff =
+          controller != null &&
+          controller.hasClients &&
+          controller.page?.round() != index;
+      return pageOff || ref.read(viewerPageIndexProvider) != index;
+    }
+
+    if (!isOff()) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || !isOff()) return;
+      final controller = _pageController;
+      if (controller != null &&
+          controller.hasClients &&
+          controller.page?.round() != index) {
+        controller.jumpToPage(index);
+      }
+      ref.read(viewerPageIndexProvider.notifier).state = index;
+    });
   }
 
   void _onScaleChanged(double scale) {
@@ -160,13 +211,30 @@ class _MediaViewerScreenState extends ConsumerState<MediaViewerScreen> {
     await ref.read(viewerActionsProvider).toggleFavorite(item.id);
   }
 
-  /// Moves this item into the trash with a confirmation and undo action.
+  /// Asks how to delete this item: to the trash, or for good.
+  Future<void> _delete(MediaItem item) async {
+    final choice = await showDeleteChoiceSheet(
+      context,
+      count: 1,
+      secureDelete: ref.read(appSettingsProvider).secureDelete,
+    );
+    if (!mounted) return;
+    switch (choice) {
+      case DeleteChoice.trash:
+        await _moveToTrash(item);
+      case DeleteChoice.permanent:
+        await _deletePermanently(item);
+      case null:
+        break;
+    }
+  }
+
+  /// Moves this item into the trash with an undo action.
+  ///
+  /// No extra confirmation: picking "Move to trash" in the choice sheet was
+  /// the deliberate step, and the snackbar can undo it.
   Future<void> _moveToTrash(MediaItem item) async {
     final l10n = AppLocalizations.of(context)!;
-
-    final agreed = await confirmViewerMoveToTrash(context);
-    if (!agreed || !mounted) return;
-
     final actions = ref.read(viewerActionsProvider);
     await actions.moveToTrash(item.id);
 
@@ -174,6 +242,10 @@ class _MediaViewerScreenState extends ConsumerState<MediaViewerScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(l10n.bodyViewerTrashSuccess),
+        // A snackbar with an action stays until tapped unless told
+        // otherwise. This one hides after the usual few seconds; the trash
+        // screen can still restore the item after that.
+        persist: false,
         action: SnackBarAction(
           label: l10n.actionViewerTrashUndo,
           onPressed: () => actions.restoreFromTrash(item.id),
@@ -199,23 +271,22 @@ class _MediaViewerScreenState extends ConsumerState<MediaViewerScreen> {
     }
   }
 
-  /// Permanently removes this trashed item from device storage and the gallery.
+  /// Permanently removes this item from device storage and the gallery,
+  /// written over first when Secure delete is on.
   Future<void> _deletePermanently(MediaItem item) async {
     final l10n = AppLocalizations.of(context)!;
     final confirmed = await confirmViewerDeletePermanently(context);
     if (!confirmed || !mounted) return;
 
-    final success = await ref
-        .read(trashControllerProvider.notifier)
+    final result = await ref
+        .read(viewerActionsProvider)
         .deletePermanently(item);
     if (!mounted) return;
-    if (success) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.bodyTrashDeletedPermanentlySnackbar)),
-      );
-      if (Navigator.of(context).canPop()) {
-        Navigator.of(context).pop();
-      }
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(deleteResultMessage(l10n, result))));
+    if (result.anyDeleted && Navigator.of(context).canPop()) {
+      Navigator.of(context).pop();
     }
   }
 
@@ -408,6 +479,11 @@ class _MediaViewerScreenState extends ConsumerState<MediaViewerScreen> {
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: items.when(
+        // A reload (for example after a star tap) keeps the old list on screen.
+        // Dropping to the one-item fallback here would move the page to 0
+        // without telling the rest of the viewer, so the picture and the title
+        // would show different items.
+        skipLoadingOnReload: true,
         loading: () {
           if (singleItem != null) {
             return _buildContent(context, <MediaItem>[singleItem], 0, l10n);
@@ -451,10 +527,23 @@ class _MediaViewerScreenState extends ConsumerState<MediaViewerScreen> {
     AppLocalizations l10n,
   ) {
     final controller = _controllerFor(initialIndex);
-    final currentIndex = ref
-        .watch(viewerPageIndexProvider)
-        .clamp(0, list.length - 1);
+    _currentItemId ??= list[initialIndex.clamp(0, list.length - 1)].id;
+
+    // Follow the item by id. If the list changed under it, its index may have
+    // moved, so the page is moved to match.
+    final trackedIndex = list.indexWhere((item) => item.id == _currentItemId);
+    final storedIndex = ref.watch(viewerPageIndexProvider);
+    final currentIndex = (trackedIndex >= 0 ? trackedIndex : storedIndex).clamp(
+      0,
+      list.length - 1,
+    );
     final currentItem = list[currentIndex];
+    if (trackedIndex >= 0) {
+      _syncPageTo(trackedIndex);
+    } else {
+      // The item left the list. Follow whatever now sits at this page.
+      _currentItemId = currentItem.id;
+    }
 
     final service = ref.watch(viewerTransformServiceProvider);
     final dismissOffset = _transform.dismissOffset;
@@ -534,7 +623,7 @@ class _MediaViewerScreenState extends ConsumerState<MediaViewerScreen> {
                     onToggleFavorite: () => _toggleFavorite(currentItem),
                     onShowDetails: () =>
                         MediaDetailsSheet.show(context, currentItem),
-                    onMoveToTrash: () => _moveToTrash(currentItem),
+                    onDelete: () => _delete(currentItem),
                     onEdit: () => context.push(imageEditorPath(currentItem.id)),
                     onCompare: () => _comparePhoto(currentItem),
                     onConvert: () =>
@@ -578,7 +667,7 @@ class _MediaViewerScreenState extends ConsumerState<MediaViewerScreen> {
                       onRotateRight: () => _rotate(clockwise: true),
                       onShowDetails: () =>
                           MediaDetailsSheet.show(context, currentItem),
-                      onMoveToTrash: () => _moveToTrash(currentItem),
+                      onDelete: () => _delete(currentItem),
                       onRestore: () => _restoreFromTrash(currentItem),
                       onDeletePermanently: () =>
                           _deletePermanently(currentItem),

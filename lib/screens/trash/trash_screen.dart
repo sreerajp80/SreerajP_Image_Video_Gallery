@@ -7,6 +7,7 @@ import 'package:in_sreerajp_imgvidgal/models/media_item.dart';
 import 'package:in_sreerajp_imgvidgal/providers/media_providers.dart';
 import 'package:in_sreerajp_imgvidgal/providers/trash_providers.dart';
 import 'package:in_sreerajp_imgvidgal/widgets/albums/album_media_grid.dart';
+import 'package:in_sreerajp_imgvidgal/widgets/common/delete_choice_sheet.dart';
 import 'package:in_sreerajp_imgvidgal/widgets/common/unit_format_context.dart';
 import 'package:in_sreerajp_imgvidgal/widgets/common/sized_memory_image.dart';
 
@@ -240,14 +241,12 @@ class TrashScreen extends ConsumerWidget {
     );
 
     if (confirmed != true) return;
-    final success = await ref
+    final result = await ref
         .read(trashControllerProvider.notifier)
         .deletePermanently(item);
-    if (success) {
-      messenger.showSnackBar(
-        SnackBar(content: Text(l10n.bodyTrashDeletedPermanentlySnackbar)),
-      );
-    }
+    messenger.showSnackBar(
+      SnackBar(content: Text(deleteResultMessage(l10n, result))),
+    );
   }
 
   /// Asks before restoring every item back to the library.
@@ -313,12 +312,25 @@ class TrashScreen extends ConsumerWidget {
     );
 
     if (confirmed != true) return;
-    final count = await ref.read(trashControllerProvider.notifier).emptyTrash();
-    if (count > 0) {
-      messenger.showSnackBar(
-        SnackBar(content: Text(l10n.bodyTrashEmptiedSnackbar)),
-      );
-    }
+    final result = await ref
+        .read(trashControllerProvider.notifier)
+        .emptyTrash();
+    // Every file gone, with no caveat: the short, familiar message.
+    // Anything less gets the full count so nothing is glossed over.
+    final clean =
+        result.anyDeleted &&
+        result.failed == 0 &&
+        result.notOverwritten == 0 &&
+        !result.secure;
+    messenger.showSnackBar(
+      SnackBar(
+        content: Text(
+          clean
+              ? l10n.bodyTrashEmptiedSnackbar
+              : deleteResultMessage(l10n, result),
+        ),
+      ),
+    );
   }
 }
 

@@ -44,6 +44,18 @@ void main() {
     expect(rule.triggerSql.every((t) => t.contains('RAISE(ABORT')), isTrue);
   });
 
+  test('the out-of-reach flag allows only 0 and 1', () {
+    expect(
+      ColumnValueRule.mediaIsOutOfReach.check,
+      'CHECK (is_out_of_reach IN (0,1))',
+    );
+    expect(ColumnValueRule.all, contains(ColumnValueRule.mediaIsOutOfReach));
+    expect(
+      ColumnValueRule.addedAfterV5,
+      contains(ColumnValueRule.mediaIsOutOfReach),
+    );
+  });
+
   test('a quote inside a value is escaped', () {
     expect(ColumnValueRule.quoted(<String>["it's"]), "'it''s'");
   });

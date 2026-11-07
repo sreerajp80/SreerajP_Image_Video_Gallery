@@ -14,6 +14,42 @@ class AlbumDao {
 
   Future<Database> get _db => _dbHelper.database;
 
+  /// Column alias for the live count of visible members.
+  static const String _visibleCount = 'visible_count';
+
+  /// The start of every album read: each row plus a live count of the
+  /// members the user can see.
+  ///
+  /// The saved `item_count` holds the same number, kept right by database
+  /// triggers (schema 8). Reads still count live, with the same rule as the
+  /// album screen, so the tile always matches what opens.
+  static final String _albumSelect =
+      '''
+    SELECT a.*,
+      (SELECT COUNT(*)
+         FROM ${DatabaseConstants.tableAlbumMedia} am
+         INNER JOIN ${DatabaseConstants.tableMedia} m
+           ON m.${DatabaseConstants.colId} = am.${DatabaseConstants.colAlbumMediaMediaId}
+        WHERE am.${DatabaseConstants.colAlbumMediaAlbumId} = a.${DatabaseConstants.colId}
+          AND ${DatabaseConstants.visibleMediaCondition('m')}) AS $_visibleCount
+    FROM ${DatabaseConstants.tableAlbums} a
+  ''';
+
+  /// The order the album grid shows: pinned first, then the user's order.
+  static const String _albumOrder =
+      'ORDER BY a.${DatabaseConstants.colAlbumIsPinned} DESC, '
+      'a.${DatabaseConstants.colAlbumSortOrder} ASC, '
+      'a.${DatabaseConstants.colName} ASC';
+
+  /// Builds an [Album] whose item count is the live visible count.
+  static Album _albumFromRow(Map<String, Object?> row) {
+    final map = Map<String, Object?>.of(row)
+      ..[DatabaseConstants.colAlbumItemCount] =
+          (row[_visibleCount] as int?) ?? 0
+      ..remove(_visibleCount);
+    return Album.fromMap(map);
+  }
+
   /// Inserts or replaces an [Album].
   Future<void> insertAlbum(Album album) async {
     try {
@@ -73,14 +109,12 @@ class AlbumDao {
   Future<Album?> getAlbumById(String albumId) async {
     try {
       final db = await _db;
-      final results = await db.query(
-        DatabaseConstants.tableAlbums,
-        where: '${DatabaseConstants.colId} = ?',
-        whereArgs: [albumId],
-        limit: 1,
+      final results = await db.rawQuery(
+        '$_albumSelect WHERE a.${DatabaseConstants.colId} = ? LIMIT 1',
+        [albumId],
       );
       if (results.isEmpty) return null;
-      return Album.fromMap(results.first);
+      return _albumFromRow(results.first);
     } catch (e, st) {
       throw StorageException(
         'Failed to get album by ID $albumId: $e',
@@ -94,12 +128,8 @@ class AlbumDao {
   Future<List<Album>> getAllAlbums() async {
     try {
       final db = await _db;
-      final results = await db.query(
-        DatabaseConstants.tableAlbums,
-        orderBy:
-            '${DatabaseConstants.colAlbumIsPinned} DESC, ${DatabaseConstants.colAlbumSortOrder} ASC, ${DatabaseConstants.colName} ASC',
-      );
-      return results.map((r) => Album.fromMap(r)).toList();
+      final results = await db.rawQuery('$_albumSelect $_albumOrder');
+      return results.map(_albumFromRow).toList();
     } catch (e, st) {
       throw StorageException(
         'Failed to get all albums: $e',
@@ -130,7 +160,7 @@ class AlbumDao {
           DatabaseConstants.colAlbumMediaDateAdded:
               DateTime.now().millisecondsSinceEpoch,
         }, conflictAlgorithm: ConflictAlgorithm.replace);
-        await _refreshCount(txn, albumId);
+        await _touchAlbum(txn, albumId);
       });
     } catch (e, st) {
       throw StorageException(
@@ -165,7 +195,7 @@ class AlbumDao {
             DatabaseConstants.colAlbumMediaDateAdded:
                 DateTime.now().millisecondsSinceEpoch,
           }, conflictAlgorithm: ConflictAlgorithm.replace);
-          await _refreshCount(txn, albumId);
+          await _touchAlbum(txn, albumId);
         }
       });
     } catch (e, st) {
@@ -189,7 +219,7 @@ class AlbumDao {
           whereArgs: [albumId, mediaId],
         );
 
-        await _refreshCount(txn, albumId);
+        await _touchAlbum(txn, albumId);
       });
     } catch (e, st) {
       throw StorageException(
@@ -217,6 +247,7 @@ class AlbumDao {
         WHERE am.${DatabaseConstants.colAlbumMediaAlbumId} = ?
           AND m.${DatabaseConstants.colMediaIsVaulted} = 0
           AND m.${DatabaseConstants.colMediaIsTrash} = 0
+          AND m.${DatabaseConstants.colMediaIsOutOfReach} = 0
         ORDER BY am.${DatabaseConstants.colAlbumMediaPosition} ASC, m.${DatabaseConstants.colMediaDateTaken} DESC
       ''');
 
@@ -244,14 +275,12 @@ class AlbumDao {
   Future<List<Album>> getAlbumsByType(AlbumType type) async {
     try {
       final db = await _db;
-      final results = await db.query(
-        DatabaseConstants.tableAlbums,
-        where: '${DatabaseConstants.colAlbumType} = ?',
-        whereArgs: [type.name],
-        orderBy:
-            '${DatabaseConstants.colAlbumIsPinned} DESC, ${DatabaseConstants.colAlbumSortOrder} ASC, ${DatabaseConstants.colName} ASC',
+      final results = await db.rawQuery(
+        '$_albumSelect WHERE a.${DatabaseConstants.colAlbumType} = ? '
+        '$_albumOrder',
+        [type.name],
       );
-      return results.map((r) => Album.fromMap(r)).toList();
+      return results.map(_albumFromRow).toList();
     } catch (e, st) {
       throw StorageException(
         'Failed to get albums of type ${type.name}: $e',
@@ -454,25 +483,15 @@ class AlbumDao {
     return highest == null ? 0 : highest + 1;
   }
 
-  /// Recounts an album's items and stamps it as changed.
+  /// Stamps an album as changed after its membership changed.
   ///
-  /// Recounting rather than adding or subtracting one keeps the stored count
-  /// right even when a membership row went away through a foreign key cascade,
-  /// which no Dart code here would otherwise see.
-  Future<void> _refreshCount(DatabaseExecutor txn, String albumId) async {
-    final countResult = await txn.rawQuery(
-      '''
-      SELECT COUNT(*) as count FROM ${DatabaseConstants.tableAlbumMedia}
-      WHERE ${DatabaseConstants.colAlbumMediaAlbumId} = ?
-    ''',
-      [albumId],
-    );
-    final count = (countResult.first['count'] as int?) ?? 0;
-
+  /// The saved `item_count` is kept right by database triggers (schema 8),
+  /// including when a membership row goes away through a foreign key
+  /// cascade, so no Dart code counts here.
+  Future<void> _touchAlbum(DatabaseExecutor txn, String albumId) async {
     await txn.update(
       DatabaseConstants.tableAlbums,
       {
-        DatabaseConstants.colAlbumItemCount: count,
         DatabaseConstants.colAlbumDateModified:
             DateTime.now().millisecondsSinceEpoch,
       },

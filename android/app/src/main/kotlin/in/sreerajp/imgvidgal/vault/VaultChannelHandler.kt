@@ -9,6 +9,7 @@ import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
 import android.util.Base64
 import android.view.WindowManager
+import `in`.sreerajp.imgvidgal.media.SecureOverwrite
 import io.flutter.plugin.common.BinaryMessenger
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
@@ -432,30 +433,7 @@ class VaultChannelHandler(
         if (!file.isFile) return false
 
         try {
-            val length = file.length()
-            if (length > 0) {
-                RandomAccessFile(file, "rws").use { raf ->
-                    val buffer = ByteArray(BLOCK_SIZE)
-                    for (pass in 0 until passes) {
-                        if (pass % 2 == 0) {
-                            buffer.fill(0)
-                        } else {
-                            secureRandom.nextBytes(buffer)
-                        }
-                        raf.seek(0)
-                        var remaining = length
-                        while (remaining > 0) {
-                            val chunk = minOf(remaining, buffer.size.toLong()).toInt()
-                            raf.write(buffer, 0, chunk)
-                            remaining -= chunk
-                        }
-                        raf.fd.sync()
-                    }
-                    // Truncate so the size itself stops being a hint.
-                    raf.setLength(0)
-                    raf.fd.sync()
-                }
-            }
+            SecureOverwrite.overwriteFile(file, passes)
         } catch (error: Exception) {
             // An overwrite that failed part way still leaves a file that has
             // to go. Deleting is strictly better than keeping it.

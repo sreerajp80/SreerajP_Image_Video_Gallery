@@ -34,6 +34,30 @@ class SafetySettingsScreen extends ConsumerWidget {
                     .setConfirmDestructive(value),
               ),
             ),
+            const SizedBox(height: 12),
+            Card(
+              margin: EdgeInsets.zero,
+              clipBehavior: Clip.antiAlias,
+              child: SwitchListTile(
+                secondary: const Icon(Icons.delete_forever_outlined),
+                title: Text(
+                  l10n.titleSecureDelete,
+                  style: const TextStyle(fontWeight: FontWeight.w600),
+                ),
+                subtitle: Text(l10n.descSecureDeleteSubtitle),
+                value: settings.secureDelete,
+                onChanged: (value) => ref
+                    .read(appSettingsProvider.notifier)
+                    .setSecureDelete(value),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+              child: Text(
+                l10n.bodySecureDeleteVaultNote,
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+            ),
           ],
         ),
       ),

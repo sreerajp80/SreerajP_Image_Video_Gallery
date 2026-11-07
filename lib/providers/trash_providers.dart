@@ -1,8 +1,10 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:in_sreerajp_imgvidgal/models/filter_options.dart';
+import 'package:in_sreerajp_imgvidgal/models/media/media_delete_result.dart';
 import 'package:in_sreerajp_imgvidgal/models/media_item.dart';
 import 'package:in_sreerajp_imgvidgal/providers/album_providers.dart';
 import 'package:in_sreerajp_imgvidgal/providers/media_providers.dart';
+import 'package:in_sreerajp_imgvidgal/providers/settings_providers.dart';
 import 'package:flutter_riverpod/legacy.dart';
 
 /// Bumped after every trash change so watching providers refresh together.
@@ -49,6 +51,25 @@ class TrashController extends StateNotifier<AsyncValue<void>> {
     }
   }
 
+  /// Restores the given items, e.g. the Undo after a selection was trashed.
+  ///
+  /// Only these ids are touched; anything else in the trash stays there.
+  Future<void> restoreItems(List<String> ids) async {
+    if (ids.isEmpty) return;
+    state = const AsyncValue<void>.loading();
+    try {
+      final repository = _ref.read(mediaRepositoryProvider);
+      for (final id in ids) {
+        await repository.setTrash(id, false);
+      }
+      state = const AsyncValue<void>.data(null);
+      _ref.read(trashRevisionProvider.notifier).state++;
+      _ref.read(albumRevisionProvider.notifier).state++;
+    } catch (e, st) {
+      state = AsyncValue<void>.error(e, st);
+    }
+  }
+
   /// Restores every item in the trash back to the main library.
   Future<int> restoreAll() async {
     state = const AsyncValue<void>.loading();
@@ -67,50 +88,64 @@ class TrashController extends StateNotifier<AsyncValue<void>> {
   }
 
   /// Permanently removes every trashed item from device storage and the gallery.
-  Future<int> emptyTrash() async {
+  ///
+  /// Written over first when Secure delete is on in Settings.
+  Future<MediaDeleteResult> emptyTrash() async {
     state = const AsyncValue<void>.loading();
     try {
       final items = await _ref
           .read(mediaRepositoryProvider)
           .getMediaItems(filter: const FilterOptions(isTrash: true));
-      if (items.isEmpty) {
-        state = const AsyncValue<void>.data(null);
-        return 0;
-      }
-      final success = await _ref
-          .read(mediaRepositoryProvider)
-          .deletePermanently(items);
-      if (!success) {
-        state = const AsyncValue<void>.data(null);
-        return 0;
-      }
-      state = const AsyncValue<void>.data(null);
-      _ref.read(trashRevisionProvider.notifier).state++;
-      _ref.read(albumRevisionProvider.notifier).state++;
-      return items.length;
+      return await _delete(items);
     } catch (e, st) {
       state = AsyncValue<void>.error(e, st);
-      return 0;
+      return MediaDeleteResult.empty;
     }
   }
 
   /// Permanently deletes a single item from device storage and the gallery.
-  Future<bool> deletePermanently(MediaItem item) async {
+  ///
+  /// Written over first when Secure delete is on in Settings.
+  Future<MediaDeleteResult> deletePermanently(MediaItem item) async {
     state = const AsyncValue<void>.loading();
     try {
-      final success = await _ref
-          .read(mediaRepositoryProvider)
-          .deletePermanently(<MediaItem>[item]);
-      state = const AsyncValue<void>.data(null);
-      if (success) {
-        _ref.read(trashRevisionProvider.notifier).state++;
-        _ref.read(albumRevisionProvider.notifier).state++;
-      }
-      return success;
+      return await _delete(<MediaItem>[item]);
     } catch (e, st) {
       state = AsyncValue<void>.error(e, st);
-      return false;
+      return MediaDeleteResult.empty;
     }
+  }
+
+  /// Permanently deletes several items in one go, e.g. a gallery selection.
+  ///
+  /// One call, so Android asks once for the whole set (Android 11+).
+  Future<MediaDeleteResult> deleteItems(List<MediaItem> items) async {
+    state = const AsyncValue<void>.loading();
+    try {
+      return await _delete(items);
+    } catch (e, st) {
+      state = AsyncValue<void>.error(e, st);
+      return MediaDeleteResult.empty;
+    }
+  }
+
+  Future<MediaDeleteResult> _delete(List<MediaItem> items) async {
+    if (items.isEmpty) {
+      state = const AsyncValue<void>.data(null);
+      return MediaDeleteResult.empty;
+    }
+    final result = await _ref
+        .read(mediaRepositoryProvider)
+        .deletePermanently(
+          items,
+          secure: _ref.read(appSettingsProvider).secureDelete,
+        );
+    state = const AsyncValue<void>.data(null);
+    if (result.anyDeleted) {
+      _ref.read(trashRevisionProvider.notifier).state++;
+      _ref.read(albumRevisionProvider.notifier).state++;
+    }
+    return result;
   }
 }
 

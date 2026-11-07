@@ -122,25 +122,66 @@ class MediaRepository {
 
   /// Permanently deletes [items] from both the device storage and database.
   ///
-  /// Returns true if deletion was confirmed and executed, false if cancelled.
-  Future<bool> deletePermanently(List<MediaItem> items) async {
-    if (items.isEmpty) return true;
+  /// With [secure], each file is written over first so undelete tools cannot
+  /// get it back (see [MediaStoreChannel.secureDeleteMedia]). Only rows whose
+  /// file is really gone leave the database; a file Android refused to touch
+  /// stays listed.
+  Future<MediaDeleteResult> deletePermanently(
+    List<MediaItem> items, {
+    bool secure = false,
+  }) async {
+    if (items.isEmpty) return MediaDeleteResult.empty;
     final channel = _channel;
-    if (channel != null) {
-      final uris = items
-          .map((e) => e.uri)
-          .whereType<String>()
-          .where((u) => u.isNotEmpty)
-          .toList();
-      final paths = items
-          .map((e) => e.path)
-          .where((p) => p.isNotEmpty)
-          .toList();
-      final success = await channel.deleteMedia(uris: uris, paths: paths);
-      if (!success) return false;
+    if (channel == null) {
+      await _mediaDao.deleteMediaItems(items.map((e) => e.id).toList());
+      return MediaDeleteResult(
+        deleted: items.length,
+        overwritten: 0,
+        failed: 0,
+        secure: secure,
+      );
+    }
+
+    if (secure) {
+      final outcomes = await channel.secureDeleteMedia(
+        targets: <({String uri, String path})>[
+          for (final item in items) (uri: item.uri ?? '', path: item.path),
+        ],
+        passes: AppConstants.secureDeletePasses,
+      );
+      final goneIds = <String>[
+        for (var i = 0; i < items.length; i++)
+          if (i < outcomes.length && outcomes[i].isGone) items[i].id,
+      ];
+      if (goneIds.isNotEmpty) await _mediaDao.deleteMediaItems(goneIds);
+      return MediaDeleteResult.fromOutcomes(<MediaDeleteOutcome>[
+        for (var i = 0; i < items.length; i++)
+          i < outcomes.length ? outcomes[i] : MediaDeleteOutcome.failed,
+      ], secure: true);
+    }
+
+    final uris = items
+        .map((e) => e.uri)
+        .whereType<String>()
+        .where((u) => u.isNotEmpty)
+        .toList();
+    final paths = items.map((e) => e.path).where((p) => p.isNotEmpty).toList();
+    final success = await channel.deleteMedia(uris: uris, paths: paths);
+    if (!success) {
+      return MediaDeleteResult(
+        deleted: 0,
+        overwritten: 0,
+        failed: items.length,
+        secure: false,
+      );
     }
     await _mediaDao.deleteMediaItems(items.map((e) => e.id).toList());
-    return true;
+    return MediaDeleteResult(
+      deleted: items.length,
+      overwritten: 0,
+      failed: 0,
+      secure: false,
+    );
   }
 
   /// Number of items currently sitting in the trash.

@@ -2,7 +2,9 @@ package `in`.sreerajp.imgvidgal.backup
 
 import android.app.Activity
 import android.content.Intent
+import android.media.MediaScannerConnection
 import android.net.Uri
+import android.os.Environment
 import android.provider.DocumentsContract
 import android.provider.OpenableColumns
 import io.flutter.plugin.common.BinaryMessenger
@@ -63,6 +65,8 @@ class DocumentPickerChannelHandler(
             "documentInfo" -> documentInfo(call, result)
             "readPrefix" -> readPrefix(call, result)
             "copyToCache" -> copyToCache(call, result)
+            "openFolder" -> openFolder(result)
+            "writeToFolder" -> writeToFolder(call, result)
             else -> result.notImplemented()
         }
     }
@@ -263,6 +267,130 @@ class DocumentPickerChannelHandler(
     }
 
     /**
+     * Asks the user to point at a folder.
+     *
+     * Used when a vault item is restored and the folder it came from is gone.
+     * The grant is used once, for the restore that follows, and is not kept:
+     * no `takePersistableUriPermission`, the same rule as the read side.
+     */
+    private fun openFolder(result: MethodChannel.Result) {
+        if (!claim(result)) return
+
+        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE).apply {
+            addFlags(
+                Intent.FLAG_GRANT_READ_URI_PERMISSION or
+                    Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+            )
+        }
+
+        launch(intent, REQUEST_TREE, result)
+    }
+
+    /**
+     * Copies a decrypted vault working file into a folder the user picked.
+     *
+     * A new document is always created. When the name is taken, the provider
+     * gives it a new one such as `photo (1).jpg`, so nothing already there is
+     * ever overwritten. A copy that fails part way deletes its half-file.
+     *
+     * The source must be a working file inside the app's own vault folder.
+     * Without that check this would be a general "copy any file the app can
+     * read into any folder" tool, which no screen needs.
+     *
+     * The copy runs off the main thread: a video can be gigabytes.
+     */
+    private fun writeToFolder(call: MethodCall, result: MethodChannel.Result) {
+        val treeUri = call.argument<String>("treeUri")
+        val displayName = call.argument<String>("displayName")
+        val mimeType = call.argument<String>("mimeType") ?: DEFAULT_MIME
+        val sourcePath = call.argument<String>("sourcePath")
+
+        if (treeUri.isNullOrEmpty() || sourcePath.isNullOrEmpty() ||
+            displayName.isNullOrBlank() || displayName.contains('/') ||
+            displayName.contains('\\')
+        ) {
+            result.error(ERROR_INVALID_ARGUMENTS, "treeUri, displayName and sourcePath are required", null)
+            return
+        }
+
+        val source = File(sourcePath)
+        if (!isVaultWorkingFile(source)) {
+            result.error(ERROR_INVALID_ARGUMENTS, "The source is not a vault working file", null)
+            return
+        }
+
+        Thread {
+            val outcome = runCatching { copyIntoTree(Uri.parse(treeUri), displayName, mimeType, source) }
+            activity.runOnUiThread {
+                outcome.fold(
+                    onSuccess = { result.success(it) },
+                    onFailure = { error ->
+                        result.error(ERROR_WRITE_FAILED, error.javaClass.simpleName, null)
+                    }
+                )
+            }
+        }.start()
+    }
+
+    private fun copyIntoTree(
+        tree: Uri,
+        displayName: String,
+        mimeType: String,
+        source: File
+    ): Map<String, String?> {
+        val resolver = activity.contentResolver
+        val parent = DocumentsContract.buildDocumentUriUsingTree(
+            tree,
+            DocumentsContract.getTreeDocumentId(tree)
+        )
+        val created = DocumentsContract.createDocument(resolver, parent, mimeType, displayName)
+            ?: throw IllegalStateException("The folder refused a new file")
+
+        try {
+            resolver.openOutputStream(created, "w").use { output ->
+                if (output == null) throw IllegalStateException("The new file could not be opened")
+                source.inputStream().use { input ->
+                    input.copyTo(output, COPY_BLOCK_BYTES)
+                }
+            }
+        } catch (error: Exception) {
+            runCatching { DocumentsContract.deleteDocument(resolver, created) }
+            throw error
+        }
+
+        val path = primaryStoragePath(created)
+        if (path != null) {
+            // Newer Android indexes files written this way by itself; older
+            // versions need telling, or the photo would not show in galleries.
+            MediaScannerConnection.scanFile(activity, arrayOf(path), arrayOf(mimeType), null)
+        }
+        return mapOf("uri" to created.toString(), "path" to path)
+    }
+
+    /** True only for a `.dec` working file directly inside the vault folder. */
+    private fun isVaultWorkingFile(file: File): Boolean = runCatching {
+        val vault = File(activity.filesDir, VAULT_FOLDER).canonicalFile
+        val canonical = file.canonicalFile
+        canonical.parentFile == vault &&
+            canonical.name.endsWith(VAULT_WORKING_EXTENSION) &&
+            canonical.isFile
+    }.getOrDefault(false)
+
+    /**
+     * The real path of a document on the phone's main storage, or null.
+     *
+     * Only the built-in storage provider's `primary:` ids can be mapped. For
+     * anything else the media index request is skipped, which is harmless.
+     */
+    private fun primaryStoragePath(document: Uri): String? = runCatching {
+        if (document.authority != EXTERNAL_STORAGE_AUTHORITY) return null
+        val id = DocumentsContract.getDocumentId(document)
+        if (!id.startsWith(PRIMARY_PREFIX)) return null
+        @Suppress("DEPRECATION")
+        File(Environment.getExternalStorageDirectory(), id.removePrefix(PRIMARY_PREFIX)).absolutePath
+    }.getOrNull()
+
+    /**
      * Takes the pending slot, or tells the caller one is already in use.
      *
      * Returns false when it refused, so the caller stops.
@@ -294,7 +422,12 @@ class DocumentPickerChannelHandler(
      * pass it on to anything else.
      */
     fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?): Boolean {
-        if (requestCode != REQUEST_CREATE && requestCode != REQUEST_OPEN) return false
+        if (requestCode != REQUEST_CREATE &&
+            requestCode != REQUEST_OPEN &&
+            requestCode != REQUEST_TREE
+        ) {
+            return false
+        }
 
         val waiting = pending ?: return true
         pending = null
@@ -330,6 +463,16 @@ class DocumentPickerChannelHandler(
 
         private const val REQUEST_CREATE = 0x8A11
         private const val REQUEST_OPEN = 0x8A12
+        private const val REQUEST_TREE = 0x8A13
+
+        /** Must match `AppConstants.vaultStorageDirectoryName` in Dart. */
+        private const val VAULT_FOLDER = ".secure_vault"
+
+        /** Must match `AppConstants.vaultWorkingExtension` in Dart. */
+        private const val VAULT_WORKING_EXTENSION = ".dec"
+
+        private const val EXTERNAL_STORAGE_AUTHORITY = "com.android.externalstorage.documents"
+        private const val PRIMARY_PREFIX = "primary:"
 
         private const val DEFAULT_MIME = "application/octet-stream"
 
@@ -348,5 +491,6 @@ class DocumentPickerChannelHandler(
         private const val ERROR_UNREADABLE = "unreadable"
         private const val ERROR_CANCELLED = "cancelled"
         private const val ERROR_TOO_LARGE = "too_large"
+        private const val ERROR_WRITE_FAILED = "write_failed"
     }
 }

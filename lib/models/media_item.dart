@@ -73,6 +73,13 @@ class MediaItem {
   /// Whether this media item is currently in trash/recycle bin.
   final bool isTrash;
 
+  /// Whether Android currently keeps this item from the app.
+  ///
+  /// True while the user allows only some photos ("Allow limited access")
+  /// and did not pick this one, or allows none. The row and the user's data
+  /// on it are kept; every screen hides it until access comes back.
+  final bool isOutOfReach;
+
   /// Embedded EXIF / camera metadata.
   final ExifData? exifData;
 
@@ -115,6 +122,7 @@ class MediaItem {
     this.isFavorite = false,
     this.isVaulted = false,
     this.isTrash = false,
+    this.isOutOfReach = false,
     this.exifData,
     this.tags = const <String>[],
     this.userNotes,
@@ -157,6 +165,7 @@ class MediaItem {
     bool? isFavorite,
     bool? isVaulted,
     bool? isTrash,
+    bool? isOutOfReach,
     ExifData? exifData,
     List<String>? tags,
     String? userNotes,
@@ -184,6 +193,7 @@ class MediaItem {
       isFavorite: isFavorite ?? this.isFavorite,
       isVaulted: isVaulted ?? this.isVaulted,
       isTrash: isTrash ?? this.isTrash,
+      isOutOfReach: isOutOfReach ?? this.isOutOfReach,
       exifData: exifData ?? this.exifData,
       tags: tags ?? this.tags,
       userNotes: userNotes ?? this.userNotes,
@@ -215,6 +225,7 @@ class MediaItem {
       'is_favorite': isFavorite ? 1 : 0,
       'is_vaulted': isVaulted ? 1 : 0,
       'is_trash': isTrash ? 1 : 0,
+      'is_out_of_reach': isOutOfReach ? 1 : 0,
       'exif_json': exifData != null ? jsonEncode(exifData!.toMap()) : null,
       'user_notes': userNotes,
       'sha256_hash': sha256Hash,
@@ -280,6 +291,7 @@ class MediaItem {
       isFavorite: map['is_favorite'] == 1 || map['isFavorite'] == true,
       isVaulted: map['is_vaulted'] == 1 || map['isVaulted'] == true,
       isTrash: map['is_trash'] == 1 || map['isTrash'] == true,
+      isOutOfReach: map['is_out_of_reach'] == 1 || map['isOutOfReach'] == true,
       exifData: parsedExif,
       tags: combinedTags,
       userNotes: (map['user_notes'] ?? map['userNotes']) as String?,
@@ -313,6 +325,7 @@ class MediaItem {
           isFavorite == other.isFavorite &&
           isVaulted == other.isVaulted &&
           isTrash == other.isTrash &&
+          isOutOfReach == other.isOutOfReach &&
           exifData == other.exifData &&
           listEquals(tags, other.tags) &&
           userNotes == other.userNotes &&
@@ -343,6 +356,6 @@ class MediaItem {
     isTrash,
     exifData,
     Object.hashAll(tags),
-    userNotes,
+    Object.hash(userNotes, isOutOfReach),
   );
 }

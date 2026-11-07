@@ -36,6 +36,15 @@ abstract class BatchItemHandler {
   /// True for the PDF export. The runner still walks the items so progress
   /// moves, but does not call [handle] for each.
   bool isWholeBatch(BatchAction action) => false;
+
+  /// Runs once after the last item, with the items that succeeded.
+  ///
+  /// Also runs after a cancel, for the items done before it. This is where a
+  /// step that must cover the whole set in one go belongs: shredding the
+  /// originals after a vault move is one Android prompt for all of them, not
+  /// one prompt per photo. Throwing here does not undo [handle]'s work; the
+  /// runner reports it as the batch's error.
+  Future<void> finish(BatchAction action, List<MediaItem> succeeded) async {}
 }
 
 /// Runs one batch action over a selection, one file at a time.
@@ -105,6 +114,7 @@ class BatchRunnerService {
         .toList();
 
     final succeeded = <String>[];
+    final succeededItems = <MediaItem>[];
     final failed = <String>[];
     final outputs = <String>[];
     String? firstError;
@@ -138,6 +148,7 @@ class BatchRunnerService {
         try {
           final output = await _handler.handle(action, item);
           succeeded.add(item.id);
+          succeededItems.add(item);
           if (output != null && output.isNotEmpty) outputs.add(output);
         } catch (error) {
           AppLogger.warning('A batch item failed', error: error);
@@ -147,6 +158,15 @@ class BatchRunnerService {
 
         progress = progress.copyWith(done: succeeded.length + failed.length);
         onProgress?.call(progress);
+      }
+
+      if (succeededItems.isNotEmpty) {
+        try {
+          await _handler.finish(action, List.unmodifiable(succeededItems));
+        } catch (error) {
+          AppLogger.warning('A batch end step failed', error: error);
+          firstError ??= _describe(error);
+        }
       }
     } finally {
       _running = false;

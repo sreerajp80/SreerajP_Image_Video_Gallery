@@ -99,3 +99,17 @@ tool/ocr_eval/results/
 play_closed_testing/
 /plans/20261106_063908_play-closed-testing-docs.md
 /change_log/20261106_*_play-closed-testing-docs.md
+/plans/20261107_094945_fill-submission-record.md
+/change_log/*_fill-submission-record.md
+/plans/20261107_095344_submission-record-menu-paths.md
+/change_log/*_submission-record-menu-paths.md
+/plans/20261107_095855_submission-record-listing-and-review.md
+/change_log/*_submission-record-listing-and-review.md
+/plans/20261107_101005_submission-record-version-fix-and-paths.md
+/change_log/*_submission-record-version-fix-and-paths.md
+/plans/20261107_101658_submission-record-user-content-sharing.md
+/change_log/*_submission-record-user-content-sharing.md
+/plans/20261107_102201_submission-record-bundle-details.md
+/change_log/*_submission-record-bundle-details.md
+/plans/20261107_103027_clean-stray-vault-files.md
+/change_log/*_clean-stray-vault-files.md

@@ -70,8 +70,45 @@ class _VaultScreenState extends ConsumerState<VaultScreen> {
     );
     if (!agreed || !mounted) return;
 
-    await ref.read(vaultBatchControllerProvider.notifier).restore(chosen);
+    final controller = ref.read(vaultBatchControllerProvider.notifier);
+    final fallbackFolderUri = await _askForFallbackFolder(
+      controller.findItemsWithMissingFolder(chosen).length,
+    );
+    if (!mounted) return;
+
+    await controller.restore(chosen, fallbackFolderUri: fallbackFolderUri);
     if (mounted) _clearSelection();
+  }
+
+  /// Asks for a folder when [missingCount] items have lost their old one.
+  ///
+  /// Returns the picked folder, or null when nothing is missing, the user
+  /// chose Skip, or they backed out of the picker. Null means those items
+  /// stay in the vault, which is the safe outcome.
+  Future<String?> _askForFallbackFolder(int missingCount) async {
+    if (missingCount <= 0) return null;
+
+    final l10n = AppLocalizations.of(context)!;
+    final choose = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(l10n.titleVaultFolderMissing),
+        content: Text(l10n.bodyVaultFolderMissing(missingCount)),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: Text(l10n.actionVaultSkip),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: Text(l10n.actionVaultChooseFolder),
+          ),
+        ],
+      ),
+    );
+    if (choose != true || !mounted) return null;
+
+    return ref.read(vaultBatchControllerProvider.notifier).pickRestoreFolder();
   }
 
   Future<void> _deleteSelected(List<VaultItem> all) async {
@@ -264,6 +301,18 @@ class _VaultScreenState extends ConsumerState<VaultScreen> {
   }
 
   String _messageForResult(VaultBatchResult result, AppLocalizations l10n) {
+    if (result.skippedCount > 0) {
+      return result.failedCount > 0
+          ? l10n.bodyVaultRestoreSkippedFailed(
+              result.succeededCount,
+              result.skippedCount,
+              result.failedCount,
+            )
+          : l10n.bodyVaultRestoreSkipped(
+              result.succeededCount,
+              result.skippedCount,
+            );
+    }
     if (result.isTotalFailure) return l10n.errorVaultImportFailed;
     if (result.isPartial) {
       return l10n.bodyVaultImportPartial(

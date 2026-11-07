@@ -6,7 +6,7 @@ class DatabaseConstants {
   static const String databaseName = 'gallery_database.db';
 
   /// Current SQLite database schema version.
-  static const int schemaVersion = 5;
+  static const int schemaVersion = 8;
 
   // Table Names
   static const String tableMedia = 'media_items';
@@ -38,6 +38,10 @@ class DatabaseConstants {
   static const String colMediaIsFavorite = 'is_favorite';
   static const String colMediaIsVaulted = 'is_vaulted';
   static const String colMediaIsTrash = 'is_trash';
+
+  /// 1 while Android does not let the app see this item (limited or no media
+  /// access). The row and the user's data on it are kept; every list hides it.
+  static const String colMediaIsOutOfReach = 'is_out_of_reach';
   static const String colMediaExifJson = 'exif_json';
   static const String colMediaUserNotes = 'user_notes';
   static const String colMediaSha256Hash = 'sha256_hash';
@@ -106,4 +110,17 @@ class DatabaseConstants {
   static const String colFtsTagsContent = 'tags_content';
   static const String colFtsExifSearchText = 'exif_search_text';
   static const String colFtsAddress = 'address';
+
+  /// The SQL condition for a media row the user can see in a list: not in
+  /// the vault, not in the trash, and not hidden by limited media access.
+  ///
+  /// Written once so the album, tag and folder counts all use the same rule
+  /// as the screens that open them. [alias] is the table alias, for example
+  /// `'m'`, or empty when the query has no alias.
+  static String visibleMediaCondition([String alias = '']) {
+    final p = alias.isEmpty ? '' : '$alias.';
+    return '$p$colMediaIsVaulted = 0 '
+        'AND $p$colMediaIsTrash = 0 '
+        'AND $p$colMediaIsOutOfReach = 0';
+  }
 }

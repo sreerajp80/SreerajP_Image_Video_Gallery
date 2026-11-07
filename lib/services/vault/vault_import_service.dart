@@ -7,6 +7,7 @@ import 'package:in_sreerajp_imgvidgal/models/vault/vault_import_result.dart';
 import 'package:in_sreerajp_imgvidgal/models/vault_item.dart';
 import 'package:in_sreerajp_imgvidgal/repositories/database/media_dao.dart';
 import 'package:in_sreerajp_imgvidgal/repositories/database/vault_dao.dart';
+import 'package:in_sreerajp_imgvidgal/services/media/media_store_channel.dart';
 import 'package:in_sreerajp_imgvidgal/services/vault/vault_crypto_service.dart';
 import 'package:in_sreerajp_imgvidgal/services/vault/vault_preview_service.dart';
 import 'package:in_sreerajp_imgvidgal/services/vault/vault_shredder_service.dart';
@@ -33,6 +34,7 @@ class VaultImportService {
   final VaultPreviewService _preview;
   final VaultDao _vaultDao;
   final MediaDao _mediaDao;
+  final MediaStoreChannel? _mediaStore;
   final Random _random;
 
   VaultImportService({
@@ -42,6 +44,7 @@ class VaultImportService {
     required VaultPreviewService preview,
     required VaultDao vaultDao,
     required MediaDao mediaDao,
+    MediaStoreChannel? mediaStore,
     Random? random,
   }) : _crypto = crypto,
        _storage = storage,
@@ -49,6 +52,7 @@ class VaultImportService {
        _preview = preview,
        _vaultDao = vaultDao,
        _mediaDao = mediaDao,
+       _mediaStore = mediaStore,
        _random = random ?? Random.secure();
 
   /// Imports [items], returning what made it and what did not.
@@ -65,6 +69,7 @@ class VaultImportService {
     if (items.isEmpty) return VaultBatchResult.empty;
 
     final imported = <String>[];
+    final toShred = <MediaItem>[];
     var failed = 0;
     var shredded = 0;
 
@@ -73,12 +78,7 @@ class VaultImportService {
       try {
         final vaultItem = await _importOne(item);
         imported.add(vaultItem.id);
-
-        if (shredOriginals && item.path.isNotEmpty) {
-          if (await _shredder.shred(item.path, passes: shredPasses)) {
-            shredded++;
-          }
-        }
+        if (shredOriginals) toShred.add(item);
       } catch (error) {
         AppLogger.warning(
           'Moving one item into the vault failed',
@@ -89,11 +89,64 @@ class VaultImportService {
       onProgress?.call(index + 1, items.length);
     }
 
+    // Only originals whose import fully succeeded are shredded, and all of
+    // them in one go at the end, so Android asks once for the whole set.
+    if (toShred.isNotEmpty) {
+      // `this.` because the bool parameter has the same name.
+      shredded = await this.shredOriginals(toShred, passes: shredPasses);
+    }
+
     return VaultBatchResult(
       succeededIds: imported,
       failedCount: failed,
       shreddedCount: shredded,
     );
+  }
+
+  /// Writes over and deletes the public originals. Returns how many are gone.
+  ///
+  /// On a device this goes through MediaStore ([MediaStoreChannel]
+  /// .secureDeleteMedia). Opening the public file by its path, as this used
+  /// to, fails on Android 11+: the app may read a photo it did not create but
+  /// not write to it, so the overwrite and the delete both failed quietly and
+  /// the original stayed. The path shredder is kept only for when there is no
+  /// MediaStore channel (tests, a host machine).
+  ///
+  /// Public so a batch that imports one photo at a time (for progress and
+  /// Cancel) can still shred them all in one call at the end, and Android
+  /// asks once. Only pass items whose import has already succeeded.
+  Future<int> shredOriginals(List<MediaItem> items, {int? passes}) async {
+    if (items.isEmpty) return 0;
+    final passCount = (passes ?? AppConstants.vaultDefaultShredPasses).clamp(
+      AppConstants.vaultMinShredPasses,
+      AppConstants.vaultMaxShredPasses,
+    );
+    final mediaStore = _mediaStore;
+    if (mediaStore != null) {
+      try {
+        final outcomes = await mediaStore.secureDeleteMedia(
+          targets: <({String uri, String path})>[
+            for (final item in items) (uri: item.uri ?? '', path: item.path),
+          ],
+          passes: passCount,
+        );
+        // Only a real overwrite counts as shredded. A file that was deleted
+        // without being written over is gone, but not shredded.
+        return outcomes
+            .where((o) => o == MediaDeleteOutcome.overwritten)
+            .length;
+      } catch (error) {
+        AppLogger.warning('Shredding the originals failed', error: error);
+        return 0;
+      }
+    }
+
+    var count = 0;
+    for (final item in items) {
+      if (item.path.isEmpty) continue;
+      if (await _shredder.shred(item.path, passes: passCount)) count++;
+    }
+    return count;
   }
 
   /// Imports one item, cleaning up after itself if anything goes wrong.

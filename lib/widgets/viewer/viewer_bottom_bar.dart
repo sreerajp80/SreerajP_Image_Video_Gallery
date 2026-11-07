@@ -9,7 +9,7 @@ class ImageViewerBottomBar extends StatelessWidget {
   final VoidCallback onRotateLeft;
   final VoidCallback onRotateRight;
   final VoidCallback onShowDetails;
-  final VoidCallback onMoveToTrash;
+  final VoidCallback onDelete;
   final VoidCallback? onRestore;
   final VoidCallback? onDeletePermanently;
 
@@ -20,7 +20,7 @@ class ImageViewerBottomBar extends StatelessWidget {
     required this.onRotateLeft,
     required this.onRotateRight,
     required this.onShowDetails,
-    required this.onMoveToTrash,
+    required this.onDelete,
     this.onRestore,
     this.onDeletePermanently,
   });
@@ -122,8 +122,8 @@ class ImageViewerBottomBar extends StatelessWidget {
                 ),
                 _ViewerBottomAction(
                   icon: Icons.delete_outline,
-                  label: l10n.titleBatchActionMoveToTrash,
-                  onPressed: onMoveToTrash,
+                  label: l10n.titleBatchActionDelete,
+                  onPressed: onDelete,
                 ),
               ],
             ),

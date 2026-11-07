@@ -115,14 +115,23 @@ class VaultRepository {
     onProgress: onProgress,
   );
 
+  /// The items whose original folder no longer exists.
+  List<VaultItem> itemsWithMissingFolder(List<VaultItem> items) =>
+      _exportService.itemsWithMissingFolder(items);
+
   /// Restores items to public storage and takes them out of the vault.
+  ///
+  /// Items whose original folder is gone go into [fallbackFolderUri], a
+  /// folder the user picked; without one they stay in the vault.
   Future<VaultBatchResult> exportToGallery(
     List<VaultItem> items, {
     int? shredPasses,
+    String? fallbackFolderUri,
     void Function(int done, int total)? onProgress,
   }) => _exportService.exportItems(
     items,
     shredPasses: shredPasses,
+    fallbackFolderUri: fallbackFolderUri,
     onProgress: onProgress,
   );
 

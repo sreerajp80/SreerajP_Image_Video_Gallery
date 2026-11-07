@@ -35,13 +35,26 @@ class _FakeHandler extends BatchItemHandler {
   /// Whether [begin] should throw.
   final bool beginThrows;
 
+  /// The item ids [finish] was given, one list per call.
+  final List<List<String>> finishCalls = <List<String>>[];
+
+  /// Whether [finish] should throw.
+  final bool finishThrows;
+
   _FakeHandler({
     this.failOn = const <String>{},
     this.wholeBatchActions = const <BatchAction>{},
     this.onEachItem,
     this.beginOutputs = const <String>[],
     this.beginThrows = false,
+    this.finishThrows = false,
   });
+
+  @override
+  Future<void> finish(BatchAction action, List<MediaItem> succeeded) async {
+    finishCalls.add(succeeded.map((i) => i.id).toList());
+    if (finishThrows) throw StateError('the end step failed');
+  }
 
   @override
   bool isWholeBatch(BatchAction action) => wholeBatchActions.contains(action);
@@ -268,6 +281,60 @@ void main() {
 
       expect(outcome.succeededIds, hasLength(3));
       expect(outcome.wasCancelled, isFalse);
+    });
+  });
+
+  group('BatchRunnerService — the end step', () {
+    // A batch vault move shreds all originals here in one request, so
+    // Android asks once for the whole set rather than once per photo.
+    test('runs once, with only the items that succeeded', () async {
+      final handler = _FakeHandler(failOn: const <String>{'m1'});
+      final runner = BatchRunnerService(handler: handler);
+
+      await runner.run(action: BatchAction.addTags, items: _items(4));
+
+      expect(handler.finishCalls, <List<String>>[
+        <String>['m0', 'm2', 'm3'],
+      ]);
+    });
+
+    test('still runs after a cancel, for the items already done', () async {
+      late BatchRunnerService runner;
+      final handler = _FakeHandler(
+        onEachItem: (id) {
+          if (id == 'm1') runner.cancel();
+        },
+      );
+      runner = BatchRunnerService(handler: handler);
+
+      await runner.run(action: BatchAction.addTags, items: _items(5));
+
+      expect(handler.finishCalls, <List<String>>[
+        <String>['m0', 'm1'],
+      ]);
+    });
+
+    test('does not run when nothing succeeded', () async {
+      final handler = _FakeHandler(failOn: const <String>{'m0', 'm1'});
+      final runner = BatchRunnerService(handler: handler);
+
+      await runner.run(action: BatchAction.addTags, items: _items(2));
+
+      expect(handler.finishCalls, isEmpty);
+    });
+
+    test('a failure is reported but keeps the items done', () async {
+      final handler = _FakeHandler(finishThrows: true);
+      final runner = BatchRunnerService(handler: handler);
+
+      final outcome = await runner.run(
+        action: BatchAction.addTags,
+        items: _items(2),
+      );
+
+      expect(outcome.succeededIds, <String>['m0', 'm1']);
+      expect(outcome.firstError, contains('the end step failed'));
+      expect(runner.isRunning, isFalse);
     });
   });
 

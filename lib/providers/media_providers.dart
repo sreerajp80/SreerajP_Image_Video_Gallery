@@ -153,11 +153,16 @@ final mediaItemsProvider =
 ///
 /// Used by the screens that work on a single item and only need its path,
 /// so they do not have to pull the whole timeline in to find one photo.
+///
+/// An item Android does not currently let the app see (limited or no media
+/// access) also gives null, so the screen shows its normal "not found" state
+/// instead of a photo the user did not allow.
 final mediaItemProvider = FutureProvider.family<MediaItem?, String>((
   ref,
   id,
 ) async {
-  return ref.watch(mediaRepositoryProvider).getMediaItemById(id);
+  final item = await ref.watch(mediaRepositoryProvider).getMediaItemById(id);
+  return (item == null || item.isOutOfReach) ? null : item;
 });
 
 /// Total number of indexed items.

@@ -43,6 +43,13 @@ class MediaStoreChannelHandler(
         const val CHANNEL_NAME = "in.sreerajp.imgvidgal/mediastore"
         private const val PERMISSION_REQUEST_CODE = 4711
         private const val DELETE_REQUEST_CODE = 4712
+        private const val WRITE_REQUEST_CODE = 4713
+        private const val SECURE_DELETE_REQUEST_CODE = 4714
+        private const val LEGACY_WRITE_PERMISSION_CODE = 4715
+
+        private const val OUTCOME_OVERWRITTEN = "overwritten"
+        private const val OUTCOME_DELETED = "deleted"
+        private const val OUTCOME_FAILED = "failed"
 
         private const val STATUS_GRANTED = "granted"
         private const val STATUS_PARTIAL = "partial"
@@ -65,6 +72,8 @@ class MediaStoreChannelHandler(
 
     private var pendingPermissionResult: MethodChannel.Result? = null
     private var pendingDeleteResult: MethodChannel.Result? = null
+    private var pendingSecureDelete: SecureDeleteJob? = null
+    private var pendingLegacyWrite: ((Boolean) -> Unit)? = null
 
     init {
         channel.setMethodCallHandler(this)
@@ -75,6 +84,8 @@ class MediaStoreChannelHandler(
         channel.setMethodCallHandler(null)
         pendingPermissionResult = null
         pendingDeleteResult = null
+        pendingSecureDelete = null
+        pendingLegacyWrite = null
         worker.shutdown()
     }
 
@@ -87,6 +98,37 @@ class MediaStoreChannelHandler(
                     res.success(resultCode == Activity.RESULT_OK)
                 }
             }
+            return true
+        }
+        if (requestCode == WRITE_REQUEST_CODE) {
+            val job = pendingSecureDelete ?: return true
+            val granted = resultCode == Activity.RESULT_OK
+            if (Build.VERSION.SDK_INT == Build.VERSION_CODES.Q) {
+                if (granted) {
+                    worker.execute { continueOnQ(job) }
+                } else {
+                    // Cancelling one prompt stops the rest; asking again for
+                    // every remaining file would only nag.
+                    finishSecureDelete(job)
+                }
+            } else if (granted) {
+                worker.execute { overwriteAndDelete(job) }
+            } else {
+                // No write access means no overwrite. Deleting anyway would
+                // quietly break the promise the user switched on.
+                finishSecureDelete(job)
+            }
+            return true
+        }
+        if (requestCode == SECURE_DELETE_REQUEST_CODE) {
+            val job = pendingSecureDelete ?: return true
+            if (resultCode == Activity.RESULT_OK) {
+                for (target in job.leftovers) {
+                    target.outcome =
+                        if (target.overwritten) OUTCOME_OVERWRITTEN else OUTCOME_DELETED
+                }
+            }
+            finishSecureDelete(job)
             return true
         }
         return false
@@ -102,6 +144,7 @@ class MediaStoreChannelHandler(
             "readBytes" -> handleReadBytes(call, result)
             "publishFile" -> handlePublishFile(call, result)
             "deleteMedia" -> handleDeleteMedia(call, result)
+            "secureDeleteMedia" -> handleSecureDeleteMedia(call, result)
             "openAppSettings" -> {
                 openAppSettings()
                 result.success(null)
@@ -174,6 +217,11 @@ class MediaStoreChannelHandler(
 
         val permissions = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
             requiredPermissions() + Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED
+        } else if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.P) {
+            // Android 9 and older need this to delete or overwrite a file the
+            // app did not create. Same permission group as read, so the user
+            // sees one prompt, not two.
+            requiredPermissions() + Manifest.permission.WRITE_EXTERNAL_STORAGE
         } else {
             requiredPermissions()
         }
@@ -187,6 +235,12 @@ class MediaStoreChannelHandler(
         permissions: Array<out String>,
         grantResults: IntArray
     ): Boolean {
+        if (requestCode == LEGACY_WRITE_PERMISSION_CODE) {
+            val callback = pendingLegacyWrite ?: return true
+            pendingLegacyWrite = null
+            callback(isGranted(Manifest.permission.WRITE_EXTERNAL_STORAGE))
+            return true
+        }
         if (requestCode != PERMISSION_REQUEST_CODE) return false
         val result = pendingPermissionResult ?: return true
         pendingPermissionResult = null
@@ -771,20 +825,312 @@ class MediaStoreChannelHandler(
                 }
             }
         } else {
-            worker.execute {
-                for (u in uris) {
-                    try {
-                        activity.contentResolver.delete(Uri.parse(u), null, null)
-                    } catch (_: Exception) {}
+            ensureLegacyWrite { granted ->
+                if (!granted) {
+                    result.success(false)
+                    return@ensureLegacyWrite
                 }
-                for (p in paths) {
-                    try {
-                        val f = java.io.File(p)
-                        if (f.exists()) f.delete()
-                    } catch (_: Exception) {}
+                worker.execute {
+                    for (u in uris) {
+                        try {
+                            activity.contentResolver.delete(Uri.parse(u), null, null)
+                        } catch (_: Exception) {}
+                    }
+                    for (p in paths) {
+                        try {
+                            val f = java.io.File(p)
+                            if (f.exists()) f.delete()
+                        } catch (_: Exception) {}
+                    }
+                    // Report what really happened. This used to say true
+                    // whatever the outcome, so a refused delete looked done.
+                    val allGone = paths.none { p ->
+                        try {
+                            java.io.File(p).exists()
+                        } catch (_: Exception) {
+                            false
+                        }
+                    }
+                    mainHandler.post { result.success(allGone) }
                 }
-                mainHandler.post { result.success(true) }
             }
+        }
+    }
+
+    /**
+     * Makes sure Android 9 and older let the app write to shared storage.
+     *
+     * Users who granted read access before write was declared still need the
+     * write grant. Android gives it without a prompt when read is already
+     * held, because both are in the same permission group.
+     */
+    private fun ensureLegacyWrite(then: (Boolean) -> Unit) {
+        val permission = Manifest.permission.WRITE_EXTERNAL_STORAGE
+        if (isGranted(permission)) {
+            then(true)
+            return
+        }
+        if (pendingLegacyWrite != null) {
+            then(false)
+            return
+        }
+        pendingLegacyWrite = then
+        ActivityCompat.requestPermissions(
+            activity,
+            arrayOf(permission),
+            LEGACY_WRITE_PERMISSION_CODE
+        )
+    }
+
+    // -------------------------------------------------------------- secure delete
+
+    /** One file the user asked to delete securely, and what happened to it. */
+    private class SecureTarget(val uri: Uri?, val path: String) {
+        var outcome: String = OUTCOME_FAILED
+        var overwritten: Boolean = false
+    }
+
+    /** A secure delete in progress, kept while Android shows its prompts. */
+    private class SecureDeleteJob(
+        val targets: List<SecureTarget>,
+        val passes: Int,
+        val result: MethodChannel.Result
+    ) {
+        /** Files written over but not yet deleted (Android 11+). */
+        var leftovers: List<SecureTarget> = emptyList()
+
+        /** Android 10: the file being worked on, and whether we asked for it. */
+        var index = 0
+        var askedForCurrent = false
+    }
+
+    /**
+     * Writes over each file, then deletes it. Returns one outcome per item,
+     * in order: "overwritten", "deleted" (gone, but not written over) or
+     * "failed" (still there).
+     *
+     * Android 11+: one "allow modify" prompt for the whole batch, then a
+     * delete prompt only for files Android would not let us delete.
+     * Android 10: Android asks once per file; it has no batch prompt.
+     * Android 9 and older: needs WRITE_EXTERNAL_STORAGE (declared up to 28).
+     */
+    private fun handleSecureDeleteMedia(call: MethodCall, result: MethodChannel.Result) {
+        val items = call.argument<List<Map<String, Any?>>>("items") ?: emptyList()
+        val passes = (call.argument<Int>("passes") ?: 2)
+            .coerceIn(SecureOverwrite.MIN_PASSES, SecureOverwrite.MAX_PASSES)
+
+        if (items.isEmpty()) {
+            result.success(emptyList<String>())
+            return
+        }
+        if (pendingSecureDelete != null || pendingDeleteResult != null) {
+            result.error("busy", "A delete is already running", null)
+            return
+        }
+
+        val targets = items.map { item ->
+            val uri = (item["uri"] as? String)
+                ?.takeIf { it.isNotEmpty() }
+                ?.let { Uri.parse(it) }
+            SecureTarget(uri, (item["path"] as? String) ?: "")
+        }
+        val job = SecureDeleteJob(targets, passes, result)
+        pendingSecureDelete = job
+
+        when {
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.R -> startWriteRequest(job)
+            Build.VERSION.SDK_INT == Build.VERSION_CODES.Q ->
+                worker.execute { continueOnQ(job) }
+            else -> ensureLegacyWrite { granted ->
+                if (granted) {
+                    worker.execute { overwriteAndDelete(job) }
+                } else {
+                    finishSecureDelete(job)
+                }
+            }
+        }
+    }
+
+    /** Android 11+: one prompt asking to modify every selected file. */
+    private fun startWriteRequest(job: SecureDeleteJob) {
+        val uris = job.targets.mapNotNull { it.uri }
+        if (uris.isEmpty()) {
+            worker.execute { overwriteAndDelete(job) }
+            return
+        }
+        try {
+            val pendingIntent = MediaStore.createWriteRequest(activity.contentResolver, uris)
+            activity.startIntentSenderForResult(
+                pendingIntent.intentSender,
+                WRITE_REQUEST_CODE,
+                null,
+                0,
+                0,
+                0
+            )
+        } catch (_: Exception) {
+            finishSecureDelete(job)
+        }
+    }
+
+    /** Runs on the worker once the app is allowed to write. */
+    private fun overwriteAndDelete(job: SecureDeleteJob) {
+        val leftovers = mutableListOf<SecureTarget>()
+        for (target in job.targets) {
+            target.overwritten = try {
+                overwriteTarget(target, job.passes)
+            } catch (_: Exception) {
+                false
+            }
+            if (deleteTarget(target)) {
+                target.outcome =
+                    if (target.overwritten) OUTCOME_OVERWRITTEN else OUTCOME_DELETED
+            } else if (target.uri != null) {
+                leftovers.add(target)
+            }
+        }
+
+        if (leftovers.isEmpty() || Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+            finishSecureDelete(job)
+            return
+        }
+
+        // A write grant usually lets the delete through. When it does not,
+        // ask once more, for those files only.
+        job.leftovers = leftovers
+        mainHandler.post {
+            try {
+                val pendingIntent = MediaStore.createDeleteRequest(
+                    activity.contentResolver,
+                    leftovers.mapNotNull { it.uri }
+                )
+                activity.startIntentSenderForResult(
+                    pendingIntent.intentSender,
+                    SECURE_DELETE_REQUEST_CODE,
+                    null,
+                    0,
+                    0,
+                    0
+                )
+            } catch (_: Exception) {
+                finishSecureDelete(job)
+            }
+        }
+    }
+
+    /** Android 10: one file at a time, asking whenever Android requires it. */
+    private fun continueOnQ(job: SecureDeleteJob) {
+        while (job.index < job.targets.size) {
+            val target = job.targets[job.index]
+            try {
+                target.overwritten = overwriteTarget(target, job.passes)
+            } catch (sec: RecoverableSecurityException) {
+                if (!job.askedForCurrent) {
+                    job.askedForCurrent = true
+                    mainHandler.post {
+                        try {
+                            activity.startIntentSenderForResult(
+                                sec.userAction.actionIntent.intentSender,
+                                WRITE_REQUEST_CODE,
+                                null,
+                                0,
+                                0,
+                                0
+                            )
+                        } catch (_: Exception) {
+                            finishSecureDelete(job)
+                        }
+                    }
+                    return
+                }
+                // Asked already and still refused: leave this one alone.
+                job.index++
+                job.askedForCurrent = false
+                continue
+            } catch (_: Exception) {
+                target.overwritten = false
+            }
+
+            if (deleteTarget(target)) {
+                target.outcome =
+                    if (target.overwritten) OUTCOME_OVERWRITTEN else OUTCOME_DELETED
+            }
+            job.index++
+            job.askedForCurrent = false
+        }
+        finishSecureDelete(job)
+    }
+
+    /**
+     * Writes over one file. Returns false when it could not be written.
+     *
+     * Rethrows [RecoverableSecurityException] so Android 10 can ask the user.
+     */
+    private fun overwriteTarget(target: SecureTarget, passes: Int): Boolean {
+        val uri = target.uri
+        if (uri != null) {
+            try {
+                val pfd = activity.contentResolver.openFileDescriptor(uri, "rw")
+                    ?: return false
+                pfd.use {
+                    val length = it.statSize
+                    if (length < 0) return false
+                    SecureOverwrite.overwriteDescriptor(it.fileDescriptor, length, passes)
+                }
+                return true
+            } catch (sec: RecoverableSecurityException) {
+                throw sec
+            } catch (_: Exception) {
+                // Fall through to the path, which works on Android 9 and older.
+            }
+        }
+        if (target.path.isEmpty()) return false
+        return try {
+            val file = java.io.File(target.path)
+            if (!file.isFile) return false
+            SecureOverwrite.overwriteFile(file, passes)
+            true
+        } catch (_: Exception) {
+            false
+        }
+    }
+
+    /** Deletes one file. Returns true when it is gone afterwards. */
+    private fun deleteTarget(target: SecureTarget): Boolean {
+        val uri = target.uri
+        if (uri != null) {
+            try {
+                if (activity.contentResolver.delete(uri, null, null) > 0) return true
+            } catch (_: Exception) {
+                // Try the path below; if that fails too, the caller asks.
+            }
+        }
+        if (target.path.isEmpty()) return false
+        return try {
+            val file = java.io.File(target.path)
+            val gone = !file.exists() || file.delete()
+            if (!gone) return false
+            // The file is gone; make sure no MediaStore row still claims it.
+            uri == null || !rowExists(uri)
+        } catch (_: Exception) {
+            false
+        }
+    }
+
+    private fun rowExists(uri: Uri): Boolean {
+        return try {
+            activity.contentResolver
+                .query(uri, arrayOf(MediaStore.MediaColumns._ID), null, null, null)
+                ?.use { it.moveToFirst() } ?: false
+        } catch (_: Exception) {
+            false
+        }
+    }
+
+    private fun finishSecureDelete(job: SecureDeleteJob) {
+        mainHandler.post {
+            if (pendingSecureDelete === job) pendingSecureDelete = null
+            job.result.success(job.targets.map { it.outcome })
         }
     }
 }

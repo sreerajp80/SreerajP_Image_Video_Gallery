@@ -73,6 +73,12 @@ class ColumnValueRule {
     flag,
   );
 
+  static const ColumnValueRule mediaIsOutOfReach = ColumnValueRule(
+    DatabaseConstants.tableMedia,
+    DatabaseConstants.colMediaIsOutOfReach,
+    flag,
+  );
+
   static const ColumnValueRule albumIsPinned = ColumnValueRule(
     DatabaseConstants.tableAlbums,
     DatabaseConstants.colAlbumIsPinned,
@@ -85,9 +91,17 @@ class ColumnValueRule {
     mediaIsFavorite,
     mediaIsVaulted,
     mediaIsTrash,
+    mediaIsOutOfReach,
     albumType,
     albumIsPinned,
     vaultMediaType,
+  ];
+
+  /// Rules for columns added after schema 5. The v5 upgrade step must skip
+  /// them, because their columns do not exist yet at that point; the step that
+  /// adds each column also adds its triggers.
+  static final List<ColumnValueRule> addedAfterV5 = <ColumnValueRule>[
+    mediaIsOutOfReach,
   ];
 
   /// The two triggers that enforce this rule on a database that has no

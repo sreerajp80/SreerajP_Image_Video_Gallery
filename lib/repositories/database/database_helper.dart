@@ -115,6 +115,7 @@ class DatabaseHelper {
         ${DatabaseConstants.colMediaIsFavorite} INTEGER NOT NULL DEFAULT 0 ${ColumnValueRule.mediaIsFavorite.check},
         ${DatabaseConstants.colMediaIsVaulted} INTEGER NOT NULL DEFAULT 0 ${ColumnValueRule.mediaIsVaulted.check},
         ${DatabaseConstants.colMediaIsTrash} INTEGER NOT NULL DEFAULT 0 ${ColumnValueRule.mediaIsTrash.check},
+        ${DatabaseConstants.colMediaIsOutOfReach} INTEGER NOT NULL DEFAULT 0 ${ColumnValueRule.mediaIsOutOfReach.check},
         ${DatabaseConstants.colMediaExifJson} TEXT,
         ${DatabaseConstants.colMediaUserNotes} TEXT,
         ${DatabaseConstants.colMediaSha256Hash} TEXT,
@@ -240,6 +241,163 @@ class DatabaseHelper {
 
     // 7. Full-Text Search Table and Triggers (with FTS5/FTS4 fallback)
     await _createFtsTableAndTriggers(db);
+
+    // 8. Triggers that keep the saved album and tag counts right
+    await _createCountTriggers(db);
+  }
+
+  /// SQL for the number of visible photos linked to one album.
+  ///
+  /// [albumIdSql] is the SQL that names the album, for example `new.id`.
+  /// Visible uses the same rule as the screens
+  /// ([DatabaseConstants.visibleMediaCondition]).
+  static String _visibleAlbumCountSql(String albumIdSql) =>
+      '''
+      (SELECT COUNT(*)
+         FROM ${DatabaseConstants.tableAlbumMedia} am
+         INNER JOIN ${DatabaseConstants.tableMedia} m
+           ON m.${DatabaseConstants.colId} = am.${DatabaseConstants.colAlbumMediaMediaId}
+        WHERE am.${DatabaseConstants.colAlbumMediaAlbumId} = $albumIdSql
+          AND ${DatabaseConstants.visibleMediaCondition('m')})''';
+
+  /// SQL for the number of visible photos linked to one tag.
+  static String _visibleTagCountSql(String tagIdSql) =>
+      '''
+      (SELECT COUNT(*)
+         FROM ${DatabaseConstants.tableMediaTags} mt
+         INNER JOIN ${DatabaseConstants.tableMedia} m
+           ON m.${DatabaseConstants.colId} = mt.${DatabaseConstants.colMediaTagMediaId}
+        WHERE mt.${DatabaseConstants.colMediaTagTagId} = $tagIdSql
+          AND ${DatabaseConstants.visibleMediaCondition('m')})''';
+
+  /// Creates the index and triggers that keep `item_count` on `albums` and
+  /// `tags` equal to the number of visible linked photos (schema 8).
+  ///
+  /// The database owns this number: no Dart code needs to recount, and a
+  /// whole-row write from Dart cannot leave a wrong value behind. SQLite
+  /// does not let a trigger fire itself again (`recursive_triggers` is off),
+  /// so the guard triggers cannot loop.
+  Future<void> _createCountTriggers(Database db) async {
+    const albums = DatabaseConstants.tableAlbums;
+    const tags = DatabaseConstants.tableTags;
+    const albumLinks = DatabaseConstants.tableAlbumMedia;
+    const tagLinks = DatabaseConstants.tableMediaTags;
+    const media = DatabaseConstants.tableMedia;
+    const id = DatabaseConstants.colId;
+    const albumCount = DatabaseConstants.colAlbumItemCount;
+    const tagCount = DatabaseConstants.colTagItemCount;
+    const linkAlbumId = DatabaseConstants.colAlbumMediaAlbumId;
+    const linkAlbumMediaId = DatabaseConstants.colAlbumMediaMediaId;
+    const linkTagId = DatabaseConstants.colMediaTagTagId;
+    const linkTagMediaId = DatabaseConstants.colMediaTagMediaId;
+    const vaulted = DatabaseConstants.colMediaIsVaulted;
+    const trash = DatabaseConstants.colMediaIsTrash;
+    const outOfReach = DatabaseConstants.colMediaIsOutOfReach;
+
+    // The visibility trigger finds a photo's albums by media id; the
+    // primary key starts with album_id, so it needs its own index.
+    await db.execute(
+      'CREATE INDEX IF NOT EXISTS idx_album_media_media_id '
+      'ON $albumLinks ($linkAlbumMediaId);',
+    );
+
+    // A photo added to or removed from an album, including removals by a
+    // foreign key cascade when the photo or album is deleted.
+    await db.execute('''
+      CREATE TRIGGER IF NOT EXISTS trg_album_count_link_insert
+      AFTER INSERT ON $albumLinks
+      BEGIN
+        UPDATE $albums SET $albumCount = ${_visibleAlbumCountSql('new.$linkAlbumId')}
+        WHERE $id = new.$linkAlbumId;
+      END;
+    ''');
+    await db.execute('''
+      CREATE TRIGGER IF NOT EXISTS trg_album_count_link_delete
+      AFTER DELETE ON $albumLinks
+      BEGIN
+        UPDATE $albums SET $albumCount = ${_visibleAlbumCountSql('old.$linkAlbumId')}
+        WHERE $id = old.$linkAlbumId;
+      END;
+    ''');
+
+    // The same for tags.
+    await db.execute('''
+      CREATE TRIGGER IF NOT EXISTS trg_tag_count_link_insert
+      AFTER INSERT ON $tagLinks
+      BEGIN
+        UPDATE $tags SET $tagCount = ${_visibleTagCountSql('new.$linkTagId')}
+        WHERE $id = new.$linkTagId;
+      END;
+    ''');
+    await db.execute('''
+      CREATE TRIGGER IF NOT EXISTS trg_tag_count_link_delete
+      AFTER DELETE ON $tagLinks
+      BEGIN
+        UPDATE $tags SET $tagCount = ${_visibleTagCountSql('old.$linkTagId')}
+        WHERE $id = old.$linkTagId;
+      END;
+    ''');
+
+    // A photo moved to or from the trash or vault, or hidden or shown by
+    // limited media access. Runs only when visibility really changed.
+    await db.execute('''
+      CREATE TRIGGER IF NOT EXISTS trg_count_media_visibility
+      AFTER UPDATE OF $vaulted, $trash, $outOfReach ON $media
+      WHEN (old.$vaulted = 0 AND old.$trash = 0 AND old.$outOfReach = 0)
+        IS NOT (new.$vaulted = 0 AND new.$trash = 0 AND new.$outOfReach = 0)
+      BEGIN
+        UPDATE $albums SET $albumCount = ${_visibleAlbumCountSql('$albums.$id')}
+        WHERE $id IN (
+          SELECT $linkAlbumId FROM $albumLinks WHERE $linkAlbumMediaId = new.$id
+        );
+        UPDATE $tags SET $tagCount = ${_visibleTagCountSql('$tags.$id')}
+        WHERE $id IN (
+          SELECT $linkTagId FROM $tagLinks WHERE $linkTagMediaId = new.$id
+        );
+      END;
+    ''');
+
+    // Guards: Dart writes whole rows (count included) from the model. These
+    // put the true count back whenever the written one is wrong.
+    for (final event in ['INSERT', 'UPDATE OF $albumCount']) {
+      final name = event == 'INSERT' ? 'insert' : 'update';
+      await db.execute('''
+        CREATE TRIGGER IF NOT EXISTS trg_album_count_guard_$name
+        AFTER $event ON $albums
+        WHEN new.$albumCount IS NOT ${_visibleAlbumCountSql('new.$id')}
+        BEGIN
+          UPDATE $albums SET $albumCount = ${_visibleAlbumCountSql('new.$id')}
+          WHERE $id = new.$id;
+        END;
+      ''');
+    }
+    for (final event in ['INSERT', 'UPDATE OF $tagCount']) {
+      final name = event == 'INSERT' ? 'insert' : 'update';
+      await db.execute('''
+        CREATE TRIGGER IF NOT EXISTS trg_tag_count_guard_$name
+        AFTER $event ON $tags
+        WHEN new.$tagCount IS NOT ${_visibleTagCountSql('new.$id')}
+        BEGIN
+          UPDATE $tags SET $tagCount = ${_visibleTagCountSql('new.$id')}
+          WHERE $id = new.$id;
+        END;
+      ''');
+    }
+  }
+
+  /// Sets every saved album and tag count to its visible count, once, for a
+  /// database upgraded to schema 8.
+  Future<void> _recountAllAlbumsAndTags(Database db) async {
+    await db.execute(
+      'UPDATE ${DatabaseConstants.tableAlbums} '
+      'SET ${DatabaseConstants.colAlbumItemCount} = '
+      '${_visibleAlbumCountSql('${DatabaseConstants.tableAlbums}.${DatabaseConstants.colId}')};',
+    );
+    await db.execute(
+      'UPDATE ${DatabaseConstants.tableTags} '
+      'SET ${DatabaseConstants.colTagItemCount} = '
+      '${_visibleTagCountSql('${DatabaseConstants.tableTags}.${DatabaseConstants.colId}')};',
+    );
   }
 
   /// Creates the full-text search table with graceful fallback, followed by
@@ -416,6 +574,36 @@ class DatabaseHelper {
       if (oldVersion < 5) {
         await _addValueCheckTriggers(db);
       }
+
+      // v6: the scan used to save with REPLACE, which fires the insert trigger
+      // but not the delete one, so every full rescan left another search row
+      // for each photo and searches showed it more than once. The scan no
+      // longer does that; this drops the extra copies, keeping one per photo.
+      if (oldVersion < 6) {
+        await _removeDuplicateSearchRows(db);
+      }
+
+      // v7: a flag for items Android does not currently let the app see
+      // (limited or no media access). Every old row starts visible; the next
+      // scan sets the flag. Its 0/1 rule is added as triggers, like v5.
+      if (oldVersion < 7) {
+        await db.execute(
+          'ALTER TABLE ${DatabaseConstants.tableMedia} '
+          'ADD COLUMN ${DatabaseConstants.colMediaIsOutOfReach} '
+          'INTEGER NOT NULL DEFAULT 0;',
+        );
+        for (final sql in ColumnValueRule.mediaIsOutOfReach.triggerSql) {
+          await db.execute(sql);
+        }
+      }
+
+      // v8: the saved album and tag counts included photos in the trash, in
+      // the vault and out of reach, and went stale when a photo's visibility
+      // changed. Triggers now keep them right; this fixes the old values once.
+      if (oldVersion < 8) {
+        await _createCountTriggers(db);
+        await _recountAllAlbumsAndTags(db);
+      }
     } catch (e, st) {
       throw DatabaseMigrationException(
         'Failed to migrate database from version $oldVersion to $newVersion: $e',
@@ -431,10 +619,30 @@ class DatabaseHelper {
   /// database refuses the same values a new one refuses by `CHECK`.
   Future<void> _addValueCheckTriggers(Database db) async {
     for (final rule in ColumnValueRule.all) {
+      if (ColumnValueRule.addedAfterV5.contains(rule)) continue;
       for (final sql in rule.triggerSql) {
         await db.execute(sql);
       }
     }
+  }
+
+  /// Keeps one search row per photo and deletes the rest.
+  ///
+  /// Does nothing when the search table does not exist, which happens on a
+  /// device whose SQLite had neither FTS5 nor FTS4.
+  Future<void> _removeDuplicateSearchRows(Database db) async {
+    final tables = await db.rawQuery(
+      "SELECT name FROM sqlite_master WHERE type='table' AND name=?;",
+      <Object?>[DatabaseConstants.tableMediaSearchFts],
+    );
+    if (tables.isEmpty) return;
+
+    await db.execute(
+      'DELETE FROM ${DatabaseConstants.tableMediaSearchFts} '
+      'WHERE rowid NOT IN ('
+      'SELECT MIN(rowid) FROM ${DatabaseConstants.tableMediaSearchFts} '
+      'GROUP BY ${DatabaseConstants.colFtsMediaId});',
+    );
   }
 
   /// Indexes every media row that has no search row, filled the way the

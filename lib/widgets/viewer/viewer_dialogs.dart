@@ -6,37 +6,11 @@ import 'package:in_sreerajp_imgvidgal/models/media_item.dart';
 /// from the gallery rather than a neighbour.
 const String compareChoicePick = 'pick';
 
-/// Asks before the viewer moves an item to the trash.
-///
-/// The media viewer's dialogs live here so the screen file stays readable
-/// (G41). Each one only asks; the caller does the work.
-Future<bool> confirmViewerMoveToTrash(BuildContext context) async {
-  final l10n = AppLocalizations.of(context)!;
-  final agreed = await showDialog<bool>(
-    context: context,
-    builder: (dialogContext) => AlertDialog(
-      title: Text(l10n.titleViewerTrashConfirm),
-      content: Text(l10n.bodyViewerTrashConfirm),
-      actions: <Widget>[
-        TextButton(
-          onPressed: () => Navigator.of(dialogContext).pop(false),
-          child: Text(l10n.actionVaultCancel),
-        ),
-        FilledButton(
-          onPressed: () => Navigator.of(dialogContext).pop(true),
-          style: FilledButton.styleFrom(
-            backgroundColor: Theme.of(dialogContext).colorScheme.error,
-            foregroundColor: Theme.of(dialogContext).colorScheme.onError,
-          ),
-          child: Text(l10n.titleBatchActionMoveToTrash),
-        ),
-      ],
-    ),
-  );
-  return agreed == true;
-}
+// The media viewer's dialogs live here so the screen file stays readable
+// (G41). Each one only asks; the caller does the work. Moving to the trash
+// has no dialog of its own: the delete choice sheet is that step.
 
-/// Asks before the viewer deletes a trashed item for good.
+/// Asks before the viewer deletes an item for good.
 Future<bool> confirmViewerDeletePermanently(BuildContext context) async {
   final l10n = AppLocalizations.of(context)!;
   final confirmed = await showDialog<bool>(

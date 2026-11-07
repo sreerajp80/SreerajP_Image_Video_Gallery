@@ -413,6 +413,10 @@ class AppConstants {
   static const int vaultMinShredPasses = 1;
   static const int vaultMaxShredPasses = 5;
 
+  /// Overwrite passes the gallery's Secure delete makes. Same as the vault's
+  /// default, so both make the same promise.
+  static const int secureDeletePasses = vaultDefaultShredPasses;
+
   /// Block size the shredder writes with, in bytes.
   static const int vaultShredBlockBytes = 64 * 1024;
 

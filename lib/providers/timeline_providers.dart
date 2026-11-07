@@ -120,3 +120,10 @@ final flashbackMemoriesProvider = FutureProvider<List<FlashbackMemory>>((
       .watch(flashbackServiceProvider)
       .build(items, now: ref.watch(timelineNowProvider)());
 });
+
+/// Whether the "On This Day" section is open.
+///
+/// Starts closed on every app start and is never saved to disk: the owner
+/// wants the section collapsed by default, so the timeline itself is what the
+/// user sees first.
+final flashbackExpandedProvider = StateProvider<bool>((ref) => false);

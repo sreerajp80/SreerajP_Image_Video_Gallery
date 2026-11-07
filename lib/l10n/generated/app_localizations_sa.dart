@@ -105,6 +105,12 @@ class AppLocalizationsSa extends AppLocalizations {
   String get titleFlashback => 'अस्मिन् दिने';
 
   @override
+  String get tooltipExpandFlashback => 'स्मृतीः दर्शय';
+
+  @override
+  String get tooltipCollapseFlashback => 'स्मृतीः गोपय';
+
+  @override
   String get labelFlashbackOneYearAgo => 'एकवर्षात् पूर्वम्';
 
   @override
@@ -3933,7 +3939,7 @@ class AppLocalizationsSa extends AppLocalizations {
 
   @override
   String get descPermWriteStorage =>
-      'छायाग्राहकसहायकतन्त्रम् एतां याचते। QR-पाठकः कदापि सञ्चिकां न रक्षति।';
+      'Android 9 तथा पूर्वतनेषु एव। चित्राणि सर्वथा सुरक्षितं वा लोप्तुं शक्यते। चित्रानुमत्या सह पृच्छ्यते।';
 
   @override
   String get labelPermAllowed => 'अनुमतम्';
@@ -3952,5 +3958,151 @@ class AppLocalizationsSa extends AppLocalizations {
   @override
   String labelPermAndroidUpTo(String version) {
     return 'Android $version पर्यन्तम्';
+  }
+
+  @override
+  String get titleVaultFolderMissing => 'संपुटं न लब्धम्';
+
+  @override
+  String bodyVaultFolderMissing(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '$count वस्तूनां पूर्वसंपुटम् इदानीं नास्ति। तेभ्यः संपुटं चीयताम्, अथवा त्यज्यन्ताम्; तानि गुप्तकोशे एव तिष्ठन्ति।',
+      one:
+          '1 वस्तुनः पूर्वसंपुटम् इदानीं नास्ति। तस्मै संपुटं चीयताम्, अथवा त्यज्यताम्; तत् गुप्तकोशे एव तिष्ठति।',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get actionVaultChooseFolder => 'संपुटं चीयताम्';
+
+  @override
+  String get actionVaultSkip => 'त्यज्यताम्';
+
+  @override
+  String bodyVaultRestoreSkipped(int done, int skipped) {
+    return '$done पुनःस्थापितानि, $skipped गुप्तकोशे एव';
+  }
+
+  @override
+  String bodyVaultRestoreSkippedFailed(int done, int skipped, int failed) {
+    return '$done पुनःस्थापितानि, $skipped गुप्तकोशे एव, $failed विफलानि';
+  }
+
+  @override
+  String get titleBatchActionDelete => 'लुप्यताम्';
+
+  @override
+  String titleDeleteChoice(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'किम् $count वस्तूनि लोप्तव्यानि?',
+      one: 'किम् 1 वस्तु लोप्तव्यम्?',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String bodyDeleteChoiceTrash(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'अवकरपात्रात् पुनः प्राप्तुं शक्यते।',
+      one: 'अवकरपात्रात् पुनः प्राप्तुं शक्यते।',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get bodyDeleteChoicePermanent =>
+      'उपकरणात् सर्वथा लोप्स्यते। इदं प्रत्यावर्तयितुं न शक्यते।';
+
+  @override
+  String get bodyDeleteChoicePermanentSecure =>
+      'प्रथमम् अधिलिख्य, ततः उपकरणात् सर्वथा लोप्स्यते। इदं प्रत्यावर्तयितुं न शक्यते।';
+
+  @override
+  String bodyDeletePermanentlyConfirmCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '$count वस्तूनि उपकरणात् सर्वथा लोप्स्यन्ते। इदं प्रत्यावर्तयितुं न शक्यते।',
+      one: '1 वस्तु उपकरणात् सर्वथा लोप्स्यते। इदं प्रत्यावर्तयितुं न शक्यते।',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get bodyDeleteNothingDeleted => 'किमपि न लुप्तम्।';
+
+  @override
+  String bodyDeletedPermanentlyCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count वस्तूनि सर्वथा लुप्तानि।',
+      one: '1 वस्तु सर्वथा लुप्तम्।',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String bodySecureDeletedCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count वस्तूनि अधिलिख्य सर्वथा लुप्तानि।',
+      one: '1 वस्तु अधिलिख्य सर्वथा लुप्तम्।',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String bodySecureDeleteNotOverwritten(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'तेषु $count प्रथमम् अधिलेखितुं न शक्तानि।',
+      one: 'तेषु 1 प्रथमम् अधिलेखितुं न शक्तम्।',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String bodyDeleteFailedCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count वस्तूनि लोप्तुं न शक्तानि।',
+      one: '1 वस्तु लोप्तुं न शक्तम्।',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get titleSecureDelete => 'सुरक्षितलोपः';
+
+  @override
+  String get descSecureDeleteSubtitle =>
+      'लोपात् पूर्वं प्रत्येकं सञ्चिका अधिलिख्यते, अतः पुनःप्राप्तिसाधनानि ताम् आनेतुं न शक्नुवन्ति। सर्वथा-लोपे अवकरपात्रात् लोपे च प्रयुज्यते। प्रथमम् Android अनुमतिं पृच्छति। विद्युत्स्मृतौ एतत् पुनःप्राप्तिसाधनानि निवारयति, न तु प्रयोगशालाम्।';
+
+  @override
+  String get bodySecureDeleteVaultNote =>
+      'अयं विकल्पः यथा अपि स्यात्, गुप्तकोशात् लोपः सदा सुरक्षितः।';
+
+  @override
+  String bodyBatchTrashSuccess(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count वस्तूनि अवकरपात्रं नीतानि',
+      one: '1 वस्तु अवकरपात्रं नीतम्',
+    );
+    return '$_temp0';
   }
 }

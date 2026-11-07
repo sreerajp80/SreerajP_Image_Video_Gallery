@@ -76,6 +76,17 @@ class GalleryBatchHandler extends BatchItemHandler {
     return <String>[result.path];
   }
 
+  /// Shreds every original the vault took, in one call.
+  ///
+  /// [succeeded] holds only items whose encrypted copy and vault row are
+  /// saved, so no original is destroyed before it is safe in the vault.
+  @override
+  Future<void> finish(BatchAction action, List<MediaItem> succeeded) async {
+    if (action != BatchAction.moveToVault || !options.shredOriginals) return;
+    if (succeeded.isEmpty) return;
+    await _vaultImport.shredOriginals(succeeded);
+  }
+
   @override
   Future<String?> handle(BatchAction action, MediaItem item) async {
     switch (action) {
@@ -113,11 +124,11 @@ class GalleryBatchHandler extends BatchItemHandler {
 
       case BatchAction.moveToVault:
         // One at a time through the same service the vault screen uses, so
-        // the payload-before-row-before-original ordering that protects the
-        // user's photo is exactly the ordering a batch gets too.
-        final result = await _vaultImport.importItems(<MediaItem>[
-          item,
-        ], shredOriginals: options.shredOriginals);
+        // the payload-before-row ordering that protects the user's photo is
+        // exactly the ordering a batch gets too. The shred waits for
+        // finish(): one request for the whole set means Android asks once,
+        // not once per photo. So no shredOriginals here (it defaults off).
+        final result = await _vaultImport.importItems(<MediaItem>[item]);
         if (result.succeededIds.isEmpty) {
           throw const BatchItemException('The vault would not take the item');
         }

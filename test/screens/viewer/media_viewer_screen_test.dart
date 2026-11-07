@@ -2,6 +2,7 @@ import 'dart:typed_data';
 
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:in_sreerajp_imgvidgal/l10n/generated/app_localizations.dart';
 import 'package:in_sreerajp_imgvidgal/models/media_item.dart';
@@ -28,10 +29,23 @@ void main() {
   Widget createMultiViewerWidget({
     required List<MediaItem> items,
     Locale locale = const Locale('en'),
+    String? openId,
+    bool openFromLauncher = false,
   }) {
+    final viewer = MediaViewerScreen(mediaId: openId ?? items.first.id);
     return ProviderScope(
       overrides: [
-        timelineItemsProvider.overrideWith((ref) => items),
+        // The first load is ready at once, as when the viewer opens from a
+        // timeline that is already on screen. A star tap bumps the reload
+        // counter, and the list then takes a moment to come back, like the
+        // real database query.
+        timelineItemsProvider.overrideWith((ref) {
+          if (ref.watch(_reloadCountProvider) == 0) return items;
+          return Future<void>.delayed(
+            const Duration(milliseconds: 50),
+          ).then((_) => items);
+        }),
+        viewerActionsProvider.overrideWith(_FakeViewerActions.new),
         for (final item in items) ...[
           mediaItemProvider(item.id).overrideWith((ref) => item),
           externalMediaItemProvider(item.id).overrideWith((ref) => null),
@@ -44,7 +58,7 @@ void main() {
         locale: locale,
         localizationsDelegates: appLocalizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
-        home: MediaViewerScreen(mediaId: items.first.id),
+        home: openFromLauncher ? _Launcher(viewer: viewer) : viewer,
       ),
     );
   }
@@ -52,6 +66,29 @@ void main() {
   Widget createViewerWidget({required MediaItem item}) {
     return createMultiViewerWidget(items: [item]);
   }
+
+  testWidgets('a snackbar left over from the last screen is cleared', (
+    tester,
+  ) async {
+    // The "Moved to trash · Undo" bar used to follow into the next viewer
+    // and sit over its Delete button, so a tap on Delete pressed Undo.
+    tester.view.physicalSize = const Size(1080, 2400);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.reset);
+
+    await tester.pumpWidget(
+      createMultiViewerWidget(items: [testImage], openFromLauncher: true),
+    );
+    await tester.tap(find.text('show'));
+    await tester.pumpAndSettle();
+    expect(find.text('Leftover'), findsOneWidget);
+
+    await tester.tap(find.text('open'));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(MediaViewerScreen), findsOneWidget);
+    expect(find.text('Leftover'), findsNothing);
+  });
 
   testWidgets(
     'MediaViewerScreen renders high-contrast top bar and bottom bar for images',
@@ -255,6 +292,52 @@ void main() {
     },
   );
 
+  testWidgets('Tapping the star keeps the same photo and title on screen', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(1080, 2400);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.reset);
+
+    final second = testImage.copyWith(
+      id: 'test_img_2',
+      displayName: 'City_Street.jpg',
+    );
+    final third = testImage.copyWith(
+      id: 'test_img_3',
+      displayName: 'Temple_Morning.jpg',
+    );
+
+    // Open the last photo, not the first, so a jump back to page 0 shows.
+    await tester.pumpWidget(
+      createMultiViewerWidget(
+        items: [testImage, second, third],
+        openId: third.id,
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Temple_Morning.jpg'), findsOneWidget);
+    expect(find.byKey(const ValueKey<String>('image-test_img_3')), findsOne);
+
+    await tester.tap(find.byIcon(Icons.star_border));
+    // Look in the middle of the reload as well as after it.
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 10));
+    expect(find.text('Temple_Morning.jpg'), findsOneWidget);
+    expect(find.byKey(const ValueKey<String>('image-test_img_3')), findsOne);
+
+    await tester.pump(const Duration(milliseconds: 100));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Temple_Morning.jpg'), findsOneWidget);
+    expect(find.byKey(const ValueKey<String>('image-test_img_3')), findsOne);
+    expect(
+      find.byKey(const ValueKey<String>('image-test_img_1')),
+      findsNothing,
+    );
+  });
+
   group('every declared language', () {
     for (final locale in declaredLocales) {
       testWidgets(
@@ -269,4 +352,53 @@ void main() {
       );
     }
   });
+}
+
+/// How many times the fake star button asked for a reload.
+final _reloadCountProvider = StateProvider<int>((ref) => 0);
+
+/// Stands in for the real actions, so no database is needed. A star tap only
+/// makes the timeline list reload, which is the part that caused the bug.
+class _FakeViewerActions extends ViewerActions {
+  final Ref _testRef;
+
+  _FakeViewerActions(super.ref) : _testRef = ref;
+
+  @override
+  Future<void> toggleFavorite(String id) async {
+    _testRef.read(_reloadCountProvider.notifier).state++;
+  }
+}
+
+/// Shows a snackbar that would never hide by itself, then opens the viewer.
+class _Launcher extends StatelessWidget {
+  final Widget viewer;
+
+  const _Launcher({required this.viewer});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Column(
+        children: <Widget>[
+          TextButton(
+            onPressed: () => ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: const Text('Leftover'),
+                persist: true,
+                action: SnackBarAction(label: 'Undo', onPressed: () {}),
+              ),
+            ),
+            child: const Text('show'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(
+              context,
+            ).push(MaterialPageRoute<void>(builder: (_) => viewer)),
+            child: const Text('open'),
+          ),
+        ],
+      ),
+    );
+  }
 }

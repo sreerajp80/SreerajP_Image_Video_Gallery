@@ -2,6 +2,7 @@ import 'dart:typed_data';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:in_sreerajp_imgvidgal/models/exif_data.dart';
+import 'package:in_sreerajp_imgvidgal/models/media/media_delete_result.dart';
 import 'package:in_sreerajp_imgvidgal/models/media_item.dart';
 import 'package:in_sreerajp_imgvidgal/models/playback_state.dart';
 import 'package:in_sreerajp_imgvidgal/providers/album_providers.dart';
@@ -68,6 +69,17 @@ class ViewerActions {
 
   /// Takes an item back out of the trash (the snackbar's undo).
   Future<void> restoreFromTrash(String id) => _setTrash(id, false);
+
+  /// Deletes an item from the device for good, trashed or not.
+  ///
+  /// Written over first when Secure delete is on in Settings.
+  Future<MediaDeleteResult> deletePermanently(MediaItem item) async {
+    final result = await _ref
+        .read(trashControllerProvider.notifier)
+        .deletePermanently(item);
+    if (result.anyDeleted) _ref.invalidate(mediaItemsProvider);
+    return result;
+  }
 
   Future<void> _setTrash(String id, bool trashed) async {
     await _ref.read(mediaRepositoryProvider).setTrash(id, trashed);

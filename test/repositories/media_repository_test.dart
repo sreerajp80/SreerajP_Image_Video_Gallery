@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:in_sreerajp_imgvidgal/core/constants/app_constants.dart';
 import 'package:in_sreerajp_imgvidgal/models/filter_options.dart';
 import 'package:in_sreerajp_imgvidgal/models/media_item.dart';
 import 'package:in_sreerajp_imgvidgal/repositories/database/database_helper.dart';
@@ -191,8 +192,9 @@ void main() {
         final items = await repository.getMediaItems();
         expect(items.length, 2);
 
-        final success = await repository.deletePermanently([items.first]);
-        expect(success, isTrue);
+        final result = await repository.deletePermanently([items.first]);
+        expect(result.deleted, 1);
+        expect(result.failed, 0);
         expect(channel.deletedUris, contains(items.first.uri));
         expect(await repository.getTotalCount(), 1);
 
@@ -211,10 +213,54 @@ void main() {
         channel.deleteSucceeds = false;
 
         final items = await repository.getMediaItems();
-        final success = await repository.deletePermanently([items.first]);
-        expect(success, isFalse);
+        final result = await repository.deletePermanently([items.first]);
+        expect(result.anyDeleted, isFalse);
+        expect(result.failed, 1);
         expect(await repository.getTotalCount(), 1);
       },
     );
+
+    test('secure delete overwrites through the channel', () async {
+      channel.entries = <MediaStoreEntry>[
+        buildEntry(id: 's1', path: '/storage/emulated/0/DCIM/s1.jpg'),
+      ];
+      await repository.scanDevice();
+      final items = await repository.getMediaItems();
+
+      final result = await repository.deletePermanently(items, secure: true);
+
+      expect(result.secure, isTrue);
+      expect(result.deleted, 1);
+      expect(result.overwritten, 1);
+      expect(result.notOverwritten, 0);
+      expect(channel.securelyDeletedUris, contains(items.first.uri));
+      expect(channel.deletedUris, isEmpty);
+      expect(channel.lastSecurePasses, AppConstants.secureDeletePasses);
+      expect(await repository.getTotalCount(), 0);
+    });
+
+    test('secure delete keeps rows whose file is still there', () async {
+      channel.entries = <MediaStoreEntry>[
+        buildEntry(id: 'k1', path: '/storage/emulated/0/DCIM/k1.jpg'),
+        buildEntry(id: 'k2', path: '/storage/emulated/0/DCIM/k2.jpg'),
+        buildEntry(id: 'k3', path: '/storage/emulated/0/DCIM/k3.jpg'),
+      ];
+      await repository.scanDevice();
+      final items = await repository.getMediaItems();
+      channel.secureOutcomes = <MediaDeleteOutcome>[
+        MediaDeleteOutcome.overwritten,
+        MediaDeleteOutcome.deleted,
+        MediaDeleteOutcome.failed,
+      ];
+
+      final result = await repository.deletePermanently(items, secure: true);
+
+      expect(result.deleted, 2);
+      expect(result.overwritten, 1);
+      expect(result.notOverwritten, 1);
+      expect(result.failed, 1);
+      final remaining = await repository.getMediaItems();
+      expect(remaining.single.id, items[2].id);
+    });
   });
 }

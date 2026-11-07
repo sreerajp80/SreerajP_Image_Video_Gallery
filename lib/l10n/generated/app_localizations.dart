@@ -274,6 +274,18 @@ abstract class AppLocalizations {
   /// **'On This Day'**
   String get titleFlashback;
 
+  /// Tooltip on the arrow that opens the collapsed On This Day section on the timeline
+  ///
+  /// In en, this message translates to:
+  /// **'Show memories'**
+  String get tooltipExpandFlashback;
+
+  /// Tooltip on the arrow that closes the open On This Day section on the timeline
+  ///
+  /// In en, this message translates to:
+  /// **'Hide memories'**
+  String get tooltipCollapseFlashback;
+
   /// Caption for a flashback memory from exactly one year ago
   ///
   /// In en, this message translates to:
@@ -6688,10 +6700,10 @@ abstract class AppLocalizations {
   /// **'The camera library asks for it. The QR scanner never records sound.'**
   String get descPermRecordAudio;
 
-  /// Why WRITE_EXTERNAL_STORAGE is removed
+  /// Why WRITE_EXTERNAL_STORAGE is declared (Android 9 and older only)
   ///
   /// In en, this message translates to:
-  /// **'The camera library asks for it. The QR scanner never saves a file.'**
+  /// **'Android 9 and older only. Lets you delete photos for good, or securely. Asked together with photos access.'**
   String get descPermWriteStorage;
 
   /// Live state of the photos and videos permission: full access
@@ -6723,6 +6735,132 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Up to Android {version}'**
   String labelPermAndroidUpTo(String version);
+
+  /// Title of the dialog shown when some vault items cannot be restored because their original folder no longer exists
+  ///
+  /// In en, this message translates to:
+  /// **'Folder not found'**
+  String get titleVaultFolderMissing;
+
+  /// Body of the folder-not-found dialog during a vault restore
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 item can\'t go back to its old folder, because that folder no longer exists. Choose a folder for it, or skip it and it stays in the vault.} other{{count} items can\'t go back to their old folder, because that folder no longer exists. Choose a folder for them, or skip them and they stay in the vault.}}'**
+  String bodyVaultFolderMissing(int count);
+
+  /// Button that opens the system folder picker for vault items whose original folder is gone
+  ///
+  /// In en, this message translates to:
+  /// **'Choose folder'**
+  String get actionVaultChooseFolder;
+
+  /// Button that skips vault items whose original folder is gone; they stay in the vault
+  ///
+  /// In en, this message translates to:
+  /// **'Skip'**
+  String get actionVaultSkip;
+
+  /// Shown after a restore when some items were skipped and stayed in the vault
+  ///
+  /// In en, this message translates to:
+  /// **'{done} restored, {skipped} stayed in the vault'**
+  String bodyVaultRestoreSkipped(int done, int skipped);
+
+  /// Shown after a restore when some items were skipped and some failed
+  ///
+  /// In en, this message translates to:
+  /// **'{done} restored, {skipped} stayed in the vault, {failed} failed'**
+  String bodyVaultRestoreSkippedFailed(int done, int skipped, int failed);
+
+  /// The one Delete button in the viewer and the selection bar; opens a choice of trash or permanent
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get titleBatchActionDelete;
+
+  /// Heading of the sheet that asks how to delete
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Delete 1 item?} other{Delete {count} items?}}'**
+  String titleDeleteChoice(int count);
+
+  /// Line under 'Move to trash' in the delete choice sheet
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{You can restore it from the trash.} other{You can restore them from the trash.}}'**
+  String bodyDeleteChoiceTrash(int count);
+
+  /// Line under 'Delete permanently' in the delete choice sheet, Secure delete off
+  ///
+  /// In en, this message translates to:
+  /// **'Removed from the device. This cannot be undone.'**
+  String get bodyDeleteChoicePermanent;
+
+  /// Line under 'Delete permanently' in the delete choice sheet, Secure delete on
+  ///
+  /// In en, this message translates to:
+  /// **'Written over, then removed from the device. This cannot be undone.'**
+  String get bodyDeleteChoicePermanentSecure;
+
+  /// Confirmation body before deleting a selection for good
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 item will be deleted from your device for good. This cannot be undone.} other{{count} items will be deleted from your device for good. This cannot be undone.}}'**
+  String bodyDeletePermanentlyConfirmCount(int count);
+
+  /// Snackbar when a permanent delete removed nothing (cancelled or refused)
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing was deleted.'**
+  String get bodyDeleteNothingDeleted;
+
+  /// Snackbar after a permanent delete
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 item deleted for good.} other{{count} items deleted for good.}}'**
+  String bodyDeletedPermanentlyCount(int count);
+
+  /// Snackbar after a secure delete where every file was written over
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 item securely deleted.} other{{count} items securely deleted.}}'**
+  String bodySecureDeletedCount(int count);
+
+  /// Added to the snackbar when a secure delete removed files it could not write over first
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 of them could not be written over first.} other{{count} of them could not be written over first.}}'**
+  String bodySecureDeleteNotOverwritten(int count);
+
+  /// Added to the snackbar when some files are still on the device
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 item could not be deleted.} other{{count} items could not be deleted.}}'**
+  String bodyDeleteFailedCount(int count);
+
+  /// Safety settings switch: overwrite files before a permanent delete
+  ///
+  /// In en, this message translates to:
+  /// **'Secure delete'**
+  String get titleSecureDelete;
+
+  /// Explains the Secure delete switch and its limits
+  ///
+  /// In en, this message translates to:
+  /// **'Writes over each file before deleting it, so undelete tools cannot bring it back. Used for permanent deletes and for the trash. Android asks you to allow it first. On flash storage this stops undelete tools, not a lab.'**
+  String get descSecureDeleteSubtitle;
+
+  /// Note under the Secure delete switch: vault deletes are always secure
+  ///
+  /// In en, this message translates to:
+  /// **'Deleting from the vault is always secure, whatever this switch says.'**
+  String get bodySecureDeleteVaultNote;
+
+  /// Snackbar after a selection was moved to the trash; has an Undo button
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 item moved to trash} other{{count} items moved to trash}}'**
+  String bodyBatchTrashSuccess(int count);
 }
 
 class _AppLocalizationsDelegate

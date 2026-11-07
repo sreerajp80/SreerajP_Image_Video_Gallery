@@ -1,13 +1,18 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:in_sreerajp_imgvidgal/models/filter_options.dart';
 import 'package:in_sreerajp_imgvidgal/models/media_item.dart';
+import 'package:in_sreerajp_imgvidgal/models/settings/app_settings.dart';
 import 'package:in_sreerajp_imgvidgal/providers/media_providers.dart';
+import 'package:in_sreerajp_imgvidgal/providers/settings_providers.dart';
 import 'package:in_sreerajp_imgvidgal/providers/trash_providers.dart';
 import 'package:in_sreerajp_imgvidgal/repositories/database/database_helper.dart';
 import 'package:in_sreerajp_imgvidgal/repositories/database/media_dao.dart';
 import 'package:in_sreerajp_imgvidgal/repositories/media_repository.dart';
 import 'package:in_sreerajp_imgvidgal/services/media/media_scanner_service.dart';
+import 'package:in_sreerajp_imgvidgal/services/settings/app_settings_service.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 import '../services/media/fake_media_store_channel.dart';
@@ -64,10 +69,22 @@ void main() {
       mediaRepository = MediaRepository(mediaDao: mediaDao, scanner: scanner);
     });
 
-    ProviderContainer createContainer() {
+    // Each test needs its own empty database. Without this the in-memory
+    // database stays open and the next test sees the last one's rows.
+    tearDown(() async {
+      await dbHelper.close();
+    });
+
+    ProviderContainer createContainer({bool secureDelete = false}) {
       final container = ProviderContainer(
         overrides: <Override>[
           mediaRepositoryProvider.overrideWithValue(mediaRepository),
+          appSettingsProvider.overrideWith(
+            (ref) => AppSettingsNotifier(
+              service: () => Completer<AppSettingsService>().future,
+              initial: AppSettings(secureDelete: secureDelete),
+            ),
+          ),
         ],
       );
       addTearDown(container.dispose);
@@ -129,7 +146,8 @@ void main() {
 
         final controller = container.read(trashControllerProvider.notifier);
         final emptied = await controller.emptyTrash();
-        expect(emptied, 2);
+        expect(emptied.deleted, 2);
+        expect(emptied.secure, isFalse);
 
         final count = await container.read(trashCountProvider.future);
         expect(count, 0);
@@ -140,5 +158,45 @@ void main() {
         expect(allInDb.isEmpty, isTrue);
       },
     );
+
+    test(
+      'TrashController asks for a secure delete when the setting is on',
+      () async {
+        await mediaDao.batchUpsertMediaItems([item1, item2]);
+        final container = createContainer(secureDelete: true);
+
+        final result = await container
+            .read(trashControllerProvider.notifier)
+            .emptyTrash();
+
+        expect(result.secure, isTrue);
+        expect(result.deleted, 2);
+        expect(await container.read(trashCountProvider.future), 0);
+      },
+    );
+
+    test('TrashController restoreItems restores only the given ids', () async {
+      await mediaDao.batchUpsertMediaItems([item1, item2]);
+      final container = createContainer();
+
+      await container.read(trashControllerProvider.notifier).restoreItems(
+        <String>[item1.id],
+      );
+
+      final trashed = await container.read(trashMediaProvider.future);
+      expect(trashed.map((i) => i.id), <String>[item2.id]);
+    });
+
+    test('TrashController deleteItems removes only the given items', () async {
+      await mediaDao.batchUpsertMediaItems([item1, item2]);
+      final container = createContainer();
+
+      final result = await container
+          .read(trashControllerProvider.notifier)
+          .deleteItems(<MediaItem>[item1]);
+
+      expect(result.deleted, 1);
+      expect(await container.read(trashCountProvider.future), 1);
+    });
   });
 }

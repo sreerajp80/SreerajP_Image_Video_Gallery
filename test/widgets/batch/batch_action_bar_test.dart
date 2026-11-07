@@ -9,6 +9,11 @@ import 'package:in_sreerajp_imgvidgal/providers/album_providers.dart';
 import 'package:in_sreerajp_imgvidgal/providers/selection_providers.dart';
 import 'package:in_sreerajp_imgvidgal/providers/tag_providers.dart';
 import 'package:in_sreerajp_imgvidgal/repositories/tag_repository.dart';
+import 'package:in_sreerajp_imgvidgal/models/batch/batch_action.dart';
+import 'package:in_sreerajp_imgvidgal/models/batch/batch_options.dart';
+import 'package:in_sreerajp_imgvidgal/models/batch/batch_outcome.dart';
+import 'package:in_sreerajp_imgvidgal/providers/batch_providers.dart';
+import 'package:in_sreerajp_imgvidgal/providers/trash_providers.dart';
 import 'package:in_sreerajp_imgvidgal/widgets/batch/batch_action_bar.dart';
 import 'package:in_sreerajp_imgvidgal/core/l10n/sanskrit_fallback_delegates.dart';
 
@@ -53,7 +58,101 @@ MediaItem _sampleItem(String id) => MediaItem(
   dateModified: DateTime(2026),
 );
 
+/// Returns a fixed outcome instead of running a real batch.
+class _FakeBatchController extends BatchController {
+  final BatchOutcome outcome;
+
+  _FakeBatchController(super.ref, this.outcome);
+
+  @override
+  Future<BatchOutcome?> run({
+    required BatchAction action,
+    required List<MediaItem> items,
+    BatchOptions options = const BatchOptions(),
+  }) async => outcome;
+}
+
+/// Records what Undo asked to restore.
+class _FakeTrashController extends TrashController {
+  final List<List<String>> restored;
+
+  _FakeTrashController({required super.ref, required this.restored});
+
+  @override
+  Future<void> restoreItems(List<String> ids) async => restored.add(ids);
+}
+
 void main() {
+  Future<List<List<String>>> runTrash(
+    WidgetTester tester,
+    BatchOutcome outcome,
+  ) async {
+    final restored = <List<String>>[];
+    final item = _sampleItem('photo1');
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          selectedMediaProvider.overrideWith((ref) async => [item]),
+          batchControllerProvider.overrideWith(
+            (ref) => _FakeBatchController(ref, outcome),
+          ),
+          trashControllerProvider.overrideWith(
+            (ref) => _FakeTrashController(ref: ref, restored: restored),
+          ),
+        ],
+        child: const MaterialApp(
+          localizationsDelegates: appLocalizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(bottomNavigationBar: BatchActionBar()),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.widgetWithText(InkWell, 'Delete'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey<String>('delete_choice_trash')));
+    await tester.pumpAndSettle();
+    return restored;
+  }
+
+  testWidgets('a clean trash shows an Undo bar instead of the sheet', (
+    tester,
+  ) async {
+    final restored = await runTrash(
+      tester,
+      const BatchOutcome(
+        action: BatchAction.moveToTrash,
+        succeededIds: <String>['photo1'],
+      ),
+    );
+
+    expect(find.text('1 item moved to trash'), findsOneWidget);
+    expect(find.text('Finished'), findsNothing);
+    final bar = tester.widget<SnackBar>(find.byType(SnackBar));
+    expect(bar.persist, isFalse);
+
+    await tester.tap(find.text('Undo'));
+    await tester.pumpAndSettle();
+    expect(restored, <List<String>>[
+      <String>['photo1'],
+    ]);
+  });
+
+  testWidgets('a trash with a failure still shows the result sheet', (
+    tester,
+  ) async {
+    await runTrash(
+      tester,
+      const BatchOutcome(
+        action: BatchAction.moveToTrash,
+        failedIds: <String>['photo1'],
+      ),
+    );
+
+    expect(find.text('1 item moved to trash'), findsNothing);
+    expect(find.byType(SnackBar), findsNothing);
+  });
   testWidgets(
     'BatchActionBar Add tags button opens BatchTagPickerSheet even when no tags exist',
     (tester) async {
@@ -186,7 +285,7 @@ void main() {
       'Send to a device',
       'Add to favourites',
       'Add to album',
-      'Move to trash',
+      'Delete',
       'More',
     ]) {
       expect(

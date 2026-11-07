@@ -12,6 +12,35 @@ class TagDao {
 
   Future<Database> get _db => _dbHelper.database;
 
+  /// Column alias for the live count of visible tagged items.
+  static const String _visibleCount = 'visible_count';
+
+  /// The start of every tag read: each row plus a live count of the tagged
+  /// items the user can see.
+  ///
+  /// The saved `item_count` holds the same number, kept right by database
+  /// triggers (schema 8). Reads still count live, with the same rule as the
+  /// screens, so the number always matches what opens.
+  static final String _tagSelect =
+      '''
+    SELECT t.*,
+      (SELECT COUNT(*)
+         FROM ${DatabaseConstants.tableMediaTags} vt
+         INNER JOIN ${DatabaseConstants.tableMedia} m
+           ON m.${DatabaseConstants.colId} = vt.${DatabaseConstants.colMediaTagMediaId}
+        WHERE vt.${DatabaseConstants.colMediaTagTagId} = t.${DatabaseConstants.colId}
+          AND ${DatabaseConstants.visibleMediaCondition('m')}) AS $_visibleCount
+    FROM ${DatabaseConstants.tableTags} t
+  ''';
+
+  /// Builds a [Tag] whose item count is the live visible count.
+  static Tag _tagFromRow(Map<String, Object?> row) {
+    final map = Map<String, Object?>.of(row)
+      ..[DatabaseConstants.colTagItemCount] = (row[_visibleCount] as int?) ?? 0
+      ..remove(_visibleCount);
+    return Tag.fromMap(map);
+  }
+
   /// Inserts or updates a [Tag].
   Future<void> insertTag(Tag tag) async {
     try {
@@ -71,14 +100,12 @@ class TagDao {
   Future<Tag?> getTagById(String tagId) async {
     try {
       final db = await _db;
-      final results = await db.query(
-        DatabaseConstants.tableTags,
-        where: '${DatabaseConstants.colId} = ?',
-        whereArgs: [tagId],
-        limit: 1,
+      final results = await db.rawQuery(
+        '$_tagSelect WHERE t.${DatabaseConstants.colId} = ? LIMIT 1',
+        [tagId],
       );
       if (results.isEmpty) return null;
-      return Tag.fromMap(results.first);
+      return _tagFromRow(results.first);
     } catch (e, st) {
       throw StorageException(
         'Failed to get tag by ID $tagId: $e',
@@ -92,14 +119,13 @@ class TagDao {
   Future<Tag?> getTagByName(String name) async {
     try {
       final db = await _db;
-      final results = await db.query(
-        DatabaseConstants.tableTags,
-        where: 'LOWER(${DatabaseConstants.colName}) = LOWER(?)',
-        whereArgs: [name.trim()],
-        limit: 1,
+      final results = await db.rawQuery(
+        '$_tagSelect WHERE LOWER(t.${DatabaseConstants.colName}) = LOWER(?) '
+        'LIMIT 1',
+        [name.trim()],
       );
       if (results.isEmpty) return null;
-      return Tag.fromMap(results.first);
+      return _tagFromRow(results.first);
     } catch (e, st) {
       throw StorageException(
         'Failed to get tag by name $name: $e',
@@ -113,11 +139,10 @@ class TagDao {
   Future<List<Tag>> getAllTags() async {
     try {
       final db = await _db;
-      final results = await db.query(
-        DatabaseConstants.tableTags,
-        orderBy: '${DatabaseConstants.colName} ASC',
+      final results = await db.rawQuery(
+        '$_tagSelect ORDER BY t.${DatabaseConstants.colName} ASC',
       );
-      return results.map((r) => Tag.fromMap(r)).toList();
+      return results.map(_tagFromRow).toList();
     } catch (e, st) {
       throw StorageException(
         'Failed to get all tags: $e',
@@ -131,31 +156,13 @@ class TagDao {
   Future<void> addTagToMedia(String mediaId, String tagId) async {
     try {
       final db = await _db;
-      await db.transaction((txn) async {
-        await txn.insert(DatabaseConstants.tableMediaTags, {
-          DatabaseConstants.colMediaTagMediaId: mediaId,
-          DatabaseConstants.colMediaTagTagId: tagId,
-          DatabaseConstants.colMediaTagDateTagged:
-              DateTime.now().millisecondsSinceEpoch,
-        }, conflictAlgorithm: ConflictAlgorithm.ignore);
-
-        // Update tag item count
-        final countResult = await txn.rawQuery(
-          '''
-          SELECT COUNT(*) as count FROM ${DatabaseConstants.tableMediaTags}
-          WHERE ${DatabaseConstants.colMediaTagTagId} = ?
-        ''',
-          [tagId],
-        );
-        final count = (countResult.first['count'] as int?) ?? 0;
-
-        await txn.update(
-          DatabaseConstants.tableTags,
-          {DatabaseConstants.colTagItemCount: count},
-          where: '${DatabaseConstants.colId} = ?',
-          whereArgs: [tagId],
-        );
-      });
+      // The tag's saved count is updated by a database trigger.
+      await db.insert(DatabaseConstants.tableMediaTags, {
+        DatabaseConstants.colMediaTagMediaId: mediaId,
+        DatabaseConstants.colMediaTagTagId: tagId,
+        DatabaseConstants.colMediaTagDateTagged:
+            DateTime.now().millisecondsSinceEpoch,
+      }, conflictAlgorithm: ConflictAlgorithm.ignore);
     } catch (e, st) {
       throw StorageException(
         'Failed to add tag $tagId to media $mediaId: $e',
@@ -169,30 +176,13 @@ class TagDao {
   Future<void> removeTagFromMedia(String mediaId, String tagId) async {
     try {
       final db = await _db;
-      await db.transaction((txn) async {
-        await txn.delete(
-          DatabaseConstants.tableMediaTags,
-          where:
-              '${DatabaseConstants.colMediaTagMediaId} = ? AND ${DatabaseConstants.colMediaTagTagId} = ?',
-          whereArgs: [mediaId, tagId],
-        );
-
-        final countResult = await txn.rawQuery(
-          '''
-          SELECT COUNT(*) as count FROM ${DatabaseConstants.tableMediaTags}
-          WHERE ${DatabaseConstants.colMediaTagTagId} = ?
-        ''',
-          [tagId],
-        );
-        final count = (countResult.first['count'] as int?) ?? 0;
-
-        await txn.update(
-          DatabaseConstants.tableTags,
-          {DatabaseConstants.colTagItemCount: count},
-          where: '${DatabaseConstants.colId} = ?',
-          whereArgs: [tagId],
-        );
-      });
+      // The tag's saved count is updated by a database trigger.
+      await db.delete(
+        DatabaseConstants.tableMediaTags,
+        where:
+            '${DatabaseConstants.colMediaTagMediaId} = ? AND ${DatabaseConstants.colMediaTagTagId} = ?',
+        whereArgs: [mediaId, tagId],
+      );
     } catch (e, st) {
       throw StorageException(
         'Failed to remove tag $tagId from media $mediaId: $e',
@@ -288,12 +278,6 @@ class TagDao {
             DatabaseConstants.colMediaTagDateTagged: now,
           }, conflictAlgorithm: ConflictAlgorithm.ignore);
         }
-
-        // Recount only the tags that actually changed.
-        for (final tagId in before.union(tagIds)) {
-          if (before.contains(tagId) && tagIds.contains(tagId)) continue;
-          await _recountTagIn(txn, tagId);
-        }
       });
     } catch (e, st) {
       throw StorageException(
@@ -304,50 +288,13 @@ class TagDao {
     }
   }
 
-  /// Recomputes and stores the stored item count of one tag.
-  ///
-  /// The count is a cached number on the tag row, kept so the tag list does
-  /// not need a count query per row. Anything that changes the junction table
-  /// outside this DAO should call this afterwards.
-  Future<void> recountTag(String tagId) async {
-    try {
-      final db = await _db;
-      await _recountTagIn(db, tagId);
-    } catch (e, st) {
-      throw StorageException(
-        'Failed to recount tag $tagId: $e',
-        cause: e,
-        stackTrace: st,
-      );
-    }
-  }
-
-  Future<void> _recountTagIn(DatabaseExecutor executor, String tagId) async {
-    final countResult = await executor.rawQuery(
-      '''
-      SELECT COUNT(*) as count FROM ${DatabaseConstants.tableMediaTags}
-      WHERE ${DatabaseConstants.colMediaTagTagId} = ?
-    ''',
-      [tagId],
-    );
-    final count = (countResult.first['count'] as int?) ?? 0;
-
-    await executor.update(
-      DatabaseConstants.tableTags,
-      {DatabaseConstants.colTagItemCount: count},
-      where: '${DatabaseConstants.colId} = ?',
-      whereArgs: [tagId],
-    );
-  }
-
   /// Gets all tags associated with a specific media item.
   Future<List<Tag>> getTagsForMedia(String mediaId) async {
     try {
       final db = await _db;
       final results = await db.rawQuery(
         '''
-        SELECT t.*
-        FROM ${DatabaseConstants.tableTags} t
+        $_tagSelect
         INNER JOIN ${DatabaseConstants.tableMediaTags} mt
           ON t.${DatabaseConstants.colId} = mt.${DatabaseConstants.colMediaTagTagId}
         WHERE mt.${DatabaseConstants.colMediaTagMediaId} = ?
@@ -356,7 +303,7 @@ class TagDao {
         [mediaId],
       );
 
-      return results.map((r) => Tag.fromMap(r)).toList();
+      return results.map(_tagFromRow).toList();
     } catch (e, st) {
       throw StorageException(
         'Failed to get tags for media $mediaId: $e',

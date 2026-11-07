@@ -324,7 +324,10 @@ class AlbumRepository {
     final chosen = album.coverMediaId;
     if (chosen != null) {
       final item = await _mediaDao.getMediaItemById(chosen);
-      if (item != null) return item;
+      // A cover Android no longer lets the app see is skipped like a removed
+      // one, so a limited-access album never shows a photo the user did not
+      // allow.
+      if (item != null && !item.isOutOfReach) return item;
     }
 
     final ids = await _albumDao.getMediaIdsForAlbum(album.id);

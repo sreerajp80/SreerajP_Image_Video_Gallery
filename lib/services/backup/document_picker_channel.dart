@@ -125,6 +125,44 @@ class DocumentPickerChannel {
     });
   }
 
+  /// Asks the user to point at a folder.
+  ///
+  /// Returns the folder's tree URI, or null if they backed out. The grant is
+  /// one-time and is not persisted.
+  Future<String?> openFolder() {
+    return _invoke<String>('openFolder', const <String, dynamic>{});
+  }
+
+  /// Copies a decrypted vault working file into a folder from [openFolder].
+  ///
+  /// A new file is always created; the folder's provider renames it when the
+  /// name is taken, so nothing already there is overwritten. Android accepts
+  /// only a working file inside the app's own vault folder as [sourcePath].
+  ///
+  /// Returns the new document's URI.
+  Future<String> writeToFolder({
+    required String treeUri,
+    required String displayName,
+    required String mimeType,
+    required String sourcePath,
+  }) async {
+    final result =
+        await _invoke<Map<Object?, Object?>>('writeToFolder', <String, dynamic>{
+          'treeUri': treeUri,
+          'displayName': displayName,
+          'mimeType': mimeType,
+          'sourcePath': sourcePath,
+        });
+    final uri = result?['uri'] as String?;
+    if (uri == null || uri.isEmpty) {
+      throw const DocumentPickerException(
+        'write_failed',
+        'The file could not be written into the folder',
+      );
+    }
+    return uri;
+  }
+
   Future<T?> _invoke<T>(String method, Map<String, dynamic> arguments) async {
     try {
       return await _channel.invokeMethod<T>(method, arguments);

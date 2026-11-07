@@ -140,6 +140,13 @@ class MediaScannerService {
   /// item are read, which makes repeat scans cheap. Stale database rows are
   /// removed only after a full scan with full permission, because with partial
   /// ("selected photos") access the missing rows may simply be hidden.
+  ///
+  /// Rows Android does not currently let the app see are kept but marked out
+  /// of reach, so every list hides them and the user's tags, favourites and
+  /// notes survive until access comes back:
+  /// - limited access: always a full pass; unseen rows are marked;
+  /// - full access: marked rows force a full pass, after which all are shown;
+  /// - no access: every row is marked before the scan fails.
   Future<ScanResult> scan({bool incremental = false}) async {
     if (_isScanning) {
       throw const MediaScanException('A media scan is already running');
@@ -150,6 +157,7 @@ class MediaScannerService {
       _emit(const ScanProgress(phase: ScanPhase.checkingPermission));
       final permission = await _channel.checkPermissions();
       if (!permission.canRead) {
+        await _hideEverything();
         _emit(_progress.copyWith(phase: ScanPhase.failed));
         throw PermissionDeniedException(
           'Media permission is required before scanning',
@@ -161,18 +169,26 @@ class MediaScannerService {
       final total = await _channel.getMediaCount();
       _emit(_progress.copyWith(phase: ScanPhase.indexing, total: total));
 
-      final int? since = incremental
+      final fullAccess = permission == MediaPermissionStatus.granted;
+
+      // A quick pass cannot tell which rows Android hides, and with full
+      // access it cannot bring hidden rows back, so either case needs a full
+      // pass. With limited access the list is short, so this stays cheap.
+      final quickPass =
+          incremental && fullAccess && !await _mediaDao.hasOutOfReach();
+
+      final int? since = quickPass
           ? await _mediaDao.getNewestDateModifiedMs()
           : null;
 
       var pass = await _indexPass(sinceDateModifiedMs: since);
-      var fullPass = !incremental;
+      var fullPass = !quickPass;
 
       // The quick pass only sees rows newer than the newest one indexed, so it
       // misses deletions and files that arrive with an old date. If the device
       // count no longer matches the index, fall back to a full pass. Skipped
       // with partial access, where hidden items make the numbers differ.
-      if (incremental && permission == MediaPermissionStatus.granted) {
+      if (quickPass) {
         final stored = await _mediaDao.getMediaStoreBackedCount();
         if (stored + _lastFullPassSkipped != total) {
           AppLogger.debug('Quick scan count mismatch; running a full pass');
@@ -183,9 +199,13 @@ class MediaScannerService {
       if (fullPass) _lastFullPassSkipped = pass.skipped;
 
       var removed = 0;
-      if (fullPass && permission == MediaPermissionStatus.granted) {
+      if (fullPass && fullAccess) {
         _emit(_progress.copyWith(phase: ScanPhase.cleaningUp));
         removed = await _mediaDao.deleteMediaItemsMissingFrom(pass.seenIds);
+        await _mediaDao.clearOutOfReach();
+      } else if (fullPass) {
+        // Limited access: nothing is deleted, the unseen rows are hidden.
+        await _mediaDao.markOutOfReachExcept(pass.seenIds);
       }
 
       _emit(
@@ -210,6 +230,21 @@ class MediaScannerService {
       throw MediaScanException('Media scan failed', cause: e, stackTrace: st);
     } finally {
       _isScanning = false;
+    }
+  }
+
+  /// Hides every row when the app may not read media at all.
+  ///
+  /// Best effort: the scan is about to fail with a permission error anyway,
+  /// and that error is the one the caller must see.
+  Future<void> _hideEverything() async {
+    try {
+      await _mediaDao.markAllOutOfReach();
+    } catch (error) {
+      AppLogger.warning(
+        'Could not hide media after access was removed',
+        error: error,
+      );
     }
   }
 

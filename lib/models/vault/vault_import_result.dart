@@ -20,10 +20,18 @@ class VaultBatchResult {
   /// Zero unless the user chose to shred and confirmed it.
   final int shreddedCount;
 
+  /// How many items were left in the vault on purpose.
+  ///
+  /// A restore skips an item whose original folder is gone when the user did
+  /// not pick another folder. That is not a failure: the item is safe, and
+  /// the user can restore it again later.
+  final int skippedCount;
+
   const VaultBatchResult({
     this.succeededIds = const <String>[],
     this.failedCount = 0,
     this.shreddedCount = 0,
+    this.skippedCount = 0,
   });
 
   /// An empty batch.
@@ -45,9 +53,14 @@ class VaultBatchResult {
           runtimeType == other.runtimeType &&
           listEquals(succeededIds, other.succeededIds) &&
           failedCount == other.failedCount &&
-          shreddedCount == other.shreddedCount;
+          shreddedCount == other.shreddedCount &&
+          skippedCount == other.skippedCount;
 
   @override
-  int get hashCode =>
-      Object.hash(Object.hashAll(succeededIds), failedCount, shreddedCount);
+  int get hashCode => Object.hash(
+    Object.hashAll(succeededIds),
+    failedCount,
+    shreddedCount,
+    skippedCount,
+  );
 }

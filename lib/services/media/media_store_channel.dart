@@ -2,10 +2,12 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:in_sreerajp_imgvidgal/core/constants/app_constants.dart';
 import 'package:in_sreerajp_imgvidgal/core/errors/app_exception.dart';
+import 'package:in_sreerajp_imgvidgal/models/media/media_delete_result.dart';
 import 'package:in_sreerajp_imgvidgal/models/media/media_permission_status.dart';
 
 // Moved to models so the UI can use it without importing a service (G46).
 export 'package:in_sreerajp_imgvidgal/models/media/media_permission_status.dart';
+export 'package:in_sreerajp_imgvidgal/models/media/media_delete_result.dart';
 
 /// A single raw row read from the Android MediaStore.
 ///
@@ -187,6 +189,21 @@ abstract class MediaStoreChannel {
     required List<String> uris,
     required List<String> paths,
   });
+
+  /// Writes over each file, then deletes it, so undelete tools cannot get it
+  /// back.
+  ///
+  /// [targets] are `(uri, path)` pairs, one per file. Returns one outcome
+  /// per target, in the same order.
+  ///
+  /// Android 11+ shows one "allow modify" prompt for the batch. Android 10
+  /// asks once per file. Android 9 and older use WRITE_EXTERNAL_STORAGE.
+  /// When the user refuses, nothing is touched and every outcome is
+  /// [MediaDeleteOutcome.failed].
+  Future<List<MediaDeleteOutcome>> secureDeleteMedia({
+    required List<({String uri, String path})> targets,
+    required int passes,
+  });
 }
 
 /// Real [MediaStoreChannel] backed by the Android platform channel.
@@ -315,6 +332,32 @@ class PlatformMediaStoreChannel implements MediaStoreChannel {
       'paths': paths,
     });
     return result ?? false;
+  }
+
+  @override
+  Future<List<MediaDeleteOutcome>> secureDeleteMedia({
+    required List<({String uri, String path})> targets,
+    required int passes,
+  }) async {
+    if (targets.isEmpty) return const <MediaDeleteOutcome>[];
+    final result = await _invoke<List<Object?>>(
+      'secureDeleteMedia',
+      <String, Object?>{
+        'items': <Map<String, String>>[
+          for (final t in targets)
+            <String, String>{'uri': t.uri, 'path': t.path},
+        ],
+        'passes': passes,
+      },
+    );
+    // A short or missing answer counts the rest as failed: never claim a
+    // file is gone without being told so.
+    return <MediaDeleteOutcome>[
+      for (var i = 0; i < targets.length; i++)
+        MediaDeleteOutcome.fromPlatform(
+          result != null && i < result.length ? result[i] : null,
+        ),
+    ];
   }
 
   Future<T?> _invoke<T>(

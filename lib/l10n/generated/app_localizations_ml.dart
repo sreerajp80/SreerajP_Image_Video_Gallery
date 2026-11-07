@@ -105,6 +105,12 @@ class AppLocalizationsMl extends AppLocalizations {
   String get titleFlashback => 'ഈ ദിവസം';
 
   @override
+  String get tooltipExpandFlashback => 'ഓർമ്മകൾ കാണിക്കുക';
+
+  @override
+  String get tooltipCollapseFlashback => 'ഓർമ്മകൾ മറയ്ക്കുക';
+
+  @override
   String get labelFlashbackOneYearAgo => '1 വർഷം മുമ്പ്';
 
   @override
@@ -3939,7 +3945,7 @@ class AppLocalizationsMl extends AppLocalizations {
 
   @override
   String get descPermWriteStorage =>
-      'ക്യാമറ ലൈബ്രറി ഇത് ആവശ്യപ്പെടുന്നു. QR സ്കാനർ ഒരിക്കലും ഫയൽ സൂക്ഷിക്കുന്നില്ല.';
+      'Android 9-ഉം അതിനു മുമ്പുള്ളവയിലും മാത്രം. ഫോട്ടോകൾ ശാശ്വതമായോ സുരക്ഷിതമായോ ഇല്ലാതാക്കാൻ അനുവദിക്കുന്നു. ഫോട്ടോ അനുമതിയോടൊപ്പം ചോദിക്കും.';
 
   @override
   String get labelPermAllowed => 'അനുവദിച്ചു';
@@ -3958,5 +3964,152 @@ class AppLocalizationsMl extends AppLocalizations {
   @override
   String labelPermAndroidUpTo(String version) {
     return 'ആൻഡ്രോയിഡ് $version വരെ';
+  }
+
+  @override
+  String get titleVaultFolderMissing => 'ഫോൾഡർ കണ്ടില്ല';
+
+  @override
+  String bodyVaultFolderMissing(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '$count ഇനങ്ങളുടെ പഴയ ഫോൾഡർ ഇപ്പോൾ ഇല്ല. അവയ്ക്കായി ഒരു ഫോൾഡർ തിരഞ്ഞെടുക്കുക, അല്ലെങ്കിൽ ഒഴിവാക്കുക; അവ വോൾട്ടിൽ തന്നെ ഇരിക്കും.',
+      one:
+          '1 ഇനത്തിന്റെ പഴയ ഫോൾഡർ ഇപ്പോൾ ഇല്ല. അതിനായി ഒരു ഫോൾഡർ തിരഞ്ഞെടുക്കുക, അല്ലെങ്കിൽ ഒഴിവാക്കുക; അത് വോൾട്ടിൽ തന്നെ ഇരിക്കും.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get actionVaultChooseFolder => 'ഫോൾഡർ തിരഞ്ഞെടുക്കുക';
+
+  @override
+  String get actionVaultSkip => 'ഒഴിവാക്കുക';
+
+  @override
+  String bodyVaultRestoreSkipped(int done, int skipped) {
+    return '$done തിരികെ കൊണ്ടുവന്നു, $skipped വോൾട്ടിൽ തന്നെ';
+  }
+
+  @override
+  String bodyVaultRestoreSkippedFailed(int done, int skipped, int failed) {
+    return '$done തിരികെ കൊണ്ടുവന്നു, $skipped വോൾട്ടിൽ തന്നെ, $failed പരാജയപ്പെട്ടു';
+  }
+
+  @override
+  String get titleBatchActionDelete => 'ഇല്ലാതാക്കുക';
+
+  @override
+  String titleDeleteChoice(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count ഇനങ്ങൾ ഇല്ലാതാക്കണോ?',
+      one: '1 ഇനം ഇല്ലാതാക്കണോ?',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String bodyDeleteChoiceTrash(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'ചവറ്റുകുട്ടയിൽ നിന്ന് തിരികെ എടുക്കാം.',
+      one: 'ചവറ്റുകുട്ടയിൽ നിന്ന് തിരികെ എടുക്കാം.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get bodyDeleteChoicePermanent =>
+      'ഫോണിൽ നിന്ന് നീക്കം ചെയ്യും. ഇത് പഴയപടിയാക്കാൻ കഴിയില്ല.';
+
+  @override
+  String get bodyDeleteChoicePermanentSecure =>
+      'ആദ്യം മേലെഴുതി, പിന്നെ ഫോണിൽ നിന്ന് നീക്കം ചെയ്യും. ഇത് പഴയപടിയാക്കാൻ കഴിയില്ല.';
+
+  @override
+  String bodyDeletePermanentlyConfirmCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '$count ഇനങ്ങൾ ഫോണിൽ നിന്ന് ശാശ്വതമായി ഇല്ലാതാക്കും. ഇത് പഴയപടിയാക്കാൻ കഴിയില്ല.',
+      one:
+          '1 ഇനം ഫോണിൽ നിന്ന് ശാശ്വതമായി ഇല്ലാതാക്കും. ഇത് പഴയപടിയാക്കാൻ കഴിയില്ല.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get bodyDeleteNothingDeleted => 'ഒന്നും ഇല്ലാതാക്കിയില്ല.';
+
+  @override
+  String bodyDeletedPermanentlyCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count ഇനങ്ങൾ ശാശ്വതമായി ഇല്ലാതാക്കി.',
+      one: '1 ഇനം ശാശ്വതമായി ഇല്ലാതാക്കി.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String bodySecureDeletedCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count ഇനങ്ങൾ സുരക്ഷിതമായി ഇല്ലാതാക്കി.',
+      one: '1 ഇനം സുരക്ഷിതമായി ഇല്ലാതാക്കി.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String bodySecureDeleteNotOverwritten(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'അതിൽ $count എണ്ണം ആദ്യം മേലെഴുതാൻ കഴിഞ്ഞില്ല.',
+      one: 'അതിൽ 1 എണ്ണം ആദ്യം മേലെഴുതാൻ കഴിഞ്ഞില്ല.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String bodyDeleteFailedCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count ഇനങ്ങൾ ഇല്ലാതാക്കാൻ കഴിഞ്ഞില്ല.',
+      one: '1 ഇനം ഇല്ലാതാക്കാൻ കഴിഞ്ഞില്ല.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get titleSecureDelete => 'സുരക്ഷിതമായി ഇല്ലാതാക്കൽ';
+
+  @override
+  String get descSecureDeleteSubtitle =>
+      'ഇല്ലാതാക്കുന്നതിനു മുമ്പ് ഓരോ ഫയലും മേലെഴുതും, അതിനാൽ വീണ്ടെടുക്കൽ ടൂളുകൾക്ക് അത് തിരികെ കൊണ്ടുവരാൻ കഴിയില്ല. ശാശ്വതമായി ഇല്ലാതാക്കുമ്പോഴും ചവറ്റുകുട്ടയിൽ നിന്ന് ഇല്ലാതാക്കുമ്പോഴും ഇത് ബാധകം. ആദ്യം Android അനുമതി ചോദിക്കും. ഫ്ലാഷ് സ്റ്റോറേജിൽ ഇത് വീണ്ടെടുക്കൽ ടൂളുകളെ തടയും, ലാബിനെ അല്ല.';
+
+  @override
+  String get bodySecureDeleteVaultNote =>
+      'ഈ സ്വിച്ച് എന്തായാലും, വോൾട്ടിൽ നിന്ന് ഇല്ലാതാക്കുന്നത് എപ്പോഴും സുരക്ഷിതമാണ്.';
+
+  @override
+  String bodyBatchTrashSuccess(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count ഇനങ്ങൾ ചവറ്റുകുട്ടയിലേക്ക് മാറ്റി',
+      one: '1 ഇനം ചവറ്റുകുട്ടയിലേക്ക് മാറ്റി',
+    );
+    return '$_temp0';
   }
 }

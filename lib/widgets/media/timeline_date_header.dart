@@ -58,41 +58,58 @@ class TimelineDateHeader extends StatelessWidget {
     final theme = Theme.of(context);
     final label = formatTimelineDate(context, headerKind, date);
 
+    // A light neutral shade marks this as a timeline title. It is a different
+    // colour family from the On This Day title bar (tertiaryContainer), so
+    // the two never look alike. The parent fixes the row at
+    // kTimelineHeaderHeight; the shade must fit inside it, because the
+    // scrubber and pinch zoom find rows from that height.
     return Padding(
-      padding: const EdgeInsets.fromLTRB(12, 16, 12, 8),
-      child: Row(
-        children: [
-          Expanded(
-            child: Text(
-              label,
-              style: theme.textTheme.titleSmall?.copyWith(
-                fontWeight: FontWeight.bold,
-                color: theme.colorScheme.onSurface,
-              ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-          const SizedBox(width: 8),
-          // A filled pill in theme colours, so the count stays readable on
-          // both light and dark backgrounds.
-          DecoratedBox(
-            decoration: ShapeDecoration(
-              color: theme.colorScheme.secondaryContainer,
-              shape: const StadiumBorder(),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-              child: Text(
-                '$itemCount',
-                style: theme.textTheme.labelMedium?.copyWith(
-                  fontWeight: FontWeight.w600,
-                  color: theme.colorScheme.onSecondaryContainer,
+      padding: const EdgeInsets.fromLTRB(12, 8, 12, 4),
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: theme.colorScheme.surfaceContainerHigh,
+          borderRadius: const BorderRadius.all(Radius.circular(8)),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 10),
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  label,
+                  style: theme.textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: theme.colorScheme.onSurface,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
-            ),
+              const SizedBox(width: 8),
+              // A filled pill in theme colours, so the count stays readable on
+              // both light and dark backgrounds.
+              DecoratedBox(
+                decoration: ShapeDecoration(
+                  color: theme.colorScheme.secondaryContainer,
+                  shape: const StadiumBorder(),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 2,
+                  ),
+                  child: Text(
+                    '$itemCount',
+                    style: theme.textTheme.labelMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: theme.colorScheme.onSecondaryContainer,
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }

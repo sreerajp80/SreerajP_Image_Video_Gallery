@@ -165,6 +165,25 @@ void main() {
       expect(left.map((i) => i.id).toList(), <String>['m2']);
     });
 
+    test('the tile count matches what the album opens with', () async {
+      final album = await repository.createAlbum('Holiday');
+      await mediaDao.insertMediaItem(media('m1'));
+      await mediaDao.insertMediaItem(media('m2'));
+      await mediaDao.insertMediaItem(media('m3', isTrash: true));
+      for (final id in ['m1', 'm2', 'm3']) {
+        await repository.addMedia(album.id, id);
+      }
+      await mediaDao.markOutOfReachExcept(<String>{'m1', 'm3'});
+
+      final summaries = await repository.getVirtualAlbumSummaries();
+      final summary = await repository.getVirtualAlbumSummary(album.id);
+      final opened = await repository.getAlbumMedia(album.id);
+
+      expect(opened.map((i) => i.id).toList(), <String>['m1']);
+      expect(summaries.single.itemCount, 1);
+      expect(summary!.itemCount, 1);
+    });
+
     test('keeps the order items were added in', () async {
       final album = await repository.createAlbum('Holiday');
       for (final id in <String>['m1', 'm2', 'm3']) {
@@ -263,6 +282,20 @@ void main() {
       await repository.setAlbumCover(album.id, 'm2');
 
       await mediaDao.deleteMediaItem('m2');
+
+      final summary = await repository.getVirtualAlbumSummary(album.id);
+      expect(summary!.coverItem?.id, 'm1');
+    });
+
+    test('skips a chosen cover the app may no longer see', () async {
+      final album = await repository.createAlbum('Holiday');
+      await mediaDao.insertMediaItem(media('m1'));
+      await mediaDao.insertMediaItem(media('m2'));
+      await repository.addMedia(album.id, 'm1');
+      await repository.addMedia(album.id, 'm2');
+      await repository.setAlbumCover(album.id, 'm2');
+
+      await mediaDao.markOutOfReachExcept(<String>{'m1'});
 
       final summary = await repository.getVirtualAlbumSummary(album.id);
       expect(summary!.coverItem?.id, 'm1');

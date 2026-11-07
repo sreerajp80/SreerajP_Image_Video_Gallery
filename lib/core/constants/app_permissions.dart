@@ -21,6 +21,16 @@ const List<AppPermissionInfo> kAppPermissions = <AppPermissionInfo>[
       AndroidPermissionName('READ_EXTERNAL_STORAGE', maxApi: 32),
     ],
   ),
+  // Asked in the same prompt as photos access, and only on Android 9 and
+  // older: it lets "Delete permanently" and "Secure delete" remove a photo
+  // the app did not create.
+  AppPermissionInfo(
+    id: AppPermissionId.writeStorage,
+    kind: AppPermissionKind.explicit,
+    androidNames: <AndroidPermissionName>[
+      AndroidPermissionName('WRITE_EXTERNAL_STORAGE', maxApi: 28),
+    ],
+  ),
   AppPermissionInfo(
     id: AppPermissionId.camera,
     kind: AppPermissionKind.explicit,
@@ -81,13 +91,6 @@ const List<AppPermissionInfo> kAppPermissions = <AppPermissionInfo>[
     kind: AppPermissionKind.removed,
     androidNames: <AndroidPermissionName>[
       AndroidPermissionName('RECORD_AUDIO'),
-    ],
-  ),
-  AppPermissionInfo(
-    id: AppPermissionId.writeStorage,
-    kind: AppPermissionKind.removed,
-    androidNames: <AndroidPermissionName>[
-      AndroidPermissionName('WRITE_EXTERNAL_STORAGE'),
     ],
   ),
 ];

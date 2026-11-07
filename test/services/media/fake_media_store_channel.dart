@@ -128,6 +128,38 @@ class FakeMediaStoreChannel implements MediaStoreChannel {
     entries.removeWhere((e) => uris.contains(e.uri) || paths.contains(e.path));
     return true;
   }
+
+  /// Outcomes [secureDeleteMedia] reports, in order. When null, every target
+  /// is reported as overwritten.
+  List<MediaDeleteOutcome>? secureOutcomes;
+
+  /// URIs passed to [secureDeleteMedia].
+  final List<String> securelyDeletedUris = <String>[];
+
+  /// Pass count the last [secureDeleteMedia] call asked for.
+  int? lastSecurePasses;
+
+  @override
+  Future<List<MediaDeleteOutcome>> secureDeleteMedia({
+    required List<({String uri, String path})> targets,
+    required int passes,
+  }) async {
+    lastSecurePasses = passes;
+    final outcomes = <MediaDeleteOutcome>[
+      for (var i = 0; i < targets.length; i++)
+        secureOutcomes == null
+            ? MediaDeleteOutcome.overwritten
+            : (i < secureOutcomes!.length
+                  ? secureOutcomes![i]
+                  : MediaDeleteOutcome.failed),
+    ];
+    for (var i = 0; i < targets.length; i++) {
+      if (!outcomes[i].isGone) continue;
+      securelyDeletedUris.add(targets[i].uri);
+      entries.removeWhere((e) => e.uri == targets[i].uri);
+    }
+    return outcomes;
+  }
 }
 
 /// Builds a MediaStore row with sensible defaults for tests.

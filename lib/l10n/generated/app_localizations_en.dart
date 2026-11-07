@@ -104,6 +104,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get titleFlashback => 'On This Day';
 
   @override
+  String get tooltipExpandFlashback => 'Show memories';
+
+  @override
+  String get tooltipCollapseFlashback => 'Hide memories';
+
+  @override
   String get labelFlashbackOneYearAgo => '1 year ago';
 
   @override
@@ -3920,7 +3926,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get descPermWriteStorage =>
-      'The camera library asks for it. The QR scanner never saves a file.';
+      'Android 9 and older only. Lets you delete photos for good, or securely. Asked together with photos access.';
 
   @override
   String get labelPermAllowed => 'Allowed';
@@ -3939,5 +3945,152 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String labelPermAndroidUpTo(String version) {
     return 'Up to Android $version';
+  }
+
+  @override
+  String get titleVaultFolderMissing => 'Folder not found';
+
+  @override
+  String bodyVaultFolderMissing(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '$count items can\'t go back to their old folder, because that folder no longer exists. Choose a folder for them, or skip them and they stay in the vault.',
+      one:
+          '1 item can\'t go back to its old folder, because that folder no longer exists. Choose a folder for it, or skip it and it stays in the vault.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get actionVaultChooseFolder => 'Choose folder';
+
+  @override
+  String get actionVaultSkip => 'Skip';
+
+  @override
+  String bodyVaultRestoreSkipped(int done, int skipped) {
+    return '$done restored, $skipped stayed in the vault';
+  }
+
+  @override
+  String bodyVaultRestoreSkippedFailed(int done, int skipped, int failed) {
+    return '$done restored, $skipped stayed in the vault, $failed failed';
+  }
+
+  @override
+  String get titleBatchActionDelete => 'Delete';
+
+  @override
+  String titleDeleteChoice(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Delete $count items?',
+      one: 'Delete 1 item?',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String bodyDeleteChoiceTrash(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'You can restore them from the trash.',
+      one: 'You can restore it from the trash.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get bodyDeleteChoicePermanent =>
+      'Removed from the device. This cannot be undone.';
+
+  @override
+  String get bodyDeleteChoicePermanentSecure =>
+      'Written over, then removed from the device. This cannot be undone.';
+
+  @override
+  String bodyDeletePermanentlyConfirmCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '$count items will be deleted from your device for good. This cannot be undone.',
+      one:
+          '1 item will be deleted from your device for good. This cannot be undone.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get bodyDeleteNothingDeleted => 'Nothing was deleted.';
+
+  @override
+  String bodyDeletedPermanentlyCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count items deleted for good.',
+      one: '1 item deleted for good.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String bodySecureDeletedCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count items securely deleted.',
+      one: '1 item securely deleted.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String bodySecureDeleteNotOverwritten(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count of them could not be written over first.',
+      one: '1 of them could not be written over first.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String bodyDeleteFailedCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count items could not be deleted.',
+      one: '1 item could not be deleted.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get titleSecureDelete => 'Secure delete';
+
+  @override
+  String get descSecureDeleteSubtitle =>
+      'Writes over each file before deleting it, so undelete tools cannot bring it back. Used for permanent deletes and for the trash. Android asks you to allow it first. On flash storage this stops undelete tools, not a lab.';
+
+  @override
+  String get bodySecureDeleteVaultNote =>
+      'Deleting from the vault is always secure, whatever this switch says.';
+
+  @override
+  String bodyBatchTrashSuccess(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count items moved to trash',
+      one: '1 item moved to trash',
+    );
+    return '$_temp0';
   }
 }

@@ -120,7 +120,7 @@ and so was the photo compare screen. Their bars, dialogs, body and cards moved t
 | `lib/screens/viewer/media_viewer_screen.dart` | ~630 | The page view, the chrome timer and the swipe-to-dismiss tracking share one state. Its bars and dialogs are already split out. |
 | `lib/providers/editor_providers.dart` | ~565 | The wiring for every editor service plus the editor's own state. Could be split by tool later. |
 | `lib/screens/editor/image_editor_screen.dart` | ~530 | Just over the limit. One state object drives every tool; the tool panels are already their own widgets. |
-| `lib/providers/vault_providers.dart` | ~515 | Just over the limit. The wiring for every vault service plus the lock and batch controllers. |
+| `lib/providers/vault_providers.dart` | ~550 | Just over the limit. The wiring for every vault service plus the lock and batch controllers. |
 
 A new file over 500 lines needs a split or a row here.
 
@@ -175,7 +175,7 @@ screens.
 - **No HTTP client** and no network-status package. The blocked list is in
   [dependencies.md](dependencies.md).
 - **Offline data source:** `sqflite` plus the Android MediaStore.
-- **Release check:** the merged manifest must list exactly the 11 permissions in
+- **Release check:** the merged manifest must list exactly the 12 permissions in
   [security.md](security.md) §11, including `INTERNET`, plus AndroidX's private
   `DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION`. See
   [release_process.md](release_process.md).
@@ -271,7 +271,7 @@ no storage.
 
 ### Current Schema Version
 
-SQLite schema version: **5** (`DatabaseConstants.schemaVersion` in
+SQLite schema version: **8** (`DatabaseConstants.schemaVersion` in
 `lib/repositories/database/database_constants.dart`). Database file: `gallery_database.db`.
 
 Migration history:
@@ -283,6 +283,9 @@ Migration history:
 | 3 | Re-creates `media_search_fts` and its triggers if missing, with an FTS5 → FTS4 fallback for devices whose SQLite has no FTS5 |
 | 4 | Adds a `media_search_fts` row, with tag names, for every media item that has none. v3 could create the table empty, so older photos were never searchable |
 | 5 | Enum and flag columns are checked (`ColumnValueRule`): `CHECK` constraints on a new database, `BEFORE INSERT/UPDATE` triggers on an upgraded one. No table rebuild, because that would cascade-delete album and tag links |
+| 6 | Removes extra `media_search_fts` rows, keeping one per photo. The scan used to save with SQLite `REPLACE`, which fired the insert trigger but not the delete one, so each full rescan added a copy |
+| 7 | `media_items.is_out_of_reach` (0/1, default 0) with its value triggers. Marks rows Android does not currently let the app see, so lists hide them without losing their data |
+| 8 | Triggers keep `albums.item_count` and `tags.item_count` equal to the number of visible linked photos, plus an index on `album_media_entries.media_id`. The upgrade recounts every album and tag once |
 
 Upgrade paths are tested in `test/repositories/database/database_migration_test.dart`.
 
@@ -379,6 +382,22 @@ The index list lives in `DatabaseHelper`. Update this table when you add one.
 ### Local Storage
 
 - **Database:** `sqflite`, file `gallery_database.db`, foreign keys on.
+- **Scan save rule:** a scan inserts a new photo whole, and for an existing one updates only the
+  columns Android owns (path, name, type, size, dates, size in pixels, orientation), and only when
+  one changed. A changed size or date also clears the hashes and EXIF so they are worked out
+  again. It never uses `REPLACE`: that deletes the row first, which loses the favourite, notes,
+  trash and vault flags and cascades away tag and album links (`MediaDao.batchUpsertMediaItems`).
+- **Limited media access:** with "Allow limited access" the scan always runs a full pass and marks
+  every row it did not see `is_out_of_reach`; with no access it marks every row; with full access
+  it clears the mark. Every list query filters on it next to `is_vaulted`. See
+  [security.md](security.md) §11.
+- **Album and tag counts:** worked out when an album or tag is read, counting only linked photos
+  that are not in the vault, not in the trash and not out of reach
+  (`DatabaseConstants.visibleMediaCondition`, the same rule the folder counts use). The
+  `item_count` column on `albums` and `tags` holds the same number. Database triggers keep it
+  right (schema 8): they recount when a link is added or removed (including by a cascade), when
+  a photo's trash, vault or out-of-reach flag changes, and when Dart writes a wrong value. No
+  Dart code counts (`DatabaseHelper._createCountTriggers`).
 - **WAL mode:** enabled (`PRAGMA journal_mode = WAL`), except for in-memory test databases.
 - **Key-value storage:** a small JSON settings file in the app-support folder
   (`AppSettingsService`). It holds only non-secret preferences (theme, grid density, switches).
@@ -410,14 +429,14 @@ service. Channel names live in `AppConstants`.
 
 | Channel (`in.sreerajp.imgvidgal/…`) | Purpose |
 |---|---|
-| `mediastore` | Query, insert, update and delete MediaStore rows |
+| `mediastore` | Query, insert, update and delete MediaStore rows; `secureDeleteMedia` writes over files before deleting them |
 | `playback` | Screen brightness, media volume and keep-awake for the video player |
 | `imagetools` | Native image encode/decode for conversion |
 | `videotools` | Trim, frame grab and GIF export |
 | `hashtools` | Fast SHA-256 and perceptual hashes |
 | `vault` | Keystore key, AES-256-GCM cipher, shredder, `FLAG_SECURE` |
 | `backup` | PBKDF2 + AES-256-GCM for `.gallerybak` archives |
-| `documents` | Storage Access Framework pickers |
+| `documents` | Storage Access Framework pickers. Also the one-time folder picker and `writeToFolder` used when a vault item's original folder is gone: the user picks a folder or skips, and a skipped item stays in the vault |
 | `intents` | Incoming "open with" intents, and outgoing intents for the allowed scan schemes only |
 | `app_info` | The app's own version name and build number from `PackageManager` (replaced `package_info_plus`, which pulled in `http`) |
 | `barcode` | ZXing core reads codes from a still file (`decodeImageFile`) or from one camera frame's brightness plane (`decodeLuminance`). Replaced `mobile_scanner` and its ML Kit (G47) |

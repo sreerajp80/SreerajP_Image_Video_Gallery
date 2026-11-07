@@ -37,7 +37,67 @@ class MediaDao {
     }
   }
 
-  /// Batch upserts multiple [MediaItem] records atomically.
+  /// Columns that come from Android's media list, which a scan may refresh.
+  ///
+  /// Everything else in a media row is the user's or the app's own work
+  /// (favourite, notes, trash, vault flag, place, hashes, EXIF) and a scan
+  /// must never overwrite it.
+  static const List<String> _mediaStoreColumns = <String>[
+    DatabaseConstants.colMediaPath,
+    DatabaseConstants.colMediaUri,
+    DatabaseConstants.colMediaDisplayName,
+    DatabaseConstants.colMediaType,
+    DatabaseConstants.colMediaMimeType,
+    DatabaseConstants.colMediaSizeBytes,
+    DatabaseConstants.colMediaDateAdded,
+    DatabaseConstants.colMediaDateModified,
+    DatabaseConstants.colMediaDateTaken,
+    DatabaseConstants.colMediaDurationMs,
+    DatabaseConstants.colMediaWidth,
+    DatabaseConstants.colMediaHeight,
+    DatabaseConstants.colMediaOrientation,
+  ];
+
+  /// Values worked out from the file itself, cleared when the file changes so
+  /// they are worked out again.
+  static const List<String> _fileDerivedColumns = <String>[
+    DatabaseConstants.colMediaSha256Hash,
+    DatabaseConstants.colMediaPHash,
+    DatabaseConstants.colMediaExifJson,
+  ];
+
+  /// Refreshes the Android-owned columns of an existing row.
+  ///
+  /// Writes nothing when none of them changed, so a rescan of an unchanged
+  /// library costs no writes and does not wake the search-index trigger. In
+  /// SQLite every column read in `SET` is the row's old value, which is what
+  /// lets the `CASE` below see whether the size or date changed.
+  static final String _refreshMediaStoreColumnsSql = () {
+    const fileChanged =
+        '${DatabaseConstants.colMediaSizeBytes} IS NOT ? '
+        'OR ${DatabaseConstants.colMediaDateModified} IS NOT ?';
+    final clears = _fileDerivedColumns.map(
+      (column) => '$column = CASE WHEN $fileChanged THEN NULL ELSE $column END',
+    );
+    final sets = _mediaStoreColumns.map((column) => '$column = ?');
+    final changed = _mediaStoreColumns
+        .map((column) => '$column IS NOT ?')
+        .join(' OR ');
+    return 'UPDATE ${DatabaseConstants.tableMedia} '
+        'SET ${<String>[...clears, ...sets].join(', ')} '
+        'WHERE ${DatabaseConstants.colId} = ? AND ($changed)';
+  }();
+
+  /// Saves what a scan read from Android, keeping everything else in the row.
+  ///
+  /// A new item is inserted whole. An existing one only gets its Android-owned
+  /// columns refreshed (see [_mediaStoreColumns]). This must never be SQLite's
+  /// `REPLACE`: that deletes the old row first, and the delete takes the
+  /// favourite, notes and vault flag with it, cascades away the item's tag and
+  /// album links, and leaves a second copy in the search index.
+  ///
+  /// Two statements rather than `ON CONFLICT DO UPDATE`, which needs SQLite
+  /// 3.24; Android 7, the oldest version the app supports, ships an older one.
   Future<void> batchUpsertMediaItems(List<MediaItem> items) async {
     if (items.isEmpty) return;
     try {
@@ -45,11 +105,25 @@ class MediaDao {
       await db.transaction((txn) async {
         final batch = txn.batch();
         for (final item in items) {
+          final row = item.toMap();
           batch.insert(
             DatabaseConstants.tableMedia,
-            item.toMap(),
-            conflictAlgorithm: ConflictAlgorithm.replace,
+            row,
+            conflictAlgorithm: ConflictAlgorithm.ignore,
           );
+
+          final fresh = _mediaStoreColumns.map((column) => row[column]);
+          final fileChangedArgs = <Object?>[
+            row[DatabaseConstants.colMediaSizeBytes],
+            row[DatabaseConstants.colMediaDateModified],
+          ];
+          batch.rawUpdate(_refreshMediaStoreColumnsSql, <Object?>[
+            for (var i = 0; i < _fileDerivedColumns.length; i++)
+              ...fileChangedArgs,
+            ...fresh,
+            item.id,
+            ...fresh,
+          ]);
         }
         await batch.commit(noResult: true);
       });
@@ -168,6 +242,9 @@ class MediaDao {
 
       // Vault filter (default: non-vaulted)
       whereClauses.add('${DatabaseConstants.colMediaIsVaulted} = 0');
+
+      // Items Android does not currently let the app see stay hidden.
+      whereClauses.add('${DatabaseConstants.colMediaIsOutOfReach} = 0');
 
       // Trash filter
       whereClauses.add(
@@ -350,6 +427,7 @@ class MediaDao {
         WHERE ${DatabaseConstants.tableMediaSearchFts} MATCH ?
           AND m.${DatabaseConstants.colMediaIsVaulted} = 0
           AND m.${DatabaseConstants.colMediaIsTrash} = 0
+          AND m.${DatabaseConstants.colMediaIsOutOfReach} = 0
         ORDER BY m.${DatabaseConstants.colMediaDateTaken} DESC,
                  m.${DatabaseConstants.colMediaDateAdded} DESC
         LIMIT ? OFFSET ?
@@ -583,9 +661,15 @@ class MediaDao {
   Future<int> restoreAllFromTrash() async {
     try {
       final db = await _db;
-      return await db.update(DatabaseConstants.tableMedia, {
-        DatabaseConstants.colMediaIsTrash: 0,
-      }, where: '${DatabaseConstants.colMediaIsTrash} = 1');
+      // Only what the user can see: a hidden item's trash state is left as
+      // it is until access to it comes back.
+      return await db.update(
+        DatabaseConstants.tableMedia,
+        {DatabaseConstants.colMediaIsTrash: 0},
+        where:
+            '${DatabaseConstants.colMediaIsTrash} = 1 '
+            'AND ${DatabaseConstants.colMediaIsOutOfReach} = 0',
+      );
     } catch (e, st) {
       throw StorageException(
         'Failed to restore all trashed items: $e',
@@ -603,9 +687,13 @@ class MediaDao {
   Future<int> deleteAllTrashed() async {
     try {
       final db = await _db;
+      // Only what the user can see: emptying the trash must not remove the
+      // rows, and the user's data on them, of items that are only hidden.
       return await db.delete(
         DatabaseConstants.tableMedia,
-        where: '${DatabaseConstants.colMediaIsTrash} = 1',
+        where:
+            '${DatabaseConstants.colMediaIsTrash} = 1 '
+            'AND ${DatabaseConstants.colMediaIsOutOfReach} = 0',
       );
     } catch (e, st) {
       throw StorageException(
@@ -645,6 +733,7 @@ class MediaDao {
         FROM ${DatabaseConstants.tableMedia}
         WHERE ${DatabaseConstants.colMediaIsTrash} = 1
           AND ${DatabaseConstants.colMediaIsVaulted} = 0
+          AND ${DatabaseConstants.colMediaIsOutOfReach} = 0
       ''');
       return (result.first['count'] as int?) ?? 0;
     } catch (e, st) {
@@ -769,7 +858,8 @@ class MediaDao {
         where:
             '${DatabaseConstants.colId} IN ($placeholders) '
             'AND ${DatabaseConstants.colMediaIsVaulted} = 0 '
-            'AND ${DatabaseConstants.colMediaIsTrash} = 0',
+            'AND ${DatabaseConstants.colMediaIsTrash} = 0 '
+            'AND ${DatabaseConstants.colMediaIsOutOfReach} = 0',
         whereArgs: ids,
       );
 
@@ -832,8 +922,7 @@ class MediaDao {
               ${DatabaseConstants.colMediaDateModified}
             ) AS sort_key
           FROM ${DatabaseConstants.tableMedia}
-          WHERE ${DatabaseConstants.colMediaIsVaulted} = 0
-            AND ${DatabaseConstants.colMediaIsTrash} = 0
+          WHERE ${DatabaseConstants.visibleMediaCondition()}
         )
         GROUP BY directory
         ORDER BY item_count DESC
@@ -899,6 +988,7 @@ class MediaDao {
         FROM ${DatabaseConstants.tableMedia}
         WHERE ${DatabaseConstants.colMediaIsVaulted} = ?
           AND ${DatabaseConstants.colMediaIsTrash} = ?
+          AND ${DatabaseConstants.colMediaIsOutOfReach} = 0
       ''',
         [vaultedOnly ? 1 : 0, includeTrash ? 1 : 0],
       );
@@ -953,26 +1043,7 @@ class MediaDao {
       var deleted = 0;
 
       await db.transaction((txn) async {
-        await txn.execute(
-          'CREATE TEMPORARY TABLE IF NOT EXISTS scan_seen_ids '
-          '(id TEXT PRIMARY KEY)',
-        );
-        await txn.execute('DELETE FROM scan_seen_ids');
-
-        for (var start = 0; start < ids.length; start += chunkSize) {
-          final chunk = ids.sublist(
-            start,
-            start + chunkSize > ids.length ? ids.length : start + chunkSize,
-          );
-          final batch = txn.batch();
-          for (final id in chunk) {
-            batch.rawInsert(
-              'INSERT OR IGNORE INTO scan_seen_ids (id) VALUES (?)',
-              [id],
-            );
-          }
-          await batch.commit(noResult: true);
-        }
+        await _fillSeenIds(txn, ids, chunkSize);
 
         deleted = await txn.rawDelete('''
           DELETE FROM ${DatabaseConstants.tableMedia}
@@ -987,6 +1058,120 @@ class MediaDao {
     } catch (e, st) {
       throw StorageException(
         'Failed to remove stale media rows: $e',
+        cause: e,
+        stackTrace: st,
+      );
+    }
+  }
+
+  /// Fills the temporary `scan_seen_ids` table with [ids].
+  ///
+  /// Chunked so each batch stays under the SQLite variable limit. The caller
+  /// drops the table when it is done.
+  Future<void> _fillSeenIds(
+    Transaction txn,
+    List<String> ids,
+    int chunkSize,
+  ) async {
+    await txn.execute(
+      'CREATE TEMPORARY TABLE IF NOT EXISTS scan_seen_ids '
+      '(id TEXT PRIMARY KEY)',
+    );
+    await txn.execute('DELETE FROM scan_seen_ids');
+
+    for (var start = 0; start < ids.length; start += chunkSize) {
+      final chunk = ids.sublist(
+        start,
+        start + chunkSize > ids.length ? ids.length : start + chunkSize,
+      );
+      final batch = txn.batch();
+      for (final id in chunk) {
+        batch.rawInsert('INSERT OR IGNORE INTO scan_seen_ids (id) VALUES (?)', [
+          id,
+        ]);
+      }
+      await batch.commit(noResult: true);
+    }
+  }
+
+  /// With limited access: shows the rows in [seenIds] and hides every other
+  /// non-vaulted row. Nothing is deleted, so tags, favourites and notes stay.
+  ///
+  /// Returns how many rows are hidden afterwards.
+  Future<int> markOutOfReachExcept(Set<String> seenIds) async {
+    try {
+      final db = await _db;
+      var hidden = 0;
+      await db.transaction((txn) async {
+        await _fillSeenIds(txn, seenIds.toList(growable: false), 500);
+        await txn.rawUpdate('''
+          UPDATE ${DatabaseConstants.tableMedia}
+          SET ${DatabaseConstants.colMediaIsOutOfReach} = CASE
+            WHEN ${DatabaseConstants.colId} IN (SELECT id FROM scan_seen_ids)
+            THEN 0 ELSE 1 END
+          WHERE ${DatabaseConstants.colMediaIsVaulted} = 0
+        ''');
+        final result = await txn.rawQuery('''
+          SELECT COUNT(*) AS count FROM ${DatabaseConstants.tableMedia}
+          WHERE ${DatabaseConstants.colMediaIsOutOfReach} = 1
+        ''');
+        hidden = (result.first['count'] as int?) ?? 0;
+        await txn.execute('DROP TABLE IF EXISTS scan_seen_ids');
+      });
+      return hidden;
+    } catch (e, st) {
+      throw StorageException(
+        'Failed to mark media out of reach: $e',
+        cause: e,
+        stackTrace: st,
+      );
+    }
+  }
+
+  /// With no media access at all: hides every row. Nothing is deleted.
+  Future<void> markAllOutOfReach() async {
+    try {
+      final db = await _db;
+      await db.update(DatabaseConstants.tableMedia, {
+        DatabaseConstants.colMediaIsOutOfReach: 1,
+      }, where: '${DatabaseConstants.colMediaIsOutOfReach} = 0');
+    } catch (e, st) {
+      throw StorageException(
+        'Failed to hide all media: $e',
+        cause: e,
+        stackTrace: st,
+      );
+    }
+  }
+
+  /// With full access again: shows every hidden row.
+  Future<void> clearOutOfReach() async {
+    try {
+      final db = await _db;
+      await db.update(DatabaseConstants.tableMedia, {
+        DatabaseConstants.colMediaIsOutOfReach: 0,
+      }, where: '${DatabaseConstants.colMediaIsOutOfReach} = 1');
+    } catch (e, st) {
+      throw StorageException(
+        'Failed to show hidden media: $e',
+        cause: e,
+        stackTrace: st,
+      );
+    }
+  }
+
+  /// Whether any row is hidden because access to it was limited or removed.
+  Future<bool> hasOutOfReach() async {
+    try {
+      final db = await _db;
+      final result = await db.rawQuery('''
+        SELECT 1 FROM ${DatabaseConstants.tableMedia}
+        WHERE ${DatabaseConstants.colMediaIsOutOfReach} = 1 LIMIT 1
+      ''');
+      return result.isNotEmpty;
+    } catch (e, st) {
+      throw StorageException(
+        'Failed to check for hidden media: $e',
         cause: e,
         stackTrace: st,
       );
@@ -1012,7 +1197,8 @@ class MediaDao {
         DatabaseConstants.tableMedia,
         where:
             '${DatabaseConstants.colMediaIsVaulted} = 0 '
-            'AND ${DatabaseConstants.colMediaIsTrash} = 0',
+            'AND ${DatabaseConstants.colMediaIsTrash} = 0 '
+            'AND ${DatabaseConstants.colMediaIsOutOfReach} = 0',
         orderBy: '${DatabaseConstants.colId} ASC',
         limit: limit,
         offset: offset,

@@ -9,7 +9,7 @@ class ViewerAppBar extends StatelessWidget {
   final MediaItem item;
   final VoidCallback onToggleFavorite;
   final VoidCallback onShowDetails;
-  final VoidCallback onMoveToTrash;
+  final VoidCallback onDelete;
   final VoidCallback onEdit;
   final VoidCallback onCompare;
   final VoidCallback onConvert;
@@ -27,7 +27,7 @@ class ViewerAppBar extends StatelessWidget {
     required this.item,
     required this.onToggleFavorite,
     required this.onShowDetails,
-    required this.onMoveToTrash,
+    required this.onDelete,
     required this.onEdit,
     required this.onCompare,
     required this.onConvert,
@@ -149,7 +149,7 @@ class ViewerAppBar extends StatelessWidget {
                           case _ViewerMenuAction.details:
                             onShowDetails();
                           case _ViewerMenuAction.trash:
-                            onMoveToTrash();
+                            onDelete();
                         }
                       },
                       itemBuilder: (context) =>
@@ -266,7 +266,7 @@ class ViewerAppBar extends StatelessWidget {
                                 child: ListTile(
                                   contentPadding: EdgeInsets.zero,
                                   leading: const Icon(Icons.delete_outline),
-                                  title: Text(l10n.titleBatchActionMoveToTrash),
+                                  title: Text(l10n.titleBatchActionDelete),
                                 ),
                               ),
                             ],

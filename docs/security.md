@@ -206,6 +206,30 @@ Before a file moves into the vault, or a vaulted file is removed:
 3. Flush to disk.
 4. Delete the file.
 
+**Vault deletes are always shredded.** Deleting from the vault (`VaultExportService.deleteForever`)
+always runs the shredder, with at least 1 pass. No setting turns this off, and none may be added.
+`test/services/vault/vault_export_service_test.dart` checks it.
+
+**Shredding a public original** (the vault import's "shred the original") goes through MediaStore
+(`MediaStoreChannel.secureDeleteMedia`), not the file path. On Android 11+ the app may read a photo
+it did not create but not write to it by path, so the old path-based shred failed quietly there.
+
+**Gallery Secure delete** (Settings → Safety, off by default). When on, "Delete permanently" from
+the gallery and every delete from the trash write over each file before removing it, using the same
+overwrite loop as the vault (`SecureOverwrite.kt`, 2 passes):
+
+- Android 11+: one "allow modify" system prompt for the whole set
+  (`MediaStore.createWriteRequest`), then a delete prompt only for files Android would not let the
+  app delete.
+- Android 10: Android asks once per file (`RecoverableSecurityException`); it has no batch prompt.
+- Android 9 and older: uses `WRITE_EXTERNAL_STORAGE` (declared up to API 28).
+
+If the user refuses the write prompt, nothing is touched. A file that was deleted but could not be
+written over is reported to the user as such; the app never says "securely deleted" for it.
+
+**Limit.** On flash storage the controller may keep old blocks where no file API can reach. This
+defeats undelete tools and casual recovery, not a laboratory. The settings text says so.
+
 ### 6.3 Zero cache leaks
 
 - Vault thumbnails are decrypted into memory only.
@@ -344,14 +368,15 @@ every release ([release_process.md](release_process.md) §6).
 
 ## 11. Permissions
 
-Our manifest declares exactly these 11 Android permissions, and nothing else. The merged release
-manifest holds 12: these 11 plus `in.sreerajp.imgvidgal.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION`.
+Our manifest declares exactly these 12 Android permissions, and nothing else. The merged release
+manifest holds 13: these 12 plus `in.sreerajp.imgvidgal.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION`.
 `androidx.core` defines that one as a signature-level permission private to this app, so that
 receivers it registers in code cannot be reached by other apps. It grants nothing to the app and
 the user never sees it.
-`WAKE_LOCK` (added by ExoPlayer) is removed with `tools:node="remove"`. So are `RECORD_AUDIO` and
-`WRITE_EXTERNAL_STORAGE`, which the `camera` plugin asks for: the pairing scan only reads preview
-frames, never records sound and never writes a file. The plugin's `camera.any` feature is marked
+`WAKE_LOCK` (added by ExoPlayer) is removed with `tools:node="remove"`. So is `RECORD_AUDIO`,
+which the `camera` plugin asks for: the pairing scan only reads preview frames and never records
+sound. The plugin also asks for `WRITE_EXTERNAL_STORAGE`; the manifest caps it at
+`maxSdkVersion="28"` (`tools:replace`), where the app needs it itself (see the table). The plugin's `camera.any` feature is marked
 not required, so a phone with no camera can still install the app and pair by typing the code.
 
 | Permission | Why It Is Needed | Requested When | Denial Handling |
@@ -367,6 +392,7 @@ not required, so a phone with no camera can still install the app and pair by ty
 | `ACCESS_WIFI_STATE` | Read the phone's own Wi-Fi address to bind the listener and build the pairing code. Not a connectivity check | Install time | — |
 | `ACCESS_NETWORK_STATE` | Declared with the transfer permissions. No app code calls `ConnectivityManager`; the need for it is not written down in the manifest — see §17 | Install time | — |
 | `CHANGE_WIFI_STATE` | Offer a scanned Wi-Fi code to Android as a network *suggestion*, on the in-image scanner screen only. The app never joins a network itself | Install time | Falls back to opening Wi-Fi settings |
+| `WRITE_EXTERNAL_STORAGE` (`maxSdkVersion=28`) | Android 9 and older only: delete, or write over and delete, a photo the app did not create ("Delete permanently", "Secure delete", vault "shred the original"). Android 10+ never sees it; there the app asks MediaStore per file | With the media permission (same group, no extra prompt); again before a delete if missing | The delete reports that nothing was deleted; the file stays |
 
 Permission review rules:
 
@@ -376,8 +402,19 @@ Permission review rules:
 - Adding any permission means updating this table, `CLAUDE.md`, `AGENTS.md` and the release
   check in [release_process.md](release_process.md) §6.
 - The user can read this table in the app: **Settings → Permissions** lists every permission
-  above, the merged-only receiver permission, and the three removed ones, each with its reason.
+  above, the merged-only receiver permission, and the two removed ones, each with its reason.
   The list lives in `lib/core/constants/app_permissions.dart`.
+
+**Limited or removed media access.** The app keeps its own index of photos, so a photo indexed
+while it had full access stays in the database after the user switches to "Allow limited access"
+or removes access. Such rows are kept, with their tags, favourites and notes, but marked
+`is_out_of_reach` by the scan, and every list leaves them out: timeline, search, folders, albums,
+tags, selection, counts, the duplicate finder, and the trash's "Restore all" and "Empty trash".
+The single-item screens treat a hidden item as not found, and an album skips a hidden cover. With
+no access at all, every row is hidden. When full access comes back, the next scan shows them
+again. Their cached thumbnails stay in app-private storage and are never shown while hidden; the
+encrypted backup still holds their metadata. Known limit: stored album and tag counts still
+include hidden items.
   `test/core/constants/app_permissions_test.dart` fails if it no longer matches the manifest, so
   adding a permission also means adding its row and its text in all three languages.
 
@@ -507,6 +544,14 @@ is held afterwards; the read grant is deliberately not persisted. Staging files 
 archive in the clear are app-private and deleted in a `finally` block, so an interrupted backup
 or restore leaves no readable copy behind.
 
+**Vault restore into a picked folder.** When a vault item's original folder no longer exists, the
+app does not re-create it and never writes a bare file name. It asks the user to pick a folder
+(`ACTION_OPEN_DOCUMENT_TREE`) or skip; a skipped item stays in the vault. The folder grant is used
+once and not persisted. `writeToFolder` always creates a new document, so the provider renames a
+clash rather than overwriting it, and a half-written file is deleted. It accepts a source only if
+it is a `.dec` working file directly inside the app's own vault folder, so the method cannot copy
+any other file. That working file is shredded after the copy, whatever happened.
+
 ---
 
 ## 15. Security Testing Strategy
@@ -575,7 +620,7 @@ Complete before every production release.
 - [ ] Sensitive data inventory updated.
 - [ ] Logging reviewed — no new log line exposes personal data.
 - [ ] Storage and backup behavior reviewed.
-- [ ] Merged manifest has exactly the 11 permissions in §11 plus AndroidX's private
+- [ ] Merged manifest has exactly the 12 permissions in §11 plus AndroidX's private
   `DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION` — no more, no fewer.
 - [ ] `test/services/sync/local_address_rules_test.dart` passes.
 - [ ] `--obfuscate` in every release build command.

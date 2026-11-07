@@ -274,6 +274,150 @@ void main() {
     expect(search.single[DatabaseConstants.colFtsTagsContent], 'holiday');
   });
 
+  test('v5 to v6 keeps one search row per photo', () async {
+    await seedOldDatabase(
+      version: 5,
+      withSearchTable: true,
+      seed: (db) async {
+        // A real FTS table has no unique key, which is how the old REPLACE
+        // save could leave copies. The plain stand-in table has one, so it is
+        // swapped for a keyless one here.
+        await db.execute('DROP TABLE media_search_fts;');
+        await db.execute(
+          'CREATE TABLE media_search_fts (media_id TEXT, display_name TEXT, '
+          'user_notes TEXT, tags_content TEXT, exif_search_text TEXT, '
+          'address TEXT);',
+        );
+        for (final name in <String>['first.jpg', 'copy.jpg', 'copy.jpg']) {
+          await db.insert('media_search_fts', <String, Object?>{
+            'media_id': 'm1',
+            'display_name': name,
+          });
+        }
+        await db.insert('media_search_fts', <String, Object?>{
+          'media_id': 'm2',
+          'display_name': 'other.jpg',
+        });
+      },
+    );
+
+    final db = await openWithHelper(dbPath);
+
+    final search = await db.query(
+      DatabaseConstants.tableMediaSearchFts,
+      orderBy: DatabaseConstants.colFtsMediaId,
+    );
+    expect(search, hasLength(2));
+    expect(search.first[DatabaseConstants.colFtsDisplayName], 'first.jpg');
+    expect(search.last[DatabaseConstants.colFtsMediaId], 'm2');
+  });
+
+  test('v6 to v7 adds the out-of-reach flag, 0 for old rows', () async {
+    await seedOldDatabase(version: 6, withSearchTable: true);
+
+    final db = await openWithHelper(dbPath);
+
+    final row = (await db.query(DatabaseConstants.tableMedia)).single;
+    expect(row[DatabaseConstants.colMediaIsOutOfReach], 0);
+    await expectLater(
+      db.update(DatabaseConstants.tableMedia, <String, Object?>{
+        DatabaseConstants.colMediaIsOutOfReach: 2,
+      }),
+      throwsA(isA<DatabaseException>()),
+    );
+  });
+
+  test('v7 to v8 fixes stale album and tag counts', () async {
+    await seedOldDatabase(
+      version: 7,
+      withSearchTable: true,
+      seed: (db) async {
+        await db.execute(
+          'ALTER TABLE media_items '
+          'ADD COLUMN is_out_of_reach INTEGER NOT NULL DEFAULT 0;',
+        );
+        await db.insert('media_items', <String, Object?>{
+          ..._mediaRow,
+          'id': 'm2',
+          'path': '/storage/emulated/0/DCIM/trashed.jpg',
+          'is_trash': 1,
+        });
+        await db.insert('albums', <String, Object?>{
+          'id': 'al',
+          'name': 'Trip',
+          'album_type': 'virtualAlbum',
+          'item_count': 5,
+          'date_created': 1,
+          'date_modified': 1,
+        });
+        await db.insert('tags', <String, Object?>{
+          'id': 'tg',
+          'name': 'Sea',
+          'color_value': 1,
+          'item_count': 5,
+          'date_created': 1,
+        });
+        for (final id in ['m1', 'm2']) {
+          await db.insert('album_media_entries', <String, Object?>{
+            'album_id': 'al',
+            'media_id': id,
+            'date_added': 1,
+          });
+          await db.insert('media_tag_entries', <String, Object?>{
+            'media_id': id,
+            'tag_id': 'tg',
+            'date_tagged': 1,
+          });
+        }
+      },
+    );
+
+    final db = await openWithHelper(dbPath);
+
+    final album = (await db.query(DatabaseConstants.tableAlbums)).single;
+    expect(album[DatabaseConstants.colAlbumItemCount], 1);
+    final tag = (await db.query(DatabaseConstants.tableTags)).single;
+    expect(tag[DatabaseConstants.colTagItemCount], 1);
+
+    // The triggers are live after the upgrade, too.
+    await db.update(
+      DatabaseConstants.tableMedia,
+      <String, Object?>{DatabaseConstants.colMediaIsTrash: 0},
+      where: '${DatabaseConstants.colId} = ?',
+      whereArgs: <Object?>['m2'],
+    );
+    expect(
+      (await db.query(
+        DatabaseConstants.tableAlbums,
+      )).single[DatabaseConstants.colAlbumItemCount],
+      2,
+    );
+  });
+
+  test(
+    'an upgraded database has the same count triggers as a fresh one',
+    () async {
+      Future<Set<String>> countObjects(Database db) async {
+        final rows = await db.rawQuery(
+          "SELECT name FROM sqlite_master WHERE name LIKE 'trg_%count%' "
+          "OR name = 'idx_album_media_media_id';",
+        );
+        return rows.map((r) => r['name']! as String).toSet();
+      }
+
+      await seedOldDatabase(version: 1, withSearchTable: true);
+      final upgraded = await countObjects(await openWithHelper(dbPath));
+      await helper!.close();
+
+      final fresh = await countObjects(
+        await openWithHelper(p.join(tempDir.path, 'fresh.db')),
+      );
+
+      expect(fresh, hasLength(10));
+      expect(upgraded, fresh);
+    },
+  );
+
   test('an upgraded database has the same columns as a fresh one', () async {
     await seedOldDatabase(version: 1, withSearchTable: true);
     final upgraded = await columnsOf(await openWithHelper(dbPath));

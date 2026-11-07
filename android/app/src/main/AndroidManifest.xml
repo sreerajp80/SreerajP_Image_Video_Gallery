@@ -79,16 +79,25 @@
         android:name="android.permission.WAKE_LOCK"
         tools:node="remove" />
 
-    <!-- The camera plugin asks for these for video recording and saving to
-         shared storage. The pairing scanner only reads preview frames, never
-         records sound and never writes a file, so both are removed from the
-         merge. The controller is created with enableAudio: false. -->
+    <!-- The camera plugin asks for this for video recording. The pairing
+         scanner only reads preview frames and never records sound, so it is
+         removed from the merge. The controller is created with
+         enableAudio: false. -->
     <uses-permission
         android:name="android.permission.RECORD_AUDIO"
         tools:node="remove" />
+
+    <!-- Write access to shared storage, for Android 9 (API 28) and below only.
+         Without it the app cannot delete, or overwrite before deleting, a
+         photo it did not create on those versions. It is used for the user's
+         own "Delete permanently" and "Secure delete" and nothing else.
+         Android 10+ never sees it: there the app asks MediaStore for each
+         file instead (scoped storage). The camera plugin also declares it;
+         maxSdkVersion here keeps the merged entry capped at 28. -->
     <uses-permission
         android:name="android.permission.WRITE_EXTERNAL_STORAGE"
-        tools:node="remove" />
+        android:maxSdkVersion="28"
+        tools:replace="android:maxSdkVersion" />
 
     <!-- The apps the in-image scanner may hand a code to. Android 11 and above
          hides other apps unless they are named here, and startActivity would
