@@ -9,7 +9,7 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
-  String get titleApp => 'SreerajP Gallery';
+  String get titleApp => 'Drishya Gallery';
 
   @override
   String get labelDevBanner => 'DEV BUILD';
@@ -3112,7 +3112,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get bodyDefaultAppDialog =>
-      'To make this your default gallery:\n\n1. Open any photo or video on your device (e.g. from Files, Downloads, or messages).\n2. Choose SreerajP Image Video Gallery and tap \'Always\'.\n\nIf another app already opens your photos, first clear its default: Android Settings → Apps → that app → Open by default.';
+      'To make this your default gallery:\n\n1. Open any photo or video on your device (e.g. from Files, Downloads, or messages).\n2. Choose Drishya Gallery and tap \'Always\'.\n\nIf another app already opens your photos, first clear its default: Android Settings → Apps → that app → Open by default.';
 
   @override
   String get titleTrash => 'Trash';

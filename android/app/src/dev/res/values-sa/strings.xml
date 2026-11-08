@@ -2,5 +2,5 @@
 <!-- Launcher name in this language. Must match appName in
      assets/config/app_config.json (guideline.md 1.8). -->
 <resources>
-    <string name="app_name">श्रीराजपी चित्रशाला Dev</string>
+    <string name="app_name">दृश्य Dev</string>
 </resources>

@@ -103,7 +103,7 @@ abstract class AppLocalizations {
   /// The title of the gallery application
   ///
   /// In en, this message translates to:
-  /// **'SreerajP Gallery'**
+  /// **'Drishya Gallery'**
   String get titleApp;
 
   /// Banner text indicating the development flavor
@@ -5329,7 +5329,7 @@ abstract class AppLocalizations {
   /// Instructions explaining how to make the app default in Android
   ///
   /// In en, this message translates to:
-  /// **'To make this your default gallery:\n\n1. Open any photo or video on your device (e.g. from Files, Downloads, or messages).\n2. Choose SreerajP Image Video Gallery and tap \'Always\'.\n\nIf another app already opens your photos, first clear its default: Android Settings → Apps → that app → Open by default.'**
+  /// **'To make this your default gallery:\n\n1. Open any photo or video on your device (e.g. from Files, Downloads, or messages).\n2. Choose Drishya Gallery and tap \'Always\'.\n\nIf another app already opens your photos, first clear its default: Android Settings → Apps → that app → Open by default.'**
   String get bodyDefaultAppDialog;
 
   /// Title of the trash screen

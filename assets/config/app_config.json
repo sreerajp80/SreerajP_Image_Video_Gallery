@@ -1,16 +1,16 @@
 {
   "appName": {
-    "en": "SreerajP Image Video Gallery",
-    "ml": "ശ്രീരാജ് പി ഇമേജ് വീഡിയോ ഗാലറി",
-    "sa": "श्रीराजपी चित्रदृश्यशाला"
+    "en": "Drishya Gallery",
+    "ml": "ദൃശ്യ",
+    "sa": "दृश्य"
   },
   "description": {
     "en": "Offline-first image and video gallery application for viewing, organizing, and managing local media.",
     "ml": "ഫോണിലെ ചിത്രങ്ങളും വീഡിയോകളും കാണാനും ക്രമീകരിക്കാനും കൈകാര്യം ചെയ്യാനുമുള്ള, ഇന്റർനെറ്റ് ഇല്ലാതെ പ്രവർത്തിക്കുന്ന ഗാലറി ആപ്പ്.",
     "sa": "स्थानीयचित्राणां दृश्यानां च दर्शनाय, व्यवस्थापनाय, प्रबन्धनाय च अन्तर्जालं विना कार्यं कुर्वन् चित्रशालानुप्रयोगः।"
   },
-  "version": "2.6.5",
-  "build": "23",
+  "version": "2.6.6",
+  "build": "24",
   "details": {
     "author": {
       "en": "Sreeraj P",

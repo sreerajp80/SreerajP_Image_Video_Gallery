@@ -9,7 +9,7 @@ class AppLocalizationsSa extends AppLocalizations {
   AppLocalizationsSa([String locale = 'sa']) : super(locale);
 
   @override
-  String get titleApp => 'श्रीराज पी चित्रशाला';
+  String get titleApp => 'दृश्य';
 
   @override
   String get labelDevBanner => 'विकाससंस्करणम्';
@@ -3122,7 +3122,7 @@ class AppLocalizationsSa extends AppLocalizations {
 
   @override
   String get bodyDefaultAppDialog =>
-      'इमां भवतः मुख्यचित्रशालां कर्तुम्:\n\n1. भवतः उपकरणे किमपि चित्रं दृश्यं वा उद्घाट्यताम् (यथा Files, Downloads, सन्देशेभ्यः वा)।\n2. SreerajP Image Video Gallery चित्वा \'Always\' स्पृश्यताम्।\n\nयदि अन्यः अनुप्रयोगः इदानीं चित्राणि उद्घाटयति, तर्हि प्रथमं तस्य पूर्वनिर्धारणं निष्कास्यताम्: Android विन्यासः → Apps → सः अनुप्रयोगः → Open by default।';
+      'इमां भवतः मुख्यचित्रशालां कर्तुम्:\n\n1. भवतः उपकरणे किमपि चित्रं दृश्यं वा उद्घाट्यताम् (यथा Files, Downloads, सन्देशेभ्यः वा)।\n2. \'दृश्य\' चित्वा \'Always\' स्पृश्यताम्।\n\nयदि अन्यः अनुप्रयोगः इदानीं चित्राणि उद्घाटयति, तर्हि प्रथमं तस्य पूर्वनिर्धारणं निष्कास्यताम्: Android विन्यासः → Apps → सः अनुप्रयोगः → Open by default।';
 
   @override
   String get titleTrash => 'अवकरपात्रम्';

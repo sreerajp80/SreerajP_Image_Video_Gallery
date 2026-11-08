@@ -1,6 +1,6 @@
-# Project Idea — SreerajP Image Video Gallery
+# Project Idea — Drishya Gallery
 
-This document is the product concept for the SreerajP Image Video Gallery app: what it does,
+This document is the product concept for the Drishya Gallery app: what it does,
 for whom, and the promises it makes about privacy and safety. Read it first when you need to
 know *why* a feature exists or *what* it should do. How it is built is in
 [architecture.md](architecture.md); how it is protected is in [security.md](security.md).

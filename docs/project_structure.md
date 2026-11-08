@@ -1,6 +1,6 @@
-# Project Structure — SreerajP Image Video Gallery
+# Project Structure — Drishya Gallery
 
-This document shows the folder layout of the SreerajP Image Video Gallery repository and what
+This document shows the folder layout of the Drishya Gallery repository and what
 each folder is for. Read it to find where something lives, or before you add a new folder. The
 layer rules themselves live in [architecture.md](architecture.md) §4; this file only maps them
 onto folders.

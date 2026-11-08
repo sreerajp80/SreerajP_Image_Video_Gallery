@@ -2,5 +2,5 @@
 <!-- Launcher name in this language. Must match appName in
      assets/config/app_config.json (guideline.md 1.8). -->
 <resources>
-    <string name="app_name">ശ്രീരാജ് പി ഇമേജ് വീഡിയോ ഗാലറി</string>
+    <string name="app_name">ദൃശ്യ</string>
 </resources>

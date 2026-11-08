@@ -1,8 +1,11 @@
 <p align="center">
-  <img src="docs/images/feature_graphic.png" alt="SreerajP Image Video Gallery: your photos stay on your phone" width="100%">
+  <img src="docs/images/feature_graphic.png" alt="Drishya Gallery: your photos stay on your phone" width="100%">
 </p>
 
-# SreerajP Image Video Gallery
+# Drishya Gallery
+
+*Formerly "SreerajP Image Video Gallery". In Malayalam the app is called ദൃശ്യ, and in Sanskrit
+दृश्य ("that which is seen").*
 
 An offline gallery for Android. It shows, organises and edits the photos and videos on your phone,
 and keeps private pictures in an encrypted vault. Everything happens on the phone itself: there is
@@ -180,8 +183,8 @@ The project has two build flavors. A bare `flutter run` fails, so always pass `-
 
 | Flavor | App ID | Name on the phone |
 |---|---|---|
-| `dev` | `in.sreerajp.imgvidgal.dev` | SreerajP Gallery Dev |
-| `prod` | `in.sreerajp.imgvidgal` | SreerajP Image Video Gallery |
+| `dev` | `in.sreerajp.imgvidgal.dev` | Drishya Gallery Dev |
+| `prod` | `in.sreerajp.imgvidgal` | Drishya Gallery |
 
 ```bash
 flutter run --flavor dev

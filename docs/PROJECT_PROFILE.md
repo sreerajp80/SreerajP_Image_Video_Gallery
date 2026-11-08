@@ -1,4 +1,4 @@
-# Project Profile — SreerajP Image Video Gallery
+# Project Profile — Drishya Gallery
 
 > Filled in from `docs/guidelines/PROJECT_PROFILE_TEMPLATE.md`. Every rule that depends on a platform,
 > store or language applies only when this file declares it (engineering standard §1.2.1).
@@ -36,7 +36,7 @@
 
 | Item | Value |
 |---|---|
-| App display name | SreerajP Image Video Gallery |
+| App display name | Drishya Gallery (Malayalam ദൃശ്യ, Sanskrit दृश्य; dev build adds " Dev"). Formerly "SreerajP Image Video Gallery" |
 | Short description (one line) | Offline-first image and video gallery application for viewing, organizing, and managing local media. |
 | Organization / publisher | Sreeraj P (proposed, confirmed by user) |
 | Reverse-DNS app id | `in.sreerajp.imgvidgal` |
@@ -77,6 +77,8 @@ Build flavors: `dev + prod`.
 - In-app language picker: required (3 languages).
 - Languages without a Flutter framework translation: `sa`.
 - Store-listing languages: Google Play `en-IN`, `ml-IN`. Sanskrit ships inside the app only.
+- Store-listing app name (limit 30): `en-IN` "Drishya: Photo & Video Gallery", `ml-IN`
+  "ദൃശ്യ: ഫോട്ടോ & വീഡിയോ ഗാലറി".
 - Native-reader reviewer for each non-template language: app maintainer.
 
 ## 5. About screen

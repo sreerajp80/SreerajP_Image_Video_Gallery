@@ -1,6 +1,6 @@
-# Workflow Rules — SreerajP Image Video Gallery
+# Workflow Rules — Drishya Gallery
 
-This document sets out how every change to the SreerajP Image Video Gallery repository is
+This document sets out how every change to the Drishya Gallery repository is
 planned, approved, made and logged. Every developer and every AI assistant follows it, with no
 exceptions. It is the detailed version of the workflow section in `CLAUDE.md` and `AGENTS.md`;
 if they ever disagree, fix whichever is wrong so they match.

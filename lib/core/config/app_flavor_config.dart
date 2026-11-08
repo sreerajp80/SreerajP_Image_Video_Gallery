@@ -11,9 +11,9 @@ enum AppFlavor {
   String get displayName {
     switch (this) {
       case AppFlavor.dev:
-        return 'SreerajP Gallery Dev';
+        return 'Drishya Gallery Dev';
       case AppFlavor.prod:
-        return 'SreerajP Image Video Gallery';
+        return 'Drishya Gallery';
     }
   }
 

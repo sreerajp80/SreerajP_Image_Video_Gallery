@@ -1,7 +1,8 @@
-# Privacy Policy — SreerajP Image Video Gallery
+# Privacy Policy — Drishya Gallery
 
 **Effective date:** 2 November 2026
-**App:** SreerajP Image Video Gallery (`in.sreerajp.imgvidgal`), for Android
+**App:** Drishya Gallery (`in.sreerajp.imgvidgal`), for Android. Formerly named "SreerajP Image
+Video Gallery"; only the name changed, not this policy.
 **Contact:** sreerajp@zohomail.in
 
 This policy explains what the app does with your information. In short: **the app collects

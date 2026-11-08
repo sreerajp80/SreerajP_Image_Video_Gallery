@@ -61,7 +61,11 @@ class AppConfig {
   /// Safe built-in value used when the config file is missing or malformed,
   /// so the app never crashes on a bad config.
   static const AppConfig fallback = AppConfig(
-    appName: LocalizedText.plain('SreerajP Image Video Gallery'),
+    appName: LocalizedText.byLocale({
+      'en': 'Drishya Gallery',
+      'ml': 'ദൃശ്യ',
+      'sa': 'दृश्य',
+    }),
     description: LocalizedText.plain(
       'Offline-first image and video gallery application.',
     ),

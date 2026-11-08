@@ -1,4 +1,4 @@
-# CLAUDE.md — SreerajP Image Video Gallery
+# CLAUDE.md — Drishya Gallery
 
 This file is read by Claude Code at the start of every session in this repository.
 Read it before making any change. See the docs table below for full detail.
@@ -9,7 +9,8 @@ Read it before making any change. See the docs table below for full detail.
 
 | Field | Value |
 |-------|-------|
-| App name | SreerajP Image Video Gallery |
+| App name | Drishya Gallery (Malayalam ദൃശ്യ, Sanskrit दृश्य). Formerly "SreerajP Image Video Gallery" |
+| Play Store name | `en-IN`: Drishya: Photo & Video Gallery · `ml-IN`: ദൃശ്യ: ഫോട്ടോ & വീഡിയോ ഗാലറി |
 | Type | Offline-first image and video gallery application for viewing, organizing, and managing local media |
 | Platform(s) | Android only (minSdk 24, targetSdk 36, compileSdk 36) |
 | Package / org id | in.sreerajp.imgvidgal |
@@ -97,8 +98,8 @@ flutter build appbundle --flavor prod --release \
 
 | Flavor | App ID | Display name | Signing |
 |--------|--------|--------------|---------|
-| dev | in.sreerajp.imgvidgal.dev | SreerajP Gallery Dev | Debug keystore (automatic) |
-| prod | in.sreerajp.imgvidgal | SreerajP Image Video Gallery | Release keystore (android/key.properties) |
+| dev | in.sreerajp.imgvidgal.dev | Drishya Gallery Dev | Debug keystore (automatic) |
+| prod | in.sreerajp.imgvidgal | Drishya Gallery | Release keystore (android/key.properties) |
 
 > Flutter ≥ 3.19 sets `FLUTTER_APP_FLAVOR` automatically; read it with `String.fromEnvironment('FLUTTER_APP_FLAVOR')`.
 

@@ -1,6 +1,6 @@
-# Implementation Progress — SreerajP Image Video Gallery
+# Implementation Progress — Drishya Gallery
 
-This living document tracks the implementation status across all phases of the SreerajP Image Video Gallery project. It is updated in place. Guideline gaps that are still open are listed in [known_gaps.md](known_gaps.md), not here.
+This living document tracks the implementation status across all phases of the Drishya Gallery project. It is updated in place. Guideline gaps that are still open are listed in [known_gaps.md](known_gaps.md), not here.
 
 **Last updated:** 2026-11-02  
 **Status:** All 14 build phases completed; guideline conformance work continues (see [known_gaps.md](known_gaps.md))

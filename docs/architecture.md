@@ -1,6 +1,6 @@
-# Architecture — SreerajP Image Video Gallery
+# Architecture — Drishya Gallery
 
-This document describes how the SreerajP Image Video Gallery app is built: its layers, start-up
+This document describes how the Drishya Gallery app is built: its layers, start-up
 order, state, data, navigation and build model. Read it before you add or change a model,
 service, repository, provider or screen. It follows the section order of the shared blueprint.
 A section marked `N/A` says why.
@@ -17,7 +17,7 @@ A section marked `N/A` says why.
 
 ## 1. Scope
 
-- **Product:** SreerajP Image Video Gallery (`in.sreerajp.imgvidgal`)
+- **Product:** Drishya Gallery (`in.sreerajp.imgvidgal`), formerly "SreerajP Image Video Gallery"
 - **Repository type:** application
 - **Engineering standard profiles in force:** `Core Baseline` + `Production App Extension` +
   `Sensitive Data Extension`

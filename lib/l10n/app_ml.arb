@@ -1,6 +1,6 @@
 {
   "@@locale": "ml",
-  "titleApp": "ശ്രീരാജ് പി ഗാലറി",
+  "titleApp": "ദൃശ്യ",
   "labelDevBanner": "ഡെവ് ബിൽഡ്",
   "titleSettings": "ക്രമീകരണങ്ങൾ",
   "titleAbout": "വിവരണം",
@@ -3625,7 +3625,7 @@
   "@titleDefaultAppDialog": {
     "description": "Title of dialog explaining how to set default app"
   },
-  "bodyDefaultAppDialog": "ഈ ആപ്പ് ഡിഫോൾട്ട് ആക്കുന്നതിന്:\n\n1. ഫോണിലെ ഏതെങ്കിലും ഫോട്ടോയോ വീഡിയോയോ തുറക്കുക (ഉദാഹരണത്തിന് Files അല്ലെങ്കിൽ Downloads-ൽ നിന്ന്).\n2. SreerajP ഗാലറി തിരഞ്ഞെടുത്ത് 'Always' നൽകുക.\n\nമറ്റൊരു ആപ്പ് ഇപ്പോൾ ഫോട്ടോകൾ തുറക്കുന്നുണ്ടെങ്കിൽ, ആദ്യം അതിന്റെ ഡിഫോൾട്ട് മാറ്റുക: ആൻഡ്രോയിഡ് സെറ്റിംഗ്സ് → Apps → ആ ആപ്പ് → Open by default.",
+  "bodyDefaultAppDialog": "ഈ ആപ്പ് ഡിഫോൾട്ട് ആക്കുന്നതിന്:\n\n1. ഫോണിലെ ഏതെങ്കിലും ഫോട്ടോയോ വീഡിയോയോ തുറക്കുക (ഉദാഹരണത്തിന് Files അല്ലെങ്കിൽ Downloads-ൽ നിന്ന്).\n2. 'ദൃശ്യ' തിരഞ്ഞെടുത്ത് 'Always' നൽകുക.\n\nമറ്റൊരു ആപ്പ് ഇപ്പോൾ ഫോട്ടോകൾ തുറക്കുന്നുണ്ടെങ്കിൽ, ആദ്യം അതിന്റെ ഡിഫോൾട്ട് മാറ്റുക: ആൻഡ്രോയിഡ് സെറ്റിംഗ്സ് → Apps → ആ ആപ്പ് → Open by default.",
   "@bodyDefaultAppDialog": {
     "description": "Instructions explaining how to make the app default in Android"
   },

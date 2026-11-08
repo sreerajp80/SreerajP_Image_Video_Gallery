@@ -1,6 +1,6 @@
-# Security — SreerajP Image Video Gallery
+# Security — Drishya Gallery
 
-This document is the security design for the SreerajP Image Video Gallery app: threat model,
+This document is the security design for the Drishya Gallery app: threat model,
 sensitive data, storage, crypto, permissions, logging, and the rules for the local transfer and
 scanner features. Read it before you change storage, crypto, the vault, permissions, the
 manifest, logging, backup, or anything that opens a socket or an intent. It follows the section
@@ -16,7 +16,7 @@ order of the shared blueprint; §19 and §20 are app-specific additions.
 
 ## 1. Security Scope
 
-- **Application:** SreerajP Image Video Gallery (`in.sreerajp.imgvidgal`)
+- **Application:** Drishya Gallery (`in.sreerajp.imgvidgal`)
 - **Data sensitivity:** high — private photos and videos, an encrypted vault, notes, and text
   read out of photos.
 - **Platform:** Android only (minSdk 24, targetSdk 36).

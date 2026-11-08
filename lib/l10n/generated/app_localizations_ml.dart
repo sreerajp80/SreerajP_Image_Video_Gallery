@@ -9,7 +9,7 @@ class AppLocalizationsMl extends AppLocalizations {
   AppLocalizationsMl([String locale = 'ml']) : super(locale);
 
   @override
-  String get titleApp => 'ശ്രീരാജ് പി ഗാലറി';
+  String get titleApp => 'ദൃശ്യ';
 
   @override
   String get labelDevBanner => 'ഡെവ് ബിൽഡ്';
@@ -3125,7 +3125,7 @@ class AppLocalizationsMl extends AppLocalizations {
 
   @override
   String get bodyDefaultAppDialog =>
-      'ഈ ആപ്പ് ഡിഫോൾട്ട് ആക്കുന്നതിന്:\n\n1. ഫോണിലെ ഏതെങ്കിലും ഫോട്ടോയോ വീഡിയോയോ തുറക്കുക (ഉദാഹരണത്തിന് Files അല്ലെങ്കിൽ Downloads-ൽ നിന്ന്).\n2. SreerajP ഗാലറി തിരഞ്ഞെടുത്ത് \'Always\' നൽകുക.\n\nമറ്റൊരു ആപ്പ് ഇപ്പോൾ ഫോട്ടോകൾ തുറക്കുന്നുണ്ടെങ്കിൽ, ആദ്യം അതിന്റെ ഡിഫോൾട്ട് മാറ്റുക: ആൻഡ്രോയിഡ് സെറ്റിംഗ്സ് → Apps → ആ ആപ്പ് → Open by default.';
+      'ഈ ആപ്പ് ഡിഫോൾട്ട് ആക്കുന്നതിന്:\n\n1. ഫോണിലെ ഏതെങ്കിലും ഫോട്ടോയോ വീഡിയോയോ തുറക്കുക (ഉദാഹരണത്തിന് Files അല്ലെങ്കിൽ Downloads-ൽ നിന്ന്).\n2. \'ദൃശ്യ\' തിരഞ്ഞെടുത്ത് \'Always\' നൽകുക.\n\nമറ്റൊരു ആപ്പ് ഇപ്പോൾ ഫോട്ടോകൾ തുറക്കുന്നുണ്ടെങ്കിൽ, ആദ്യം അതിന്റെ ഡിഫോൾട്ട് മാറ്റുക: ആൻഡ്രോയിഡ് സെറ്റിംഗ്സ് → Apps → ആ ആപ്പ് → Open by default.';
 
   @override
   String get titleTrash => 'ചവറ്റുകുട്ട';

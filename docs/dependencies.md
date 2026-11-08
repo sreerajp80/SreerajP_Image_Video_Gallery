@@ -1,4 +1,4 @@
-# Dependencies — SreerajP Image Video Gallery
+# Dependencies — Drishya Gallery
 
 This document lists every package in `pubspec.yaml`, its license and whether the code uses it,
 plus the packages that are blocked and the checklist for adding a new one. Read it before you

@@ -1,6 +1,6 @@
-# Release Process — SreerajP Image Video Gallery
+# Release Process — Drishya Gallery
 
-This is the release runbook for the SreerajP Image Video Gallery app: versioning, hardening,
+This is the release runbook for the Drishya Gallery app: versioning, hardening,
 signing, build commands, checks, the Google Play gate, rollback and evidence. Read it before you
 build or ship any production release. It follows the section order of the shared template;
 iOS and Windows sections are marked `N/A` because the app is Android only.
@@ -17,7 +17,7 @@ iOS and Windows sections are marked `N/A` because the app is Android only.
 
 ## 1. Release Scope
 
-- **App:** SreerajP Image Video Gallery (`in.sreerajp.imgvidgal`)
+- **App:** Drishya Gallery (`in.sreerajp.imgvidgal`)
 - **Release profile:** public
 - **Supported release platforms:** Android only (minSdk 24, targetSdk 36, compileSdk 36)
 - **Engineering standard profiles in force:** `Core Baseline` + `Production App Extension` +
@@ -61,9 +61,9 @@ iOS and Windows sections are marked `N/A` because the app is Android only.
 
 | Flavor | Application ID | Display Name | Signing | Mode | Purpose | Example Command |
 |---|---|---|---|---|---|---|
-| `dev` | `in.sreerajp.imgvidgal.dev` | SreerajP Gallery Dev | Debug keystore (automatic) | debug | Daily development | `flutter run --flavor dev` |
-| `dev` | `in.sreerajp.imgvidgal.dev` | SreerajP Gallery Dev | Debug keystore | release | Release-like testing | `flutter build apk --flavor dev --release` |
-| `prod` | `in.sreerajp.imgvidgal` | SreerajP Image Video Gallery | Release keystore (`android/key.properties`) | release | Store and direct release | See §9 |
+| `dev` | `in.sreerajp.imgvidgal.dev` | Drishya Gallery Dev | Debug keystore (automatic) | debug | Daily development | `flutter run --flavor dev` |
+| `dev` | `in.sreerajp.imgvidgal.dev` | Drishya Gallery Dev | Debug keystore | release | Release-like testing | `flutter build apk --flavor dev --release` |
+| `prod` | `in.sreerajp.imgvidgal` | Drishya Gallery | Release keystore (`android/key.properties`) | release | Store and direct release | See §9 |
 
 > `--flavor <name>` sets `FLUTTER_APP_FLAVOR` automatically. Do not pass it with
 > `--dart-define`. No other `--dart-define` values are needed.
@@ -381,6 +381,7 @@ These are the answers the gate asks for. They are facts about this app, not a co
 | Data safety answer | No data collected, no data shared. Data moves only device to device on the local network, at the user's request, encrypted in transit |
 | Accounts | None, so account deletion does not apply |
 | Ads | None |
+| Store listing app name | `en-IN`: "Drishya: Photo & Video Gallery" (30 characters). `ml-IN`: "ദൃശ്യ: ഫോട്ടോ & വീഡിയോ ഗാലറി"; if Play says it is too long, "ദൃശ്യ ഗാലറി". The launcher name is shorter: Drishya Gallery / ദൃശ്യ / दृश्य |
 | Listing languages | `en-IN` and `ml-IN`, with screenshots in each. Sanskrit is not a Play listing language; it ships inside the app only ([PROJECT_PROFILE.md](PROJECT_PROFILE.md) §4) |
 | Privacy policy URL, support contact | `PRIVACY.md` in the public repository, and the support email; both are rows in `assets/config/app_config.json` and shown on the About screen |
 

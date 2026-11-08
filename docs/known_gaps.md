@@ -1,4 +1,4 @@
-# Known Gaps — SreerajP Image Video Gallery
+# Known Gaps — Drishya Gallery
 
 This file lists what the shared guidelines require but the app does not do yet. Read it before
 you plan work on localization, the About screen, error handling or logging. Each gap names the
