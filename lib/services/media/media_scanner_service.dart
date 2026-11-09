@@ -90,12 +90,33 @@ class ScanResult {
   /// Permission state at the time of the scan.
   final MediaPermissionStatus permissionStatus;
 
+  /// Whether the scan walked the whole device list, not only new rows.
+  ///
+  /// A full pass may hide or show rows without counting them, so it always
+  /// counts as a change. Defaults to true, the safe side.
+  final bool fullPass;
+
   const ScanResult({
     required this.indexed,
     required this.skipped,
     required this.removed,
     required this.permissionStatus,
+    this.fullPass = true,
+    this.changed,
   });
+
+  /// Rows that were new or really changed, or null when not known.
+  ///
+  /// [indexed] counts every row read, and a quick pass always re-reads the
+  /// newest row, so [indexed] alone can never say "nothing changed".
+  final int? changed;
+
+  /// Whether the visible library may differ from before the scan.
+  ///
+  /// False only for a quick pass that wrote and removed nothing, which is
+  /// what most app opens and resumes are. Lists need no reload then.
+  bool get libraryChanged =>
+      fullPass || (changed ?? indexed) > 0 || removed > 0;
 }
 
 /// Scans the Android MediaStore and indexes what it finds into SQLite.
@@ -221,6 +242,8 @@ class MediaScannerService {
         skipped: pass.skipped,
         removed: removed,
         permissionStatus: permission,
+        fullPass: fullPass,
+        changed: pass.changed,
       );
     } on AppException {
       _emit(_progress.copyWith(phase: ScanPhase.failed));
@@ -256,6 +279,7 @@ class MediaScannerService {
     var scanned = 0;
     var skipped = 0;
     var indexed = 0;
+    var changed = 0;
     var offset = 0;
 
     while (true) {
@@ -281,7 +305,7 @@ class MediaScannerService {
       }
 
       if (items.isNotEmpty) {
-        await _mediaDao.batchUpsertMediaItems(items);
+        changed += await _mediaDao.batchUpsertMediaItems(items);
         indexed += items.length;
       }
 
@@ -302,6 +326,7 @@ class MediaScannerService {
       scanned: scanned,
       skipped: skipped,
       indexed: indexed,
+      changed: changed,
     );
   }
 
@@ -368,10 +393,14 @@ class _PassResult {
   final int skipped;
   final int indexed;
 
+  /// Rows that were new or had a changed Android-owned column.
+  final int changed;
+
   const _PassResult({
     required this.seenIds,
     required this.scanned,
     required this.skipped,
     required this.indexed,
+    required this.changed,
   });
 }

@@ -40,10 +40,14 @@ void main() {
         // counter, and the list then takes a moment to come back, like the
         // real database query.
         timelineItemsProvider.overrideWith((ref) {
-          if (ref.watch(_reloadCountProvider) == 0) return items;
-          return Future<void>.delayed(
-            const Duration(milliseconds: 50),
-          ).then((_) => items);
+          if (ref.watch(_reloadCountProvider) == 0) {
+            return Stream.value(items);
+          }
+          return Stream.fromFuture(
+            Future<void>.delayed(
+              const Duration(milliseconds: 50),
+            ).then((_) => items),
+          );
         }),
         viewerActionsProvider.overrideWith(_FakeViewerActions.new),
         for (final item in items) ...[

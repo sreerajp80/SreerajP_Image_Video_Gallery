@@ -88,10 +88,40 @@ final timelineFilterProvider = StateProvider<FilterOptions>((ref) {
   return const FilterOptions();
 });
 
+/// How many of the newest items are loaded first, so the timeline can draw
+/// before a large library has finished loading. A few screens' worth even at
+/// the densest grid.
+const int kTimelineFirstPageSize = 300;
+
 /// The indexed media backing the timeline.
-final timelineItemsProvider = FutureProvider<List<MediaItem>>((ref) async {
+///
+/// On a cold load it sends out the newest [kTimelineFirstPageSize] items
+/// first, then the full list. With 30,000 photos the first screen then shows
+/// almost at once instead of after the whole library is read.
+///
+/// The first page is skipped when the full list is already loaded (a reload
+/// after a delete or a new scan), so the grid does not shrink and grow back,
+/// and for any sort other than newest first, where the first page would not
+/// be the top of the timeline.
+final timelineItemsProvider = StreamProvider<List<MediaItem>>((ref) async* {
   final filter = ref.watch(timelineFilterProvider);
-  return ref.watch(mediaItemsProvider(filter).future);
+  final fullProvider = mediaItemsProvider(filter);
+
+  final newestFirst =
+      filter.sortBy == MediaSortField.dateTaken &&
+      filter.sortDirection == SortDirection.descending;
+  final alreadyLoaded =
+      ref.exists(fullProvider) && ref.read(fullProvider).hasValue;
+
+  if (newestFirst && !alreadyLoaded) {
+    // Asked before the full list so it is not queued behind it.
+    final firstPage = await ref
+        .read(mediaRepositoryProvider)
+        .getMediaItems(filter: filter, limit: kTimelineFirstPageSize);
+    yield firstPage;
+  }
+
+  yield await ref.watch(fullProvider.future);
 });
 
 /// The timeline grouped and flattened for the current grid density.

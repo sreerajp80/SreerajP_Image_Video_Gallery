@@ -192,10 +192,12 @@ void main() {
         final items = await repository.getMediaItems();
         expect(items.length, 2);
 
-        final result = await repository.deletePermanently([items.first]);
+        // Both rows share a date, so pick by id rather than by list position.
+        final target = items.singleWhere((item) => item.id == 'del1');
+        final result = await repository.deletePermanently([target]);
         expect(result.deleted, 1);
         expect(result.failed, 0);
-        expect(channel.deletedUris, contains(items.first.uri));
+        expect(channel.deletedUris, contains(target.uri));
         expect(await repository.getTotalCount(), 1);
 
         final remaining = await repository.getMediaItems();

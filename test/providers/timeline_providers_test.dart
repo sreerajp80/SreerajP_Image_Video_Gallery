@@ -28,11 +28,14 @@ final fixedNow = DateTime(2026, 8, 29, 14, 30);
 ProviderContainer containerWith(List<MediaItem> items) {
   final container = ProviderContainer(
     overrides: [
-      timelineItemsProvider.overrideWith((ref) async => items),
+      timelineItemsProvider.overrideWith((ref) => Stream.value(items)),
       timelineNowProvider.overrideWithValue(() => fixedNow),
     ],
   );
   addTearDown(container.dispose);
+  // The items come from a stream, which Riverpod pauses while nobody listens.
+  // On screen the timeline always listens; here the test has to.
+  container.listen(timelineItemsProvider, (_, _) {});
   return container;
 }
 

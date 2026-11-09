@@ -98,11 +98,18 @@ class MediaDao {
   ///
   /// Two statements rather than `ON CONFLICT DO UPDATE`, which needs SQLite
   /// 3.24; Android 7, the oldest version the app supports, ships an older one.
-  Future<void> batchUpsertMediaItems(List<MediaItem> items) async {
-    if (items.isEmpty) return;
+  ///
+  /// Returns how many rows were new or had an Android-owned column change.
+  /// An unchanged rescan returns 0, which lets the caller skip reloading the
+  /// whole library.
+  Future<int> batchUpsertMediaItems(List<MediaItem> items) async {
+    if (items.isEmpty) return 0;
     try {
       final db = await _db;
-      await db.transaction((txn) async {
+      return await db.transaction((txn) async {
+        final newCount = await _countMissingIds(txn, [
+          for (final item in items) item.id,
+        ]);
         final batch = txn.batch();
         for (final item in items) {
           final row = item.toMap();
@@ -125,7 +132,17 @@ class MediaDao {
             ...fresh,
           ]);
         }
-        await batch.commit(noResult: true);
+        final results = await batch.commit();
+
+        // Results alternate insert, update. A new row's update finds nothing
+        // to change (it was just inserted with the same values), so counting
+        // updates plus new rows does not count anything twice.
+        var updatedCount = 0;
+        for (var i = 1; i < results.length; i += 2) {
+          final changed = results[i];
+          if (changed is int && changed > 0) updatedCount++;
+        }
+        return newCount + updatedCount;
       });
     } catch (e, st) {
       throw StorageException(
@@ -373,7 +390,11 @@ class MediaDao {
       final sortDirection = filter.sortDirection == SortDirection.ascending
           ? 'ASC'
           : 'DESC';
-      final orderBy = '$sortColumn $sortDirection';
+      // The id breaks ties, so a first page read with LIMIT is always the
+      // exact start of the full list (the timeline loads both).
+      final orderBy =
+          '$sortColumn $sortDirection, '
+          '${DatabaseConstants.colId} $sortDirection';
 
       final results = await db.query(
         DatabaseConstants.tableMedia,
@@ -384,12 +405,7 @@ class MediaDao {
         offset: offset,
       );
 
-      final items = <MediaItem>[];
-      for (final row in results) {
-        final tags = await _getTagsForMedia(row['id'] as String);
-        items.add(MediaItem.fromMap(row, tags: tags));
-      }
-      return items;
+      return await _rowsToItems(db, results);
     } catch (e, st) {
       throw StorageException(
         'Failed to query media items: $e',
@@ -435,12 +451,7 @@ class MediaDao {
         [ftsQuery, limit, offset],
       );
 
-      final items = <MediaItem>[];
-      for (final row in results) {
-        final tags = await _getTagsForMedia(row['id'] as String);
-        items.add(MediaItem.fromMap(row, tags: tags));
-      }
-      return items;
+      return await _rowsToItems(db, results);
     } catch (e, st) {
       throw StorageException(
         'Failed to execute FTS5 search for "$query": $e',
@@ -863,12 +874,9 @@ class MediaDao {
         whereArgs: ids,
       );
 
-      final byId = <String, MediaItem>{};
-      for (final row in results) {
-        final id = row['id'] as String;
-        final tags = await _getTagsForMedia(id);
-        byId[id] = MediaItem.fromMap(row, tags: tags);
-      }
+      final byId = <String, MediaItem>{
+        for (final item in await _rowsToItems(db, results)) item.id: item,
+      };
 
       // Re-ordered to match the caller's list. SQL `IN` gives no order of its
       // own, and an album's whole point is the order it was given.
@@ -1214,6 +1222,86 @@ class MediaDao {
   }
 
   /// Helper to get tag names for a media item.
+  /// How many of [ids] have no row in the media table yet.
+  ///
+  /// Asked in chunks, because Android 7's SQLite allows only 999 bound
+  /// values in one statement.
+  Future<int> _countMissingIds(DatabaseExecutor db, List<String> ids) async {
+    var existing = 0;
+    for (var start = 0; start < ids.length; start += _maxIdsForTagInClause) {
+      final end = (start + _maxIdsForTagInClause) > ids.length
+          ? ids.length
+          : start + _maxIdsForTagInClause;
+      final chunk = ids.sublist(start, end);
+      final rows = await db.rawQuery(
+        'SELECT COUNT(*) AS c FROM ${DatabaseConstants.tableMedia} '
+        'WHERE ${DatabaseConstants.colId} IN '
+        '(${List.filled(chunk.length, '?').join(', ')})',
+        chunk,
+      );
+      existing += (rows.first['c'] as int?) ?? 0;
+    }
+    return ids.length - existing;
+  }
+
+  /// Above this many ids, every tag link is read at once instead of using
+  /// `IN (...)`. A very long `IN` list is slow to build and can pass SQLite's
+  /// bound-variable limit, while the tag link table stays small.
+  static const int _maxIdsForTagInClause = 500;
+
+  /// Turns query rows into [MediaItem]s, with tags read in one query.
+  ///
+  /// Reading tags row by row cost one database trip per photo, which made a
+  /// 30,000-photo timeline take many seconds to load. This keeps it at one.
+  Future<List<MediaItem>> _rowsToItems(
+    Database db,
+    List<Map<String, Object?>> rows,
+  ) async {
+    if (rows.isEmpty) return <MediaItem>[];
+    final ids = <String>[for (final row in rows) row['id'] as String];
+    final tagsById = await _getTagsForMediaIds(db, ids);
+    return <MediaItem>[
+      for (final row in rows)
+        MediaItem.fromMap(
+          row,
+          tags: tagsById[row['id'] as String] ?? const <String>[],
+        ),
+    ];
+  }
+
+  /// Tag names for each of [ids], read in a single query.
+  ///
+  /// Ids with no tags are simply missing from the map.
+  Future<Map<String, List<String>>> _getTagsForMediaIds(
+    Database db,
+    List<String> ids,
+  ) async {
+    if (ids.isEmpty) return const <String, List<String>>{};
+
+    final useInClause = ids.length <= _maxIdsForTagInClause;
+    final where = useInClause
+        ? 'WHERE mt.${DatabaseConstants.colMediaTagMediaId} IN '
+              '(${List.filled(ids.length, '?').join(', ')})'
+        : '';
+    final rows = await db.rawQuery('''
+      SELECT mt.${DatabaseConstants.colMediaTagMediaId} AS media_id,
+             t.${DatabaseConstants.colName} AS tag_name
+      FROM ${DatabaseConstants.tableTags} t
+      INNER JOIN ${DatabaseConstants.tableMediaTags} mt
+        ON t.${DatabaseConstants.colId} = mt.${DatabaseConstants.colMediaTagTagId}
+      $where
+    ''', useInClause ? ids : null);
+
+    final wanted = useInClause ? null : ids.toSet();
+    final result = <String, List<String>>{};
+    for (final row in rows) {
+      final mediaId = row['media_id'] as String;
+      if (wanted != null && !wanted.contains(mediaId)) continue;
+      (result[mediaId] ??= <String>[]).add(row['tag_name'] as String);
+    }
+    return result;
+  }
+
   Future<List<String>> _getTagsForMedia(String mediaId) async {
     final db = await _db;
     final rows = await db.rawQuery(

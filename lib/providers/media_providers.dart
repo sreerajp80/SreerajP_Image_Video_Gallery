@@ -93,13 +93,21 @@ class MediaScanController extends StateNotifier<AsyncValue<ScanResult?>> {
   final MediaPermissionService _permissionService;
   final VoidCallback? _onPermissionChecked;
 
+  /// Called when the indexed library may have changed, so lists reload.
+  ///
+  /// Not called for a quick scan that found nothing new, which is what most
+  /// app opens and resumes are: reloading 30,000 rows then is pure waste.
+  final VoidCallback? _onLibraryChanged;
+
   MediaScanController({
     required MediaRepository repository,
     required MediaPermissionService permissionService,
     VoidCallback? onPermissionChecked,
+    VoidCallback? onLibraryChanged,
   }) : _repository = repository,
        _permissionService = permissionService,
        _onPermissionChecked = onPermissionChecked,
+       _onLibraryChanged = onLibraryChanged,
        super(const AsyncValue<ScanResult?>.data(null));
 
   /// Asks for permission if needed, then scans and indexes the device.
@@ -119,13 +127,17 @@ class MediaScanController extends StateNotifier<AsyncValue<ScanResult?>> {
             permissionStatus: permission,
           ),
         );
+        _onLibraryChanged?.call();
         return;
       }
 
       final result = await _repository.scanDevice(incremental: incremental);
       state = AsyncValue<ScanResult?>.data(result);
+      if (result.libraryChanged) _onLibraryChanged?.call();
     } catch (e, st) {
       state = AsyncValue<ScanResult?>.error(e, st);
+      // A failed scan may have written part of its work, so reload to be safe.
+      _onLibraryChanged?.call();
     }
   }
 }
@@ -138,14 +150,24 @@ final mediaScanControllerProvider =
         permissionService: ref.watch(mediaPermissionServiceProvider),
         onPermissionChecked: () =>
             ref.invalidate(mediaPermissionStatusProvider),
+        onLibraryChanged: () =>
+            ref.read(mediaLibraryVersionProvider.notifier).state++,
       );
     });
+
+/// Goes up by one each time a scan may have changed the indexed library.
+///
+/// The media lists watch this instead of the scan state itself. The scan
+/// state changes twice per scan (running, then done) even when nothing new
+/// was found, and each change used to reload the whole library.
+final mediaLibraryVersionProvider = StateProvider<int>((ref) => 0);
 
 /// Indexed media items matching a filter.
 final mediaItemsProvider =
     FutureProvider.family<List<MediaItem>, FilterOptions>((ref, filter) async {
-      // Re-run whenever a scan finishes so new media appears without a restart.
-      ref.watch(mediaScanControllerProvider);
+      // Re-run when a scan changed the library, so new media appears without
+      // a restart, but not after a scan that found nothing new.
+      ref.watch(mediaLibraryVersionProvider);
       return ref.watch(mediaRepositoryProvider).getMediaItems(filter: filter);
     });
 
@@ -167,7 +189,7 @@ final mediaItemProvider = FutureProvider.family<MediaItem?, String>((
 
 /// Total number of indexed items.
 final indexedMediaCountProvider = FutureProvider<int>((ref) async {
-  ref.watch(mediaScanControllerProvider);
+  ref.watch(mediaLibraryVersionProvider);
   return ref.watch(mediaRepositoryProvider).getTotalCount();
 });
 
