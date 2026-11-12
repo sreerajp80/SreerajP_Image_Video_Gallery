@@ -145,7 +145,12 @@ The plans [20261102_192913](../plans/20261102_192913_guideline-batch-4-build-dat
 
 ## 2. Still open
 
-No gap is open. New gaps get the next number (G51).
+| Gap | What is open |
+|---|---|
+| G51 | The Device Sync text added on 2026-11-11 (46 keys in `app_sa.arb`, from `titleDeviceSync` to `labelQrSyncPreparing`) needs the owner's Sanskrit review, as G9 asks for new Sanskrit. |
+| G52 | Device Sync needs a check on two real phones: QR data sync of a small library (how fast the moving codes read), a Wi-Fi send of a folder with photos and videos (it should land as one folder), a send over the 5 GB cap then "Send the rest", Wi-Fi turned off half way, a receiver with little free space, and a 1 GB+ video. |
+
+New gaps get the next number (G53).
 
 **Still to check on a phone (owner):** every main screen in light and dark with gesture and button
 navigation (targetSdk 36 ends the edge-to-edge opt-out), OCR on one photo, the "Hide content"

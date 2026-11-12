@@ -40,6 +40,13 @@ class AppConstants {
   /// Number of MediaStore rows fetched per platform channel page.
   static const int scanBatchSize = 200;
 
+  /// `SharedPreferences` key for when the ghost-entry cleanup last ran, in
+  /// milliseconds since the epoch. Not sensitive: it is only a time.
+  static const String staleCleanupLastRunKey = 'stale_cleanup_last_run_ms';
+
+  /// The ghost-entry cleanup (Android 10) runs at most this often.
+  static const Duration staleCleanupInterval = Duration(hours: 24);
+
   /// Method channel name used for all Android MediaStore calls.
   static const String mediaStoreChannelName =
       'in.sreerajp.imgvidgal/mediastore';
@@ -522,7 +529,19 @@ class AppConstants {
 
   // Local peer-to-peer transfer
   /// Version of the wire protocol. A peer announcing anything else is refused.
-  static const int syncProtocolVersion = 1;
+  ///
+  /// 3 added the phone-move app data frames and vault entries.
+  static const int syncProtocolVersion = 3;
+
+  /// Largest compressed app-data packet a phone move sends, in bytes.
+  ///
+  /// A metadata-only backup of a very large library is a few tens of
+  /// megabytes before compression; this leaves room and still refuses a
+  /// peer that announces something absurd.
+  static const int syncMaxAppDataBytes = 32 * 1024 * 1024;
+
+  /// Largest size that packet may unpack to, in bytes.
+  static const int syncMaxAppDataInflatedBytes = 256 * 1024 * 1024;
 
   /// Port range the listener picks from.
   ///
@@ -583,7 +602,58 @@ class AppConstants {
   static const int syncManualCodeGroupCount = 6;
 
   /// Folder incoming files are written into, under the shared Pictures tree.
-  static const String syncReceiveDirectoryName = 'Gallery Transfers';
+  ///
+  /// Each sender folder gets its own subfolder here, so `Camera` on the other
+  /// phone becomes `Pictures/Drishya Sync/Camera`. Photos and videos both go
+  /// under Pictures, so one sender folder stays one folder here.
+  static const String syncReceiveDirectoryName = 'Drishya Sync';
+
+  /// Folder privacy-cleaned copies are saved into, under Pictures.
+  ///
+  /// The folder they always went to. Kept apart from the Device Sync folder,
+  /// so a cleaned copy is never mixed in with files from another phone.
+  static const String privacyExportDirectoryName = 'Gallery Transfers';
+
+  /// Most bytes one Wi-Fi send carries.
+  ///
+  /// Keeps each send short, about 5 to 10 minutes on home Wi-Fi, so an
+  /// interruption costs little. The rest goes in the next send.
+  static const int syncSendCapBytes = 5 * 1024 * 1024 * 1024;
+
+  /// Part of the receiver's free space that is never used, in per cent.
+  static const int syncFreeSpaceMarginPercent = 5;
+
+  /// Free space the receiver always keeps, whatever the per cent says.
+  static const int syncFreeSpaceMinReserveBytes = 200 * 1024 * 1024;
+
+  /// How often a connected side says "still here", in seconds.
+  ///
+  /// Keeps the session open while the sender picks folders or hashes files,
+  /// and lets each side notice quickly when the other one has gone.
+  static const int syncHeartbeatSeconds = 15;
+
+  /// Name of the app preference that holds this install's random id.
+  static const String syncInstallIdPrefKey = 'sync_install_id';
+
+  // Device Sync by QR (app data only, no photos)
+
+  /// Bytes of encrypted data carried by one animated-QR frame.
+  ///
+  /// About 560 characters once encoded, which a phone camera reads reliably
+  /// off another phone's screen. Bigger codes hold more but scan badly.
+  static const int qrSyncFrameDataBytes = 400;
+
+  /// Most frames one QR sync may use. Bigger data has to go over Wi-Fi.
+  static const int qrSyncMaxFrames = 150;
+
+  /// How long each animated-QR frame stays on screen, in milliseconds.
+  static const int qrSyncFrameMillis = 450;
+
+  /// Prefix of the key QR the receiver shows.
+  static const String qrSyncKeyPrefix = 'DRISHYA-QK1';
+
+  /// Prefix of every data frame the sender shows.
+  static const String qrSyncFramePrefix = 'DRISHYA-QD1';
 
   /// Name suffix used when an incoming file clashes with one already there.
   static const String syncReceiveSuffix = '_recv';

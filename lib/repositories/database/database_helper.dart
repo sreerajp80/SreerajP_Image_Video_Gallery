@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:in_sreerajp_imgvidgal/core/errors/app_exception.dart';
 import 'package:in_sreerajp_imgvidgal/core/logging/app_logger.dart';
 import 'package:in_sreerajp_imgvidgal/repositories/database/database_constants.dart';
+import 'package:in_sreerajp_imgvidgal/repositories/database/fts_support.dart';
 import 'package:path/path.dart' as p;
 import 'package:sqflite/sqflite.dart';
 import 'package:in_sreerajp_imgvidgal/repositories/database/column_value_rules.dart';
@@ -17,16 +18,52 @@ class DatabaseHelper {
   /// Database factory override (useful for ffi desktop/unit test support).
   final DatabaseFactory? _customFactory;
 
-  DatabaseHelper._internal({String? customPath, DatabaseFactory? customFactory})
-    : _customPath = customPath,
-      _customFactory = customFactory;
+  /// The search modules to try, in order. Tests pass their own list.
+  final List<FtsModule> _ftsCandidates;
+
+  /// The search module this device supports, found once before the first
+  /// open. Null means none works and search uses a plain table.
+  FtsModule? _ftsModule;
+  bool _ftsProbed = false;
+
+  /// The search table's columns. The first is the id column.
+  static const List<String> _ftsColumns = <String>[
+    DatabaseConstants.colFtsMediaId,
+    DatabaseConstants.colFtsDisplayName,
+    DatabaseConstants.colFtsUserNotes,
+    DatabaseConstants.colFtsTagsContent,
+    DatabaseConstants.colFtsExifSearchText,
+    DatabaseConstants.colFtsAddress,
+  ];
+
+  /// The triggers that copy `media_items` changes into the search table.
+  static const List<String> _ftsTriggers = <String>[
+    'trg_media_insert',
+    'trg_media_update',
+    'trg_media_delete',
+  ];
+
+  DatabaseHelper._internal({
+    String? customPath,
+    DatabaseFactory? customFactory,
+    List<FtsModule>? ftsCandidates,
+  }) : _customPath = customPath,
+       _customFactory = customFactory,
+       _ftsCandidates = ftsCandidates ?? FtsModule.preferred;
 
   /// Gets or creates the singleton instance.
-  factory DatabaseHelper({String? customPath, DatabaseFactory? customFactory}) {
-    if (customPath != null || customFactory != null) {
+  ///
+  /// [ftsCandidates] is for tests: the search modules to try, in order.
+  factory DatabaseHelper({
+    String? customPath,
+    DatabaseFactory? customFactory,
+    List<FtsModule>? ftsCandidates,
+  }) {
+    if (customPath != null || customFactory != null || ftsCandidates != null) {
       return DatabaseHelper._internal(
         customPath: customPath,
         customFactory: customFactory,
+        ftsCandidates: ftsCandidates,
       );
     }
     _instance ??= DatabaseHelper._internal();
@@ -39,10 +76,20 @@ class DatabaseHelper {
     if (currentDb != null && currentDb.isOpen) {
       return currentDb;
     }
-    final newDb = await _initDatabase();
-    _database = newDb;
-    return newDb;
+    // Callers at app start ask at the same moment; they share one open, so
+    // the probe and the search table check run once.
+    final opening = _opening ??= _initDatabase();
+    try {
+      final newDb = await opening;
+      _database = newDb;
+      return newDb;
+    } finally {
+      if (identical(_opening, opening)) _opening = null;
+    }
   }
+
+  /// The open in progress, shared by everyone who asks meanwhile.
+  Future<Database>? _opening;
 
   /// Initializes the SQLite database and executes migrations if needed.
   Future<Database> _initDatabase() async {
@@ -58,6 +105,17 @@ class DatabaseHelper {
         dbPath = p.join(databasesPath, DatabaseConstants.databaseName);
       }
 
+      if (!_ftsProbed) {
+        _ftsModule = await FtsSupport.probe(
+          dbFactory,
+          candidates: _ftsCandidates,
+        );
+        _ftsProbed = true;
+      }
+
+      // Must run on its own connection before the real open: see the method.
+      await _removeUnusableSearchTable(dbFactory, dbPath);
+
       return await dbFactory.openDatabase(
         dbPath,
         options: OpenDatabaseOptions(
@@ -65,6 +123,7 @@ class DatabaseHelper {
           onConfigure: _onConfigure,
           onCreate: _onCreate,
           onUpgrade: _onUpgrade,
+          onOpen: _onOpen,
         ),
       );
     } catch (e, st) {
@@ -91,7 +150,101 @@ class DatabaseHelper {
     }
   }
 
-  /// Creates initial tables, indexes, triggers, and FTS5 virtual table.
+  /// Removes a search table that this device's SQLite cannot use, with its
+  /// triggers, so the next open can build a working one.
+  ///
+  /// Old SQLite (3.22, Android 10) keeps the row of a failed
+  /// `CREATE VIRTUAL TABLE ... USING fts5` when it ran inside a transaction,
+  /// as `onCreate` does. Every write to `media_items` then fails with
+  /// `no such module: fts5`. `DROP TABLE` fails the same way, so the row is
+  /// deleted from `sqlite_master` directly. That SQLite keeps the old table in
+  /// the connection's memory until the connection closes, so this uses its
+  /// own short connection; [_onOpen] then builds the table on a fresh one.
+  ///
+  /// On a healthy database this only reads.
+  Future<void> _removeUnusableSearchTable(
+    DatabaseFactory dbFactory,
+    String dbPath,
+  ) async {
+    if (dbPath == inMemoryDatabasePath) return;
+    if (!await dbFactory.databaseExists(dbPath)) return;
+
+    const table = DatabaseConstants.tableMediaSearchFts;
+    // Its own connection: a shared one could be the app's, and closing it
+    // here would close the app's database too.
+    final db = await dbFactory.openDatabase(
+      dbPath,
+      options: OpenDatabaseOptions(singleInstance: false),
+    );
+    try {
+      final rows = await db.rawQuery(
+        "SELECT sql, rootpage FROM sqlite_master WHERE type = 'table' AND name = ?;",
+        <Object?>[table],
+      );
+      if (rows.isEmpty) return;
+      try {
+        await db.rawQuery('SELECT 1 FROM $table LIMIT 0;');
+        return;
+      } catch (error) {
+        if (!FtsSupport.isMissingModuleError(error)) rethrow;
+      }
+
+      // Only a virtual table has no storage of its own (rootpage 0). Never
+      // touch anything else through writable_schema.
+      final sql = (rows.single['sql'] as String? ?? '').trimLeft();
+      final rootPage = rows.single['rootpage'] as int?;
+      if (rootPage != 0 ||
+          !sql.toUpperCase().startsWith('CREATE VIRTUAL TABLE')) {
+        AppLogger.warning(
+          'Search table is unusable but not a virtual table; left as is',
+        );
+        return;
+      }
+
+      AppLogger.warning(
+        'Search table uses a module this SQLite lacks; rebuilding it',
+      );
+      await db.transaction((txn) async {
+        for (final trigger in _ftsTriggers) {
+          await txn.execute('DROP TRIGGER IF EXISTS $trigger;');
+        }
+        await txn.execute('PRAGMA writable_schema = ON;');
+        try {
+          await txn.rawDelete(
+            "DELETE FROM sqlite_master WHERE type = 'table' AND name = ? "
+            'AND rootpage = 0;',
+            <Object?>[table],
+          );
+        } finally {
+          await txn.execute('PRAGMA writable_schema = OFF;');
+        }
+      });
+    } finally {
+      await db.close();
+    }
+  }
+
+  /// Builds the search table, its triggers and its rows when it is missing,
+  /// for example after [_removeUnusableSearchTable] removed a broken one.
+  Future<void> _onOpen(Database db) async {
+    if (await _searchTableExists(db)) return;
+    await db.transaction((txn) async {
+      await _createFtsTableAndTriggers(txn);
+      await _backfillSearchIndex(txn);
+    });
+    AppLogger.info('Search table rebuilt');
+  }
+
+  /// True when the search table has a row in the schema.
+  Future<bool> _searchTableExists(DatabaseExecutor db) async {
+    final tables = await db.rawQuery(
+      "SELECT name FROM sqlite_master WHERE type='table' AND name=?;",
+      <Object?>[DatabaseConstants.tableMediaSearchFts],
+    );
+    return tables.isNotEmpty;
+  }
+
+  /// Creates initial tables, indexes, triggers, and the search table.
   Future<void> _onCreate(Database db, int version) async {
     final batch = db.batch();
 
@@ -244,6 +397,32 @@ class DatabaseHelper {
 
     // 8. Triggers that keep the saved album and tag counts right
     await _createCountTriggers(db);
+
+    // 9. What was sent to which phone over Wi-Fi
+    await _createSyncMarksTable(db);
+  }
+
+  /// The table that remembers which files went to which other phone.
+  ///
+  /// A mark goes with its photo: deleting the media row deletes its marks.
+  Future<void> _createSyncMarksTable(Database db) async {
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS ${DatabaseConstants.tableSyncMarks} (
+        ${DatabaseConstants.colSyncMarkMediaId} TEXT NOT NULL,
+        ${DatabaseConstants.colSyncMarkPeerId} TEXT NOT NULL,
+        ${DatabaseConstants.colSyncMarkSha256} TEXT NOT NULL,
+        ${DatabaseConstants.colSyncMarkSizeBytes} INTEGER NOT NULL,
+        ${DatabaseConstants.colSyncMarkSentAt} INTEGER NOT NULL,
+        PRIMARY KEY (${DatabaseConstants.colSyncMarkMediaId}, ${DatabaseConstants.colSyncMarkPeerId}),
+        FOREIGN KEY (${DatabaseConstants.colSyncMarkMediaId})
+          REFERENCES ${DatabaseConstants.tableMedia} (${DatabaseConstants.colId})
+          ON DELETE CASCADE
+      );
+    ''');
+    await db.execute(
+      'CREATE INDEX IF NOT EXISTS idx_sync_marks_peer ON '
+      '${DatabaseConstants.tableSyncMarks} (${DatabaseConstants.colSyncMarkPeerId});',
+    );
   }
 
   /// SQL for the number of visible photos linked to one album.
@@ -400,84 +579,24 @@ class DatabaseHelper {
     );
   }
 
-  /// Creates the full-text search table with graceful fallback, followed by
-  /// synchronization triggers.
+  /// Creates the full-text search table, followed by its sync triggers.
   ///
-  /// Android OS SQLite does not include FTS5 (`no such module: fts5`), but
-  /// provides FTS4 across all supported API levels. On desktop/test environments
-  /// FTS5 may be available while FTS4 is not. This method tries FTS5 first, then
-  /// FTS4 with unicode61 tokenizer, then plain FTS4, and finally a standard table
-  /// so that the database never fails to initialize.
-  Future<void> _createFtsTableAndTriggers(Database db) async {
-    bool createdFts = false;
-
-    // 1. Try FTS5 (typical in desktop/test environments)
-    try {
-      await db.execute('''
-        CREATE VIRTUAL TABLE IF NOT EXISTS ${DatabaseConstants.tableMediaSearchFts} USING fts5(
-          ${DatabaseConstants.colFtsMediaId} UNINDEXED,
-          ${DatabaseConstants.colFtsDisplayName},
-          ${DatabaseConstants.colFtsUserNotes},
-          ${DatabaseConstants.colFtsTagsContent},
-          ${DatabaseConstants.colFtsExifSearchText},
-          ${DatabaseConstants.colFtsAddress},
-          tokenize = 'unicode61'
-        );
-      ''');
-      createdFts = true;
-    } catch (error) {
-      AppLogger.info('FTS5 is not available; trying FTS4');
-      // FTS5 unavailable, try FTS4 below.
-    }
-
-    // 2. Try FTS4 with unicode61 tokenizer (standard on Android)
-    if (!createdFts) {
-      try {
-        await db.execute('''
-          CREATE VIRTUAL TABLE IF NOT EXISTS ${DatabaseConstants.tableMediaSearchFts} USING fts4(
-            ${DatabaseConstants.colFtsMediaId},
-            ${DatabaseConstants.colFtsDisplayName},
-            ${DatabaseConstants.colFtsUserNotes},
-            ${DatabaseConstants.colFtsTagsContent},
-            ${DatabaseConstants.colFtsExifSearchText},
-            ${DatabaseConstants.colFtsAddress},
-            notindexed=${DatabaseConstants.colFtsMediaId},
-            tokenize=unicode61
-          );
-        ''');
-        createdFts = true;
-      } catch (error) {
-        AppLogger.info('FTS4 with options is not available; trying basic FTS4');
-        // Fall through to basic FTS4
-      }
-    }
-
-    // 3. Try basic FTS4 without tokenizer
-    if (!createdFts) {
-      try {
-        await db.execute('''
-          CREATE VIRTUAL TABLE IF NOT EXISTS ${DatabaseConstants.tableMediaSearchFts} USING fts4(
-            ${DatabaseConstants.colFtsMediaId},
-            ${DatabaseConstants.colFtsDisplayName},
-            ${DatabaseConstants.colFtsUserNotes},
-            ${DatabaseConstants.colFtsTagsContent},
-            ${DatabaseConstants.colFtsExifSearchText},
-            ${DatabaseConstants.colFtsAddress},
-            notindexed=${DatabaseConstants.colFtsMediaId}
-          );
-        ''');
-        createdFts = true;
-      } catch (error) {
-        AppLogger.warning(
-          'FTS4 is not available; search uses a plain table',
-          error: error,
-        );
-        // Fall through to plain table
-      }
-    }
-
-    // 4. Last-resort fallback: standard table so the app never crashes
-    if (!createdFts) {
+  /// Uses the module found by [FtsSupport.probe] before the database was
+  /// opened, or a plain table when no module works. It never tries a module
+  /// here and catches the failure: on old SQLite a failed
+  /// `CREATE VIRTUAL TABLE` inside a transaction leaves a broken table behind
+  /// (see [_removeUnusableSearchTable]).
+  Future<void> _createFtsTableAndTriggers(DatabaseExecutor db) async {
+    final module = _ftsModule;
+    if (module != null) {
+      await db.execute(
+        module.createTableSql(
+          DatabaseConstants.tableMediaSearchFts,
+          _ftsColumns,
+        ),
+      );
+    } else {
+      AppLogger.warning('No full-text module; search uses a plain table');
       await db.execute('''
         CREATE TABLE IF NOT EXISTS ${DatabaseConstants.tableMediaSearchFts} (
           ${DatabaseConstants.colFtsMediaId} TEXT PRIMARY KEY,
@@ -552,10 +671,7 @@ class DatabaseHelper {
       // fallback support. If a previous migration or initial open failed
       // due to missing FTS5, this recreates the search index properly.
       if (oldVersion < 3) {
-        final tables = await db.rawQuery(
-          "SELECT name FROM sqlite_master WHERE type='table' AND name='${DatabaseConstants.tableMediaSearchFts}';",
-        );
-        if (tables.isEmpty) {
+        if (!await _searchTableExists(db)) {
           await _createFtsTableAndTriggers(db);
         }
       }
@@ -604,6 +720,12 @@ class DatabaseHelper {
         await _createCountTriggers(db);
         await _recountAllAlbumsAndTags(db);
       }
+
+      // v9: Device Sync remembers which files went to which other phone, so
+      // the next send can carry only the rest. A new, empty table.
+      if (oldVersion < 9) {
+        await _createSyncMarksTable(db);
+      }
     } catch (e, st) {
       throw DatabaseMigrationException(
         'Failed to migrate database from version $oldVersion to $newVersion: $e',
@@ -631,11 +753,7 @@ class DatabaseHelper {
   /// Does nothing when the search table does not exist, which happens on a
   /// device whose SQLite had neither FTS5 nor FTS4.
   Future<void> _removeDuplicateSearchRows(Database db) async {
-    final tables = await db.rawQuery(
-      "SELECT name FROM sqlite_master WHERE type='table' AND name=?;",
-      <Object?>[DatabaseConstants.tableMediaSearchFts],
-    );
-    if (tables.isEmpty) return;
+    if (!await _searchTableExists(db)) return;
 
     await db.execute(
       'DELETE FROM ${DatabaseConstants.tableMediaSearchFts} '
@@ -647,7 +765,11 @@ class DatabaseHelper {
 
   /// Indexes every media row that has no search row, filled the way the
   /// insert trigger fills it, plus the item's tag names.
-  Future<void> _backfillSearchIndex(Database db) async {
+  ///
+  /// Does nothing when the search table is missing; [_onOpen] builds and
+  /// fills it then.
+  Future<void> _backfillSearchIndex(DatabaseExecutor db) async {
+    if (!await _searchTableExists(db)) return;
     await db.execute('''
       INSERT INTO ${DatabaseConstants.tableMediaSearchFts} (
         ${DatabaseConstants.colFtsMediaId},

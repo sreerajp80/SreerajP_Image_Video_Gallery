@@ -33,6 +33,10 @@ import 'package:in_sreerajp_imgvidgal/screens/viewer/media_viewer_screen.dart';
 import 'package:in_sreerajp_imgvidgal/screens/vault/vault_gate_screen.dart';
 import 'package:in_sreerajp_imgvidgal/screens/vault/vault_settings_screen.dart';
 import 'package:in_sreerajp_imgvidgal/screens/vault/vault_viewer_screen.dart';
+import 'package:in_sreerajp_imgvidgal/screens/sync/device_sync_screen.dart';
+import 'package:in_sreerajp_imgvidgal/screens/sync/qr_sync_receive_screen.dart';
+import 'package:in_sreerajp_imgvidgal/screens/sync/qr_sync_send_screen.dart';
+import 'package:in_sreerajp_imgvidgal/screens/sync/send_start_screen.dart';
 import 'package:in_sreerajp_imgvidgal/screens/sync/sync_home_screen.dart';
 import 'package:in_sreerajp_imgvidgal/screens/sync/sync_receive_screen.dart';
 import 'package:in_sreerajp_imgvidgal/screens/sync/sync_send_screen.dart';
@@ -141,6 +145,19 @@ const String kRouteSyncReceive = '$kRouteSync/receive';
 
 /// Route path of the sending half, which reads the other phone's code.
 const String kRouteSyncSend = '$kRouteSync/send';
+
+/// Route path of the start of a send: a quick send of selected photos, or a
+/// move to a new phone. Which one is said by `transferPurposeProvider`.
+const String kRouteSyncStartSend = '$kRouteSync/start-send';
+
+/// Route path of Settings › Device Sync.
+const String kRouteDeviceSync = '/device-sync';
+
+/// Route path of sending app data by QR codes.
+const String kRouteDeviceSyncQrSend = '$kRouteDeviceSync/qr-send';
+
+/// Route path of receiving app data by QR codes.
+const String kRouteDeviceSyncQrReceive = '$kRouteDeviceSync/qr-receive';
 
 /// Route path of the private vault.
 ///
@@ -383,6 +400,24 @@ final GoRouter appRouter = GoRouter(
             GoRoute(
               path: 'send',
               builder: (context, state) => const SyncSendScreen(),
+            ),
+            GoRoute(
+              path: 'start-send',
+              builder: (context, state) => const SendStartScreen(),
+            ),
+          ],
+        ),
+        GoRoute(
+          path: 'device-sync',
+          builder: (context, state) => const DeviceSyncScreen(),
+          routes: <RouteBase>[
+            GoRoute(
+              path: 'qr-send',
+              builder: (context, state) => const QrSyncSendScreen(),
+            ),
+            GoRoute(
+              path: 'qr-receive',
+              builder: (context, state) => const QrSyncReceiveScreen(),
             ),
           ],
         ),

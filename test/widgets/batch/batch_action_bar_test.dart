@@ -12,10 +12,15 @@ import 'package:in_sreerajp_imgvidgal/repositories/tag_repository.dart';
 import 'package:in_sreerajp_imgvidgal/models/batch/batch_action.dart';
 import 'package:in_sreerajp_imgvidgal/models/batch/batch_options.dart';
 import 'package:in_sreerajp_imgvidgal/models/batch/batch_outcome.dart';
+import 'package:in_sreerajp_imgvidgal/models/media/delete_confirm_info.dart';
+import 'package:in_sreerajp_imgvidgal/models/media/media_delete_result.dart';
+import 'package:in_sreerajp_imgvidgal/providers/media_providers.dart';
 import 'package:in_sreerajp_imgvidgal/providers/batch_providers.dart';
 import 'package:in_sreerajp_imgvidgal/providers/trash_providers.dart';
 import 'package:in_sreerajp_imgvidgal/widgets/batch/batch_action_bar.dart';
 import 'package:in_sreerajp_imgvidgal/core/l10n/sanskrit_fallback_delegates.dart';
+
+import '../../services/media/fake_media_store_channel.dart';
 
 class FakeTagRepo implements TagRepository {
   final List<Tag> tags;
@@ -76,13 +81,107 @@ class _FakeBatchController extends BatchController {
 class _FakeTrashController extends TrashController {
   final List<List<String>> restored;
 
-  _FakeTrashController({required super.ref, required this.restored});
+  /// Gets one entry per permanent delete asked for.
+  final List<int> deletes;
+
+  _FakeTrashController({
+    required super.ref,
+    required this.restored,
+    List<int>? deletes,
+  }) : deletes = deletes ?? <int>[];
 
   @override
   Future<void> restoreItems(List<String> ids) async => restored.add(ids);
+
+  @override
+  Future<MediaDeleteResult> deleteItems(List<MediaItem> items) async {
+    deletes.add(items.length);
+    return MediaDeleteResult(
+      deleted: items.length,
+      overwritten: 0,
+      failed: 0,
+      secure: false,
+    );
+  }
 }
 
 void main() {
+  /// Picks "Delete permanently" for one selected item, with [info] as the
+  /// answer to "will Android ask?". Stops before any app dialog is answered.
+  Future<List<int>> startPermanentDelete(
+    WidgetTester tester,
+    DeleteConfirmInfo info,
+  ) async {
+    final item = _sampleItem('photo1');
+    final channel = FakeMediaStoreChannel()..deleteInfo = info;
+    final deletes = <int>[];
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          selectedMediaProvider.overrideWith((ref) async => [item]),
+          mediaStoreChannelProvider.overrideWithValue(channel),
+          trashControllerProvider.overrideWith(
+            (ref) => _FakeTrashController(
+              ref: ref,
+              restored: <List<String>>[],
+              deletes: deletes,
+            ),
+          ),
+        ],
+        child: const MaterialApp(
+          localizationsDelegates: appLocalizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(bottomNavigationBar: BatchActionBar()),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.widgetWithText(InkWell, 'Delete'));
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.byKey(const ValueKey<String>('delete_choice_permanent')),
+    );
+    await tester.pumpAndSettle();
+    return deletes;
+  }
+
+  testWidgets('permanent delete skips the app dialog when Android will ask', (
+    tester,
+  ) async {
+    final deletes = await startPermanentDelete(
+      tester,
+      const DeleteConfirmInfo(
+        systemConfirmsDelete: true,
+        manageMediaSupported: true,
+        manageMediaGranted: false,
+      ),
+    );
+    expect(find.byType(AlertDialog), findsNothing);
+    expect(deletes, <int>[1]);
+  });
+
+  testWidgets(
+    'permanent delete shows the app dialog when Android will not ask',
+    (tester) async {
+      final deletes = await startPermanentDelete(
+        tester,
+        const DeleteConfirmInfo(
+          systemConfirmsDelete: false,
+          manageMediaSupported: true,
+          manageMediaGranted: true,
+        ),
+      );
+      expect(find.byType(AlertDialog), findsOneWidget);
+      expect(deletes, isEmpty);
+
+      // Cancel: nothing is deleted.
+      await tester.tap(find.widgetWithText(TextButton, 'Cancel'));
+      await tester.pumpAndSettle();
+      expect(deletes, isEmpty);
+    },
+  );
+
   Future<List<List<String>>> runTrash(
     WidgetTester tester,
     BatchOutcome outcome,

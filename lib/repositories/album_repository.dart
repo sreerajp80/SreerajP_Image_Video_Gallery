@@ -48,6 +48,7 @@ class AlbumRepository {
   /// Every user-made album as a grid row, with its cover resolved.
   Future<List<AlbumSummary>> getVirtualAlbumSummaries() async {
     final albums = await getVirtualAlbums();
+    final sizes = await _albumDao.getAlbumSizes();
     final summaries = <AlbumSummary>[];
     for (final album in albums) {
       summaries.add(
@@ -57,6 +58,7 @@ class AlbumRepository {
           albumType: AlbumType.virtualAlbum,
           itemCount: album.itemCount,
           coverItem: await _resolveCover(album),
+          totalBytes: sizes[album.id] ?? 0,
         ),
       );
     }
@@ -67,12 +69,14 @@ class AlbumRepository {
   Future<AlbumSummary?> getVirtualAlbumSummary(String albumId) async {
     final album = await _albumDao.getAlbumById(albumId);
     if (album == null) return null;
+    final sizes = await _albumDao.getAlbumSizes(albumId: album.id);
     return AlbumSummary(
       id: album.id,
       name: album.name,
       albumType: album.albumType,
       itemCount: album.itemCount,
       coverItem: await _resolveCover(album),
+      totalBytes: sizes[album.id] ?? 0,
     );
   }
 
@@ -223,6 +227,7 @@ class AlbumRepository {
           folderPath: row.directory,
           itemCount: row.itemCount,
           coverItem: covers[row.coverMediaId],
+          totalBytes: row.totalBytes,
         ),
     ];
   }
@@ -254,6 +259,7 @@ class AlbumRepository {
           albumType: album.albumType,
           itemCount: items.length,
           coverItem: items.isEmpty ? null : items.first,
+          totalBytes: items.fold<int>(0, (sum, item) => sum + item.size),
         ),
       );
     }

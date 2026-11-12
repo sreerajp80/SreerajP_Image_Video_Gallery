@@ -29,6 +29,7 @@ import 'package:in_sreerajp_imgvidgal/core/domain/vault/vault_lock_policy.dart';
 import 'package:in_sreerajp_imgvidgal/services/vault/vault_preview_service.dart';
 import 'package:in_sreerajp_imgvidgal/services/vault/vault_shredder_service.dart';
 import 'package:in_sreerajp_imgvidgal/services/vault/vault_storage_service.dart';
+import 'package:in_sreerajp_imgvidgal/services/vault/vault_transfer_service.dart';
 import 'package:flutter_riverpod/legacy.dart';
 
 // ------------------------------------------------------------------ plumbing
@@ -119,6 +120,20 @@ final vaultExportServiceProvider = Provider<VaultExportService>((ref) {
     folderWriter: DocumentPickerFolderWriter(
       ref.watch(documentPickerChannelProvider),
     ),
+  );
+});
+
+/// Copies the vault to another phone during a phone move, and takes vault
+/// files from one.
+final vaultTransferServiceProvider = Provider<VaultTransferService>((ref) {
+  final auth = ref.watch(vaultAuthServiceProvider);
+  return VaultTransferService(
+    crypto: ref.watch(vaultCryptoServiceProvider),
+    storage: ref.watch(vaultStorageServiceProvider),
+    shredder: ref.watch(vaultShredderServiceProvider),
+    preview: ref.watch(vaultPreviewServiceProvider),
+    vaultDao: ref.watch(vaultDaoProvider),
+    isReady: () async => await auth.isSetUp() && await auth.isKeystoreReady(),
   );
 });
 

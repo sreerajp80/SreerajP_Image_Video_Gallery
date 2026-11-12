@@ -916,11 +916,13 @@ class MediaDao {
         SELECT
           directory,
           COUNT(*) AS item_count,
+          COALESCE(SUM(size_bytes), 0) AS total_bytes,
           id AS cover_id,
           MAX(sort_key) AS newest
         FROM (
           SELECT
             ${DatabaseConstants.colId} AS id,
+            COALESCE(${DatabaseConstants.colMediaSizeBytes}, 0) AS size_bytes,
             RTRIM(
               ${DatabaseConstants.colMediaPath},
               REPLACE(${DatabaseConstants.colMediaPath}, '$separator', '')
@@ -946,6 +948,7 @@ class MediaDao {
           FolderSummaryRow(
             directory: FolderPathRules.stripTrailingSeparators(raw),
             itemCount: (row['item_count'] as int?) ?? 0,
+            totalBytes: (row['total_bytes'] as num?)?.toInt() ?? 0,
             coverMediaId: row['cover_id'] as String?,
           ),
         );
@@ -1347,12 +1350,16 @@ class FolderSummaryRow {
   /// How many items sit directly in this folder.
   final int itemCount;
 
+  /// Total size in bytes of the items directly in this folder.
+  final int totalBytes;
+
   /// Id of the newest item in the folder, or null when it has none.
   final String? coverMediaId;
 
   const FolderSummaryRow({
     required this.directory,
     required this.itemCount,
+    this.totalBytes = 0,
     this.coverMediaId,
   });
 }

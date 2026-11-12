@@ -64,11 +64,17 @@ class PairingQrScanner extends ConsumerStatefulWidget {
   /// Lists the cameras. Replaced in tests.
   final Future<List<CameraDescription>> Function() listCameras;
 
+  /// How sharp the camera frames are. High (720p) lets a code be read from
+  /// a normal distance. At medium (480p) the user had to hold the phone so
+  /// close that the camera was slow to focus.
+  final ResolutionPreset resolution;
+
   const PairingQrScanner({
     super.key,
     required this.onCode,
     required this.errorBuilder,
     this.listCameras = availableCameras,
+    this.resolution = ResolutionPreset.high,
   });
 
   @override
@@ -80,6 +86,15 @@ class _PairingQrScannerState extends ConsumerState<PairingQrScanner>
   late final QrFrameGate _gate = QrFrameGate(onCode: _accept);
   CameraController? _controller;
   bool _failed = false;
+
+  /// True while [_start] is running. The permission dialog sends the app to
+  /// `inactive` and back to `resumed` while the first start is still
+  /// waiting, and a second start then would fight it for the camera.
+  bool _starting = false;
+
+  /// Raised when the app really leaves the foreground. A start that began
+  /// before that is stale: its camera is freed instead of shown.
+  int _startId = 0;
 
   @override
   void initState() {
@@ -99,14 +114,17 @@ class _PairingQrScannerState extends ConsumerState<PairingQrScanner>
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.inactive ||
         state == AppLifecycleState.paused) {
+      // Only `paused` makes a running start stale. The permission dialog
+      // brings `inactive` alone, and the start waiting on it must live.
+      if (state == AppLifecycleState.paused) _startId++;
       unawaited(_release());
-    } else if (state == AppLifecycleState.resumed &&
-        _controller == null &&
-        !_gate.isDone &&
-        !_failed) {
+    } else if (state == AppLifecycleState.resumed && _canStart) {
       unawaited(_start());
     }
   }
+
+  bool get _canStart =>
+      mounted && !_starting && _controller == null && !_gate.isDone && !_failed;
 
   bool _accept(String raw) {
     final accepted = widget.onCode(raw);
@@ -115,8 +133,13 @@ class _PairingQrScannerState extends ConsumerState<PairingQrScanner>
   }
 
   Future<void> _start() async {
+    if (_starting) return;
+    _starting = true;
+    final id = _startId;
+    CameraController? controller;
     try {
       final cameras = await widget.listCameras();
+      if (id != _startId) return;
       if (cameras.isEmpty) {
         _fail();
         return;
@@ -125,24 +148,41 @@ class _PairingQrScannerState extends ConsumerState<PairingQrScanner>
         (camera) => camera.lensDirection == CameraLensDirection.back,
         orElse: () => cameras.first,
       );
-      final controller = CameraController(
+      controller = CameraController(
         back,
-        ResolutionPreset.medium,
+        widget.resolution,
         // Pairing never records sound; RECORD_AUDIO is removed from the
         // manifest.
         enableAudio: false,
         imageFormatGroup: ImageFormatGroup.yuv420,
       );
       await controller.initialize();
-      if (!mounted || _gate.isDone) {
+      if (!mounted || _gate.isDone || id != _startId) {
         await controller.dispose();
         return;
       }
       await controller.startImageStream(_onFrame);
       setState(() => _controller = controller);
     } catch (error) {
-      AppLogger.warning('Starting the pairing camera failed', error: error);
-      _fail();
+      try {
+        await controller?.dispose();
+      } catch (_) {
+        AppLogger.debug('Freeing a pairing camera that did not start failed');
+      }
+      // A start the app walked away from failing is not a real failure.
+      if (id == _startId) {
+        AppLogger.warning('Starting the pairing camera failed', error: error);
+        _fail();
+      }
+    } finally {
+      _starting = false;
+      // The app left and came back while this start was running, so the
+      // `resumed` that would have started a fresh camera was skipped.
+      if (id != _startId &&
+          _canStart &&
+          WidgetsBinding.instance.lifecycleState == AppLifecycleState.resumed) {
+        unawaited(_start());
+      }
     }
   }
 
@@ -164,6 +204,22 @@ class _PairingQrScannerState extends ConsumerState<PairingQrScanner>
         ),
       ),
     );
+  }
+
+  /// Asks the camera to focus again on the centre of the frame, where the
+  /// user aims the code. The centre is used rather than the tapped spot:
+  /// mapping a tap through the cropped, rotated preview is easy to get
+  /// wrong. Some cameras have no focus control; that is not an error.
+  Future<void> _refocus() async {
+    final controller = _controller;
+    if (controller == null || !controller.value.isInitialized) return;
+    const centre = Offset(0.5, 0.5);
+    try {
+      await controller.setFocusPoint(centre);
+      await controller.setExposurePoint(centre);
+    } catch (error) {
+      AppLogger.debug('The pairing camera could not refocus');
+    }
   }
 
   /// Stops and frees the camera. The preview is taken off the screen first,
@@ -193,13 +249,17 @@ class _PairingQrScannerState extends ConsumerState<PairingQrScanner>
     if (controller == null || !controller.value.isInitialized) {
       return const Center(child: CircularProgressIndicator());
     }
-    return ClipRect(
-      child: FittedBox(
-        fit: BoxFit.cover,
-        child: SizedBox(
-          width: controller.value.previewSize?.height ?? 1,
-          height: controller.value.previewSize?.width ?? 1,
-          child: CameraPreview(controller),
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () => unawaited(_refocus()),
+      child: ClipRect(
+        child: FittedBox(
+          fit: BoxFit.cover,
+          child: SizedBox(
+            width: controller.value.previewSize?.height ?? 1,
+            height: controller.value.previewSize?.width ?? 1,
+            child: CameraPreview(controller),
+          ),
         ),
       ),
     );

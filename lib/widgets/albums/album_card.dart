@@ -4,6 +4,7 @@ import 'package:in_sreerajp_imgvidgal/models/album.dart';
 import 'package:in_sreerajp_imgvidgal/models/album_summary.dart';
 import 'package:in_sreerajp_imgvidgal/widgets/media/media_thumbnail.dart';
 import 'package:in_sreerajp_imgvidgal/widgets/common/adaptive_directionality.dart';
+import 'package:in_sreerajp_imgvidgal/widgets/common/unit_format_context.dart';
 
 /// Translates a smart album's route key into its shown name.
 ///
@@ -61,7 +62,10 @@ class AlbumCard extends StatelessWidget {
     final cover = summary.coverItem;
 
     final hasFiniteSize = size != null && size!.isFinite;
-    final coverWidget = hasFiniteSize
+    final sizeText = summary.totalBytes > 0
+        ? context.units.bytes(summary.totalBytes)
+        : null;
+    final coverImage = hasFiniteSize
         ? SizedBox(
             width: size,
             height: size,
@@ -75,10 +79,25 @@ class AlbumCard extends StatelessWidget {
                 ? _EmptyCover(albumType: summary.albumType)
                 : MediaThumbnail(item: cover, borderRadius: 12),
           );
+    final coverWidget = sizeText == null
+        ? coverImage
+        : Stack(
+            children: <Widget>[
+              coverImage,
+              PositionedDirectional(
+                top: 6,
+                start: 6,
+                child: _SizeBadge(label: sizeText),
+              ),
+            ],
+          );
+    final itemCountText = l10n.descAlbumItemCount(summary.itemCount);
 
     return Semantics(
       button: onTap != null,
-      label: '$name, ${l10n.descAlbumItemCount(summary.itemCount)}',
+      label: sizeText == null
+          ? '$name, $itemCountText'
+          : '$name, $itemCountText, $sizeText',
       child: InkWell(
         borderRadius: BorderRadius.circular(12),
         onTap: onTap,
@@ -104,7 +123,7 @@ class AlbumCard extends StatelessWidget {
                 ),
               ),
               Text(
-                l10n.descAlbumItemCount(summary.itemCount),
+                itemCountText,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: theme.textTheme.bodySmall?.copyWith(
@@ -113,6 +132,40 @@ class AlbumCard extends StatelessWidget {
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+/// The total size drawn over the top-start corner of the cover.
+///
+/// A dark see-through pill with white text, the same idea as the badges on
+/// media tiles, so it stays readable over bright and dark covers alike. The
+/// card's own [Semantics] label already reads the size, so the pill is hidden
+/// from screen readers to avoid reading it twice.
+class _SizeBadge extends StatelessWidget {
+  final String label;
+
+  const _SizeBadge({required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    final style = Theme.of(context).textTheme.labelSmall?.copyWith(
+      color: Colors.white,
+      fontWeight: FontWeight.w600,
+      height: 1.2,
+    );
+
+    return ExcludeSemantics(
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: Colors.black.withValues(alpha: 0.6),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+          child: Text(label, maxLines: 1, softWrap: false, style: style),
         ),
       ),
     );

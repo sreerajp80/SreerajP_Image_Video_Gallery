@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:in_sreerajp_imgvidgal/core/constants/app_constants.dart';
 import 'package:in_sreerajp_imgvidgal/core/logging/app_logger.dart';
 import 'package:in_sreerajp_imgvidgal/models/media_item.dart';
 import 'package:in_sreerajp_imgvidgal/models/privacy/gps_fuzz_result.dart';
@@ -148,6 +149,7 @@ class PrivacyExportService {
         displayName: name,
         mimeType: item.mimeType,
         isVideo: false,
+        relativeDir: AppConstants.privacyExportDirectoryName,
       );
       return PrivacyExportResult.done;
     } finally {

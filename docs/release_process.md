@@ -115,7 +115,7 @@ APK="build/app/outputs/apk/prod/release/app-arm64-v8a-prod-release.apk"
 aapt2 dump badging "$APK" | grep -i debuggable          # expect: no output
 aapt2 dump xmltree "$APK" --file AndroidManifest.xml | grep -i allowBackup   # expect: =0x0
 aapt2 dump xmltree "$APK" --file AndroidManifest.xml | grep -i dataExtractionRules   # expect: one line
-aapt2 dump permissions "$APK"                            # expect: exactly the 13 below
+aapt2 dump permissions "$APK"                            # expect: exactly the 14 below
 ```
 
 ```powershell
@@ -124,17 +124,17 @@ $APK = "build\app\outputs\apk\prod\release\app-arm64-v8a-prod-release.apk"
 aapt2 dump badging $APK | Select-String -Pattern "debuggable"        # expect: no output
 aapt2 dump xmltree $APK --file AndroidManifest.xml | Select-String -Pattern "allowBackup"  # expect: =0x0
 aapt2 dump xmltree $APK --file AndroidManifest.xml | Select-String -Pattern "dataExtractionRules"  # expect: one line
-aapt2 dump permissions $APK                                          # expect: exactly the 13 below
+aapt2 dump permissions $APK                                          # expect: exactly the 14 below
 ```
 
-**Expected permissions — exactly these 13, no more and no fewer** (reasons in
-[security.md](security.md) §11). The first 12 are declared in our manifest; the last one is added
+**Expected permissions — exactly these 14, no more and no fewer** (reasons in
+[security.md](security.md) §11). The first 13 are declared in our manifest; the last one is added
 by `androidx.core` and is private to this app:
 
 `READ_MEDIA_IMAGES`, `READ_MEDIA_VIDEO`, `READ_MEDIA_VISUAL_USER_SELECTED`,
 `READ_EXTERNAL_STORAGE` (maxSdkVersion 32), `USE_BIOMETRIC`, `USE_FINGERPRINT`
 (maxSdkVersion 28), `CAMERA`, `INTERNET`, `ACCESS_WIFI_STATE`, `ACCESS_NETWORK_STATE`,
-`CHANGE_WIFI_STATE`, `WRITE_EXTERNAL_STORAGE` (maxSdkVersion 28), and
+`CHANGE_WIFI_STATE`, `WRITE_EXTERNAL_STORAGE` (maxSdkVersion 28), `MANAGE_MEDIA`, and
 `in.sreerajp.imgvidgal.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION`.
 
 > `INTERNET` **must be present** — the local transfer feature needs it. What must be absent is
@@ -232,7 +232,7 @@ Complete every item before tagging a release.
 - [ ] Debug symbols archived for this version.
 - [ ] R8 rules checked.
 - [ ] `debuggable` absent/false, `allowBackup` false and `dataExtractionRules` set in the merged manifest (§6.4).
-- [ ] Merged manifest has exactly the 13 expected permissions (12 ours + 1 private AndroidX), **including `INTERNET`** (§6.4).
+- [ ] Merged manifest has exactly the 14 expected permissions (13 ours + 1 private AndroidX), **including `INTERNET`** (§6.4).
 - [ ] `test/services/sync/local_address_rules_test.dart` passes.
 - [ ] Cleartext and network config checked (§6.5).
 - [ ] Asset audit passed (§6.6).
@@ -375,7 +375,7 @@ These are the answers the gate asks for. They are facts about this app, not a co
 | Production `applicationId` | `in.sreerajp.imgvidgal` (no suffix; can never change) |
 | `targetSdk` / `compileSdk` / `minSdk` | 36 / 36 / 24 (since 2026-11-02, the value Flutter 3.47.6 generates). Check Play's current target-API rule before each release. `minSdk` reason: [architecture.md](architecture.md) §19 |
 | Native code for the 16 KB check | Flutter engine, Tesseract (OCR), CameraX (`camera` plugin), media plugins. ZXing core is plain Java, with no native library |
-| Permissions | The 12 in [security.md](security.md) §11 plus AndroidX's private one (§6.4 above) |
+| Permissions | The 13 in [security.md](security.md) §11 plus AndroidX's private one (§6.4 above) |
 | Foreground-only sensitive use | `CAMERA` for the pairing QR scan only; `CHANGE_WIFI_STATE` for network suggestions only |
 | Not used | Foreground service, exact alarm, all-files access, SMS/call log, background location, `QUERY_ALL_PACKAGES` |
 | Data safety answer | No data collected, no data shared. Data moves only device to device on the local network, at the user's request, encrypted in transit |

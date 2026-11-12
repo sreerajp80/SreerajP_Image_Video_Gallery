@@ -6,7 +6,7 @@ class DatabaseConstants {
   static const String databaseName = 'gallery_database.db';
 
   /// Current SQLite database schema version.
-  static const int schemaVersion = 8;
+  static const int schemaVersion = 9;
 
   // Table Names
   static const String tableMedia = 'media_items';
@@ -15,6 +15,9 @@ class DatabaseConstants {
   static const String tableTags = 'tags';
   static const String tableMediaTags = 'media_tag_entries';
   static const String tableVault = 'vault_items';
+
+  /// Which files were sent to which other phone over Wi-Fi (schema 9).
+  static const String tableSyncMarks = 'sync_marks';
   static const String tableMediaSearchFts = 'media_search_fts';
 
   // Common Columns
@@ -108,6 +111,18 @@ class DatabaseConstants {
   static const String colFtsDisplayName = 'display_name';
   static const String colFtsUserNotes = 'user_notes';
   static const String colFtsTagsContent = 'tags_content';
+
+  // Sync Mark Columns
+  static const String colSyncMarkMediaId = 'media_id';
+
+  /// The other phone's random install id.
+  static const String colSyncMarkPeerId = 'peer_id';
+
+  /// The file's SHA-256 when it was sent. A file edited later no longer
+  /// matches, so it is offered again.
+  static const String colSyncMarkSha256 = 'sha256';
+  static const String colSyncMarkSizeBytes = 'size_bytes';
+  static const String colSyncMarkSentAt = 'sent_at';
   static const String colFtsExifSearchText = 'exif_search_text';
   static const String colFtsAddress = 'address';
 

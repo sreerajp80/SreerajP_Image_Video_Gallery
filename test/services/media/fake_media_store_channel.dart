@@ -88,8 +88,44 @@ class FakeMediaStoreChannel implements MediaStoreChannel {
     settingsOpenedCount++;
   }
 
+  /// What [deleteConfirmInfo] returns. Defaults to the safe fallback, so the
+  /// app shows its own confirmation unless a test says otherwise.
+  DeleteConfirmInfo deleteInfo = DeleteConfirmInfo.fallback;
+
+  /// How many times [openManageMediaSettings] was called.
+  int manageMediaSettingsOpenedCount = 0;
+
+  @override
+  Future<DeleteConfirmInfo> deleteConfirmInfo() async => deleteInfo;
+
+  @override
+  Future<void> openManageMediaSettings() async {
+    manageMediaSettingsOpenedCount++;
+  }
+
   /// Files this fake was asked to publish, newest last.
   final List<String> publishedNames = <String>[];
+
+  /// The folder each published file was asked to go to, newest last.
+  final List<String> publishedDirs = <String>[];
+
+  /// What [freeSpaceBytes] reports. Null means "unknown".
+  int? freeSpace;
+
+  @override
+  Future<int?> freeSpaceBytes() async => freeSpace;
+
+  /// What [cleanStaleEntries] reports.
+  int staleCleaned = 0;
+
+  /// How many times [cleanStaleEntries] was called.
+  int staleCleanCalls = 0;
+
+  @override
+  Future<int> cleanStaleEntries() async {
+    staleCleanCalls++;
+    return staleCleaned;
+  }
 
   /// Whether [publishFile] should fail.
   bool publishThrows = false;
@@ -101,11 +137,13 @@ class FakeMediaStoreChannel implements MediaStoreChannel {
     required String mimeType,
     required bool isVideo,
     String relativeDir = AppConstants.syncReceiveDirectoryName,
+    bool underPictures = false,
   }) async {
     if (publishThrows) {
       throw const MediaScanException('publish refused by the fake');
     }
     publishedNames.add(displayName);
+    publishedDirs.add(relativeDir);
     return PublishedMedia(
       uri: 'content://media/external/images/media/${publishedNames.length}',
       path: '/storage/emulated/0/Pictures/$relativeDir/$displayName',
@@ -172,6 +210,7 @@ MediaStoreEntry buildEntry({
   int? dateTakenMs,
   int? durationMs,
   String? path,
+  bool fileMissing = false,
 }) {
   return MediaStoreEntry(
     id: id,
@@ -186,5 +225,6 @@ MediaStoreEntry buildEntry({
     durationMs: durationMs,
     width: 1920,
     height: 1080,
+    fileMissing: fileMissing,
   );
 }

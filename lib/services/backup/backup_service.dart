@@ -79,7 +79,10 @@ class BackupService {
     }
 
     onStage?.call(BackupStage.collecting);
-    final payload = await _collector.collect(appVersion: appVersion, now: now);
+    final payload = await _collector.collectFingerprinted(
+      appVersion: appVersion,
+      now: now,
+    );
 
     if (payload.isEmpty) {
       throw const BackupException(

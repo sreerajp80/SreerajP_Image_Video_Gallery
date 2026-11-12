@@ -2,6 +2,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:in_sreerajp_imgvidgal/core/constants/app_permissions.dart';
 import 'package:in_sreerajp_imgvidgal/l10n/generated/app_localizations.dart';
+import 'package:in_sreerajp_imgvidgal/models/media/delete_confirm_info.dart';
 import 'package:in_sreerajp_imgvidgal/models/media/media_permission_status.dart';
 import 'package:in_sreerajp_imgvidgal/models/settings/app_permission_info.dart';
 import 'package:in_sreerajp_imgvidgal/providers/media_providers.dart';
@@ -9,6 +10,7 @@ import 'package:in_sreerajp_imgvidgal/providers/media_providers.dart';
 /// Android version names for the API levels the manifest limits by.
 const Map<int, String> _androidVersionForApi = <int, String>{
   28: '9',
+  31: '12',
   32: '12',
   33: '13',
   34: '14',
@@ -44,6 +46,11 @@ class PermissionsSettingsScreen extends ConsumerWidget {
               AppPermissionKind.explicit,
               l10n.labelPermissionsExplicit,
               l10n.descPermissionsExplicit,
+            ),
+            section(
+              AppPermissionKind.special,
+              l10n.labelPermissionsSpecial,
+              l10n.descPermissionsSpecial,
             ),
             section(
               AppPermissionKind.implicit,
@@ -174,6 +181,17 @@ class _PermissionRow extends ConsumerWidget {
           .watch(mediaPermissionStatusProvider)
           .value;
       if (state != null) status = _StatusChip(status: state);
+    } else if (info.id == AppPermissionId.manageMedia) {
+      final DeleteConfirmInfo? state = ref
+          .watch(deleteConfirmInfoProvider)
+          .value;
+      if (state != null && state.manageMediaSupported) {
+        status = _StatusChip(
+          status: state.manageMediaGranted
+              ? MediaPermissionStatus.granted
+              : MediaPermissionStatus.denied,
+        );
+      }
     }
 
     final String names = info.androidNames
@@ -313,6 +331,7 @@ IconData _iconFor(AppPermissionId id) => switch (id) {
   AppPermissionId.wakeLock => Icons.bedtime_off_outlined,
   AppPermissionId.recordAudio => Icons.mic_off_outlined,
   AppPermissionId.writeStorage => Icons.save_alt_outlined,
+  AppPermissionId.manageMedia => Icons.perm_media_outlined,
 };
 
 String _nameFor(AppLocalizations l10n, AppPermissionId id) => switch (id) {
@@ -327,6 +346,7 @@ String _nameFor(AppLocalizations l10n, AppPermissionId id) => switch (id) {
   AppPermissionId.wakeLock => l10n.labelPermWakeLock,
   AppPermissionId.recordAudio => l10n.labelPermRecordAudio,
   AppPermissionId.writeStorage => l10n.labelPermWriteStorage,
+  AppPermissionId.manageMedia => l10n.labelPermManageMedia,
 };
 
 String _reasonFor(AppLocalizations l10n, AppPermissionId id) => switch (id) {
@@ -341,4 +361,5 @@ String _reasonFor(AppLocalizations l10n, AppPermissionId id) => switch (id) {
   AppPermissionId.wakeLock => l10n.descPermWakeLock,
   AppPermissionId.recordAudio => l10n.descPermRecordAudio,
   AppPermissionId.writeStorage => l10n.descPermWriteStorage,
+  AppPermissionId.manageMedia => l10n.descPermManageMedia,
 };

@@ -8,6 +8,7 @@ import 'package:in_sreerajp_imgvidgal/repositories/media_repository.dart';
 import 'package:in_sreerajp_imgvidgal/services/media/media_permission_service.dart';
 import 'package:in_sreerajp_imgvidgal/services/media/media_scanner_service.dart';
 import 'package:in_sreerajp_imgvidgal/services/media/media_store_channel.dart';
+import 'package:in_sreerajp_imgvidgal/services/media/stale_cleanup_store.dart';
 import 'package:in_sreerajp_imgvidgal/services/thumbnail/thumbnail_disk_cache.dart';
 import 'package:in_sreerajp_imgvidgal/services/thumbnail/thumbnail_memory_cache.dart';
 import 'package:in_sreerajp_imgvidgal/services/thumbnail/thumbnail_service.dart';
@@ -18,6 +19,64 @@ import 'package:flutter_riverpod/legacy.dart';
 final mediaStoreChannelProvider = Provider<MediaStoreChannel>((ref) {
   return PlatformMediaStoreChannel();
 });
+
+/// Whether Android will ask before a permanent delete, and the "Manage
+/// media" state. Read it with `ref.refresh(...future)` right before a delete,
+/// since the user can change "Manage media" in system settings at any time.
+final deleteConfirmInfoProvider = FutureProvider<DeleteConfirmInfo>((ref) {
+  return ref.watch(mediaStoreChannelProvider).deleteConfirmInfo();
+});
+
+/// Whether the home screen should ask the user to turn on "Manage media".
+///
+/// True only on Android 12+ (where it exists), while it is off, and with full
+/// photos and videos access: with no access the "Permission required" screen
+/// comes first, and with "selected photos only" it may have no effect.
+bool shouldPromptManageMedia({
+  required DeleteConfirmInfo info,
+  required MediaPermissionStatus status,
+  required bool alreadyShown,
+}) {
+  return !alreadyShown &&
+      info.manageMediaSupported &&
+      !info.manageMediaGranted &&
+      status == MediaPermissionStatus.granted;
+}
+
+/// Asks for "Manage media" at most once per app start, while it is off.
+///
+/// The state is "already shown during this app start". It lives in memory
+/// only, so the next fresh start asks again (the owner's choice).
+class ManageMediaPromptController extends Notifier<bool> {
+  @override
+  bool build() => false;
+
+  /// Returns true when the prompt should be shown now, and marks it shown.
+  /// Reads the "Manage media" state fresh; any error means "do not ask".
+  Future<bool> takePrompt(MediaPermissionStatus status) async {
+    if (state) return false;
+    final DeleteConfirmInfo info;
+    try {
+      info = await ref.refresh(deleteConfirmInfoProvider.future);
+    } catch (_) {
+      return false;
+    }
+    if (!ref.mounted) return false;
+    final bool show = shouldPromptManageMedia(
+      info: info,
+      status: status,
+      alreadyShown: state,
+    );
+    if (show) state = true;
+    return show;
+  }
+}
+
+/// See [ManageMediaPromptController].
+final manageMediaPromptProvider =
+    NotifierProvider<ManageMediaPromptController, bool>(
+      ManageMediaPromptController.new,
+    );
 
 /// Granular media permission handling.
 final mediaPermissionServiceProvider = Provider<MediaPermissionService>((ref) {
@@ -49,6 +108,7 @@ final mediaScannerServiceProvider = Provider<MediaScannerService>((ref) {
   final scanner = MediaScannerService(
     channel: ref.watch(mediaStoreChannelProvider),
     mediaDao: ref.watch(mediaDaoProvider),
+    staleStore: const SharedPreferencesStaleCleanupStore(),
   );
   ref.onDispose(scanner.dispose);
   return scanner;

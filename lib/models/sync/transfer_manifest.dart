@@ -39,11 +39,32 @@ class TransferEntry {
   /// the receiver finds or creates a tag of the same name.
   final List<String> tagNames;
 
+  /// Album names travelling with the file, by the same rule as tags.
+  final List<String> albumNames;
+
   /// The user's note text, if any.
   final String? userNotes;
 
   /// Whether the file was a favourite on the sending device.
   final bool isFavorite;
+
+  /// Place name the sender had for the file, if any.
+  final String? address;
+
+  final double? latitude;
+  final double? longitude;
+
+  /// Name of the folder the file sits in on the sending device.
+  ///
+  /// The receiver puts the file in a subfolder of this name, inside its own
+  /// receive folder. Untrusted: cleaned by `FolderNameRules` before use.
+  final String? sourceFolder;
+
+  /// True when the file comes from the sender's private vault.
+  ///
+  /// The receiver puts such a file into its own vault, encrypted with its own
+  /// key, and never into the public gallery or MediaStore.
+  final bool vault;
 
   const TransferEntry({
     required this.sourceId,
@@ -54,8 +75,14 @@ class TransferEntry {
     required this.sha256,
     this.dateTakenMs,
     this.tagNames = const <String>[],
+    this.albumNames = const <String>[],
     this.userNotes,
     this.isFavorite = false,
+    this.address,
+    this.latitude,
+    this.longitude,
+    this.sourceFolder,
+    this.vault = false,
   });
 
   Map<String, dynamic> toJson() => <String, dynamic>{
@@ -67,8 +94,14 @@ class TransferEntry {
     'sha256': sha256,
     if (dateTakenMs != null) 'dateTakenMs': dateTakenMs,
     if (tagNames.isNotEmpty) 'tagNames': tagNames,
+    if (albumNames.isNotEmpty) 'albumNames': albumNames,
     if (userNotes != null) 'userNotes': userNotes,
     'isFavorite': isFavorite,
+    if (address != null) 'address': address,
+    if (latitude != null) 'latitude': latitude,
+    if (longitude != null) 'longitude': longitude,
+    if (sourceFolder != null) 'sourceFolder': sourceFolder,
+    if (vault) 'vault': true,
   };
 
   factory TransferEntry.fromJson(Map<String, dynamic> json) => TransferEntry(
@@ -79,14 +112,30 @@ class TransferEntry {
     sizeBytes: (json['sizeBytes'] as num?)?.toInt() ?? 0,
     sha256: json['sha256'] as String? ?? '',
     dateTakenMs: (json['dateTakenMs'] as num?)?.toInt(),
-    tagNames:
-        (json['tagNames'] as List<dynamic>?)
-            ?.map((e) => e.toString())
-            .toList(growable: false) ??
-        const <String>[],
+    tagNames: _stringList(json['tagNames']),
+    albumNames: _stringList(json['albumNames']),
     userNotes: json['userNotes'] as String?,
     isFavorite: json['isFavorite'] as bool? ?? false,
+    address: json['address'] as String?,
+    latitude: _finiteOrNull(json['latitude']),
+    longitude: _finiteOrNull(json['longitude']),
+    sourceFolder: json['sourceFolder'] as String?,
+    vault: json['vault'] == true,
   );
+
+  /// Reads a list of names, ignoring anything that is not a list.
+  static List<String> _stringList(Object? raw) {
+    if (raw is! List) return const <String>[];
+    return raw.map((e) => e.toString()).toList(growable: false);
+  }
+
+  /// A number from the peer, or null when it is missing, not a number, or
+  /// not finite. A NaN latitude must never reach the database.
+  static double? _finiteOrNull(Object? raw) {
+    if (raw is! num) return null;
+    final value = raw.toDouble();
+    return value.isFinite ? value : null;
+  }
 
   @override
   bool operator ==(Object other) =>
@@ -101,8 +150,14 @@ class TransferEntry {
           sha256 == other.sha256 &&
           dateTakenMs == other.dateTakenMs &&
           listEquals(tagNames, other.tagNames) &&
+          listEquals(albumNames, other.albumNames) &&
           userNotes == other.userNotes &&
-          isFavorite == other.isFavorite;
+          isFavorite == other.isFavorite &&
+          address == other.address &&
+          latitude == other.latitude &&
+          longitude == other.longitude &&
+          sourceFolder == other.sourceFolder &&
+          vault == other.vault;
 
   @override
   int get hashCode => Object.hash(
@@ -114,8 +169,14 @@ class TransferEntry {
     sha256,
     dateTakenMs,
     Object.hashAll(tagNames),
+    Object.hashAll(albumNames),
     userNotes,
     isFavorite,
+    address,
+    latitude,
+    longitude,
+    sourceFolder,
+    vault,
   );
 }
 

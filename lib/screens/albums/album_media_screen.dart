@@ -12,6 +12,7 @@ import 'package:in_sreerajp_imgvidgal/widgets/albums/album_edit_dialog.dart';
 import 'package:in_sreerajp_imgvidgal/widgets/albums/album_media_grid.dart';
 import 'package:in_sreerajp_imgvidgal/widgets/batch/batch_action_bar.dart';
 import 'package:in_sreerajp_imgvidgal/widgets/batch/selection_app_bar.dart';
+import 'package:in_sreerajp_imgvidgal/widgets/home/home_overflow_menu.dart';
 
 /// One user-made album at `/albums/:id`.
 ///
@@ -40,10 +41,12 @@ class AlbumMediaScreen extends ConsumerWidget {
           : AppBar(
               title: Text(summary.value?.name ?? l10n.titleAlbums),
               actions: <Widget>[
-                PopupMenuButton<String>(
-                  onSelected: (action) =>
+                // One menu: this album's actions on top, then the shared
+                // items (Settings and the rest) below a divider.
+                HomeOverflowMenu(
+                  onExtraSelected: (action) =>
                       _onAction(context, ref, action, summary),
-                  itemBuilder: (context) => <PopupMenuEntry<String>>[
+                  extraItems: <PopupMenuEntry<String>>[
                     PopupMenuItem<String>(
                       value: 'rename',
                       child: ListTile(

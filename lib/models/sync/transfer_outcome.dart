@@ -29,6 +29,13 @@ enum TransferFailure {
   /// The device has no usable local network address.
   noLocalNetwork,
 
+  /// The receiving phone ran out of free space. Files already sent stay.
+  noSpace,
+
+  /// Phone move: the files went, but the app data and settings did not.
+  /// Files already sent stay; running the move again sends the data.
+  appDataFailed,
+
   /// Something else went wrong.
   unknown,
 }

@@ -82,6 +82,7 @@ class P2pConnection {
 
   StreamSubscription<Uint8List>? _subscription;
   Timer? _idleTimer;
+  Timer? _heartbeat;
   bool _closed = false;
 
   /// The peer's self-reported name. Never trusted for anything but display.
@@ -120,6 +121,9 @@ class P2pConnection {
     _touch();
     try {
       for (final frame in _reader.add(bytes)) {
+        // A heartbeat has done its job by arriving: the idle clock was reset
+        // above. Nobody waits for one, so it is not queued.
+        if (frame.type == FrameType.ping) continue;
         _deliver(frame);
       }
     } on TransferProtocolException catch (error) {
@@ -136,6 +140,10 @@ class P2pConnection {
   /// A socket nothing crosses is closed rather than left open, so the
   /// listener's lifetime really is "while something is happening", not "until
   /// somebody remembers".
+  ///
+  /// Reset by what *arrives*. Once the heartbeat runs, a peer that has gone
+  /// silent for the whole idle timeout is gone, even if this side is still
+  /// sending.
   void _touch() {
     _idleTimer?.cancel();
     _idleTimer = Timer(
@@ -291,7 +299,6 @@ class P2pConnection {
     _duplex.add(
       TransferProtocol.encode(type, <int>[...sealed.iv, ...sealed.bytes]),
     );
-    _touch();
   }
 
   /// Decrypts a frame body.
@@ -339,7 +346,31 @@ class P2pConnection {
   /// Sends an unencrypted frame. Only the handshake uses this.
   void _sendPlain(FrameType type, Map<String, dynamic> body) {
     _duplex.add(TransferProtocol.encodeJson(type, body));
-    _touch();
+  }
+
+  // -------------------------------------------------------------- heartbeat
+
+  /// Starts saying "still here" every few seconds.
+  ///
+  /// Call once both sides have finished the handshake. Without it, a sender
+  /// that spends two minutes choosing folders, or hashing a large video,
+  /// would look idle to the other phone and the session would close.
+  void startHeartbeat() {
+    _heartbeat?.cancel();
+    _heartbeat = Timer.periodic(
+      const Duration(seconds: AppConstants.syncHeartbeatSeconds),
+      (_) => unawaited(_sendPing()),
+    );
+  }
+
+  Future<void> _sendPing() async {
+    if (_closed) return;
+    try {
+      await sendEncrypted(FrameType.ping, const <int>[]);
+    } catch (_) {
+      // Safe to ignore: a closed or broken connection is reported by the
+      // read side, which is what the session is waiting on.
+    }
   }
 
   /// Waits for the next frame, insisting it is of [type].
@@ -386,17 +417,10 @@ class P2pConnection {
     final completer = Completer<TransferFrame>();
     _waiting = completer;
 
-    try {
-      return await completer.future.timeout(
-        const Duration(seconds: AppConstants.syncIdleTimeoutSeconds),
-      );
-    } on TimeoutException {
-      _waiting = null;
-      throw const TransferSessionException(
-        TransferFailure.idleTimeout,
-        'The other device stopped responding',
-      );
-    }
+    // No timeout of its own. The idle clock fails this wait when nothing
+    // arrives for too long, and the peer's heartbeat resets that clock. A
+    // timeout here would cut off a sender who is still choosing folders.
+    return completer.future;
   }
 
   static Uint8List? _decodeBase64(Object? value) {
@@ -420,6 +444,8 @@ class P2pConnection {
 
     _idleTimer?.cancel();
     _idleTimer = null;
+    _heartbeat?.cancel();
+    _heartbeat = null;
 
     await _subscription?.cancel();
     _subscription = null;

@@ -2741,11 +2741,11 @@
   "@titleSync": {
     "description": "Title of the transfer screen"
   },
-  "titleSyncOpen": "Transfer to a device",
+  "titleSyncOpen": "Receive from device",
   "@titleSyncOpen": {
     "description": "Menu entry that opens the transfer screen"
   },
-  "bodySyncIntro": "Send photos straight to another phone on the same Wi-Fi. Nothing goes to the internet, and no account is needed.",
+  "bodySyncIntro": "Get photos from another phone on the same Wi-Fi. Nothing goes to the internet, and no account is needed.",
   "@bodySyncIntro": {
     "description": "Explains what the transfer feature does"
   },
@@ -2761,13 +2761,139 @@
   "@labelSyncReceive": {
     "description": "Chooses the receiving role"
   },
-  "bodySyncSend": "Show a code on this phone, or scan the other one",
-  "@bodySyncSend": {
-    "description": "Explains the sending flow"
-  },
-  "bodySyncReceive": "Show a code for the other phone to scan",
+  "bodySyncReceive": "The sending phone scans it",
   "@bodySyncReceive": {
     "description": "Explains the receiving flow"
+  },
+  "titleSyncQuickSend": "{count, plural, =1{Send 1 item} other{Send {count} items}}",
+  "@titleSyncQuickSend": {
+    "description": "Title of the quick send screen, with how many items are being sent",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "bodySyncQuickIntro": "Send the selected photos and videos straight to another phone on the same Wi-Fi. Nothing goes to the internet.",
+  "@bodySyncQuickIntro": {
+    "description": "Intro text on the quick send screen"
+  },
+  "bodySyncPhoneMoveIntro": "Copy this app to your new phone. Pick folders and albums after pairing. All app data and settings go when you tap Finish. Nothing is deleted on either phone.",
+  "@bodySyncPhoneMoveIntro": {
+    "description": "Intro text on the Move to a new phone screen"
+  },
+  "labelSyncShowCode": "Show a code",
+  "@labelSyncShowCode": {
+    "description": "Choice: this phone shows the pairing code"
+  },
+  "bodySyncShowCodeToReceiver": "The receiving phone scans it",
+  "@bodySyncShowCodeToReceiver": {
+    "description": "Subtitle of Show a code when this phone sends"
+  },
+  "labelSyncScanOther": "Scan their code",
+  "@labelSyncScanOther": {
+    "description": "Choice: this phone scans the other phone's pairing code"
+  },
+  "bodySyncScanReceiverCode": "When the receiving phone shows the code",
+  "@bodySyncScanReceiverCode": {
+    "description": "Subtitle of Scan when this phone sends"
+  },
+  "bodySyncScanSenderCode": "When the sending phone shows the code",
+  "@bodySyncScanSenderCode": {
+    "description": "Subtitle of Scan when this phone receives"
+  },
+  "bodySyncHowToSend": "To send, select photos in the gallery and tap Send to a device. To move to a new phone, use Settings › Device Sync.",
+  "@bodySyncHowToSend": {
+    "description": "Hint on the receive screen saying where sending starts"
+  },
+  "bodyDeviceSyncWifiReceive": "On the new phone: get folders, albums, app data and settings from the old one",
+  "@bodyDeviceSyncWifiReceive": {
+    "description": "Subtitle of Get from your old phone in Device Sync"
+  },
+  "bodySyncAppDataSending": "Sending app data and settings",
+  "@bodySyncAppDataSending": {
+    "description": "Shown while the app data and settings are sent"
+  },
+  "bodySyncAppDataReceiving": "Getting app data and settings",
+  "@bodySyncAppDataReceiving": {
+    "description": "Shown while the app data and settings arrive"
+  },
+  "bodySyncAppDataSent": "App data and settings sent",
+  "@bodySyncAppDataSent": {
+    "description": "Result line: the app data and settings reached the other phone"
+  },
+  "bodySyncVaultReceived": "{count, plural, =1{1 file put in the private vault} other{{count} files put in the private vault}}",
+  "@bodySyncVaultReceived": {
+    "description": "Result line: how many received files went into the private vault",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "actionSyncReviewAppData": "Review app data",
+  "@actionSyncReviewAppData": {
+    "description": "Button: open the preview of the app data that arrived"
+  },
+  "bodySyncAppDataApplied": "App data added",
+  "@bodySyncAppDataApplied": {
+    "description": "Result line: the arrived app data was added"
+  },
+  "errorSyncAppDataApply": "The app data could not be added. Try again.",
+  "@errorSyncAppDataApply": {
+    "description": "Error: the arrived app data could not be added"
+  },
+  "titleSyncUseSettings": "Use old settings?",
+  "@titleSyncUseSettings": {
+    "description": "Dialog title: take the old phone's settings"
+  },
+  "bodySyncUseSettings": "Theme, language, grid size and the safety switches on this phone will be replaced with the ones from the other phone.",
+  "@bodySyncUseSettings": {
+    "description": "Dialog body: what taking the old phone's settings replaces"
+  },
+  "actionSyncKeepMySettings": "Keep mine",
+  "@actionSyncKeepMySettings": {
+    "description": "Dialog button: keep this phone's settings"
+  },
+  "actionSyncUseTheirSettings": "Use theirs",
+  "@actionSyncUseTheirSettings": {
+    "description": "Dialog button: take the old phone's settings"
+  },
+  "bodySyncErrorAppData": "The files were sent, but the app data and settings were not. Run the move again to send them.",
+  "@bodySyncErrorAppData": {
+    "description": "Error: files went but the app data and settings did not"
+  },
+  "labelSyncAppDataAndSettings": "App data & settings",
+  "@labelSyncAppDataAndSettings": {
+    "description": "Row title in the phone move picker"
+  },
+  "bodySyncAppDataOnFinish": "Tags, albums, favourites, notes, places and settings. They go when you tap Finish.",
+  "@bodySyncAppDataOnFinish": {
+    "description": "Row subtitle: what the app data is and when it goes"
+  },
+  "labelSyncIncludeVault": "Private vault",
+  "@labelSyncIncludeVault": {
+    "description": "Switch title: include the private vault in a phone move"
+  },
+  "bodySyncIncludeVaultOff": "Off. Turn on to copy the vault too. You unlock it first.",
+  "@bodySyncIncludeVaultOff": {
+    "description": "Switch subtitle when the vault is not included"
+  },
+  "bodySyncIncludeVaultOn": "On. Vault items go when you tap Finish, and stay in this phone's vault too.",
+  "@bodySyncIncludeVaultOn": {
+    "description": "Switch subtitle when the vault is included"
+  },
+  "bodySyncVaultPeerNotReady": "The other phone has no vault set up, so the vault will not be sent. Set it up there and run the move again.",
+  "@bodySyncVaultPeerNotReady": {
+    "description": "The receiving phone has no vault, so the vault will not be sent"
+  },
+  "bodySyncVaultNotSetUp": "There is no vault on this phone.",
+  "@bodySyncVaultNotSetUp": {
+    "description": "Message: this phone has no vault to send"
+  },
+  "bodySyncVaultUnlockFirst": "Unlock the vault, then come back here.",
+  "@bodySyncVaultUnlockFirst": {
+    "description": "Message: unlock the vault before including it"
   },
   "actionSyncScanCode": "Scan a code",
   "@actionSyncScanCode": {
@@ -2818,19 +2944,6 @@
         "type": "int"
       },
       "total": {
-        "type": "int"
-      }
-    }
-  },
-  "bodySyncNothingSelected": "Choose some photos to send first",
-  "@bodySyncNothingSelected": {
-    "description": "Shown when the sending role has an empty outbox"
-  },
-  "bodySyncOfferHeading": "{count, plural, =1{1 file offered} other{{count} files offered}}",
-  "@bodySyncOfferHeading": {
-    "description": "How many files the peer is offering",
-    "placeholders": {
-      "count": {
         "type": "int"
       }
     }
@@ -4980,6 +5093,38 @@
   "@descPermWriteStorage": {
     "description": "Why WRITE_EXTERNAL_STORAGE is declared (Android 9 and older only)"
   },
+  "labelPermissionsSpecial": "You turn these on",
+  "@labelPermissionsSpecial": {
+    "description": "Permissions screen heading: special access the user turns on in Android settings"
+  },
+  "descPermissionsSpecial": "Android never asks for these. They stay off until you turn them on yourself in Android settings.",
+  "@descPermissionsSpecial": {
+    "description": "Permissions screen: explains the special-access section"
+  },
+  "labelPermManageMedia": "Manage media",
+  "@labelPermManageMedia": {
+    "description": "Name of the MANAGE_MEDIA special access (Android 12+), on the Permissions screen and the Safety settings card"
+  },
+  "descPermManageMedia": "Android 12 and up. Off unless you turn it on. Lets the app delete photos without Android's own prompt; the app then asks you once itself.",
+  "@descPermManageMedia": {
+    "description": "Why MANAGE_MEDIA is declared, on the Permissions screen"
+  },
+  "descManageMediaSubtitle": "Android 12 and up. When on, Android stops asking before each permanent delete, and the app asks you once instead. Tap to change it in Android settings.",
+  "@descManageMediaSubtitle": {
+    "description": "Safety settings card subtitle: what Manage media does; tapping opens Android settings"
+  },
+  "titleManageMediaPrompt": "Allow Manage media?",
+  "@titleManageMediaPrompt": {
+    "description": "Title of the dialog shown on app start asking the user to turn on Manage media (Android 12+)"
+  },
+  "bodyManageMediaPrompt": "Android asks you again before every permanent delete. Turn on \"Manage media\" for this app, and the app asks you once itself instead. You can change this later in Settings → Safety.",
+  "@bodyManageMediaPrompt": {
+    "description": "Body of the Manage media prompt: why it helps and where to change it later"
+  },
+  "actionNotNow": "Not now",
+  "@actionNotNow": {
+    "description": "Button that closes a prompt without doing anything"
+  },
   "labelPermAllowed": "Allowed",
   "@labelPermAllowed": {
     "description": "Live state of the photos and videos permission: full access"
@@ -5159,5 +5304,274 @@
         "type": "int"
       }
     }
+  },
+  "titleDeviceSync": "Device Sync",
+  "@titleDeviceSync": {
+    "description": "Settings entry and title of the Device Sync screen"
+  },
+  "descDeviceSyncSubtitle": "Copy app data or photos to another phone",
+  "@descDeviceSyncSubtitle": {
+    "description": "Subtitle of the Device Sync entry in Settings"
+  },
+  "bodyDeviceSyncIntro": "Copy this app's data, or your photos with it, to another phone that has this app. Nothing goes to the internet, and nothing is deleted on either phone.",
+  "@bodyDeviceSyncIntro": {
+    "description": "Explains the Device Sync screen"
+  },
+  "labelDeviceSyncQrSend": "Send app data by QR",
+  "@labelDeviceSyncQrSend": {
+    "description": "Card that starts sending app data by QR codes"
+  },
+  "bodyDeviceSyncQrSend": "Tags, albums, favourites, notes and places. No photos, and no Wi-Fi needed. The other phone must already have the same photos.",
+  "@bodyDeviceSyncQrSend": {
+    "description": "Explains what QR sync carries"
+  },
+  "labelDeviceSyncWifiSend": "Move to a new phone",
+  "@labelDeviceSyncWifiSend": {
+    "description": "Card that starts sending photos over Wi-Fi"
+  },
+  "bodyDeviceSyncWifiSend": "Folders and albums you pick, with all app data and settings. The vault too, if you choose. Both phones on the same Wi-Fi.",
+  "@bodyDeviceSyncWifiSend": {
+    "description": "Explains what Wi-Fi sync carries"
+  },
+  "labelDeviceSyncQrReceive": "Get app data by QR",
+  "@labelDeviceSyncQrReceive": {
+    "description": "Card that starts receiving app data by QR codes"
+  },
+  "bodyDeviceSyncQrReceive": "Show a code, then scan the other phone's codes",
+  "@bodyDeviceSyncQrReceive": {
+    "description": "Explains the QR receiving steps"
+  },
+  "labelDeviceSyncWifiReceive": "Get from old phone",
+  "@labelDeviceSyncWifiReceive": {
+    "description": "Card that starts receiving photos over Wi-Fi"
+  },
+  "titleSyncPick": "Choose what to send",
+  "@titleSyncPick": {
+    "description": "Heading of the folder and album picker"
+  },
+  "labelSyncSelectionSource": "Selected photos",
+  "@labelSyncSelectionSource": {
+    "description": "Picker row for the photos selected before opening Transfer"
+  },
+  "labelSyncFoldersSection": "Folders",
+  "@labelSyncFoldersSection": {
+    "description": "Picker section of device folders"
+  },
+  "labelSyncAlbumsSection": "Albums",
+  "@labelSyncAlbumsSection": {
+    "description": "Picker section of albums"
+  },
+  "bodySyncSourceStats": "{size} · sent {sent} of {count}",
+  "@bodySyncSourceStats": {
+    "description": "Size of a folder and how many of its files were sent",
+    "placeholders": {
+      "size": {
+        "type": "String"
+      },
+      "sent": {
+        "type": "int"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "bodySyncPeerFreeSpace": "Free space on {name}: {size}",
+  "@bodySyncPeerFreeSpace": {
+    "description": "Free space on the receiving phone",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "bodySyncPlanThisSend": "{count, plural, =1{This send: 1 file, {size}} other{This send: {count} files, {size}}}",
+  "@bodySyncPlanThisSend": {
+    "description": "How much the next send carries",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "bodySyncPlanLeft": "Left for the next send: {count} files, {size}",
+  "@bodySyncPlanLeft": {
+    "description": "How much waits for a later send",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "bodySyncPlanAlreadySent": "{count, plural, =1{Already on the other phone: 1 file} other{Already on the other phone: {count} files}}",
+  "@bodySyncPlanAlreadySent": {
+    "description": "How many picked files were sent before",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "bodySyncPlanResend": "{count, plural, =1{Sent to this phone before: 1 file. It will be sent again.} other{Sent to this phone before: {count} files. They will be sent again.}}",
+  "@bodySyncPlanResend": {
+    "description": "Warning on a manual send: how many picked files were sent to this phone before and will go again",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "bodySyncLimitCap": "One send carries up to {size}. Send the rest next.",
+  "@bodySyncLimitCap": {
+    "description": "Why a send was cut at the size cap",
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "bodySyncLimitSpace": "The other phone is short of space. Free some space on it to send more.",
+  "@bodySyncLimitSpace": {
+    "description": "Why a send was cut by the free space"
+  },
+  "bodySyncLimitCount": "One send carries up to {count} files.",
+  "@bodySyncLimitCount": {
+    "description": "Why a send was cut at the file count",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "bodySyncAllSent": "All sent. Pick more to send, or tap Finish.",
+  "@bodySyncAllSent": {
+    "description": "Shown when nothing picked is left to send"
+  },
+  "bodySyncPickSomething": "Tick folders or albums to send.",
+  "@bodySyncPickSomething": {
+    "description": "Shown when nothing is ticked yet"
+  },
+  "actionSyncSendRest": "Send the rest",
+  "@actionSyncSendRest": {
+    "description": "Sends what is left of the selection"
+  },
+  "actionSyncFinish": "Finish",
+  "@actionSyncFinish": {
+    "description": "Ends the pairing after the last send"
+  },
+  "labelSyncPreparing": "Getting files ready",
+  "@labelSyncPreparing": {
+    "description": "Shown while files are read and checked before sending"
+  },
+  "labelSyncBatchDone": "This send is done",
+  "@labelSyncBatchDone": {
+    "description": "Heading after one send finishes"
+  },
+  "bodySyncWaitingForSend": "Connected. Waiting for the other phone to send.",
+  "@bodySyncWaitingForSend": {
+    "description": "Receiver waiting between sends"
+  },
+  "bodySyncErrorNoSpace": "A phone ran out of free space. Files that arrived are kept.",
+  "@bodySyncErrorNoSpace": {
+    "description": "Shown when the receiver runs out of space"
+  },
+  "bodySyncSavedToFolder": "Received files are in Pictures › Drishya Sync.",
+  "@bodySyncSavedToFolder": {
+    "description": "Where received files went"
+  },
+  "errorSyncSourcesLoad": "Could not read your folders and albums.",
+  "@errorSyncSourcesLoad": {
+    "description": "Shown when the picker cannot load"
+  },
+  "titleQrSyncSend": "Send by QR",
+  "@titleQrSyncSend": {
+    "description": "Title of the QR send screen"
+  },
+  "titleQrSyncReceive": "Receive by QR",
+  "@titleQrSyncReceive": {
+    "description": "Title of the QR receive screen"
+  },
+  "bodyQrSyncScanKey": "Scan the code on the other phone",
+  "@bodyQrSyncScanKey": {
+    "description": "Sender step 1: scan the key code"
+  },
+  "bodyQrSyncShowKey": "Step 1: scan this code on the other phone. Then tap Next.",
+  "@bodyQrSyncShowKey": {
+    "description": "Receiver step 1: show the key code"
+  },
+  "actionQrSyncNext": "Next",
+  "@actionQrSyncNext": {
+    "description": "Moves to the next QR step"
+  },
+  "bodyQrSyncScanFrames": "Step 2: point the camera at the changing codes on the other phone.",
+  "@bodyQrSyncScanFrames": {
+    "description": "Receiver step 2: scan the moving codes"
+  },
+  "bodyQrSyncFramesProgress": "{done} of {total} codes read",
+  "@bodyQrSyncFramesProgress": {
+    "description": "How many QR codes were read",
+    "placeholders": {
+      "done": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "bodyQrSyncShowFrames": "Hold this screen in front of the other phone's camera until it says done.",
+  "@bodyQrSyncShowFrames": {
+    "description": "Sender: keep showing the codes"
+  },
+  "bodyQrSyncFrameCount": "Showing {count} codes in a loop",
+  "@bodyQrSyncFrameCount": {
+    "description": "How many codes the sender plays",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "errorQrSyncTooBig": "There is too much data for QR ({count} codes). Use Wi-Fi instead.",
+  "@errorQrSyncTooBig": {
+    "description": "Shown when the data needs too many codes",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "bodyQrSyncNothing": "There is no app data to send yet.",
+  "@bodyQrSyncNothing": {
+    "description": "Shown when there is nothing to send by QR"
+  },
+  "errorQrSyncFailed": "The data could not be read. Start again on both phones.",
+  "@errorQrSyncFailed": {
+    "description": "Shown when QR data fails to open"
+  },
+  "labelQrSyncPreparing": "Preparing the data",
+  "@labelQrSyncPreparing": {
+    "description": "Shown while the QR data is built"
+  },
+  "actionSyncScanAnother": "Scan another code",
+  "@actionSyncScanAnother": {
+    "description": "Scan screen, after a transfer ends: opens the camera to scan a new pairing code"
+  },
+  "actionSyncShowNewCode": "Show a new code",
+  "@actionSyncShowNewCode": {
+    "description": "Show-code screen, after a transfer ends: makes and shows a fresh pairing code"
+  },
+  "actionSyncClose": "Close",
+  "@actionSyncClose": {
+    "description": "Leaves the transfer screen after the transfer has ended"
   }
 }

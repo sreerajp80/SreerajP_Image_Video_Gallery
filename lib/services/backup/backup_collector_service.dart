@@ -7,6 +7,7 @@ import 'package:in_sreerajp_imgvidgal/repositories/database/database_constants.d
 import 'package:in_sreerajp_imgvidgal/repositories/database/media_dao.dart';
 import 'package:in_sreerajp_imgvidgal/repositories/database/tag_dao.dart';
 import 'package:in_sreerajp_imgvidgal/services/backup/backup_serializer.dart';
+import 'package:in_sreerajp_imgvidgal/services/backup/digest_fill_service.dart';
 
 /// Gathers everything a backup archive holds.
 ///
@@ -18,14 +19,44 @@ class BackupCollectorService {
   final MediaDao _mediaDao;
   final TagDao _tagDao;
   final AlbumDao _albumDao;
+  final DigestFillService? _digestFill;
 
   BackupCollectorService({
     required MediaDao mediaDao,
     required TagDao tagDao,
     required AlbumDao albumDao,
+    DigestFillService? digestFill,
   }) : _mediaDao = mediaDao,
        _tagDao = tagDao,
-       _albumDao = albumDao;
+       _albumDao = albumDao,
+       _digestFill = digestFill;
+
+  /// Builds the payload, first giving a SHA-256 to every photo in it that
+  /// has none.
+  ///
+  /// A SHA-256 is what lets another phone find the same photo whatever its
+  /// folder, name or date, so it is worth the extra time here. Only the
+  /// photos the archive carries are read, and each only once: the digest is
+  /// saved, so the next backup skips it.
+  Future<BackupPayload> collectFingerprinted({
+    required String appVersion,
+    DateTime? now,
+    void Function(int done, int total)? onProgress,
+  }) async {
+    final first = await collect(appVersion: appVersion, now: now);
+    final fill = _digestFill;
+    if (fill == null) return first;
+
+    final missing = <String>[
+      for (final record in first.mediaRecords)
+        if (record.sha256 == null || record.sha256!.isEmpty) record.id,
+    ];
+    if (missing.isEmpty) return first;
+
+    final added = await fill.fillMissing(missing, onProgress: onProgress);
+    if (added == 0) return first;
+    return collect(appVersion: appVersion, now: now);
+  }
 
   /// Builds the payload.
   ///

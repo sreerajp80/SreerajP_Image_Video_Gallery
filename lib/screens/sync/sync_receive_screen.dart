@@ -1,12 +1,24 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:in_sreerajp_imgvidgal/core/domain/sync/sync_selection_rules.dart';
 import 'package:in_sreerajp_imgvidgal/l10n/generated/app_localizations.dart';
 import 'package:in_sreerajp_imgvidgal/models/sync/sync_role.dart';
-import 'package:in_sreerajp_imgvidgal/models/sync/transfer_outcome.dart';
+import 'package:in_sreerajp_imgvidgal/models/sync/transfer_purpose.dart';
+import 'package:in_sreerajp_imgvidgal/providers/album_providers.dart';
+import 'package:in_sreerajp_imgvidgal/providers/media_providers.dart';
+import 'package:in_sreerajp_imgvidgal/providers/selection_providers.dart';
+import 'package:in_sreerajp_imgvidgal/providers/tag_providers.dart';
+import 'package:in_sreerajp_imgvidgal/providers/vault_providers.dart';
 import 'package:in_sreerajp_imgvidgal/providers/sync_providers.dart';
+import 'package:in_sreerajp_imgvidgal/providers/viewer_providers.dart';
 import 'package:in_sreerajp_imgvidgal/models/sync/transfer_session_state.dart';
 import 'package:in_sreerajp_imgvidgal/widgets/sync/pairing_qr_card.dart';
-import 'package:in_sreerajp_imgvidgal/widgets/sync/transfer_progress_view.dart';
+import 'package:in_sreerajp_imgvidgal/widgets/sync/transfer_session_body.dart';
+
+// The failure text lives with the shared body now; re-exported so older
+// imports of it from here keep working.
+export 'package:in_sreerajp_imgvidgal/widgets/sync/transfer_session_body.dart'
+    show failureMessage;
 
 /// Shows the pairing code and waits for the other phone.
 ///
@@ -26,12 +38,14 @@ class _SyncReceiveScreenState extends ConsumerState<SyncReceiveScreen>
     with WidgetsBindingObserver {
   /// Read once in `initState`: Riverpod 3 does not allow `ref` in `dispose`,
   /// and the port must still be closed there (hard rule 2).
-  late final Future<void> Function() _stopSession;
+  late final Future<void> Function() _resetSession;
+  late final Future<void> Function(bool keepOn) _setKeepScreenOn;
 
   @override
   void initState() {
     super.initState();
-    _stopSession = ref.read(transferSessionProvider).stop;
+    _resetSession = ref.read(transferSessionProvider).reset;
+    _setKeepScreenOn = ref.read(screenSettingsServiceProvider).setKeepScreenOn;
     WidgetsBinding.instance.addObserver(this);
     WidgetsBinding.instance.addPostFrameCallback((_) => _start());
   }
@@ -40,8 +54,10 @@ class _SyncReceiveScreenState extends ConsumerState<SyncReceiveScreen>
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     // Leaving the screen closes the port. Not "eventually", not "on the next
-    // scan": here, on the way out.
-    _stopSession();
+    // scan": here, on the way out. The old result goes too, so the next
+    // transfer screen opens clean.
+    _resetSession();
+    _setKeepScreenOn(false);
     super.dispose();
   }
 
@@ -56,16 +72,9 @@ class _SyncReceiveScreenState extends ConsumerState<SyncReceiveScreen>
   }
 
   Future<void> _start() async {
-    final role = ref.read(syncRoleProvider);
-    final outbox = ref.read(transferOutboxProvider);
-
     await ref
         .read(transferSessionProvider)
-        .host(
-          role: role,
-          deviceName: _deviceName(),
-          toOffer: role == SyncRole.send ? outbox : const [],
-        );
+        .host(role: ref.read(syncRoleProvider), deviceName: _deviceName());
   }
 
   /// A label for the other user to recognise, not an identity.
@@ -79,6 +88,8 @@ class _SyncReceiveScreenState extends ConsumerState<SyncReceiveScreen>
     final l10n = AppLocalizations.of(context)!;
     final session = ref.watch(transferSessionProvider);
     final state = ref.watch(transferStateProvider).value ?? session.state;
+
+    listenToTransfer(ref, _setKeepScreenOn);
 
     return Scaffold(
       appBar: AppBar(
@@ -94,169 +105,99 @@ class _SyncReceiveScreenState extends ConsumerState<SyncReceiveScreen>
             ),
         ],
       ),
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: _Body(state: state),
-        ),
-      ),
+      body: SafeArea(child: _body(l10n, state)),
     );
   }
-}
 
-/// Draws whichever phase the session is in.
-class _Body extends StatelessWidget {
-  final TransferSessionState state;
-
-  const _Body({required this.state});
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    final theme = Theme.of(context);
-
-    switch (state.phase) {
-      case SyncPhase.idle:
-        return const Center(child: CircularProgressIndicator());
-
-      case SyncPhase.waiting:
-        final pairing = state.pairing;
-        if (pairing == null) {
-          return const Center(child: CircularProgressIndicator());
-        }
-        return SingleChildScrollView(
-          child: Column(
-            children: [
-              PairingQrCard(pairing: pairing, manualCode: state.manualCode),
-              const SizedBox(height: 32),
-              const CircularProgressIndicator(),
-              const SizedBox(height: 16),
-              Text(l10n.bodySyncWaiting, style: theme.textTheme.bodyMedium),
-            ],
-          ),
-        );
-
-      case SyncPhase.paired:
-      case SyncPhase.transferring:
-        return Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+  Widget _body(AppLocalizations l10n, TransferSessionState state) {
+    if (state.phase == SyncPhase.waiting && state.pairing != null) {
+      return SingleChildScrollView(
+        padding: const EdgeInsets.all(24),
+        child: Column(
           children: [
-            Text(
-              l10n.bodySyncPairedWith(state.peerName),
-              style: theme.textTheme.titleMedium,
+            PairingQrCard(
+              pairing: state.pairing!,
+              manualCode: state.manualCode,
             ),
-            const SizedBox(height: 8),
-            Text(l10n.labelSyncTransferring, style: theme.textTheme.bodySmall),
             const SizedBox(height: 32),
-            TransferProgressView(progress: state.progress),
-          ],
-        );
-
-      case SyncPhase.done:
-        return _Outcome(state: state);
-
-      case SyncPhase.failed:
-        return Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.error_outline,
-                size: 48,
-                color: theme.colorScheme.error,
-              ),
-              const SizedBox(height: 16),
-              Text(
-                failureMessage(l10n, state.failure),
-                textAlign: TextAlign.center,
-                style: theme.textTheme.bodyLarge,
-              ),
-            ],
-          ),
-        );
-    }
-  }
-}
-
-/// What a finished transfer did.
-class _Outcome extends StatelessWidget {
-  final TransferSessionState state;
-
-  const _Outcome({required this.state});
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    final theme = Theme.of(context);
-    final outcome = state.outcome;
-
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.check_circle_outline,
-            size: 48,
-            color: theme.colorScheme.primary,
-          ),
-          const SizedBox(height: 16),
-          Text(l10n.labelSyncDone, style: theme.textTheme.titleMedium),
-          const SizedBox(height: 16),
-
-          if (outcome != null) ...[
-            if (outcome.receivedCount > 0)
-              Text(l10n.bodySyncResultReceived(outcome.receivedCount)),
-            if (outcome.sentCount > 0)
-              Text(l10n.bodySyncResultSent(outcome.sentCount)),
-            if (outcome.skippedCount > 0)
-              Text(l10n.bodySyncResultSkipped(outcome.skippedCount)),
-            if (outcome.failedCount > 0)
-              Text(
-                l10n.errorSyncResultFailed(outcome.failedCount),
-                style: TextStyle(color: theme.colorScheme.error),
-              ),
-          ],
-
-          if (state.landedInAppFolder) ...[
+            const CircularProgressIndicator(),
             const SizedBox(height: 16),
             Text(
-              l10n.bodySyncSavedToAppFolder,
-              textAlign: TextAlign.center,
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: theme.colorScheme.onSurfaceVariant,
-              ),
+              l10n.bodySyncWaiting,
+              style: Theme.of(context).textTheme.bodyMedium,
             ),
           ],
-        ],
-      ),
+        ),
+      );
+    }
+    return TransferSessionBody(
+      state: state,
+      endActions: [
+        // A new secret and a new port: the old code is never reused.
+        FilledButton(
+          onPressed: _start,
+          child: Text(l10n.actionSyncShowNewCode),
+        ),
+        TextButton(
+          onPressed: () => Navigator.of(context).maybePop(),
+          child: Text(l10n.actionSyncClose),
+        ),
+      ],
     );
   }
 }
 
-/// Turns a transfer failure into something a person can act on.
+/// Keeps the screen on while a transfer is live, and refreshes the send
+/// picker's numbers after each send.
 ///
-/// Shared by both transfer screens, so the same failure never gets two
-/// different explanations depending on which side of it you were on.
-String failureMessage(AppLocalizations l10n, TransferFailure? failure) {
-  switch (failure) {
-    case TransferFailure.noLocalNetwork:
-      return l10n.bodySyncErrorNoNetwork;
-    case TransferFailure.pairingTimeout:
-      return l10n.bodySyncErrorPairingTimeout;
-    case TransferFailure.remoteAddressRefused:
-      return l10n.bodySyncErrorRefused;
-    case TransferFailure.handshakeRejected:
-      return l10n.bodySyncErrorHandshake;
-    case TransferFailure.protocolMismatch:
-      return l10n.bodySyncErrorProtocol;
-    case TransferFailure.connectionLost:
-      return l10n.bodySyncErrorConnection;
-    case TransferFailure.idleTimeout:
-      return l10n.bodySyncErrorIdle;
-    case TransferFailure.cancelled:
-      return l10n.bodySyncErrorCancelled;
-    case TransferFailure.unknown:
-    case null:
-      return l10n.bodySyncErrorUnknown;
-  }
+/// Called from the build of both transfer screens. A phone that sleeps half
+/// way through a large send drops the Wi-Fi and the session with it.
+void listenToTransfer(
+  WidgetRef ref,
+  Future<void> Function(bool keepOn) setKeepScreenOn,
+) {
+  ref.listen<AsyncValue<TransferSessionState>>(transferStateProvider, (
+    previous,
+    next,
+  ) {
+    final before = previous?.value?.phase;
+    final now = next.value?.phase;
+    if (now == null || now == before) return;
+
+    setKeepScreenOn(now.isActive && now != SyncPhase.waiting);
+
+    // The receiving side indexed the new files itself, outside the normal
+    // scan, so the lists must be told. Once per send, after indexing, since
+    // the totals are only updated then.
+    final refresh = SyncSelectionRules.refreshAfterReceive(
+      receivedBefore: previous?.value?.totals.receivedCount ?? 0,
+      receivedNow: next.value?.totals.receivedCount ?? 0,
+      vaultBefore: previous?.value?.vaultReceivedCount ?? 0,
+      vaultNow: next.value?.vaultReceivedCount ?? 0,
+    );
+    if (next.value?.role == SyncRole.receive) {
+      if (refresh.library) {
+        ref.read(mediaLibraryVersionProvider.notifier).state++;
+        ref.read(albumRevisionProvider.notifier).state++;
+        ref.read(tagRevisionProvider.notifier).state++;
+      }
+      if (refresh.vault) ref.read(vaultRevisionProvider.notifier).state++;
+    }
+
+    if (now == SyncPhase.batchDone) {
+      final peerId = next.value?.peer?.installId;
+      if (peerId != null) ref.invalidate(syncSourcesProvider(peerId));
+    }
+
+    // A quick send that delivered files is done with the selection. Cleared
+    // here, not when the screen opened, so backing out keeps it.
+    final state = next.value;
+    if (state != null &&
+        state.role == SyncRole.send &&
+        (now == SyncPhase.batchDone || now == SyncPhase.done) &&
+        state.totals.sentCount > 0 &&
+        ref.read(transferPurposeProvider) == TransferPurpose.quickSend) {
+      ref.read(selectionProvider.notifier).clear();
+    }
+  });
 }

@@ -59,6 +59,14 @@ void main() {
     });
   });
 
+  test('the scanner uses 720p by default so codes read from a distance', () {
+    final scanner = PairingQrScanner(
+      onCode: (_) => false,
+      errorBuilder: (_) => const SizedBox(),
+    );
+    expect(scanner.resolution, ResolutionPreset.high);
+  });
+
   Future<void> pumpScanner(
     WidgetTester tester,
     Future<List<CameraDescription>> Function() listCameras,
@@ -93,4 +101,90 @@ void main() {
     );
     expect(find.text('type the code'), findsOneWidget);
   });
+
+  Future<void> pumpScannerStarting(
+    WidgetTester tester,
+    Future<List<CameraDescription>> Function() listCameras,
+  ) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        child: MaterialApp(
+          home: Scaffold(
+            body: PairingQrScanner(
+              onCode: (_) => false,
+              listCameras: listCameras,
+              errorBuilder: (_) => const Text('type the code'),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+  }
+
+  void sendLifecycle(WidgetTester tester, List<AppLifecycleState> states) {
+    for (final state in states) {
+      tester.binding.handleAppLifecycleStateChanged(state);
+    }
+  }
+
+  testWidgets(
+    'the permission dialog coming and going does not start a second camera',
+    (tester) async {
+      final pending = Completer<List<CameraDescription>>();
+      var calls = 0;
+      await pumpScannerStarting(tester, () {
+        calls++;
+        return pending.future;
+      });
+      expect(calls, 1);
+
+      // What Android sends while the "Allow camera?" dialog is open.
+      sendLifecycle(tester, const [
+        AppLifecycleState.inactive,
+        AppLifecycleState.resumed,
+      ]);
+      await tester.pump();
+
+      expect(calls, 1);
+      expect(find.text('type the code'), findsNothing);
+
+      pending.complete(const <CameraDescription>[]);
+      await tester.pump();
+    },
+  );
+
+  testWidgets(
+    'leaving the app while the camera starts begins a fresh start on return',
+    (tester) async {
+      final first = Completer<List<CameraDescription>>();
+      var calls = 0;
+      await pumpScannerStarting(tester, () {
+        calls++;
+        if (calls == 1) return first.future;
+        return Future<List<CameraDescription>>.error(
+          CameraException('denied', null),
+        );
+      });
+
+      sendLifecycle(tester, const [
+        AppLifecycleState.inactive,
+        AppLifecycleState.hidden,
+        AppLifecycleState.paused,
+        AppLifecycleState.hidden,
+        AppLifecycleState.inactive,
+        AppLifecycleState.resumed,
+      ]);
+      await tester.pump();
+      expect(calls, 1);
+
+      // The stale start ends. Its failure is ignored and a fresh start runs.
+      first.completeError(CameraException('stale', null));
+      await tester.pump();
+      await tester.pump();
+
+      expect(calls, 2);
+      expect(find.text('type the code'), findsOneWidget);
+    },
+  );
 }

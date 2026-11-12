@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:crypto/crypto.dart';
@@ -154,4 +155,51 @@ class TransferCryptoService {
   /// Used to check an arriving file against the digest its manifest entry
   /// promised, before it is allowed anywhere near the gallery.
   static String hexDigest(List<int> bytes) => sha256.convert(bytes).toString();
+
+  /// SHA-256 of a file, lower-case hex, read in pieces.
+  ///
+  /// Never reads the whole file into memory. A transfer may carry a video of
+  /// several gigabytes, and holding all of it at once would run the app out
+  /// of memory.
+  static Future<String> fileDigest(File file) async {
+    final digest = await sha256.bind(file.openRead()).first;
+    return digest.toString();
+  }
+}
+
+/// Builds a SHA-256 one piece at a time, as the bytes arrive.
+///
+/// Used by the receiving side, so checking an incoming file costs a few
+/// hundred bytes of memory however large the file is.
+class StreamingSha256 {
+  late final ByteConversionSink _input;
+  Digest? _result;
+
+  StreamingSha256() {
+    _input = sha256.startChunkedConversion(_DigestCatcher(this));
+  }
+
+  /// Adds the next piece of the file.
+  void add(List<int> chunk) => _input.add(chunk);
+
+  /// Finishes and returns the digest, lower-case hex.
+  ///
+  /// Call once, after the last piece.
+  String close() {
+    _input.close();
+    return _result.toString();
+  }
+}
+
+/// Catches the one digest the hash produces when it is closed.
+class _DigestCatcher implements Sink<Digest> {
+  final StreamingSha256 _owner;
+
+  _DigestCatcher(this._owner);
+
+  @override
+  void add(Digest data) => _owner._result = data;
+
+  @override
+  void close() {}
 }

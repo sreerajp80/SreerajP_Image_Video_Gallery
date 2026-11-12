@@ -62,6 +62,11 @@ class AppSettingsNotifier extends StateNotifier<AppSettings> {
   Future<void> setSecureDelete(bool value) =>
       _update(state.copyWith(secureDelete: value));
 
+  /// Takes every preference from [settings] at once.
+  ///
+  /// Used when the user accepts the old phone's settings after a phone move.
+  Future<void> applyAll(AppSettings settings) => _update(settings);
+
   /// Puts everything back to how a fresh install starts.
   Future<void> resetToDefaults() => _update(AppSettings.defaults);
 

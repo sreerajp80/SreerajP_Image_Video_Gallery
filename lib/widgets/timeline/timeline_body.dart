@@ -84,6 +84,9 @@ class TimelineBody extends ConsumerWidget {
                 onRefresh: onRefresh,
                 child: CustomScrollView(
                   controller: scrollController,
+                  // A short timeline (fits on one screen) must still take a
+                  // drag, or RefreshIndicator never sees an overscroll.
+                  physics: const AlwaysScrollableScrollPhysics(),
                   slivers: [
                     if (flashbacks != null && flashbacks.isNotEmpty)
                       SliverToBoxAdapter(

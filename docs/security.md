@@ -368,8 +368,8 @@ every release ([release_process.md](release_process.md) §6).
 
 ## 11. Permissions
 
-Our manifest declares exactly these 12 Android permissions, and nothing else. The merged release
-manifest holds 13: these 12 plus `in.sreerajp.imgvidgal.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION`.
+Our manifest declares exactly these 13 Android permissions, and nothing else. The merged release
+manifest holds 14: these 13 plus `in.sreerajp.imgvidgal.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION`.
 `androidx.core` defines that one as a signature-level permission private to this app, so that
 receivers it registers in code cannot be reached by other apps. It grants nothing to the app and
 the user never sees it.
@@ -392,6 +392,7 @@ not required, so a phone with no camera can still install the app and pair by ty
 | `ACCESS_WIFI_STATE` | Read the phone's own Wi-Fi address to bind the listener and build the pairing code. Not a connectivity check | Install time | — |
 | `ACCESS_NETWORK_STATE` | Declared with the transfer permissions. No app code calls `ConnectivityManager`; the need for it is not written down in the manifest — see §17 | Install time | — |
 | `CHANGE_WIFI_STATE` | Offer a scanned Wi-Fi code to Android as a network *suggestion*, on the in-image scanner screen only. The app never joins a network itself | Install time | Falls back to opening Wi-Fi settings |
+| `MANAGE_MEDIA` (API 31+, special access) | Lets a permanent delete, "Secure delete" and the vault's "shred originals" skip Android's own "Allow Drishya to delete…?" prompt. When it is on, the app shows its own confirmation instead, so the user is still asked once after "Delete permanently". This is not "All files access" (`MANAGE_EXTERNAL_STORAGE`), which the app does not use | Android never prompts for it. While it is off, the app shows a short dialog on each fresh app start (Android 12+, full photo access only), with "Not now" and "Open settings". Also reachable from Settings → Safety → Manage media. Both open Android's "Media management apps" page; the user decides there | Android shows its own prompt before each permanent delete, as before |
 | `WRITE_EXTERNAL_STORAGE` (`maxSdkVersion=28`) | Android 9 and older only: delete, or write over and delete, a photo the app did not create ("Delete permanently", "Secure delete", vault "shred the original"). Android 10+ never sees it; there the app asks MediaStore per file | With the media permission (same group, no extra prompt); again before a delete if missing | The delete reports that nothing was deleted; the file stays |
 
 Permission review rules:
@@ -696,7 +697,9 @@ key.
 | Single file | 4 GB | Refused before the transfer is agreed to |
 | Files per transfer | 2000 | Refused on both sides |
 | Pairing window | 180 s | The listener closes itself if nobody connects |
-| Idle timeout | 60 s | A connected socket that nothing crosses is closed |
+| Heartbeat | every 15 s | Each side sends an encrypted `ping` after the handshake, so a sender choosing folders or hashing a large video does not look idle |
+| Idle timeout | 60 s | A connected socket where nothing *arrives* for this long is closed, so a silent peer is noticed even while this side keeps sending |
+| One send | 5 GB, the receiver's free space less a reserve, and 2000 files | Keeps each send short; the rest goes in the next send (§19.6) |
 
 ### 19.5 What happens to an arriving file
 
@@ -709,10 +712,108 @@ Nothing reaches the gallery on the sender's word. Every incoming file is:
    parent references, leading dots and control characters, so a peer offering
    `../../etc/passwd` gets a plain file name;
 5. published through MediaStore with `IS_PENDING` set until the bytes are all written, so no
-   other app ever sees a half-copied photo.
+   other app ever sees a half-copied photo. It goes to `Pictures/Drishya Sync/<folder>`, where
+   `<folder>` is the sender's folder name cleaned by `FolderNameRules` (one plain level, no
+   separators, no `..`, no leading dot, no control or refused characters, at most 80 characters)
+   and checked again in Kotlin (`safeRelativeDir`) before the write.
 
 A file that fails any check is deleted and reported, never saved. Staging files a crash left
 behind are swept when the transfer screen next opens.
+
+The SHA-256 is computed and checked in pieces as the bytes stream (`fileDigest`,
+`StreamingSha256`), never by holding the whole file in memory.
+
+Before each file the receiver checks its free space (`hasRoomFor`: two copies of the file plus a
+reserve of 5% or 200 MB). With no room it reads past the file without keeping it, answers
+`noSpace`, and the sender stops. Files already received stay.
+
+### 19.6 Device Sync over Wi-Fi (schema 9, protocol 2)
+
+After the handshake each side sends an encrypted `peerInfo` frame:
+
+| Field | Sent by | What it is |
+|---|---|---|
+| `installId` | both | A random 32-hex-character id made once per install (`DeviceIdentityService`, `Random.secure`) and kept in plain preferences. Not a hardware id, not a secret. Sent only inside the encrypted session, to a phone the user paired by hand |
+| `freeBytes` | receiver | Its free space, read with `StatFs` (no permission). Sent again after every send |
+| `vaultReady` | receiver | Whether it has a vault set up with a working keystore key. The sender sends no vault files to a phone that says false |
+
+A peer's `installId` is untrusted input: `PeerInfo.fromJson` keeps it only if it is 1–64
+characters of letters, digits and dashes, because it is stored as a database key.
+
+The sender stores **marks** in the `sync_marks` table: which media went to which install id,
+with its SHA-256, size and time. Marks only decide what is *offered*; the receiver's SHA-256
+check still decides what moves. A mark whose file has changed size or digest does not count. A
+mark is deleted with its media row (foreign key, `ON DELETE CASCADE`).
+
+One pairing can carry several sends. The sender ends it with a `bye` frame; the receiver also
+stops on `cancel`, on any error, and when its screen closes.
+
+What travels with each file, besides the bytes: favourite, notes, tag names, album names, place
+(address, latitude, longitude) and the source folder name. All are untrusted: names go through
+the tag and album name rules, numbers must be finite, and the folder name goes through
+`FolderNameRules`. They are written only after the scan has indexed the new file, and only fill
+gaps.
+
+Protocol version 3 (phone move, below) is not compatible with version 2 or 1: a pairing code
+from another version is not recognised, and a typed code is refused at the handshake with the
+existing "different version" message. Update the app on both phones.
+
+### 19.6.1 Phone move: app data, settings and the vault (protocol 3)
+
+"Move to a new phone" adds two things on Finish, after the last batch of files.
+
+**App data and settings.** `PhoneMoveDataService` packs the same payload as a backup (§14) plus
+`AppSettings` into one gzip envelope. It travels only inside the encrypted session, in
+`appDataStart` (length and SHA-256), `appDataChunk` and `appDataAck` frames. The receiver:
+
+- refuses an announced length over `syncMaxAppDataBytes` (32 MB) or a body longer than announced;
+- checks the SHA-256, unpacks with a 256 MB ceiling (no gzip bomb), and parses settings field by
+  field (`AppSettings.fromJson`, bad fields fall back to defaults);
+- writes nothing until the user has seen the restore preview and said yes. Settings replace the
+  receiver's own, so they get a separate question.
+
+Settings hold theme, language, grid size and four switches. **Never sent:** vault PIN and
+biometric setup (secure storage, not `AppSettings`), Android permissions, the install id, and
+the `sync_marks` table.
+
+**The vault, only if chosen.** This is the one place vault content leaves the phone, so:
+
+- it is off by default, and turning it on needs the vault to be unlocked on the sending phone;
+- it is sent only to a phone whose `peerInfo` says `vaultReady`;
+- the keystore key cannot leave the phone, so each item is decrypted into a working file in the
+  app-private vault folder, sent, and shredded at once (`VaultTransferService.openPlain` /
+  `closePlain`, `afterFile` in `TransferExchangeService.send`). At most one plaintext copy
+  exists at a time. A crash leaves a working file that the sweep on the next unlock shreds;
+- on the receiver, an entry marked `vault: true` is staged app-private as usual, then
+  `VaultTransferService.importReceived` encrypts it with the receiver's own key, adds the row
+  last, and shreds the staged copy on every path. It is never published to MediaStore. With no
+  vault, the entry is refused;
+- the sending phone's vault is not changed. It is a copy;
+- a vault file is always taken, even if the receiver's gallery has the same photo, because the
+  public copy is not the private one.
+
+Known limit: a staged vault file left by a crash mid-receive is removed by the staging sweep with
+a plain delete, not a shred. It is app-private and never indexed.
+
+### 19.7 Device Sync by QR (no network)
+
+App data only — the same content as a backup archive (§14), never photos.
+
+1. The receiving phone shows a **key code**: `DRISHYA-QK1|<session id>|<32-byte AES key>`, made
+   from `SecureRandom` for this one sync.
+2. The sending phone scans it, gathers the data, gzips it, and encrypts it with AES-256-GCM under
+   that key (fresh IV; the session id is bound in as associated data).
+3. The result is split into frames of 400 bytes and played as a loop of QR codes:
+   `DRISHYA-QD1|<session>|<index>|<count>|<check>|<data>`.
+
+The receiver drops any frame for another session, with a failed 8-hex-character check, a
+repeat, or a count over 150. Only when every frame is in does it decrypt; AES-GCM refuses
+anything changed or incomplete. The data then goes through the normal restore preview and apply
+(§14), so the user sees the counts first, and nothing is removed or blanked.
+
+Somebody who films only the data codes cannot read the notes in them. Somebody who films the
+key code as well can, which is the same exposure as watching the screen; the codes are meant to
+be shown face to face. The key is never stored.
 
 ---
 

@@ -51,6 +51,7 @@ void main() {
         .toSet();
     final Set<String> listed = <String>{
       ...namesOfKind(AppPermissionKind.explicit).keys,
+      ...namesOfKind(AppPermissionKind.special).keys,
       ...namesOfKind(AppPermissionKind.implicit).keys,
     }..remove(kMergedOnlyPermission);
 
@@ -66,6 +67,7 @@ void main() {
     final Map<String, AndroidPermissionName> listed =
         <String, AndroidPermissionName>{
           ...namesOfKind(AppPermissionKind.explicit),
+          ...namesOfKind(AppPermissionKind.special),
           ...namesOfKind(AppPermissionKind.implicit),
         };
     for (final String block in blocks.where((b) => !isRemoved(b))) {

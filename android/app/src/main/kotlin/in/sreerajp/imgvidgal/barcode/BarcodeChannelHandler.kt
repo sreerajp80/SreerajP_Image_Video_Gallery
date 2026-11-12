@@ -12,9 +12,11 @@ import com.google.zxing.MultiFormatReader
 import com.google.zxing.NotFoundException
 import com.google.zxing.PlanarYUVLuminanceSource
 import com.google.zxing.RGBLuminanceSource
+import com.google.zxing.ReaderException
 import com.google.zxing.Result
 import com.google.zxing.common.HybridBinarizer
 import com.google.zxing.multi.GenericMultipleBarcodeReader
+import com.google.zxing.qrcode.QRCodeReader
 import io.flutter.plugin.common.BinaryMessenger
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
@@ -44,6 +46,12 @@ class BarcodeChannelHandler(
 
     private val worker = Executors.newSingleThreadExecutor()
     private val mainHandler = Handler(Looper.getMainLooper())
+
+    /**
+     * The reader for live camera frames. Made once and reused. It is only
+     * ever used on [worker], which is a single thread, so this is safe.
+     */
+    private val liveReader = QRCodeReader()
 
     fun dispose() {
         channel.setMethodCallHandler(null)
@@ -97,10 +105,14 @@ class BarcodeChannelHandler(
     }
 
     /**
-     * QR codes in one camera frame, given as its brightness (Y) plane only.
+     * The QR code in one camera frame, given as its brightness (Y) plane only.
      *
      * The colour planes are never sent: a barcode reader needs light and
      * dark, nothing else.
+     *
+     * This uses the light, fast decode ([decodeLiveQr]), not the thorough
+     * one used for still pictures. A new frame comes many times a second, so
+     * checking more frames quickly beats checking each one slowly.
      */
     private fun decodeLuminance(call: MethodCall, result: MethodChannel.Result) {
         val bytes = call.argument<ByteArray>("bytes")
@@ -124,11 +136,29 @@ class BarcodeChannelHandler(
                 val source = PlanarYUVLuminanceSource(
                     bytes, rowStride, height, 0, 0, width, height, false
                 )
-                reply(result, codes = decodeAll(source, QR_ONLY))
+                reply(result, codes = decodeLiveQr(source))
             } catch (error: Exception) {
                 reply(result, error = ERROR_DECODE_FAILED)
             }
         }
+    }
+
+    /**
+     * One QR code from a live frame: QR only, no TRY_HARDER, no search for
+     * more codes. A frame this misses is soon followed by the next one.
+     */
+    private fun decodeLiveQr(source: LuminanceSource): List<Map<String, String>> {
+        val found: Result = try {
+            liveReader.decode(BinaryBitmap(HybridBinarizer(source)))
+        } catch (_: ReaderException) {
+            // No readable code in this frame (not found, bad checksum or a
+            // damaged code) is a normal answer, not a failure.
+            return emptyList()
+        } finally {
+            liveReader.reset()
+        }
+        if (found.text.isNullOrEmpty()) return emptyList()
+        return listOf(mapOf("value" to found.text, "format" to found.barcodeFormat.name))
     }
 
     private fun decodeAll(
@@ -207,8 +237,6 @@ class BarcodeChannelHandler(
 
         /** Largest camera frame side accepted. */
         const val MAX_FRAME_SIDE = 4096
-
-        val QR_ONLY: List<BarcodeFormat> = listOf(BarcodeFormat.QR_CODE)
 
         val ALL_FORMATS: List<BarcodeFormat> = listOf(
             BarcodeFormat.QR_CODE,

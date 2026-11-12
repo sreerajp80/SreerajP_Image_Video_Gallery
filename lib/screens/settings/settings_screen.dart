@@ -69,6 +69,12 @@ class SettingsScreen extends ConsumerWidget {
               onTap: () => context.push(kRouteBackup),
             ),
             _SettingsCategoryCard(
+              icon: Icons.sync_alt,
+              title: l10n.titleDeviceSync,
+              subtitle: l10n.descDeviceSyncSubtitle,
+              onTap: () => context.push(kRouteDeviceSync),
+            ),
+            _SettingsCategoryCard(
               icon: Icons.help_outline,
               title: l10n.helpSettings,
               subtitle: l10n.descSettingsHelpCardSubtitle,

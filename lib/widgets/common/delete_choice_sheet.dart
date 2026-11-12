@@ -1,6 +1,9 @@
 import 'package:material_ui/material_ui.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:in_sreerajp_imgvidgal/l10n/generated/app_localizations.dart';
+import 'package:in_sreerajp_imgvidgal/models/media/delete_confirm_info.dart';
 import 'package:in_sreerajp_imgvidgal/models/media/media_delete_result.dart';
+import 'package:in_sreerajp_imgvidgal/providers/media_providers.dart';
 
 /// The snackbar text for a finished permanent delete.
 ///
@@ -89,4 +92,22 @@ Future<DeleteChoice?> showDeleteChoiceSheet(
       );
     },
   );
+}
+
+/// Whether the app must show its own "Delete permanently?" dialog after the
+/// user picked "Delete permanently" in the choice sheet.
+///
+/// The user is asked exactly once after the sheet. When Android shows its own
+/// prompt (Android 11+, "Manage media" off), that prompt is the one, and the
+/// app's dialog would only repeat it. Otherwise (Android 10 and older, or
+/// "Manage media" on) the app asks. Read fresh each time, since the user can
+/// change "Manage media" in system settings at any moment. When unsure, the
+/// app asks: one extra dialog is better than none.
+Future<bool> appMustConfirmPermanentDelete(WidgetRef ref) async {
+  try {
+    final info = await ref.refresh(deleteConfirmInfoProvider.future);
+    return info.appMustConfirm;
+  } catch (_) {
+    return DeleteConfirmInfo.fallback.appMustConfirm;
+  }
 }

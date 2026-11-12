@@ -7,6 +7,7 @@ import 'package:in_sreerajp_imgvidgal/models/media_item.dart';
 import 'package:in_sreerajp_imgvidgal/repositories/database/media_dao.dart';
 import 'package:in_sreerajp_imgvidgal/services/media/media_store_channel.dart';
 import 'package:in_sreerajp_imgvidgal/services/media/media_type_resolver.dart';
+import 'package:in_sreerajp_imgvidgal/services/media/stale_cleanup_store.dart';
 import 'package:in_sreerajp_imgvidgal/core/logging/app_logger.dart';
 
 /// Stage the scanner is currently in.
@@ -127,12 +128,18 @@ class MediaScannerService {
   final MediaStoreChannel _channel;
   final MediaDao _mediaDao;
   final int _batchSize;
+  final StaleCleanupStore? _staleStore;
+  final DateTime Function() _now;
 
   final StreamController<ScanProgress> _progressController =
       StreamController<ScanProgress>.broadcast();
 
   ScanProgress _progress = const ScanProgress(phase: ScanPhase.idle);
   bool _isScanning = false;
+
+  /// Above this many ghost rows the safety stop in [_indexPass] may apply.
+  @visibleForTesting
+  static const int ghostSafetyMin = 20;
 
   /// Unreadable rows seen by the last full pass. They are on the device but
   /// never in the index, so the quick-scan count check allows for them.
@@ -142,9 +149,37 @@ class MediaScannerService {
     required MediaStoreChannel channel,
     required MediaDao mediaDao,
     int batchSize = AppConstants.scanBatchSize,
+    StaleCleanupStore? staleStore,
+    DateTime Function()? now,
   }) : _channel = channel,
        _mediaDao = mediaDao,
-       _batchSize = batchSize;
+       _batchSize = batchSize,
+       _staleStore = staleStore,
+       _now = now ?? DateTime.now;
+
+  /// Runs the ghost-entry cleanup when it has not run in the last
+  /// [AppConstants.staleCleanupInterval]. Returns how many entries went.
+  ///
+  /// Never throws: a failed cleanup must not stop the scan.
+  Future<int> _cleanGhostsIfDue() async {
+    final store = _staleStore;
+    if (store == null) return 0;
+    try {
+      final now = _now();
+      final last = await store.lastRun();
+      if (last != null &&
+          now.difference(last) < AppConstants.staleCleanupInterval &&
+          !now.isBefore(last)) {
+        return 0;
+      }
+      final cleaned = await _channel.cleanStaleEntries();
+      await store.setLastRun(now);
+      return cleaned;
+    } catch (error) {
+      AppLogger.warning('Ghost cleanup before the scan failed', error: error);
+      return 0;
+    }
+  }
 
   /// Live scan progress. Broadcast, so several listeners are allowed.
   Stream<ScanProgress> get progressStream => _progressController.stream;
@@ -195,8 +230,16 @@ class MediaScannerService {
       // A quick pass cannot tell which rows Android hides, and with full
       // access it cannot bring hidden rows back, so either case needs a full
       // pass. With limited access the list is short, so this stays cheap.
+      // Ghost entries (Android 10) are dropped from MediaStore first, so the
+      // pass below no longer sees them. If any went, only a full pass lets
+      // the clean-up step remove them from the index too.
+      final ghostsCleaned = fullAccess ? await _cleanGhostsIfDue() : 0;
+
       final quickPass =
-          incremental && fullAccess && !await _mediaDao.hasOutOfReach();
+          incremental &&
+          fullAccess &&
+          ghostsCleaned == 0 &&
+          !await _mediaDao.hasOutOfReach();
 
       final int? since = quickPass
           ? await _mediaDao.getNewestDateModifiedMs()
@@ -274,8 +317,15 @@ class MediaScannerService {
   /// Reads MediaStore page by page and upserts every readable row.
   ///
   /// With [sinceDateModifiedMs] only rows modified at or after it are read.
+  ///
+  /// A ghost row (file gone, Android 10) is not indexed, so the gallery does
+  /// not show a photo that is not there, and a full pass then removes an
+  /// older copy from the index. Safety stop: if more than half the rows (and
+  /// more than [ghostSafetyMin]) look like ghosts, they are all indexed as
+  /// usual; that points to a storage problem, such as a removed SD card.
   Future<_PassResult> _indexPass({required int? sinceDateModifiedMs}) async {
     final seenIds = <String>{};
+    final ghosts = <MediaItem>[];
     var scanned = 0;
     var skipped = 0;
     var indexed = 0;
@@ -295,6 +345,10 @@ class MediaScannerService {
         scanned++;
         try {
           final item = mapEntryToMediaItem(entry);
+          if (entry.fileMissing) {
+            ghosts.add(item);
+            continue;
+          }
           items.add(item);
           seenIds.add(item.id);
         } catch (error) {
@@ -319,6 +373,21 @@ class MediaScannerService {
 
       if (entries.length < _batchSize) break;
       offset += entries.length;
+    }
+
+    if (ghosts.isNotEmpty) {
+      if (ghosts.length > ghostSafetyMin && ghosts.length * 2 > scanned) {
+        AppLogger.warning(
+          'Most media looked missing; indexing it anyway as a safety stop',
+        );
+        changed += await _mediaDao.batchUpsertMediaItems(ghosts);
+        indexed += ghosts.length;
+        seenIds.addAll(ghosts.map((item) => item.id));
+      } else {
+        // Counted as skipped, so the quick-scan count check still matches
+        // MediaStore, which keeps listing the ghost.
+        skipped += ghosts.length;
+      }
     }
 
     return _PassResult(

@@ -8,6 +8,7 @@ import 'package:in_sreerajp_imgvidgal/l10n/generated/app_localizations.dart';
 import 'package:in_sreerajp_imgvidgal/models/album_summary.dart';
 import 'package:in_sreerajp_imgvidgal/models/batch/batch_action.dart';
 import 'package:in_sreerajp_imgvidgal/models/media_item.dart';
+import 'package:in_sreerajp_imgvidgal/models/sync/transfer_purpose.dart';
 import 'package:in_sreerajp_imgvidgal/providers/album_providers.dart';
 import 'package:in_sreerajp_imgvidgal/providers/batch_providers.dart';
 import 'package:in_sreerajp_imgvidgal/providers/media_providers.dart';
@@ -168,10 +169,14 @@ class BatchActionBar extends ConsumerWidget {
     // Transfer is not a batch at all: it hands the selection to the screen
     // that owns the socket. Doing it here would mean two places could open a
     // listener, which is exactly what the "one screen owns it" rule forbids.
+    //
+    // The selection is kept, so going back finds it still there. It is
+    // cleared only once a send has delivered files (`listenToTransfer`).
     if (action == BatchAction.transfer) {
       ref.read(transferOutboxProvider.notifier).state = items;
-      ref.read(selectionProvider.notifier).clear();
-      if (context.mounted) context.push(kRouteSync);
+      ref.read(transferPurposeProvider.notifier).state =
+          TransferPurpose.quickSend;
+      if (context.mounted) context.push(kRouteSyncStartSend);
       return;
     }
 
@@ -469,6 +474,30 @@ class BatchActionBar extends ConsumerWidget {
     List<MediaItem> items,
   ) async {
     final l10n = AppLocalizations.of(context)!;
+    // Android's own prompt, when it shows one, is the confirmation.
+    final mustConfirm = await appMustConfirmPermanentDelete(ref);
+    if (!context.mounted) return;
+    if (mustConfirm) {
+      final confirmed = await _confirmDeletePermanently(context, items.length);
+      if (!confirmed || !context.mounted) return;
+    }
+
+    final result = await ref
+        .read(trashControllerProvider.notifier)
+        .deleteItems(items);
+    if (result.anyDeleted) {
+      ref.invalidate(mediaItemsProvider);
+      ref.read(selectionProvider.notifier).clear();
+    }
+    if (context.mounted) _tell(context, deleteResultMessage(l10n, result));
+  }
+
+  /// The app's own "Delete permanently?" dialog, for when Android will not ask.
+  static Future<bool> _confirmDeletePermanently(
+    BuildContext context,
+    int count,
+  ) async {
+    final l10n = AppLocalizations.of(context)!;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
@@ -477,7 +506,7 @@ class BatchActionBar extends ConsumerWidget {
           color: Theme.of(dialogContext).colorScheme.error,
         ),
         title: Text(l10n.titleTrashDeletePermanentlyConfirm),
-        content: Text(l10n.bodyDeletePermanentlyConfirmCount(items.length)),
+        content: Text(l10n.bodyDeletePermanentlyConfirmCount(count)),
         actions: <Widget>[
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(false),
@@ -493,16 +522,7 @@ class BatchActionBar extends ConsumerWidget {
         ],
       ),
     );
-    if (confirmed != true || !context.mounted) return;
-
-    final result = await ref
-        .read(trashControllerProvider.notifier)
-        .deleteItems(items);
-    if (result.anyDeleted) {
-      ref.invalidate(mediaItemsProvider);
-      ref.read(selectionProvider.notifier).clear();
-    }
-    if (context.mounted) _tell(context, deleteResultMessage(l10n, result));
+    return confirmed == true;
   }
 
   static void _tell(BuildContext context, String message) {

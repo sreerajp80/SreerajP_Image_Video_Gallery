@@ -275,8 +275,13 @@ class _MediaViewerScreenState extends ConsumerState<MediaViewerScreen> {
   /// written over first when Secure delete is on.
   Future<void> _deletePermanently(MediaItem item) async {
     final l10n = AppLocalizations.of(context)!;
-    final confirmed = await confirmViewerDeletePermanently(context);
-    if (!confirmed || !mounted) return;
+    // Android's own prompt, when it shows one, is the confirmation.
+    final mustConfirm = await appMustConfirmPermanentDelete(ref);
+    if (!mounted) return;
+    if (mustConfirm) {
+      final confirmed = await confirmViewerDeletePermanently(context);
+      if (!confirmed || !mounted) return;
+    }
 
     final result = await ref
         .read(viewerActionsProvider)

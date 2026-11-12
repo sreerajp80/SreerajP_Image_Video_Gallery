@@ -6,6 +6,10 @@ enum AppPermissionKind {
   /// A normal permission: Android grants it at install, with no prompt.
   implicit,
 
+  /// A special access: Android never prompts for it. It stays off until the
+  /// user turns it on in Android settings.
+  special,
+
   /// A permission a library asks for that the app removes from its manifest.
   removed,
 }
@@ -25,6 +29,7 @@ enum AppPermissionId {
   wakeLock,
   recordAudio,
   writeStorage,
+  manageMedia,
 }
 
 /// One Android permission name, with the Android versions it applies to.

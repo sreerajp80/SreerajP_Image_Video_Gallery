@@ -10,6 +10,7 @@ import 'package:in_sreerajp_imgvidgal/models/media_item.dart';
 import 'package:in_sreerajp_imgvidgal/providers/album_providers.dart';
 import 'package:in_sreerajp_imgvidgal/providers/media_providers.dart';
 import 'package:in_sreerajp_imgvidgal/screens/home/folders_tab.dart';
+import 'package:in_sreerajp_imgvidgal/widgets/home/home_overflow_menu.dart';
 import 'package:in_sreerajp_imgvidgal/core/l10n/sanskrit_fallback_delegates.dart';
 import '../../helpers/locale_checks.dart';
 
@@ -68,6 +69,8 @@ void main() {
     expect(find.text('Camera'), findsOneWidget);
     expect(find.text('Screenshots'), findsOneWidget);
     expect(find.byType(GridView), findsOneWidget);
+    // The ⋮ menu, the way to Settings, is on this tab too.
+    expect(find.byType(HomeOverflowMenu), findsOneWidget);
   });
 
   testWidgets('FoldersTab renders empty state when folder list is empty', (

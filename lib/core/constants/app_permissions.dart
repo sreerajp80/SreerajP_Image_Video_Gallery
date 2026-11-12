@@ -37,6 +37,17 @@ const List<AppPermissionInfo> kAppPermissions = <AppPermissionInfo>[
     androidNames: <AndroidPermissionName>[AndroidPermissionName('CAMERA')],
   ),
 
+  // You turn these on in Android settings. Android never prompts for them.
+  // "Manage media" lets a permanent delete skip Android's own prompt; the
+  // app then shows its own confirmation instead.
+  AppPermissionInfo(
+    id: AppPermissionId.manageMedia,
+    kind: AppPermissionKind.special,
+    androidNames: <AndroidPermissionName>[
+      AndroidPermissionName('MANAGE_MEDIA', minApi: 31),
+    ],
+  ),
+
   // Granted at install.
   AppPermissionInfo(
     id: AppPermissionId.biometric,

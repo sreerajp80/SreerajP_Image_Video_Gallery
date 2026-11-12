@@ -394,6 +394,35 @@ void main() {
     );
   });
 
+  test('v8 to v9 adds the Device Sync marks table and keeps rows', () async {
+    await seedOldDatabase(
+      version: 8,
+      withSearchTable: true,
+      seed: (db) async {
+        await db.execute(
+          'ALTER TABLE media_items '
+          'ADD COLUMN is_out_of_reach INTEGER NOT NULL DEFAULT 0;',
+        );
+      },
+    );
+
+    final db = await openWithHelper(dbPath);
+
+    expect(await db.getVersion(), DatabaseConstants.schemaVersion);
+    expect(await db.query(DatabaseConstants.tableMedia), hasLength(1));
+
+    final mediaId =
+        (await db.query(DatabaseConstants.tableMedia)).single['id']! as String;
+    await db.insert(DatabaseConstants.tableSyncMarks, <String, Object?>{
+      DatabaseConstants.colSyncMarkMediaId: mediaId,
+      DatabaseConstants.colSyncMarkPeerId: 'peer',
+      DatabaseConstants.colSyncMarkSha256: 'abc',
+      DatabaseConstants.colSyncMarkSizeBytes: 1,
+      DatabaseConstants.colSyncMarkSentAt: 1,
+    });
+    expect(await db.query(DatabaseConstants.tableSyncMarks), hasLength(1));
+  });
+
   test(
     'an upgraded database has the same count triggers as a fresh one',
     () async {

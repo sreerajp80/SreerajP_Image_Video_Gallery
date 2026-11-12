@@ -290,6 +290,41 @@ class AlbumDao {
     }
   }
 
+  /// Total size in bytes of each album's visible members, by album id.
+  ///
+  /// One grouped query for every album, or for just [albumId] when given, so
+  /// the album grid never runs one query per album. It uses the same
+  /// visibility rule as the item count, so a tile's size and count always
+  /// describe the same items. An album with no visible members is left out of
+  /// the map; callers treat a missing id as zero.
+  Future<Map<String, int>> getAlbumSizes({String? albumId}) async {
+    try {
+      final db = await _db;
+      const albumIdCol = 'am.${DatabaseConstants.colAlbumMediaAlbumId}';
+      final results = await db.rawQuery('''
+        SELECT $albumIdCol AS album_id,
+          COALESCE(SUM(m.${DatabaseConstants.colMediaSizeBytes}), 0) AS total_bytes
+        FROM ${DatabaseConstants.tableAlbumMedia} am
+        INNER JOIN ${DatabaseConstants.tableMedia} m
+          ON m.${DatabaseConstants.colId} = am.${DatabaseConstants.colAlbumMediaMediaId}
+        WHERE ${DatabaseConstants.visibleMediaCondition('m')}
+          ${albumId == null ? '' : 'AND $albumIdCol = ?'}
+        GROUP BY $albumIdCol
+      ''', albumId == null ? null : [albumId]);
+      return <String, int>{
+        for (final row in results)
+          row['album_id']! as String:
+              (row['total_bytes'] as num?)?.toInt() ?? 0,
+      };
+    } catch (e, st) {
+      throw StorageException(
+        'Failed to sum album sizes: $e',
+        cause: e,
+        stackTrace: st,
+      );
+    }
+  }
+
   /// The media ids in one album, in album order.
   ///
   /// Returned separately from the items themselves so a reorder screen can

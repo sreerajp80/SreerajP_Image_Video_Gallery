@@ -336,7 +336,10 @@ void main() {
       expect(
         TransferCryptoService.deriveSessionKey(secret),
         isNot(
-          TransferCryptoService.deriveSessionKey(secret, protocolVersion: 2),
+          TransferCryptoService.deriveSessionKey(
+            secret,
+            protocolVersion: AppConstants.syncProtocolVersion + 1,
+          ),
         ),
       );
     });

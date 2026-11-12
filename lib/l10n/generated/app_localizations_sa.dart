@@ -2132,11 +2132,11 @@ class AppLocalizationsSa extends AppLocalizations {
   String get titleSync => 'स्थानान्तरणम्';
 
   @override
-  String get titleSyncOpen => 'यन्त्रस्थानान्तरणम्';
+  String get titleSyncOpen => 'यन्त्रात् स्वीकरणम्';
 
   @override
   String get bodySyncIntro =>
-      'समान Wi-Fi जालस्थमन्यद् दूरवाणीयन्त्रं प्रति साक्षात् चित्राणि प्रेष्यन्ताम्। किमपि अन्तर्जालं न गच्छति, उपयोक्तृविवरणम् अपि न आवश्यकम्।';
+      'समान Wi-Fi जालस्थाद् अन्यस्माद् दूरवाणीयन्त्रात् चित्राणि स्वीक्रियन्ताम्। किमपि अन्तर्जालं न गच्छति, उपयोक्तृविवरणम् अपि न आवश्यकम्।';
 
   @override
   String get bodySyncPrivacyNote =>
@@ -2149,12 +2149,127 @@ class AppLocalizationsSa extends AppLocalizations {
   String get labelSyncReceive => 'स्वीक्रियताम्';
 
   @override
-  String get bodySyncSend =>
-      'अस्मिन् दूरवाणीयन्त्रे सङ्केतः दर्श्यताम्, अन्यस्य वा अन्वीक्ष्यताम्';
+  String get bodySyncReceive => 'प्रेषकयन्त्रम् एतम् अन्वीक्षते';
 
   @override
-  String get bodySyncReceive =>
-      'अन्यदूरवाणीयन्त्रस्य अन्वीक्षणाय सङ्केतः दर्श्यताम्';
+  String titleSyncQuickSend(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count वस्तूनि प्रेष्यन्ताम्',
+      one: '1 वस्तु प्रेष्यताम्',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get bodySyncQuickIntro =>
+      'चितानि चित्राणि दृश्यानि च समान Wi-Fi जालस्थम् अन्यद् दूरवाणीयन्त्रं प्रति साक्षात् प्रेष्यन्ताम्। किमपि अन्तर्जालं न गच्छति।';
+
+  @override
+  String get bodySyncPhoneMoveIntro =>
+      'अयम् अनुप्रयोगः नूतनं दूरवाणीयन्त्रं प्रति प्रतिलिख्यताम्। सम्बन्धनानन्तरं संपुटानि सङ्कलनानि च चीयन्ताम्। \'समाप्यताम्\' इति स्पृष्टे सर्वः अनुप्रयोगदत्तांशः विन्यासश्च गच्छतः। उभयोः यन्त्रयोः किमपि न लुप्यते।';
+
+  @override
+  String get labelSyncShowCode => 'सङ्केतः दर्श्यताम्';
+
+  @override
+  String get bodySyncShowCodeToReceiver => 'स्वीकर्तृयन्त्रम् एतम् अन्वीक्षते';
+
+  @override
+  String get labelSyncScanOther => 'अन्ययन्त्रस्य सङ्केतः अन्वीक्ष्यताम्';
+
+  @override
+  String get bodySyncScanReceiverCode => 'यदा स्वीकर्तृयन्त्रं सङ्केतं दर्शयति';
+
+  @override
+  String get bodySyncScanSenderCode => 'यदा प्रेषकयन्त्रं सङ्केतं दर्शयति';
+
+  @override
+  String get bodySyncHowToSend =>
+      'प्रेषणाय वीथिकायां चित्राणि चित्वा \'उपकरणं प्रति प्रेष्यताम्\' स्पृश्यताम्। नूतनयन्त्रं प्रति स्थानान्तरणाय विन्यासः › उपकरणसमन्वयः उपयुज्यताम्।';
+
+  @override
+  String get bodyDeviceSyncWifiReceive =>
+      'नूतने यन्त्रे: पुरातनात् संपुटानि सङ्कलनानि अनुप्रयोगदत्तांशः विन्यासश्च प्राप्यन्ताम्';
+
+  @override
+  String get bodySyncAppDataSending =>
+      'अनुप्रयोगदत्तांशः विन्यासश्च प्रेष्येते';
+
+  @override
+  String get bodySyncAppDataReceiving =>
+      'अनुप्रयोगदत्तांशः विन्यासश्च स्वीक्रियेते';
+
+  @override
+  String get bodySyncAppDataSent => 'अनुप्रयोगदत्तांशः विन्यासश्च प्रेषितौ';
+
+  @override
+  String bodySyncVaultReceived(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count सञ्चिकाः गुप्तकोशे स्थापिताः',
+      one: '1 सञ्चिका गुप्तकोशे स्थापिता',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get actionSyncReviewAppData => 'अनुप्रयोगदत्तांशः परीक्ष्यताम्';
+
+  @override
+  String get bodySyncAppDataApplied => 'अनुप्रयोगदत्तांशः योजितः';
+
+  @override
+  String get errorSyncAppDataApply =>
+      'अनुप्रयोगदत्तांशः योजयितुं न शक्तः। पुनः प्रयत्यताम्।';
+
+  @override
+  String get titleSyncUseSettings => 'पुरातनयन्त्रस्य विन्यासः उपयुज्यताम् वा?';
+
+  @override
+  String get bodySyncUseSettings =>
+      'अस्य यन्त्रस्य वर्णयोजना भाषा जालकपरिमाणं सुरक्षाविकल्पाः च अन्ययन्त्रस्य विन्यासेन परिवर्त्यन्ते।';
+
+  @override
+  String get actionSyncKeepMySettings => 'मदीयः रक्ष्यताम्';
+
+  @override
+  String get actionSyncUseTheirSettings => 'तदीयः उपयुज्यताम्';
+
+  @override
+  String get bodySyncErrorAppData =>
+      'सञ्चिकाः प्रेषिताः, किन्तु अनुप्रयोगदत्तांशः विन्यासश्च न प्रेषितौ। तौ प्रेषयितुं स्थानान्तरणं पुनः क्रियताम्।';
+
+  @override
+  String get labelSyncAppDataAndSettings => 'अनुप्रयोगदत्तांशः विन्यासश्च';
+
+  @override
+  String get bodySyncAppDataOnFinish =>
+      'चिह्नानि, सङ्कलनानि, प्रियाणि, टिप्पण्यः, स्थानानि, विन्यासश्च। \'समाप्यताम्\' इति स्पृष्टे एतानि गच्छन्ति।';
+
+  @override
+  String get labelSyncIncludeVault => 'गुप्तकोशः';
+
+  @override
+  String get bodySyncIncludeVaultOff =>
+      'निष्क्रियम्। गुप्तकोशम् अपि प्रतिलेखयितुं सक्रियं क्रियताम्। प्रथमं सः उद्घाटनीयः।';
+
+  @override
+  String get bodySyncIncludeVaultOn =>
+      'सक्रियम्। \'समाप्यताम्\' इति स्पृष्टे गुप्तकोशवस्तूनि गच्छन्ति, अस्य यन्त्रस्य गुप्तकोशे अपि तिष्ठन्ति।';
+
+  @override
+  String get bodySyncVaultPeerNotReady =>
+      'अन्यस्मिन् यन्त्रे गुप्तकोशः न सज्जीकृतः, अतः गुप्तकोशः न प्रेष्यते। तत्र सः सज्जीक्रियतां, स्थानान्तरणं च पुनः क्रियताम्।';
+
+  @override
+  String get bodySyncVaultNotSetUp => 'अस्मिन् यन्त्रे गुप्तकोशः नास्ति।';
+
+  @override
+  String get bodySyncVaultUnlockFirst =>
+      'गुप्तकोशम् उद्घाट्य अत्र प्रत्यागम्यताम्।';
 
   @override
   String get actionSyncScanCode => 'सङ्केतोऽन्वीक्ष्यताम्';
@@ -2188,21 +2303,6 @@ class AppLocalizationsSa extends AppLocalizations {
   @override
   String bodySyncProgressFiles(int done, int total) {
     return '$total मध्ये $done सञ्चिकाः';
-  }
-
-  @override
-  String get bodySyncNothingSelected =>
-      'प्रथमं प्रेषणाय कानिचित् चित्राणि चीयन्ताम्';
-
-  @override
-  String bodySyncOfferHeading(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count सञ्चिकाः प्रस्ताविताः',
-      one: '1 सञ्चिका प्रस्ताविता',
-    );
-    return '$_temp0';
   }
 
   @override
@@ -3942,6 +4042,34 @@ class AppLocalizationsSa extends AppLocalizations {
       'Android 9 तथा पूर्वतनेषु एव। चित्राणि सर्वथा सुरक्षितं वा लोप्तुं शक्यते। चित्रानुमत्या सह पृच्छ्यते।';
 
   @override
+  String get labelPermissionsSpecial => 'भवता सक्रियीकृताः';
+
+  @override
+  String get descPermissionsSpecial =>
+      'Android एताः कदापि न पृच्छति। Android-विन्यासे भवता स्वयं यावत् न सक्रियीक्रियन्ते, तावत् एताः निष्क्रियाः तिष्ठन्ति।';
+
+  @override
+  String get labelPermManageMedia => 'माध्यमप्रबन्धनम्';
+
+  @override
+  String get descPermManageMedia =>
+      'Android 12 आरभ्य एव। भवता सक्रियीकृते एव प्रवर्तते। Android-स्य स्वप्रश्नं विना चित्राणि लोप्तुम् अनुप्रयोगाय अनुमतिं ददाति; तदा अनुप्रयोगः स्वयम् एकवारं पृच्छति।';
+
+  @override
+  String get descManageMediaSubtitle =>
+      'Android 12 आरभ्य। सक्रिये सति प्रत्येकस्मात् सर्वथा-लोपात् पूर्वम् Android न पृच्छति; तस्य स्थाने अनुप्रयोगः एकवारं पृच्छति। Android-विन्यासे परिवर्तयितुं स्पृश्यताम्।';
+
+  @override
+  String get titleManageMediaPrompt => 'माध्यमप्रबन्धनम् अनुमन्यताम् किम्?';
+
+  @override
+  String get bodyManageMediaPrompt =>
+      'प्रत्येकस्मात् सर्वथा-लोपात् पूर्वम् Android पुनः पृच्छति। अस्य अनुप्रयोगस्य कृते \"माध्यमप्रबन्धनम्\" सक्रियीक्रियताम्, तदा तस्य स्थाने अनुप्रयोगः स्वयम् एकवारं पृच्छति। पश्चात् विन्यासः → सुरक्षितता इत्यत्र एतत् परिवर्तयितुं शक्यते।';
+
+  @override
+  String get actionNotNow => 'इदानीं न';
+
+  @override
   String get labelPermAllowed => 'अनुमतम्';
 
   @override
@@ -4105,4 +4233,209 @@ class AppLocalizationsSa extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get titleDeviceSync => 'उपकरणसमन्वयः';
+
+  @override
+  String get descDeviceSyncSubtitle =>
+      'अनुप्रयोगदत्तांशं चित्राणि वा अन्यद् दूरवाणीयन्त्रं प्रति प्रतिलिख्यताम्';
+
+  @override
+  String get bodyDeviceSyncIntro =>
+      'अस्य अनुप्रयोगस्य दत्तांशः, तेन सह भवतः चित्राणि वा, अनेन अनुप्रयोगेण युक्तम् अन्यद् दूरवाणीयन्त्रं प्रति प्रतिलिख्यन्ताम्। किमपि अन्तर्जालं न गच्छति, उभयोः यन्त्रयोः किमपि न अपनीयते।';
+
+  @override
+  String get labelDeviceSyncQrSend => 'QR द्वारा अनुप्रयोगदत्तांशः प्रेष्यताम्';
+
+  @override
+  String get bodyDeviceSyncQrSend =>
+      'चिह्नानि, सङ्कलनानि, प्रियाणि, टिप्पण्यः, स्थानानि च। चित्राणि न, Wi-Fi अपि न आवश्यकम्। अन्यस्मिन् यन्त्रे तान्येव चित्राणि पूर्वमेव भवेयुः।';
+
+  @override
+  String get labelDeviceSyncWifiSend => 'नूतनयन्त्रं प्रति स्थानान्तरणम्';
+
+  @override
+  String get bodyDeviceSyncWifiSend =>
+      'भवता चितानि संपुटानि सङ्कलनानि च, सर्वेण अनुप्रयोगदत्तांशेन विन्यासेन च सह। इच्छया गुप्तकोशः अपि। उभे यन्त्रे समाने Wi-Fi जाले।';
+
+  @override
+  String get labelDeviceSyncQrReceive =>
+      'QR द्वारा अनुप्रयोगदत्तांशः स्वीक्रियताम्';
+
+  @override
+  String get bodyDeviceSyncQrReceive =>
+      'एकः सङ्केतः दर्श्यताम्, ततः अन्यस्य यन्त्रस्य सङ्केताः अन्वीक्ष्यन्ताम्';
+
+  @override
+  String get labelDeviceSyncWifiReceive => 'पुरातनयन्त्रात् प्राप्यताम्';
+
+  @override
+  String get titleSyncPick => 'किं प्रेषणीयमिति चीयताम्';
+
+  @override
+  String get labelSyncSelectionSource => 'चितानि चित्राणि';
+
+  @override
+  String get labelSyncFoldersSection => 'संपुटानि';
+
+  @override
+  String get labelSyncAlbumsSection => 'सङ्कलनानि';
+
+  @override
+  String bodySyncSourceStats(String size, int sent, int count) {
+    return '$size · $count मध्ये $sent प्रेषितानि';
+  }
+
+  @override
+  String bodySyncPeerFreeSpace(String name, String size) {
+    return '$name इत्यत्र रिक्तस्थानम्: $size';
+  }
+
+  @override
+  String bodySyncPlanThisSend(int count, String size) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'अस्मिन् प्रेषणे: $count सञ्चिकाः, $size',
+      one: 'अस्मिन् प्रेषणे: 1 सञ्चिका, $size',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String bodySyncPlanLeft(int count, String size) {
+    return 'अग्रिमप्रेषणाय शिष्टाः: $count सञ्चिकाः, $size';
+  }
+
+  @override
+  String bodySyncPlanAlreadySent(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'अन्यस्मिन् यन्त्रे पूर्वमेव: $count सञ्चिकाः',
+      one: 'अन्यस्मिन् यन्त्रे पूर्वमेव: 1 सञ्चिका',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String bodySyncPlanResend(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'एतद् यन्त्रं प्रति पूर्वं प्रेषितानि: $count सञ्चिकाः। ताः पुनः प्रेष्यन्ते।',
+      one: 'एतद् यन्त्रं प्रति पूर्वं प्रेषितम्: 1 सञ्चिका। सा पुनः प्रेष्यते।',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String bodySyncLimitCap(String size) {
+    return 'एकस्मिन् प्रेषणे $size पर्यन्तमेव। शेषम् अनन्तरं प्रेष्यताम्।';
+  }
+
+  @override
+  String get bodySyncLimitSpace =>
+      'अन्यस्मिन् यन्त्रे स्थानम् अल्पम्। अधिकं प्रेषयितुं तत्र स्थानं रिक्तीक्रियताम्।';
+
+  @override
+  String bodySyncLimitCount(int count) {
+    return 'एकस्मिन् प्रेषणे $count सञ्चिकाः पर्यन्तम्।';
+  }
+
+  @override
+  String get bodySyncAllSent =>
+      'सर्वं प्रेषितम्। अधिकं प्रेषयितुं चीयताम्, अथवा समाप्यताम् इति स्पृश्यताम्।';
+
+  @override
+  String get bodySyncPickSomething =>
+      'प्रेषणाय संपुटानि सङ्कलनानि वा चीयन्ताम्।';
+
+  @override
+  String get actionSyncSendRest => 'शेषं प्रेष्यताम्';
+
+  @override
+  String get actionSyncFinish => 'समाप्यताम्';
+
+  @override
+  String get labelSyncPreparing => 'सञ्चिकाः सज्जीक्रियन्ते';
+
+  @override
+  String get labelSyncBatchDone => 'इदं प्रेषणं समाप्तम्';
+
+  @override
+  String get bodySyncWaitingForSend =>
+      'सम्बद्धम्। अन्यद् यन्त्रं प्रेषयिष्यतीति प्रतीक्ष्यते।';
+
+  @override
+  String get bodySyncErrorNoSpace =>
+      'एकस्मिन् यन्त्रे रिक्तस्थानं समाप्तम्। प्राप्ताः सञ्चिकाः रक्षिताः।';
+
+  @override
+  String get bodySyncSavedToFolder =>
+      'प्राप्ताः सञ्चिकाः Pictures › Drishya Sync इत्यत्र सन्ति।';
+
+  @override
+  String get errorSyncSourcesLoad =>
+      'भवतः संपुटानि सङ्कलनानि च पठितुं न शक्तानि।';
+
+  @override
+  String get titleQrSyncSend => 'QR द्वारा प्रेषणम्';
+
+  @override
+  String get titleQrSyncReceive => 'QR द्वारा स्वीकरणम्';
+
+  @override
+  String get bodyQrSyncScanKey => 'अन्यस्य यन्त्रस्य सङ्केतः अन्वीक्ष्यताम्';
+
+  @override
+  String get bodyQrSyncShowKey =>
+      'प्रथमं सोपानम्: अन्यस्मिन् यन्त्रे अयं सङ्केतः अन्वीक्ष्यताम्। ततः अग्रिमम् इति स्पृश्यताम्।';
+
+  @override
+  String get actionQrSyncNext => 'अग्रिमम्';
+
+  @override
+  String get bodyQrSyncScanFrames =>
+      'द्वितीयं सोपानम्: अन्यस्मिन् यन्त्रे परिवर्तमानान् सङ्केतान् प्रति छायाग्राहकः निर्दिश्यताम्।';
+
+  @override
+  String bodyQrSyncFramesProgress(int done, int total) {
+    return '$total मध्ये $done सङ्केताः पठिताः';
+  }
+
+  @override
+  String get bodyQrSyncShowFrames =>
+      'अन्यद् यन्त्रं समाप्तम् इति यावत् दर्शयति तावत् इदं पटलं तस्य छायाग्राहकस्य पुरतः धार्यताम्।';
+
+  @override
+  String bodyQrSyncFrameCount(int count) {
+    return '$count सङ्केताः पुनः पुनः दर्श्यन्ते';
+  }
+
+  @override
+  String errorQrSyncTooBig(int count) {
+    return 'QR कृते दत्तांशः अत्यधिकः ($count सङ्केताः)। तस्य स्थाने Wi-Fi उपयुज्यताम्।';
+  }
+
+  @override
+  String get bodyQrSyncNothing => 'प्रेषणाय अनुप्रयोगदत्तांशः अद्यापि नास्ति।';
+
+  @override
+  String get errorQrSyncFailed =>
+      'दत्तांशः पठितुं न शक्तः। उभयोः यन्त्रयोः पुनः आरभ्यताम्।';
+
+  @override
+  String get labelQrSyncPreparing => 'दत्तांशः सज्जीक्रियते';
+
+  @override
+  String get actionSyncScanAnother => 'अन्यः सङ्केतोऽन्वीक्ष्यताम्';
+
+  @override
+  String get actionSyncShowNewCode => 'नूतनः सङ्केतः दर्श्यताम्';
+
+  @override
+  String get actionSyncClose => 'पिधीयताम्';
 }

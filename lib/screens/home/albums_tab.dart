@@ -8,6 +8,7 @@ import 'package:in_sreerajp_imgvidgal/models/album_summary.dart';
 import 'package:in_sreerajp_imgvidgal/providers/album_providers.dart';
 import 'package:in_sreerajp_imgvidgal/widgets/albums/album_card.dart';
 import 'package:in_sreerajp_imgvidgal/widgets/albums/album_edit_dialog.dart';
+import 'package:in_sreerajp_imgvidgal/widgets/home/home_overflow_menu.dart';
 
 /// The Albums tab, showing user-made albums and smart albums.
 ///
@@ -32,6 +33,7 @@ class AlbumsTab extends ConsumerWidget {
             icon: const Icon(Icons.search),
             tooltip: l10n.tooltipSearchOpen,
           ),
+          const HomeOverflowMenu(),
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(

@@ -99,6 +99,15 @@
         android:maxSdkVersion="28"
         tools:replace="android:maxSdkVersion" />
 
+    <!-- "Manage media" special access, Android 12 (API 31) and newer. Off by
+         default: Android never prompts for it, and only the user can turn it
+         on, from Settings -> Safety in the app (which opens the system page).
+         When it is on, Android no longer shows its own "Allow Drishya to
+         delete...?" prompt, so the app shows its own confirmation instead.
+         The user is always asked exactly once after "Delete permanently".
+         This is not "All files access" (MANAGE_EXTERNAL_STORAGE). -->
+    <uses-permission android:name="android.permission.MANAGE_MEDIA" />
+
     <!-- The apps the in-image scanner may hand a code to. Android 11 and above
          hides other apps unless they are named here, and startActivity would
          simply fail without this block.

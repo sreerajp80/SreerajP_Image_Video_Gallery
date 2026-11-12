@@ -24,10 +24,25 @@ enum SyncPhase {
   waiting,
 
   /// A peer connected and the handshake passed.
+  ///
+  /// On the receiving side this is also the wait between two sends.
   paired,
+
+  /// The sender picks folders and albums for the next send.
+  choosing,
+
+  /// The sender is reading and hashing the files before offering them.
+  preparing,
 
   /// Files are moving.
   transferring,
+
+  /// One send finished; the sender can send more or finish.
+  batchDone,
+
+  /// Phone move: the app data and settings are being packed and sent, or
+  /// received. Comes after the last batch, before [done].
+  appData,
 
   /// Everything finished.
   done,
@@ -40,5 +55,11 @@ enum SyncPhase {
   /// Used by the screen to decide whether leaving needs a confirmation, and
   /// by the session to know there is something to close.
   bool get isActive =>
-      this == waiting || this == paired || this == transferring;
+      this == waiting ||
+      this == paired ||
+      this == choosing ||
+      this == preparing ||
+      this == transferring ||
+      this == batchDone ||
+      this == appData;
 }

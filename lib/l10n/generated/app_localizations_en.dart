@@ -2128,11 +2128,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get titleSync => 'Transfer';
 
   @override
-  String get titleSyncOpen => 'Transfer to a device';
+  String get titleSyncOpen => 'Receive from device';
 
   @override
   String get bodySyncIntro =>
-      'Send photos straight to another phone on the same Wi-Fi. Nothing goes to the internet, and no account is needed.';
+      'Get photos from another phone on the same Wi-Fi. Nothing goes to the internet, and no account is needed.';
 
   @override
   String get bodySyncPrivacyNote =>
@@ -2145,10 +2145,126 @@ class AppLocalizationsEn extends AppLocalizations {
   String get labelSyncReceive => 'Receive';
 
   @override
-  String get bodySyncSend => 'Show a code on this phone, or scan the other one';
+  String get bodySyncReceive => 'The sending phone scans it';
 
   @override
-  String get bodySyncReceive => 'Show a code for the other phone to scan';
+  String titleSyncQuickSend(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Send $count items',
+      one: 'Send 1 item',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get bodySyncQuickIntro =>
+      'Send the selected photos and videos straight to another phone on the same Wi-Fi. Nothing goes to the internet.';
+
+  @override
+  String get bodySyncPhoneMoveIntro =>
+      'Copy this app to your new phone. Pick folders and albums after pairing. All app data and settings go when you tap Finish. Nothing is deleted on either phone.';
+
+  @override
+  String get labelSyncShowCode => 'Show a code';
+
+  @override
+  String get bodySyncShowCodeToReceiver => 'The receiving phone scans it';
+
+  @override
+  String get labelSyncScanOther => 'Scan their code';
+
+  @override
+  String get bodySyncScanReceiverCode =>
+      'When the receiving phone shows the code';
+
+  @override
+  String get bodySyncScanSenderCode => 'When the sending phone shows the code';
+
+  @override
+  String get bodySyncHowToSend =>
+      'To send, select photos in the gallery and tap Send to a device. To move to a new phone, use Settings › Device Sync.';
+
+  @override
+  String get bodyDeviceSyncWifiReceive =>
+      'On the new phone: get folders, albums, app data and settings from the old one';
+
+  @override
+  String get bodySyncAppDataSending => 'Sending app data and settings';
+
+  @override
+  String get bodySyncAppDataReceiving => 'Getting app data and settings';
+
+  @override
+  String get bodySyncAppDataSent => 'App data and settings sent';
+
+  @override
+  String bodySyncVaultReceived(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count files put in the private vault',
+      one: '1 file put in the private vault',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get actionSyncReviewAppData => 'Review app data';
+
+  @override
+  String get bodySyncAppDataApplied => 'App data added';
+
+  @override
+  String get errorSyncAppDataApply =>
+      'The app data could not be added. Try again.';
+
+  @override
+  String get titleSyncUseSettings => 'Use old settings?';
+
+  @override
+  String get bodySyncUseSettings =>
+      'Theme, language, grid size and the safety switches on this phone will be replaced with the ones from the other phone.';
+
+  @override
+  String get actionSyncKeepMySettings => 'Keep mine';
+
+  @override
+  String get actionSyncUseTheirSettings => 'Use theirs';
+
+  @override
+  String get bodySyncErrorAppData =>
+      'The files were sent, but the app data and settings were not. Run the move again to send them.';
+
+  @override
+  String get labelSyncAppDataAndSettings => 'App data & settings';
+
+  @override
+  String get bodySyncAppDataOnFinish =>
+      'Tags, albums, favourites, notes, places and settings. They go when you tap Finish.';
+
+  @override
+  String get labelSyncIncludeVault => 'Private vault';
+
+  @override
+  String get bodySyncIncludeVaultOff =>
+      'Off. Turn on to copy the vault too. You unlock it first.';
+
+  @override
+  String get bodySyncIncludeVaultOn =>
+      'On. Vault items go when you tap Finish, and stay in this phone\'s vault too.';
+
+  @override
+  String get bodySyncVaultPeerNotReady =>
+      'The other phone has no vault set up, so the vault will not be sent. Set it up there and run the move again.';
+
+  @override
+  String get bodySyncVaultNotSetUp => 'There is no vault on this phone.';
+
+  @override
+  String get bodySyncVaultUnlockFirst =>
+      'Unlock the vault, then come back here.';
 
   @override
   String get actionSyncScanCode => 'Scan a code';
@@ -2182,20 +2298,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String bodySyncProgressFiles(int done, int total) {
     return '$done of $total files';
-  }
-
-  @override
-  String get bodySyncNothingSelected => 'Choose some photos to send first';
-
-  @override
-  String bodySyncOfferHeading(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count files offered',
-      one: '1 file offered',
-    );
-    return '$_temp0';
   }
 
   @override
@@ -3929,6 +4031,34 @@ class AppLocalizationsEn extends AppLocalizations {
       'Android 9 and older only. Lets you delete photos for good, or securely. Asked together with photos access.';
 
   @override
+  String get labelPermissionsSpecial => 'You turn these on';
+
+  @override
+  String get descPermissionsSpecial =>
+      'Android never asks for these. They stay off until you turn them on yourself in Android settings.';
+
+  @override
+  String get labelPermManageMedia => 'Manage media';
+
+  @override
+  String get descPermManageMedia =>
+      'Android 12 and up. Off unless you turn it on. Lets the app delete photos without Android\'s own prompt; the app then asks you once itself.';
+
+  @override
+  String get descManageMediaSubtitle =>
+      'Android 12 and up. When on, Android stops asking before each permanent delete, and the app asks you once instead. Tap to change it in Android settings.';
+
+  @override
+  String get titleManageMediaPrompt => 'Allow Manage media?';
+
+  @override
+  String get bodyManageMediaPrompt =>
+      'Android asks you again before every permanent delete. Turn on \"Manage media\" for this app, and the app asks you once itself instead. You can change this later in Settings → Safety.';
+
+  @override
+  String get actionNotNow => 'Not now';
+
+  @override
   String get labelPermAllowed => 'Allowed';
 
   @override
@@ -4093,4 +4223,205 @@ class AppLocalizationsEn extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get titleDeviceSync => 'Device Sync';
+
+  @override
+  String get descDeviceSyncSubtitle =>
+      'Copy app data or photos to another phone';
+
+  @override
+  String get bodyDeviceSyncIntro =>
+      'Copy this app\'s data, or your photos with it, to another phone that has this app. Nothing goes to the internet, and nothing is deleted on either phone.';
+
+  @override
+  String get labelDeviceSyncQrSend => 'Send app data by QR';
+
+  @override
+  String get bodyDeviceSyncQrSend =>
+      'Tags, albums, favourites, notes and places. No photos, and no Wi-Fi needed. The other phone must already have the same photos.';
+
+  @override
+  String get labelDeviceSyncWifiSend => 'Move to a new phone';
+
+  @override
+  String get bodyDeviceSyncWifiSend =>
+      'Folders and albums you pick, with all app data and settings. The vault too, if you choose. Both phones on the same Wi-Fi.';
+
+  @override
+  String get labelDeviceSyncQrReceive => 'Get app data by QR';
+
+  @override
+  String get bodyDeviceSyncQrReceive =>
+      'Show a code, then scan the other phone\'s codes';
+
+  @override
+  String get labelDeviceSyncWifiReceive => 'Get from old phone';
+
+  @override
+  String get titleSyncPick => 'Choose what to send';
+
+  @override
+  String get labelSyncSelectionSource => 'Selected photos';
+
+  @override
+  String get labelSyncFoldersSection => 'Folders';
+
+  @override
+  String get labelSyncAlbumsSection => 'Albums';
+
+  @override
+  String bodySyncSourceStats(String size, int sent, int count) {
+    return '$size · sent $sent of $count';
+  }
+
+  @override
+  String bodySyncPeerFreeSpace(String name, String size) {
+    return 'Free space on $name: $size';
+  }
+
+  @override
+  String bodySyncPlanThisSend(int count, String size) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'This send: $count files, $size',
+      one: 'This send: 1 file, $size',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String bodySyncPlanLeft(int count, String size) {
+    return 'Left for the next send: $count files, $size';
+  }
+
+  @override
+  String bodySyncPlanAlreadySent(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Already on the other phone: $count files',
+      one: 'Already on the other phone: 1 file',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String bodySyncPlanResend(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'Sent to this phone before: $count files. They will be sent again.',
+      one: 'Sent to this phone before: 1 file. It will be sent again.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String bodySyncLimitCap(String size) {
+    return 'One send carries up to $size. Send the rest next.';
+  }
+
+  @override
+  String get bodySyncLimitSpace =>
+      'The other phone is short of space. Free some space on it to send more.';
+
+  @override
+  String bodySyncLimitCount(int count) {
+    return 'One send carries up to $count files.';
+  }
+
+  @override
+  String get bodySyncAllSent => 'All sent. Pick more to send, or tap Finish.';
+
+  @override
+  String get bodySyncPickSomething => 'Tick folders or albums to send.';
+
+  @override
+  String get actionSyncSendRest => 'Send the rest';
+
+  @override
+  String get actionSyncFinish => 'Finish';
+
+  @override
+  String get labelSyncPreparing => 'Getting files ready';
+
+  @override
+  String get labelSyncBatchDone => 'This send is done';
+
+  @override
+  String get bodySyncWaitingForSend =>
+      'Connected. Waiting for the other phone to send.';
+
+  @override
+  String get bodySyncErrorNoSpace =>
+      'A phone ran out of free space. Files that arrived are kept.';
+
+  @override
+  String get bodySyncSavedToFolder =>
+      'Received files are in Pictures › Drishya Sync.';
+
+  @override
+  String get errorSyncSourcesLoad => 'Could not read your folders and albums.';
+
+  @override
+  String get titleQrSyncSend => 'Send by QR';
+
+  @override
+  String get titleQrSyncReceive => 'Receive by QR';
+
+  @override
+  String get bodyQrSyncScanKey => 'Scan the code on the other phone';
+
+  @override
+  String get bodyQrSyncShowKey =>
+      'Step 1: scan this code on the other phone. Then tap Next.';
+
+  @override
+  String get actionQrSyncNext => 'Next';
+
+  @override
+  String get bodyQrSyncScanFrames =>
+      'Step 2: point the camera at the changing codes on the other phone.';
+
+  @override
+  String bodyQrSyncFramesProgress(int done, int total) {
+    return '$done of $total codes read';
+  }
+
+  @override
+  String get bodyQrSyncShowFrames =>
+      'Hold this screen in front of the other phone\'s camera until it says done.';
+
+  @override
+  String bodyQrSyncFrameCount(int count) {
+    return 'Showing $count codes in a loop';
+  }
+
+  @override
+  String errorQrSyncTooBig(int count) {
+    return 'There is too much data for QR ($count codes). Use Wi-Fi instead.';
+  }
+
+  @override
+  String get bodyQrSyncNothing => 'There is no app data to send yet.';
+
+  @override
+  String get errorQrSyncFailed =>
+      'The data could not be read. Start again on both phones.';
+
+  @override
+  String get labelQrSyncPreparing => 'Preparing the data';
+
+  @override
+  String get actionSyncScanAnother => 'Scan another code';
+
+  @override
+  String get actionSyncShowNewCode => 'Show a new code';
+
+  @override
+  String get actionSyncClose => 'Close';
 }

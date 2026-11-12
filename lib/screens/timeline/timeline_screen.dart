@@ -11,6 +11,7 @@ import 'package:in_sreerajp_imgvidgal/models/media/media_permission_status.dart'
 import 'package:in_sreerajp_imgvidgal/core/domain/timeline/timeline_grouping_service.dart';
 import 'package:in_sreerajp_imgvidgal/widgets/batch/batch_action_bar.dart';
 import 'package:in_sreerajp_imgvidgal/widgets/batch/selection_app_bar.dart';
+import 'package:in_sreerajp_imgvidgal/widgets/home/home_overflow_menu.dart';
 import 'package:in_sreerajp_imgvidgal/widgets/timeline/timeline_body.dart';
 import 'package:in_sreerajp_imgvidgal/widgets/timeline/timeline_messages.dart';
 
@@ -219,85 +220,7 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen> {
                   icon: const Icon(Icons.picture_as_pdf_outlined),
                   tooltip: l10n.tooltipPdfOpen,
                 ),
-                // Tags and the cleaner live in the overflow: they are used now and
-                // then, unlike search, and a crowded bar helps nobody.
-                PopupMenuButton<String>(
-                  onSelected: (route) => context.push(route),
-                  itemBuilder: (context) => <PopupMenuEntry<String>>[
-                    PopupMenuItem<String>(
-                      value: kRouteTags,
-                      child: ListTile(
-                        dense: true,
-                        contentPadding: EdgeInsets.zero,
-                        leading: const Icon(Icons.label_outline),
-                        title: Text(l10n.titleTagsOpen),
-                      ),
-                    ),
-                    PopupMenuItem<String>(
-                      value: kRouteCleaner,
-                      child: ListTile(
-                        dense: true,
-                        contentPadding: EdgeInsets.zero,
-                        leading: const Icon(Icons.copy_all_outlined),
-                        title: Text(l10n.titleCleanerOpen),
-                      ),
-                    ),
-                    PopupMenuItem<String>(
-                      value: kRouteTrash,
-                      child: ListTile(
-                        dense: true,
-                        contentPadding: EdgeInsets.zero,
-                        leading: const Icon(Icons.delete_outline),
-                        title: Text(l10n.titleTrash),
-                      ),
-                    ),
-                    PopupMenuItem<String>(
-                      value: kRouteVault,
-                      child: ListTile(
-                        dense: true,
-                        contentPadding: EdgeInsets.zero,
-                        leading: const Icon(Icons.lock_outline),
-                        title: Text(l10n.titleVaultMenuLabel),
-                      ),
-                    ),
-                    PopupMenuItem<String>(
-                      value: kRouteSync,
-                      child: ListTile(
-                        dense: true,
-                        contentPadding: EdgeInsets.zero,
-                        leading: const Icon(Icons.send_to_mobile_outlined),
-                        title: Text(l10n.titleSyncOpen),
-                      ),
-                    ),
-                    PopupMenuItem<String>(
-                      value: kRoutePdfImages,
-                      child: ListTile(
-                        dense: true,
-                        contentPadding: EdgeInsets.zero,
-                        leading: const Icon(Icons.image_search_outlined),
-                        title: Text(l10n.titlePdfImagesOpen),
-                      ),
-                    ),
-                    PopupMenuItem<String>(
-                      value: kRouteBackup,
-                      child: ListTile(
-                        dense: true,
-                        contentPadding: EdgeInsets.zero,
-                        leading: const Icon(Icons.backup_outlined),
-                        title: Text(l10n.titleBackupOpen),
-                      ),
-                    ),
-                    PopupMenuItem<String>(
-                      value: kRouteSettings,
-                      child: ListTile(
-                        dense: true,
-                        contentPadding: EdgeInsets.zero,
-                        leading: const Icon(Icons.settings_outlined),
-                        title: Text(l10n.titleSettings),
-                      ),
-                    ),
-                  ],
-                ),
+                const HomeOverflowMenu(),
               ],
             ),
       bottomNavigationBar: selecting ? const BatchActionBar() : null,

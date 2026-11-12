@@ -6,6 +6,7 @@ import 'package:in_sreerajp_imgvidgal/l10n/generated/app_localizations.dart';
 import 'package:in_sreerajp_imgvidgal/providers/album_providers.dart';
 import 'package:in_sreerajp_imgvidgal/providers/media_providers.dart';
 import 'package:in_sreerajp_imgvidgal/widgets/albums/album_card.dart';
+import 'package:in_sreerajp_imgvidgal/widgets/home/home_overflow_menu.dart';
 
 /// The Folders tab, showing every device folder that holds indexed media.
 ///
@@ -29,6 +30,7 @@ class FoldersTab extends ConsumerWidget {
             icon: const Icon(Icons.search),
             tooltip: l10n.tooltipSearchOpen,
           ),
+          const HomeOverflowMenu(),
         ],
       ),
       body: SafeArea(
@@ -114,6 +116,8 @@ class FoldersTab extends ConsumerWidget {
                         .read(mediaScanControllerProvider.notifier)
                         .scan(incremental: true),
                     child: GridView.builder(
+                      // Few folders still need to take a drag for refresh.
+                      physics: const AlwaysScrollableScrollPhysics(),
                       padding: const EdgeInsets.all(12),
                       gridDelegate:
                           const SliverGridDelegateWithFixedCrossAxisCount(

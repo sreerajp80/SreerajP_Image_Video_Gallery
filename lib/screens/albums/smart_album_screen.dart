@@ -10,6 +10,7 @@ import 'package:in_sreerajp_imgvidgal/widgets/albums/album_media_grid.dart';
 import 'package:in_sreerajp_imgvidgal/widgets/albums/smart_filter_sheet.dart';
 import 'package:in_sreerajp_imgvidgal/widgets/batch/batch_action_bar.dart';
 import 'package:in_sreerajp_imgvidgal/widgets/batch/selection_app_bar.dart';
+import 'package:in_sreerajp_imgvidgal/widgets/home/home_overflow_menu.dart';
 
 /// One smart album at `/albums/auto/:type`.
 ///
@@ -60,6 +61,7 @@ class SmartAlbumScreen extends ConsumerWidget {
                   ),
                   tooltip: l10n.tooltipFilterTitle,
                 ),
+                const HomeOverflowMenu(),
               ],
             ),
       bottomNavigationBar: selecting ? const BatchActionBar() : null,
@@ -124,6 +126,7 @@ class FolderAlbumScreen extends ConsumerWidget {
                   ),
                   tooltip: l10n.tooltipFilterTitle,
                 ),
+                const HomeOverflowMenu(),
               ],
             ),
       bottomNavigationBar: selecting ? const BatchActionBar() : null,

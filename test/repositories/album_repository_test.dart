@@ -182,6 +182,9 @@ void main() {
       expect(opened.map((i) => i.id).toList(), <String>['m1']);
       expect(summaries.single.itemCount, 1);
       expect(summary!.itemCount, 1);
+      // The size counts the same visible items as the count: one file only.
+      expect(summaries.single.totalBytes, 1000);
+      expect(summary.totalBytes, 1000);
     });
 
     test('keeps the order items were added in', () async {
@@ -306,6 +309,7 @@ void main() {
       final summary = await repository.getVirtualAlbumSummary(album.id);
       expect(summary!.coverItem, isNull);
       expect(summary.isEmpty, isTrue);
+      expect(summary.totalBytes, 0);
     });
 
     test('returns null for an album that is not there', () async {
@@ -332,7 +336,12 @@ void main() {
       expect(camera.albumType, AlbumType.physicalFolder);
       expect(camera.itemCount, 2);
       expect(camera.coverItem?.id, 'm2');
+      expect(camera.totalBytes, 2000);
       expect(folders.map((f) => f.name), contains('Screenshots'));
+      expect(
+        folders.firstWhere((f) => f.name == 'Screenshots').totalBytes,
+        1000,
+      );
     });
 
     test('opening a folder returns only its own files', () async {
@@ -424,6 +433,7 @@ void main() {
         );
         expect(favorites.itemCount, 1);
         expect(favorites.coverItem?.id, 'fav');
+        expect(favorites.totalBytes, 1000);
       },
     );
 
@@ -432,6 +442,7 @@ void main() {
       for (final summary in summaries) {
         expect(summary.itemCount, 0);
         expect(summary.coverItem, isNull);
+        expect(summary.totalBytes, 0);
       }
     });
 

@@ -271,7 +271,7 @@ no storage.
 
 ### Current Schema Version
 
-SQLite schema version: **8** (`DatabaseConstants.schemaVersion` in
+SQLite schema version: **9** (`DatabaseConstants.schemaVersion` in
 `lib/repositories/database/database_constants.dart`). Database file: `gallery_database.db`.
 
 Migration history:
@@ -286,8 +286,20 @@ Migration history:
 | 6 | Removes extra `media_search_fts` rows, keeping one per photo. The scan used to save with SQLite `REPLACE`, which fired the insert trigger but not the delete one, so each full rescan added a copy |
 | 7 | `media_items.is_out_of_reach` (0/1, default 0) with its value triggers. Marks rows Android does not currently let the app see, so lists hide them without losing their data |
 | 8 | Triggers keep `albums.item_count` and `tags.item_count` equal to the number of visible linked photos, plus an index on `album_media_entries.media_id`. The upgrade recounts every album and tag once |
+| 9 | New `sync_marks` table (media id, other phone's install id, SHA-256, size, time; deleted with its media row) for Device Sync "sent to that phone" marks. A new, empty table |
 
 Upgrade paths are tested in `test/repositories/database/database_migration_test.dart`.
+
+The search table is not tied to a version number. Before the first open, `FtsSupport.probe`
+(`lib/repositories/database/fts_support.dart`) finds which module this SQLite has (FTS5, then
+FTS4) on a separate in-memory database, and the table is created with that module only. On
+every open, `DatabaseHelper` also repairs a search table the device's SQLite cannot use: old
+SQLite (3.22, Android 10) kept the row of a failed FTS5 create made inside the `onCreate`
+transaction, and every write to `media_items` then failed with `no such module: fts5`. The
+repair removes that row and the search triggers on a short separate connection (only that
+SQLite version needs a new connection to forget the table), and `onOpen` rebuilds the table
+and its rows from `media_items` whenever it is missing. Tested in
+`test/repositories/database/database_fts_repair_test.dart`.
 
 How to add a migration is described in [../README.md](../README.md) §6.
 
@@ -367,8 +379,11 @@ The index list lives in `DatabaseHelper`. Update this table when you add one.
 |-- trash
 |-- pdf-export | pdf-images
 |-- backup
-|-- sync                        (local Wi-Fi transfer; owns the socket listener)
-|   |-- receive | send
+|-- sync                        (receive start: show a code or scan; owns the socket listener)
+|   |-- receive | send          (show the code / scan the code)
+|   |-- start-send              (send start: quick send or "Move to a new phone")
+|-- device-sync                 (Settings › Device Sync)
+|   |-- qr-send | qr-receive    (app data only, by QR; no network)
 `-- settings
     |-- about | appearance | language | safety | default-app | privacy | developer
     `-- help
@@ -420,6 +435,49 @@ The index list lives in `DatabaseHelper`. Update this table when you add one.
 
 - **Network client:** none. No HTTP client exists in the dependency tree.
 - **Sockets:** `dart:io` sockets on the transfer screen only, bound by `LocalAddressRules`.
+
+### Device Sync
+
+Settings › Device Sync copies this app to another phone, one way and merge only. Nothing is
+deleted on either phone.
+
+- **QR (app data only):** `QrDataSyncService` builds the same payload as a backup
+  (`BackupCollectorService.collectFingerprinted`), gzips and encrypts it under a one-time key the
+  receiver shows, and `QrFrameCodec` splits it into a loop of QR codes. The receiver collects the
+  frames (`QrFrameCollector`), decrypts, and hands the payload to `RestoreService.openPayload`,
+  so it gets the same restore preview and rules as a backup file.
+- **Two ways to start a Wi-Fi send** (`TransferPurpose`, held in `transferPurposeProvider`):
+  - **Quick send:** select photos, tap "Send to a device". `SendStartScreen` offers "Show a
+    code" or "Scan their code", and after pairing only the selection is offered
+    (`SyncSourceService.load(selectionOnly: true)`). The selection stays if the user goes back;
+    it is cleared only after a send delivered files. The outbox is emptied when the start screen
+    closes.
+  - **Move to a new phone:** Settings › Device Sync. Folders and albums after pairing, and on
+    Finish the vault (if chosen) and then the whole app data and settings.
+  The home-menu "Receive from device" screen (`SyncHomeScreen`) is the receive side only.
+- **Wi-Fi (photos and data):** the transfer screens. After pairing, both sides exchange
+  `peerInfo` (install id; free space and "vault ready" from the receiver). The sender picks folders and albums
+  (`SendPickerView`, sources from `SyncSourceService`); `SyncSelectionRules` and
+  `SendLimitRules` decide what one send carries (5 GB cap, the receiver's free space, 2000 files)
+  and leave out files already marked as sent to that phone (`sync_marks`). One pairing can carry
+  several sends ("Send the rest"). Received files go to `Pictures/Drishya Sync/<sender folder>`
+  (`FolderNameRules`); their favourite, notes, tags, albums and place are applied after the scan
+  indexes them.
+- **Phone move, on Finish:** `TransferSessionService.finish(withVault:, withAppData:)`.
+  - Vault (only if the user turned it on after unlocking, and the receiver said its vault is
+    ready): `VaultTransferService` decrypts one item at a time into a working file, sends it as
+    a manifest entry with `vault: true`, and shreds it. The receiver's `ReceivedMediaService`
+    hands vault entries to `VaultTransferService.importReceived`, never to MediaStore.
+  - App data and settings: `PhoneMoveDataService` packs the backup payload
+    (`collectFingerprinted`) and `AppSettings` into one gzip envelope, sent as `appDataStart`,
+    `appDataChunk` and `appDataAck` frames. The receiver holds it in memory
+    (`TransferSessionState.receivedAppData`); `AppDataReview` then shows the normal restore
+    preview, applies it on yes, and asks separately before taking the settings
+    (`AppSettingsNotifier.applyAll`).
+- **Matching the same photo on another phone:** by SHA-256 first, then by name + size + date
+  (`BackupMergeService`). `DigestFillService` gives a SHA-256 to the photos a backup or QR send
+  carries, and, during a restore, to local photos whose size equals an unmatched record. A copy
+  that was compressed again is a different file and is not matched, on purpose.
 - **Offline behavior:** fully usable offline; see §7.
 
 ### Platform Channels Or Native Integrations
@@ -429,7 +487,7 @@ service. Channel names live in `AppConstants`.
 
 | Channel (`in.sreerajp.imgvidgal/…`) | Purpose |
 |---|---|
-| `mediastore` | Query, insert, update and delete MediaStore rows; `secureDeleteMedia` writes over files before deleting them |
+| `mediastore` | Query, insert, update and delete MediaStore rows; `secureDeleteMedia` writes over files before deleting them; `deleteConfirmInfo` says whether Android will show its own delete prompt (Android 11+ with "Manage media" off), so the app shows its own "Delete permanently?" dialog only when Android will not; `openManageMediaSettings` opens Android's "Media management apps" page |
 | `playback` | Screen brightness, media volume and keep-awake for the video player |
 | `imagetools` | Native image encode/decode for conversion |
 | `videotools` | Trim, frame grab and GIF export |
@@ -595,7 +653,8 @@ test/
   **Mitigation:** the release checklist compares the merged manifest with the 12 expected
   permissions; [dependencies.md](dependencies.md) has an approval checklist.
 - **Risk:** some devices ship SQLite without FTS5.
-  **Mitigation:** schema v3 falls back to FTS4.
+  **Mitigation:** the module is probed before the table is created, so Android gets FTS4, and a
+  broken FTS5 table left by old SQLite is repaired on open (see the schema section).
 - **Risk:** three packages still import the SDK's frozen Material: `qr_flutter` 4.1.0,
   `video_player` 2.14.x and `camera` 0.12.2 (checked 2026-11-02).
   **Mitigation:** `MaterialUiCompatibilityBridge` in `MaterialApp.builder` (`lib/main.dart`)

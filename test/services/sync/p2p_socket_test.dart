@@ -92,7 +92,14 @@ class _TempSink implements IncomingFileSink {
   _TempSink(this.root, {Set<String>? have}) : have = have ?? <String>{};
 
   @override
-  Future<bool> alreadyHave(String sha256) async => have.contains(sha256);
+  Future<bool> alreadyHave(TransferEntry entry) async =>
+      have.contains(entry.sha256);
+
+  /// Whether [hasRoomFor] says yes. Flip to test a full phone.
+  bool room = true;
+
+  @override
+  Future<bool> hasRoomFor(int bytes) async => room;
 
   @override
   Future<File> openStaging(TransferEntry entry) async {
@@ -495,6 +502,168 @@ void main() {
       await paired.svc.stop();
     });
 
+    // One pairing carries several sends. Each send must be read to its end,
+    // including the sender's closing `complete`; a frame left unread would be
+    // taken as the start of the next send and end the session as a failure.
+    Future<void> sendTwice({required Set<String> have}) async {
+      final paired = await pair();
+      final first = File(p.join(temp.path, 'A.jpg'));
+      final second = File(p.join(temp.path, 'B.jpg'));
+      await first.writeAsBytes(List<int>.filled(700, 1));
+      await second.writeAsBytes(List<int>.filled(900, 2));
+      final firstEntry = await _entryFor(first);
+      final secondEntry = await _entryFor(second);
+
+      final sink = _TempSink(
+        Directory(p.join(temp.path, 'inbox')),
+        have: have.contains('A') ? <String>{firstEntry.sha256} : null,
+      );
+      final sender = TransferExchangeService(
+        connection: paired.server,
+        sink: _TempSink(temp),
+      );
+      final receiver = TransferExchangeService(
+        connection: paired.client,
+        sink: sink,
+      );
+
+      for (final (file, entry) in [
+        (first, firstEntry),
+        (second, secondEntry),
+      ]) {
+        final sendFuture = sender.send(
+          manifest: TransferManifest(entries: <TransferEntry>[entry]),
+          fileFor: (_) async => file,
+        );
+        final received = await receiver.receive(accept: (m) async => <int>{0});
+        final sent = await sendFuture;
+        expect(sent.failure, isNull);
+        expect(received.failure, isNull);
+      }
+
+      expect(paired.client.bufferedFrames, 0);
+      expect(
+        sink.committed.map(p.basename),
+        have.contains('A') ? <String>['B.jpg'] : <String>['A.jpg', 'B.jpg'],
+      );
+
+      await paired.client.close();
+      await paired.server.close();
+      await paired.svc.stop();
+    }
+
+    test('a second send over the same pairing starts cleanly', () async {
+      await sendTwice(have: const <String>{});
+    });
+
+    test('a send of only files already held ends cleanly too', () async {
+      await sendTwice(have: const <String>{'A'});
+    });
+
+    test('the sender marks files the receiver now holds', () async {
+      final paired = await pair();
+      final have = File(p.join(temp.path, 'have.jpg'));
+      await have.writeAsBytes(List<int>.filled(200, 1));
+      final fresh = File(p.join(temp.path, 'fresh.jpg'));
+      await fresh.writeAsBytes(List<int>.filled(300, 2));
+      final haveEntry = await _entryFor(have);
+      final freshEntry = await _entryFor(fresh);
+
+      final delivered = <String>[];
+      final sendFuture =
+          TransferExchangeService(
+            connection: paired.server,
+            sink: _TempSink(temp),
+          ).send(
+            manifest: TransferManifest(
+              entries: <TransferEntry>[haveEntry, freshEntry],
+            ),
+            fileFor: (e) async => e.sourceId == 'have.jpg' ? have : fresh,
+            onDelivered: (e) async => delivered.add(e.sourceId),
+          );
+
+      final receiveFuture = TransferExchangeService(
+        connection: paired.client,
+        sink: _TempSink(
+          Directory(p.join(temp.path, 'inbox')),
+          have: <String>{haveEntry.sha256},
+        ),
+      ).receive(accept: (m) async => <int>{0, 1});
+
+      await sendFuture;
+      await receiveFuture;
+      // Both are on the other phone now: one was there, one arrived.
+      expect(delivered, unorderedEquals(<String>['have.jpg', 'fresh.jpg']));
+
+      await paired.client.close();
+      await paired.server.close();
+      await paired.svc.stop();
+    });
+
+    test('a full receiver stops the send cleanly', () async {
+      final paired = await pair();
+      final one = File(p.join(temp.path, 'one.jpg'));
+      await one.writeAsBytes(List<int>.filled(500, 1));
+      final two = File(p.join(temp.path, 'two.jpg'));
+      await two.writeAsBytes(List<int>.filled(500, 2));
+      final entries = <TransferEntry>[
+        await _entryFor(one),
+        await _entryFor(two),
+      ];
+
+      final sink = _TempSink(Directory(p.join(temp.path, 'inbox')))
+        ..room = false;
+
+      final sendFuture =
+          TransferExchangeService(
+            connection: paired.server,
+            sink: _TempSink(temp),
+          ).send(
+            manifest: TransferManifest(entries: entries),
+            fileFor: (e) async => e.sourceId == 'one.jpg' ? one : two,
+          );
+      final receiveFuture = TransferExchangeService(
+        connection: paired.client,
+        sink: sink,
+      ).receive(accept: (m) async => <int>{0, 1});
+
+      final sent = await sendFuture;
+      final received = await receiveFuture;
+
+      expect(sent.failure, TransferFailure.noSpace);
+      expect(sent.sentCount, 0);
+      // The sender stopped after the first refusal.
+      expect(sent.failedCount, 1);
+      expect(received.failure, TransferFailure.noSpace);
+      expect(sink.committed, isEmpty);
+      // Nothing half-written was left behind.
+      expect(
+        Directory(p.join(temp.path, 'inbox')).existsSync()
+            ? Directory(p.join(temp.path, 'inbox')).listSync()
+            : const <FileSystemEntity>[],
+        isEmpty,
+      );
+
+      await paired.client.close();
+      await paired.server.close();
+      await paired.svc.stop();
+    });
+
+    test('a file is hashed in pieces, giving the same digest', () async {
+      final file = File(p.join(temp.path, 'piece.bin'));
+      final bytes = List<int>.generate(700 * 1024, (i) => i % 251);
+      await file.writeAsBytes(bytes);
+      expect(
+        await TransferCryptoService.fileDigest(file),
+        TransferCryptoService.hexDigest(bytes),
+      );
+
+      final streaming = StreamingSha256()
+        ..add(bytes.sublist(0, 1000))
+        ..add(bytes.sublist(1000));
+      expect(streaming.close(), TransferCryptoService.hexDigest(bytes));
+    });
+
     test('progress moves and ends at the full byte count', () async {
       final paired = await pair();
       final source = File(p.join(temp.path, 'big.jpg'));
@@ -785,7 +954,7 @@ void main() {
           key: _key(1),
           challenge: challenge,
           proof: proof,
-          protocolVersion: 2,
+          protocolVersion: AppConstants.syncProtocolVersion + 1,
         ),
         isFalse,
       );

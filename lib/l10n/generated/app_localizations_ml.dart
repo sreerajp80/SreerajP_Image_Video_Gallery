@@ -2135,11 +2135,11 @@ class AppLocalizationsMl extends AppLocalizations {
   String get titleSync => 'ട്രാൻസ്ഫർ';
 
   @override
-  String get titleSyncOpen => 'ഒരു ഉപകരണത്തിലേക്ക് ട്രാൻസ്ഫർ';
+  String get titleSyncOpen => 'ഒരു ഉപകരണത്തിൽ നിന്ന് സ്വീകരിക്കുക';
 
   @override
   String get bodySyncIntro =>
-      'അതേ വൈ-ഫൈയിലുള്ള മറ്റൊരു ഫോണിലേക്ക് നേരിട്ട് ഫോട്ടോകൾ അയയ്ക്കുക. ഒന്നും ഇന്റർനെറ്റിലേക്ക് പോകുന്നില്ല, അക്കൗണ്ട് വേണ്ട.';
+      'അതേ വൈ-ഫൈയിലുള്ള മറ്റൊരു ഫോണിൽ നിന്ന് ഫോട്ടോകൾ സ്വീകരിക്കുക. ഒന്നും ഇന്റർനെറ്റിലേക്ക് പോകുന്നില്ല, അക്കൗണ്ട് വേണ്ട.';
 
   @override
   String get bodySyncPrivacyNote =>
@@ -2152,11 +2152,129 @@ class AppLocalizationsMl extends AppLocalizations {
   String get labelSyncReceive => 'സ്വീകരിക്കുക';
 
   @override
-  String get bodySyncSend =>
-      'ഈ ഫോണിൽ ഒരു കോഡ് കാണിക്കുക, അല്ലെങ്കിൽ മറ്റേത് സ്കാൻ ചെയ്യുക';
+  String get bodySyncReceive => 'അയയ്ക്കുന്ന ഫോൺ ഇത് സ്കാൻ ചെയ്യും';
 
   @override
-  String get bodySyncReceive => 'മറ്റേ ഫോൺ സ്കാൻ ചെയ്യാൻ ഒരു കോഡ് കാണിക്കുക';
+  String titleSyncQuickSend(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count ഇനങ്ങൾ അയയ്ക്കുക',
+      one: '1 ഇനം അയയ്ക്കുക',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get bodySyncQuickIntro =>
+      'തിരഞ്ഞെടുത്ത ഫോട്ടോകളും വീഡിയോകളും അതേ വൈ-ഫൈയിലുള്ള മറ്റൊരു ഫോണിലേക്ക് നേരിട്ട് അയയ്ക്കുക. ഒന്നും ഇന്റർനെറ്റിലേക്ക് പോകുന്നില്ല.';
+
+  @override
+  String get bodySyncPhoneMoveIntro =>
+      'ഈ ആപ്പ് നിങ്ങളുടെ പുതിയ ഫോണിലേക്ക് പകർത്തുക. ബന്ധിപ്പിച്ച ശേഷം ഫോൾഡറുകളും ആൽബങ്ങളും തിരഞ്ഞെടുക്കുക. \'പൂർത്തിയാക്കുക\' അമർത്തുമ്പോൾ എല്ലാ ആപ്പ് ഡാറ്റയും ക്രമീകരണങ്ങളും പോകും. രണ്ട് ഫോണിലും ഒന്നും ഇല്ലാതാക്കില്ല.';
+
+  @override
+  String get labelSyncShowCode => 'ഒരു കോഡ് കാണിക്കുക';
+
+  @override
+  String get bodySyncShowCodeToReceiver =>
+      'സ്വീകരിക്കുന്ന ഫോൺ ഇത് സ്കാൻ ചെയ്യും';
+
+  @override
+  String get labelSyncScanOther => 'മറ്റേ ഫോണിന്റെ കോഡ് സ്കാൻ ചെയ്യുക';
+
+  @override
+  String get bodySyncScanReceiverCode =>
+      'സ്വീകരിക്കുന്ന ഫോൺ കോഡ് കാണിക്കുമ്പോൾ';
+
+  @override
+  String get bodySyncScanSenderCode => 'അയയ്ക്കുന്ന ഫോൺ കോഡ് കാണിക്കുമ്പോൾ';
+
+  @override
+  String get bodySyncHowToSend =>
+      'അയയ്ക്കാൻ, ഗാലറിയിൽ ഫോട്ടോകൾ തിരഞ്ഞെടുത്ത് \'ഉപകരണത്തിലേക്ക് അയക്കുക\' അമർത്തുക. പുതിയ ഫോണിലേക്ക് മാറാൻ, ക്രമീകരണങ്ങൾ › ഉപകരണ സമന്വയം ഉപയോഗിക്കുക.';
+
+  @override
+  String get bodyDeviceSyncWifiReceive =>
+      'പുതിയ ഫോണിൽ: പഴയതിൽ നിന്ന് ഫോൾഡറുകൾ, ആൽബങ്ങൾ, ആപ്പ് ഡാറ്റ, ക്രമീകരണങ്ങൾ എന്നിവ നേടുക';
+
+  @override
+  String get bodySyncAppDataSending =>
+      'ആപ്പ് ഡാറ്റയും ക്രമീകരണങ്ങളും അയയ്ക്കുന്നു';
+
+  @override
+  String get bodySyncAppDataReceiving =>
+      'ആപ്പ് ഡാറ്റയും ക്രമീകരണങ്ങളും സ്വീകരിക്കുന്നു';
+
+  @override
+  String get bodySyncAppDataSent => 'ആപ്പ് ഡാറ്റയും ക്രമീകരണങ്ങളും അയച്ചു';
+
+  @override
+  String bodySyncVaultReceived(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count ഫയലുകൾ സ്വകാര്യ വോള്‍ട്ടിൽ വെച്ചു',
+      one: '1 ഫയൽ സ്വകാര്യ വോള്‍ട്ടിൽ വെച്ചു',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get actionSyncReviewAppData => 'ആപ്പ് ഡാറ്റ പരിശോധിക്കുക';
+
+  @override
+  String get bodySyncAppDataApplied => 'ആപ്പ് ഡാറ്റ ചേർത്തു';
+
+  @override
+  String get errorSyncAppDataApply =>
+      'ആപ്പ് ഡാറ്റ ചേർക്കാനായില്ല. വീണ്ടും ശ്രമിക്കുക.';
+
+  @override
+  String get titleSyncUseSettings => 'പഴയ ക്രമീകരണങ്ങൾ വേണോ?';
+
+  @override
+  String get bodySyncUseSettings =>
+      'ഈ ഫോണിലെ തീം, ഭാഷ, ഗ്രിഡ് വലുപ്പം, സുരക്ഷാ സ്വിച്ചുകൾ എന്നിവ മറ്റേ ഫോണിലേതു കൊണ്ട് മാറ്റും.';
+
+  @override
+  String get actionSyncKeepMySettings => 'എന്റേത് നിലനിർത്തുക';
+
+  @override
+  String get actionSyncUseTheirSettings => 'അവരുടേത് ഉപയോഗിക്കുക';
+
+  @override
+  String get bodySyncErrorAppData =>
+      'ഫയലുകൾ അയച്ചു, പക്ഷേ ആപ്പ് ഡാറ്റയും ക്രമീകരണങ്ങളും അയച്ചില്ല. അവ അയയ്ക്കാൻ മാറ്റം വീണ്ടും നടത്തുക.';
+
+  @override
+  String get labelSyncAppDataAndSettings => 'ആപ്പ് ഡാറ്റയും ക്രമീകരണങ്ങളും';
+
+  @override
+  String get bodySyncAppDataOnFinish =>
+      'ടാഗുകൾ, ആൽബങ്ങൾ, പ്രിയപ്പെട്ടവ, കുറിപ്പുകൾ, സ്ഥലങ്ങൾ, ക്രമീകരണങ്ങൾ. \'പൂർത്തിയാക്കുക\' അമർത്തുമ്പോൾ ഇവ പോകും.';
+
+  @override
+  String get labelSyncIncludeVault => 'സ്വകാര്യ വോള്‍ട്ട്';
+
+  @override
+  String get bodySyncIncludeVaultOff =>
+      'ഓഫ്. വോള്‍ട്ടും പകർത്താൻ ഓൺ ചെയ്യുക. ആദ്യം അത് തുറക്കണം.';
+
+  @override
+  String get bodySyncIncludeVaultOn =>
+      'ഓൺ. \'പൂർത്തിയാക്കുക\' അമർത്തുമ്പോൾ വോള്‍ട്ടിലെ ഇനങ്ങൾ പോകും; ഈ ഫോണിലെ വോള്‍ട്ടിലും അവ തുടരും.';
+
+  @override
+  String get bodySyncVaultPeerNotReady =>
+      'മറ്റേ ഫോണിൽ വോള്‍ട്ട് സജ്ജമാക്കിയിട്ടില്ല, അതിനാൽ വോള്‍ട്ട് അയയ്ക്കില്ല. അവിടെ അത് സജ്ജമാക്കി മാറ്റം വീണ്ടും നടത്തുക.';
+
+  @override
+  String get bodySyncVaultNotSetUp => 'ഈ ഫോണിൽ വോള്‍ട്ട് ഇല്ല.';
+
+  @override
+  String get bodySyncVaultUnlockFirst =>
+      'വോള്‍ട്ട് തുറന്ന ശേഷം ഇവിടെ തിരിച്ചുവരിക.';
 
   @override
   String get actionSyncScanCode => 'ഒരു കോഡ് സ്കാൻ ചെയ്യുക';
@@ -2190,21 +2308,6 @@ class AppLocalizationsMl extends AppLocalizations {
   @override
   String bodySyncProgressFiles(int done, int total) {
     return '$total ഫയലുകളിൽ $done';
-  }
-
-  @override
-  String get bodySyncNothingSelected =>
-      'ആദ്യം അയയ്ക്കാൻ കുറച്ച് ഫോട്ടോകൾ തിരഞ്ഞെടുക്കുക';
-
-  @override
-  String bodySyncOfferHeading(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count ഫയലുകൾ വാഗ്ദാനം ചെയ്തു',
-      one: '1 ഫയൽ വാഗ്ദാനം ചെയ്തു',
-    );
-    return '$_temp0';
   }
 
   @override
@@ -3948,6 +4051,34 @@ class AppLocalizationsMl extends AppLocalizations {
       'Android 9-ഉം അതിനു മുമ്പുള്ളവയിലും മാത്രം. ഫോട്ടോകൾ ശാശ്വതമായോ സുരക്ഷിതമായോ ഇല്ലാതാക്കാൻ അനുവദിക്കുന്നു. ഫോട്ടോ അനുമതിയോടൊപ്പം ചോദിക്കും.';
 
   @override
+  String get labelPermissionsSpecial => 'നിങ്ങൾ ഓണാക്കുന്നവ';
+
+  @override
+  String get descPermissionsSpecial =>
+      'ആൻഡ്രോയിഡ് ഇവ ചോദിക്കില്ല. ആൻഡ്രോയിഡ് ക്രമീകരണങ്ങളിൽ നിങ്ങൾ തന്നെ ഓണാക്കുന്നതുവരെ ഇവ ഓഫായിരിക്കും.';
+
+  @override
+  String get labelPermManageMedia => 'മീഡിയ നിയന്ത്രണം';
+
+  @override
+  String get descPermManageMedia =>
+      'Android 12-ഉം അതിനു ശേഷമുള്ളവയിലും മാത്രം. നിങ്ങൾ ഓണാക്കിയാൽ മാത്രം പ്രവർത്തിക്കും. ആൻഡ്രോയിഡിന്റെ സ്വന്തം ചോദ്യമില്ലാതെ ഫോട്ടോകൾ ഇല്ലാതാക്കാൻ ആപ്പിനെ അനുവദിക്കുന്നു; അപ്പോൾ ആപ്പ് തന്നെ ഒരിക്കൽ ചോദിക്കും.';
+
+  @override
+  String get descManageMediaSubtitle =>
+      'Android 12-ഉം അതിനു ശേഷമുള്ളവയിലും. ഓണാക്കിയാൽ, ഓരോ ശാശ്വത ഇല്ലാതാക്കലിനും മുമ്പ് ആൻഡ്രോയിഡ് ചോദിക്കില്ല; പകരം ആപ്പ് ഒരിക്കൽ ചോദിക്കും. ആൻഡ്രോയിഡ് ക്രമീകരണങ്ങളിൽ മാറ്റാൻ ടാപ്പ് ചെയ്യുക.';
+
+  @override
+  String get titleManageMediaPrompt => 'മീഡിയ നിയന്ത്രണം അനുവദിക്കണോ?';
+
+  @override
+  String get bodyManageMediaPrompt =>
+      'ഓരോ ശാശ്വത ഇല്ലാതാക്കലിനും മുമ്പ് ആൻഡ്രോയിഡ് വീണ്ടും ചോദിക്കും. ഈ ആപ്പിന് \"മീഡിയ നിയന്ത്രണം\" ഓണാക്കിയാൽ, പകരം ആപ്പ് തന്നെ ഒരിക്കൽ ചോദിക്കും. പിന്നീട് ക്രമീകരണങ്ങൾ → സുരക്ഷ എന്നതിൽ ഇത് മാറ്റാം.';
+
+  @override
+  String get actionNotNow => 'ഇപ്പോൾ വേണ്ട';
+
+  @override
   String get labelPermAllowed => 'അനുവദിച്ചു';
 
   @override
@@ -4112,4 +4243,208 @@ class AppLocalizationsMl extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get titleDeviceSync => 'ഉപകരണ സമന്വയം';
+
+  @override
+  String get descDeviceSyncSubtitle =>
+      'ആപ്പ് ഡാറ്റയോ ഫോട്ടോകളോ മറ്റൊരു ഫോണിലേക്ക് പകർത്തുക';
+
+  @override
+  String get bodyDeviceSyncIntro =>
+      'ഈ ആപ്പിന്റെ ഡാറ്റയോ, അതോടൊപ്പം നിങ്ങളുടെ ഫോട്ടോകളോ, ഈ ആപ്പുള്ള മറ്റൊരു ഫോണിലേക്ക് പകർത്തുക. ഒന്നും ഇന്റർനെറ്റിലേക്ക് പോകുന്നില്ല, രണ്ട് ഫോണിലും ഒന്നും ഇല്ലാതാക്കുന്നില്ല.';
+
+  @override
+  String get labelDeviceSyncQrSend => 'QR വഴി ആപ്പ് ഡാറ്റ അയയ്ക്കുക';
+
+  @override
+  String get bodyDeviceSyncQrSend =>
+      'ടാഗുകൾ, ആൽബങ്ങൾ, പ്രിയപ്പെട്ടവ, കുറിപ്പുകൾ, സ്ഥലങ്ങൾ. ഫോട്ടോകൾ ഇല്ല, വൈ-ഫൈ വേണ്ട. മറ്റേ ഫോണിൽ ഇതേ ഫോട്ടോകൾ നേരത്തെ ഉണ്ടായിരിക്കണം.';
+
+  @override
+  String get labelDeviceSyncWifiSend => 'പുതിയ ഫോണിലേക്ക് മാറുക';
+
+  @override
+  String get bodyDeviceSyncWifiSend =>
+      'നിങ്ങൾ തിരഞ്ഞെടുക്കുന്ന ഫോൾഡറുകളും ആൽബങ്ങളും, എല്ലാ ആപ്പ് ഡാറ്റയും ക്രമീകരണങ്ങളും സഹിതം. വേണമെങ്കിൽ വോള്‍ട്ടും. രണ്ട് ഫോണുകളും ഒരേ വൈ-ഫൈയിൽ.';
+
+  @override
+  String get labelDeviceSyncQrReceive => 'QR വഴി ആപ്പ് ഡാറ്റ സ്വീകരിക്കുക';
+
+  @override
+  String get bodyDeviceSyncQrReceive =>
+      'ഒരു കോഡ് കാണിക്കുക, പിന്നെ മറ്റേ ഫോണിലെ കോഡുകൾ സ്കാൻ ചെയ്യുക';
+
+  @override
+  String get labelDeviceSyncWifiReceive => 'പഴയ ഫോണിൽ നിന്ന് നേടുക';
+
+  @override
+  String get titleSyncPick => 'എന്ത് അയയ്ക്കണമെന്ന് തിരഞ്ഞെടുക്കുക';
+
+  @override
+  String get labelSyncSelectionSource => 'തിരഞ്ഞെടുത്ത ഫോട്ടോകൾ';
+
+  @override
+  String get labelSyncFoldersSection => 'ഫോൾഡറുകൾ';
+
+  @override
+  String get labelSyncAlbumsSection => 'ആൽബങ്ങൾ';
+
+  @override
+  String bodySyncSourceStats(String size, int sent, int count) {
+    return '$size · $count ൽ $sent അയച്ചു';
+  }
+
+  @override
+  String bodySyncPeerFreeSpace(String name, String size) {
+    return '$name ൽ ഒഴിവുള്ള ഇടം: $size';
+  }
+
+  @override
+  String bodySyncPlanThisSend(int count, String size) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'ഈ അയയ്ക്കലിൽ: $count ഫയലുകൾ, $size',
+      one: 'ഈ അയയ്ക്കലിൽ: 1 ഫയൽ, $size',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String bodySyncPlanLeft(int count, String size) {
+    return 'അടുത്ത അയയ്ക്കലിന്: $count ഫയലുകൾ, $size';
+  }
+
+  @override
+  String bodySyncPlanAlreadySent(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'മറ്റേ ഫോണിൽ ഇതിനകം ഉള്ളത്: $count ഫയലുകൾ',
+      one: 'മറ്റേ ഫോണിൽ ഇതിനകം ഉള്ളത്: 1 ഫയൽ',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String bodySyncPlanResend(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'ഈ ഫോണിലേക്ക് മുമ്പ് അയച്ചത്: $count ഫയലുകൾ. അവ വീണ്ടും അയയ്ക്കും.',
+      one: 'ഈ ഫോണിലേക്ക് മുമ്പ് അയച്ചത്: 1 ഫയൽ. അത് വീണ്ടും അയയ്ക്കും.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String bodySyncLimitCap(String size) {
+    return 'ഒരു അയയ്ക്കലിൽ $size വരെ മാത്രം. ബാക്കി അടുത്തതിൽ അയയ്ക്കുക.';
+  }
+
+  @override
+  String get bodySyncLimitSpace =>
+      'മറ്റേ ഫോണിൽ ഇടം കുറവാണ്. കൂടുതൽ അയയ്ക്കാൻ അതിൽ ഇടം ഒഴിവാക്കുക.';
+
+  @override
+  String bodySyncLimitCount(int count) {
+    return 'ഒരു അയയ്ക്കലിൽ $count ഫയലുകൾ വരെ.';
+  }
+
+  @override
+  String get bodySyncAllSent =>
+      'എല്ലാം അയച്ചു. കൂടുതൽ അയയ്ക്കാൻ തിരഞ്ഞെടുക്കുക, അല്ലെങ്കിൽ പൂർത്തിയാക്കുക അമർത്തുക.';
+
+  @override
+  String get bodySyncPickSomething =>
+      'അയയ്ക്കാൻ ഫോൾഡറുകളോ ആൽബങ്ങളോ തിരഞ്ഞെടുക്കുക.';
+
+  @override
+  String get actionSyncSendRest => 'ബാക്കി അയയ്ക്കുക';
+
+  @override
+  String get actionSyncFinish => 'പൂർത്തിയാക്കുക';
+
+  @override
+  String get labelSyncPreparing => 'ഫയലുകൾ തയ്യാറാക്കുന്നു';
+
+  @override
+  String get labelSyncBatchDone => 'ഈ അയയ്ക്കൽ പൂർത്തിയായി';
+
+  @override
+  String get bodySyncWaitingForSend =>
+      'ബന്ധിപ്പിച്ചു. മറ്റേ ഫോൺ അയയ്ക്കുന്നതിനായി കാത്തിരിക്കുന്നു.';
+
+  @override
+  String get bodySyncErrorNoSpace =>
+      'ഒരു ഫോണിൽ ഇടം തീർന്നു. എത്തിയ ഫയലുകൾ സൂക്ഷിച്ചിട്ടുണ്ട്.';
+
+  @override
+  String get bodySyncSavedToFolder =>
+      'ലഭിച്ച ഫയലുകൾ Pictures › Drishya Sync ൽ ഉണ്ട്.';
+
+  @override
+  String get errorSyncSourcesLoad =>
+      'നിങ്ങളുടെ ഫോൾഡറുകളും ആൽബങ്ങളും വായിക്കാനായില്ല.';
+
+  @override
+  String get titleQrSyncSend => 'QR വഴി അയയ്ക്കുക';
+
+  @override
+  String get titleQrSyncReceive => 'QR വഴി സ്വീകരിക്കുക';
+
+  @override
+  String get bodyQrSyncScanKey => 'മറ്റേ ഫോണിലെ കോഡ് സ്കാൻ ചെയ്യുക';
+
+  @override
+  String get bodyQrSyncShowKey =>
+      'ഘട്ടം 1: മറ്റേ ഫോണിൽ ഈ കോഡ് സ്കാൻ ചെയ്യുക. പിന്നെ അടുത്തത് അമർത്തുക.';
+
+  @override
+  String get actionQrSyncNext => 'അടുത്തത്';
+
+  @override
+  String get bodyQrSyncScanFrames =>
+      'ഘട്ടം 2: മറ്റേ ഫോണിലെ മാറുന്ന കോഡുകളിലേക്ക് ക്യാമറ ചൂണ്ടുക.';
+
+  @override
+  String bodyQrSyncFramesProgress(int done, int total) {
+    return '$total കോഡുകളിൽ $done വായിച്ചു';
+  }
+
+  @override
+  String get bodyQrSyncShowFrames =>
+      'മറ്റേ ഫോൺ പൂർത്തിയായി എന്ന് കാണിക്കുന്നതുവരെ ഈ സ്ക്രീൻ അതിന്റെ ക്യാമറയ്ക്ക് മുന്നിൽ പിടിക്കുക.';
+
+  @override
+  String bodyQrSyncFrameCount(int count) {
+    return '$count കോഡുകൾ ആവർത്തിച്ച് കാണിക്കുന്നു';
+  }
+
+  @override
+  String errorQrSyncTooBig(int count) {
+    return 'QR-ന് ഡാറ്റ കൂടുതലാണ് ($count കോഡുകൾ). പകരം വൈ-ഫൈ ഉപയോഗിക്കുക.';
+  }
+
+  @override
+  String get bodyQrSyncNothing => 'അയയ്ക്കാൻ ഇതുവരെ ആപ്പ് ഡാറ്റ ഒന്നുമില്ല.';
+
+  @override
+  String get errorQrSyncFailed =>
+      'ഡാറ്റ വായിക്കാനായില്ല. രണ്ട് ഫോണിലും വീണ്ടും തുടങ്ങുക.';
+
+  @override
+  String get labelQrSyncPreparing => 'ഡാറ്റ തയ്യാറാക്കുന്നു';
+
+  @override
+  String get actionSyncScanAnother => 'മറ്റൊരു കോഡ് സ്കാൻ ചെയ്യുക';
+
+  @override
+  String get actionSyncShowNewCode => 'പുതിയ കോഡ് കാണിക്കുക';
+
+  @override
+  String get actionSyncClose => 'അടയ്ക്കുക';
 }

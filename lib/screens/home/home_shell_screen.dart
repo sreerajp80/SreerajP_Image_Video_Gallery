@@ -7,6 +7,7 @@ import 'package:in_sreerajp_imgvidgal/screens/home/albums_tab.dart';
 import 'package:in_sreerajp_imgvidgal/screens/home/folders_tab.dart';
 import 'package:in_sreerajp_imgvidgal/screens/timeline/timeline_screen.dart';
 import 'package:in_sreerajp_imgvidgal/models/media/media_permission_status.dart';
+import 'package:in_sreerajp_imgvidgal/widgets/home/manage_media_prompt_dialog.dart';
 
 /// The top-level home screen with three tabs: Timeline, Folders, Albums.
 ///
@@ -25,9 +26,30 @@ class HomeShellScreen extends ConsumerStatefulWidget {
 class _HomeShellScreenState extends ConsumerState<HomeShellScreen> {
   int _tabIndex = 0;
 
+  /// Set once this screen has checked whether to ask for "Manage media".
+  bool _manageMediaChecked = false;
+
   @override
   void initState() {
     super.initState();
+  }
+
+  /// Asks for "Manage media" once per app start, after the first frame with
+  /// photo access. The provider decides; this only shows the dialog.
+  void _maybeAskManageMedia(MediaPermissionStatus status) {
+    if (_manageMediaChecked) return;
+    _manageMediaChecked = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!mounted) return;
+      final show = await ref
+          .read(manageMediaPromptProvider.notifier)
+          .takePrompt(status);
+      if (!show || !mounted) return;
+      final open = await showManageMediaPromptDialog(context);
+      if (open && mounted) {
+        await ref.read(mediaStoreChannelProvider).openManageMediaSettings();
+      }
+    });
   }
 
   @override
@@ -76,6 +98,7 @@ class _HomeShellScreenState extends ConsumerState<HomeShellScreen> {
             );
           }
 
+          _maybeAskManageMedia(status);
           return IndexedStack(
             index: _tabIndex,
             children: const <Widget>[

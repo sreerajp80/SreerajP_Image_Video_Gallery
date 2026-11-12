@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:in_sreerajp_imgvidgal/models/backup/restore_summary.dart';
 import 'package:in_sreerajp_imgvidgal/providers/album_providers.dart';
+import 'package:in_sreerajp_imgvidgal/providers/duplicate_providers.dart';
 import 'package:in_sreerajp_imgvidgal/providers/media_providers.dart';
 import 'package:in_sreerajp_imgvidgal/providers/tag_providers.dart';
 import 'package:in_sreerajp_imgvidgal/providers/settings_providers.dart';
@@ -8,6 +9,7 @@ import 'package:in_sreerajp_imgvidgal/services/backup/backup_apply_service.dart'
 import 'package:in_sreerajp_imgvidgal/services/backup/backup_collector_service.dart';
 import 'package:in_sreerajp_imgvidgal/services/backup/backup_crypto_channel.dart';
 import 'package:in_sreerajp_imgvidgal/services/backup/backup_service.dart';
+import 'package:in_sreerajp_imgvidgal/services/backup/digest_fill_service.dart';
 import 'package:in_sreerajp_imgvidgal/services/backup/document_picker_channel.dart';
 import 'package:in_sreerajp_imgvidgal/services/backup/restore_service.dart';
 import 'package:flutter_riverpod/legacy.dart';
@@ -22,12 +24,21 @@ final documentPickerChannelProvider = Provider<DocumentPickerChannel>((ref) {
   return DocumentPickerChannel();
 });
 
+/// Gives a SHA-256 to photos that need one to be matched on another phone.
+final digestFillServiceProvider = Provider<DigestFillService>((ref) {
+  return DigestFillService(
+    mediaDao: ref.watch(mediaDaoProvider),
+    channel: ref.watch(hashToolsChannelProvider),
+  );
+});
+
 /// Reads the database into a backup payload.
 final backupCollectorProvider = Provider<BackupCollectorService>((ref) {
   return BackupCollectorService(
     mediaDao: ref.watch(mediaDaoProvider),
     tagDao: ref.watch(tagDaoProvider),
     albumDao: ref.watch(albumDaoProvider),
+    digestFill: ref.watch(digestFillServiceProvider),
   );
 });
 
@@ -58,6 +69,7 @@ final restoreServiceProvider = Provider<RestoreService>((ref) {
     mediaRepository: ref.watch(mediaRepositoryProvider),
     tagRepository: ref.watch(tagRepositoryProvider),
     albumRepository: ref.watch(albumRepositoryProvider),
+    digestFill: ref.watch(digestFillServiceProvider),
   );
 });
 

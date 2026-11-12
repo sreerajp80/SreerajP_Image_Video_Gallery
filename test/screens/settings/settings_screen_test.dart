@@ -18,6 +18,8 @@ import 'package:in_sreerajp_imgvidgal/services/settings/app_settings_service.dar
 import 'package:in_sreerajp_imgvidgal/theme/app_theme.dart';
 
 import '../../helpers/recording_settings_service.dart';
+import '../../services/media/fake_media_store_channel.dart';
+import 'package:in_sreerajp_imgvidgal/models/media/delete_confirm_info.dart';
 import 'package:flutter_riverpod/misc.dart';
 import 'package:in_sreerajp_imgvidgal/core/l10n/sanskrit_fallback_delegates.dart';
 import '../../helpers/locale_checks.dart';
@@ -79,6 +81,7 @@ void main() {
       expect(find.text('Privacy'), findsOneWidget);
       expect(find.text('Permissions'), findsOneWidget);
       expect(find.text('Backup and restore'), findsOneWidget);
+      expect(find.text('Device Sync'), findsOneWidget);
       expect(find.text('Help & Guides'), findsOneWidget);
       expect(find.text('About'), findsOneWidget);
       expect(find.text('Reset settings'), findsOneWidget);
@@ -87,9 +90,10 @@ void main() {
     testWidgets('shows settings sections inside Cards', (tester) async {
       await pumpTestWidget(tester, child: const SettingsScreen());
 
-      // Production flavor renders 10 cards: Appearance, Language, Safety,
-      // Default App, Privacy, Permissions, Backup, Help, About, Reset.
-      expect(find.byType(Card), findsNWidgets(10));
+      // Production flavor renders 11 cards: Appearance, Language, Safety,
+      // Default App, Privacy, Permissions, Backup, Device Sync, Help, About,
+      // Reset.
+      expect(find.byType(Card), findsNWidgets(11));
     });
 
     testWidgets('renders in Malayalam when that is the locale', (tester) async {
@@ -251,6 +255,52 @@ void main() {
 
       expect(container.read(appSettingsProvider).confirmDestructive, isFalse);
     });
+
+    Future<FakeMediaStoreChannel> pumpSafety(
+      WidgetTester tester,
+      DeleteConfirmInfo info,
+    ) async {
+      final channel = FakeMediaStoreChannel()..deleteInfo = info;
+      await pumpTestWidget(
+        tester,
+        child: const SafetySettingsScreen(),
+        extraOverrides: <Override>[
+          mediaStoreChannelProvider.overrideWithValue(channel),
+        ],
+      );
+      return channel;
+    }
+
+    testWidgets('hides the Manage media card before Android 12', (
+      tester,
+    ) async {
+      await pumpSafety(tester, DeleteConfirmInfo.fallback);
+      expect(
+        find.byKey(const ValueKey<String>('manage_media_card')),
+        findsNothing,
+      );
+    });
+
+    testWidgets('shows Manage media state and opens Android settings', (
+      tester,
+    ) async {
+      final channel = await pumpSafety(
+        tester,
+        const DeleteConfirmInfo(
+          systemConfirmsDelete: true,
+          manageMediaSupported: true,
+          manageMediaGranted: false,
+        ),
+      );
+      final card = find.byKey(const ValueKey<String>('manage_media_card'));
+      expect(card, findsOneWidget);
+      expect(find.text('Manage media'), findsOneWidget);
+      expect(find.text('Not allowed'), findsOneWidget);
+
+      await tester.tap(card);
+      await tester.pumpAndSettle();
+      expect(channel.manageMediaSettingsOpenedCount, 1);
+    });
   });
 
   group('DefaultAppSettingsScreen', () {
@@ -320,6 +370,8 @@ void main() {
       expect(find.text('No remote server'), findsOneWidget);
       expect(find.text('You allow these'), findsOneWidget);
       expect(find.text('Granted at install'), findsOneWidget);
+      expect(find.text('You turn these on'), findsOneWidget);
+      expect(find.text('Manage media'), findsOneWidget);
       expect(find.text('Removed on purpose'), findsOneWidget);
       expect(find.text('Photos and videos'), findsOneWidget);
       expect(find.text('Camera'), findsOneWidget);

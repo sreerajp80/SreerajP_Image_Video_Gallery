@@ -213,6 +213,15 @@ void main() {
       expect(FrameType.fromWire(0), isNull);
       expect(FrameType.fromWire(99), isNull);
     });
+
+    test('wire values are fixed; new kinds only ever go at the end', () {
+      // Changing any of these breaks two builds talking to each other.
+      expect(FrameType.hello.wireValue, 1);
+      expect(FrameType.bye.wireValue, 14);
+      expect(FrameType.appDataStart.wireValue, 15);
+      expect(FrameType.appDataChunk.wireValue, 16);
+      expect(FrameType.appDataAck.wireValue, 17);
+    });
   });
 
   group('TransferFrame.json', () {

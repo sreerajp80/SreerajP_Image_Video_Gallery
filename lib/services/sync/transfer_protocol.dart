@@ -42,7 +42,30 @@ enum FrameType {
   error(10),
 
   /// The other side stopped.
-  cancel(11);
+  cancel(11),
+
+  /// "Still here." Sent by both sides every few seconds after the handshake,
+  /// and dropped by the reader. It keeps the session open while the sender
+  /// picks folders or hashes large files.
+  ping(12),
+
+  /// About this device: its install id, and on the receiving side its free
+  /// space. Sent after the handshake, and by the receiver after every send.
+  peerInfo(13),
+
+  /// The sender has nothing more to send. The session ends normally.
+  bye(14),
+
+  /// Phone move: the app data is about to come. JSON with its byte length
+  /// and SHA-256, so the receiver can refuse a size it will not hold and
+  /// check what arrived.
+  appDataStart(15),
+
+  /// Phone move: a slice of the compressed app data.
+  appDataChunk(16),
+
+  /// Phone move: the receiver holds the app data and it checked out.
+  appDataAck(17);
 
   final int wireValue;
   const FrameType(this.wireValue);

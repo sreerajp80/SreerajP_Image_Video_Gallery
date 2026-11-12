@@ -37,6 +37,12 @@ class AlbumSummary {
   /// empty or its chosen cover has since gone.
   final MediaItem? coverItem;
 
+  /// Total size in bytes of the items counted in [itemCount].
+  ///
+  /// Zero for an empty album. A file whose size is unknown is stored as zero,
+  /// so it simply adds nothing.
+  final int totalBytes;
+
   const AlbumSummary({
     required this.id,
     required this.name,
@@ -44,6 +50,7 @@ class AlbumSummary {
     this.folderPath,
     this.itemCount = 0,
     this.coverItem,
+    this.totalBytes = 0,
   });
 
   /// Whether the album has nothing in it.
@@ -59,6 +66,7 @@ class AlbumSummary {
     String? folderPath,
     int? itemCount,
     MediaItem? coverItem,
+    int? totalBytes,
     bool clearCover = false,
   }) {
     return AlbumSummary(
@@ -68,6 +76,7 @@ class AlbumSummary {
       folderPath: folderPath ?? this.folderPath,
       itemCount: itemCount ?? this.itemCount,
       coverItem: clearCover ? null : (coverItem ?? this.coverItem),
+      totalBytes: totalBytes ?? this.totalBytes,
     );
   }
 
@@ -81,9 +90,17 @@ class AlbumSummary {
           albumType == other.albumType &&
           folderPath == other.folderPath &&
           itemCount == other.itemCount &&
-          coverItem == other.coverItem;
+          coverItem == other.coverItem &&
+          totalBytes == other.totalBytes;
 
   @override
-  int get hashCode =>
-      Object.hash(id, name, albumType, folderPath, itemCount, coverItem);
+  int get hashCode => Object.hash(
+    id,
+    name,
+    albumType,
+    folderPath,
+    itemCount,
+    coverItem,
+    totalBytes,
+  );
 }

@@ -14,6 +14,7 @@ import 'package:in_sreerajp_imgvidgal/services/backup/backup_crypto_channel.dart
 import 'package:in_sreerajp_imgvidgal/services/backup/backup_format.dart';
 import 'package:in_sreerajp_imgvidgal/services/backup/backup_merge_service.dart';
 import 'package:in_sreerajp_imgvidgal/services/backup/backup_serializer.dart';
+import 'package:in_sreerajp_imgvidgal/services/backup/digest_fill_service.dart';
 import 'package:in_sreerajp_imgvidgal/services/backup/document_picker_channel.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
@@ -66,6 +67,7 @@ class RestoreService {
   final MediaRepository _mediaRepository;
   final TagRepository _tagRepository;
   final AlbumRepository _albumRepository;
+  final DigestFillService? _digestFill;
 
   RestoreService({
     required BackupCryptoChannel crypto,
@@ -76,6 +78,7 @@ class RestoreService {
     required AlbumRepository albumRepository,
     BackupSerializer serializer = const BackupSerializer(),
     BackupMergeService merge = const BackupMergeService(),
+    DigestFillService? digestFill,
   }) : _crypto = crypto,
        _picker = picker,
        _apply = apply,
@@ -83,7 +86,8 @@ class RestoreService {
        _tagRepository = tagRepository,
        _albumRepository = albumRepository,
        _serializer = serializer,
-       _merge = merge;
+       _merge = merge,
+       _digestFill = digestFill;
 
   /// Asks the user for a file and reads it, without writing anything.
   ///
@@ -133,20 +137,7 @@ class RestoreService {
         utf8.decode(gzip.decode(await staging.readAsBytes())),
       );
 
-      final localMedia = await _mediaRepository.getMediaItems();
-      final plan = _merge.buildPlan(
-        payload: payload,
-        localMedia: localMedia,
-        localTags: await _tagRepository.getAllTags(),
-        localAlbums: await _albumRepository.getVirtualAlbums(),
-        newId: _newId,
-      );
-
-      return OpenedArchive(
-        payload: payload,
-        plan: plan,
-        localMedia: localMedia,
-      );
+      return await openPayload(payload);
     } on BackupCryptoException catch (error) {
       if (error.isWrongPassword) {
         throw const RestoreException(
@@ -173,6 +164,54 @@ class RestoreService {
       // The staging file is the archive in the clear. It goes either way.
       await _deleteQuietly(staging);
     }
+  }
+
+  /// Works out what restoring [payload] would do on this phone.
+  ///
+  /// Writes nothing to the user's data. Used for a backup file and for app
+  /// data that arrived by QR, so both get exactly the same matching rules.
+  ///
+  /// Matching runs twice when it has to. Records the first pass could not
+  /// place, and that carry a SHA-256, get a second chance: the photos here
+  /// whose size equals theirs are fingerprinted, and the plan is built again.
+  /// A photo in a different folder, under a different date, is found this
+  /// way. Only fingerprints are saved along the way.
+  Future<OpenedArchive> openPayload(BackupPayload payload) async {
+    var localMedia = await _mediaRepository.getMediaItems();
+    final localTags = await _tagRepository.getAllTags();
+    final localAlbums = await _albumRepository.getVirtualAlbums();
+
+    RestorePlan planFor(List<MediaItem> media) => _merge.buildPlan(
+      payload: payload,
+      localMedia: media,
+      localTags: localTags,
+      localAlbums: localAlbums,
+      newId: _newId,
+    );
+
+    var plan = planFor(localMedia);
+
+    final fill = _digestFill;
+    if (fill != null && plan.unmatchedMediaIds.isNotEmpty) {
+      final unmatched = plan.unmatchedMediaIds.toSet();
+      final sizes = <int>{
+        for (final record in payload.mediaRecords)
+          if (unmatched.contains(record.id) &&
+              record.sha256 != null &&
+              record.sha256!.isNotEmpty &&
+              record.sizeBytes > 0)
+            record.sizeBytes,
+      };
+      if (sizes.isNotEmpty) {
+        final filled = await fill.fillBySize(localMedia, sizes);
+        if (!identical(filled, localMedia)) {
+          localMedia = filled;
+          plan = planFor(localMedia);
+        }
+      }
+    }
+
+    return OpenedArchive(payload: payload, plan: plan, localMedia: localMedia);
   }
 
   /// Writes an opened archive into the database.

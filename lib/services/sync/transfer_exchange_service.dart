@@ -26,12 +26,18 @@ abstract class IncomingFileSink {
   /// Returns the path it ended up at.
   Future<String> commit(TransferEntry entry, File staged);
 
-  /// Whether this device already has the file with this digest.
+  /// Whether this device already has the file [entry] offers.
   ///
   /// Lets the receiver decline a photo it already has instead of moving the
   /// bytes and then finding out, which on a phone camera roll is most of what
   /// a second transfer would otherwise re-send.
-  Future<bool> alreadyHave(String sha256);
+  Future<bool> alreadyHave(TransferEntry entry);
+
+  /// Whether there is room on this device for a file of [bytes].
+  ///
+  /// Checked before each file, not only once at the start: a long send can
+  /// meet a phone that something else is filling at the same time.
+  Future<bool> hasRoomFor(int bytes);
 }
 
 /// Moves files across an established connection.
@@ -60,11 +66,21 @@ class TransferExchangeService {
   // ------------------------------------------------------------------ sender
 
   /// Offers [manifest] and sends whatever the peer asks for.
+  ///
+  /// [onDelivered] is called for each file the peer now holds: every file it
+  /// acknowledged, and every file it said it already had. The session marks
+  /// those as sent, so the next send can skip them.
+  ///
+  /// [afterFile] is called with every file [fileFor] returned, once it has
+  /// been sent or has failed. Vault sends use it to shred the decrypted
+  /// working copy straight away.
   Future<TransferOutcome> send({
     required TransferManifest manifest,
     required Future<File?> Function(TransferEntry entry) fileFor,
     void Function(TransferProgress progress)? onProgress,
     bool Function()? isCancelled,
+    Future<void> Function(TransferEntry entry)? onDelivered,
+    Future<void> Function(File file)? afterFile,
   }) async {
     if (manifest.entries.length > AppConstants.syncMaxManifestEntries) {
       throw const TransferSessionException(
@@ -78,6 +94,10 @@ class TransferExchangeService {
     final reply = await _expect(FrameType.manifestReply);
     final replyBody = await _connection.openJson(reply);
     final wanted = _indicesFrom(replyBody?['wanted'], manifest.entries.length);
+    final have = _indicesFrom(replyBody?['have'], manifest.entries.length);
+    for (final index in have) {
+      await onDelivered?.call(manifest.entries[index]);
+    }
 
     var progress = TransferProgress.starting(
       wanted.length,
@@ -88,6 +108,7 @@ class TransferExchangeService {
     var sent = 0;
     var failed = 0;
     var bytes = 0;
+    var outOfSpace = false;
 
     for (final index in wanted) {
       if (isCancelled?.call() ?? false) {
@@ -107,6 +128,7 @@ class TransferExchangeService {
 
       final file = await fileFor(entry);
       if (file == null || !await file.exists()) {
+        if (file != null) await afterFile?.call(file);
         // The file went away between building the manifest and sending it.
         // The peer is told, and the rest of the transfer carries on.
         await _connection.sendJson(FrameType.fileStart, <String, dynamic>{
@@ -137,16 +159,23 @@ class TransferExchangeService {
         final ackBody = await _connection.openJson(ack);
         if (ackBody?['ok'] == true) {
           sent++;
+          await onDelivered?.call(entry);
         } else {
           failed++;
+          if (ackBody?['noSpace'] == true) outOfSpace = true;
         }
       } catch (error) {
         if (error is TransferSessionException) rethrow;
         failed++;
+      } finally {
+        await afterFile?.call(file);
       }
 
       progress = progress.copyWith(filesDone: sent + failed);
       onProgress?.call(progress);
+
+      // The receiver is full. Sending more would only be refused.
+      if (outOfSpace) break;
     }
 
     await _connection.sendJson(FrameType.complete, <String, dynamic>{});
@@ -156,6 +185,7 @@ class TransferExchangeService {
       failedCount: failed,
       skippedCount: manifest.entries.length - wanted.length,
       bytesTransferred: bytes,
+      failure: outOfSpace ? TransferFailure.noSpace : null,
     );
   }
 
@@ -171,6 +201,24 @@ class TransferExchangeService {
     bool Function()? isCancelled,
   }) async {
     final offer = await _expect(FrameType.manifest);
+    return receiveOffer(
+      offer,
+      accept: accept,
+      onProgress: onProgress,
+      isCancelled: isCancelled,
+    );
+  }
+
+  /// Receives one send, starting from a manifest frame already read.
+  ///
+  /// The session reads frames in a loop, because one pairing can carry
+  /// several sends. When it sees a manifest it hands it here.
+  Future<TransferOutcome> receiveOffer(
+    TransferFrame offer, {
+    required Future<Set<int>> Function(TransferManifest manifest) accept,
+    void Function(TransferProgress progress)? onProgress,
+    bool Function()? isCancelled,
+  }) async {
     final offerBody = await _connection.openJson(offer);
     if (offerBody == null) {
       throw const TransferSessionException(
@@ -191,6 +239,7 @@ class TransferExchangeService {
 
     // Drop anything oversized or already here, before agreeing to it.
     final wanted = <int>[];
+    final have = <int>[];
     var skipped = 0;
     for (final index in chosen) {
       if (index < 0 || index >= manifest.entries.length) continue;
@@ -201,16 +250,19 @@ class TransferExchangeService {
         skipped++;
         continue;
       }
-      if (entry.sha256.isNotEmpty && await _sink.alreadyHave(entry.sha256)) {
+      if (entry.sha256.isNotEmpty && await _sink.alreadyHave(entry)) {
         skipped++;
+        have.add(index);
         continue;
       }
       wanted.add(index);
     }
     wanted.sort();
 
+    have.sort();
     await _connection.sendJson(FrameType.manifestReply, <String, dynamic>{
       'wanted': wanted,
+      'have': have,
     });
 
     var progress = TransferProgress.starting(
@@ -222,6 +274,9 @@ class TransferExchangeService {
     var received = 0;
     var failed = 0;
     var bytes = 0;
+    var outOfSpace = false;
+    var remoteCancelled = false;
+    var sawComplete = false;
     final expected = wanted.toSet();
 
     while (expected.isNotEmpty) {
@@ -238,7 +293,12 @@ class TransferExchangeService {
 
       final frame = await _connection.nextFrame();
 
-      if (frame.type == FrameType.complete || frame.type == FrameType.cancel) {
+      if (frame.type == FrameType.complete) {
+        sawComplete = true;
+        break;
+      }
+      if (frame.type == FrameType.cancel) {
+        remoteCancelled = true;
         break;
       }
       if (frame.type != FrameType.fileStart) {
@@ -264,6 +324,18 @@ class TransferExchangeService {
       progress = progress.copyWith(currentName: _safeName(entry.displayName));
       onProgress?.call(progress);
 
+      // No room: read past this file without keeping it, and tell the
+      // sender, which then stops. Nothing half-written is left behind.
+      if (!await _sink.hasRoomFor(entry.sizeBytes)) {
+        await _discardOne(entry);
+        await _sendAck(index, false, noSpace: true);
+        failed++;
+        outOfSpace = true;
+        progress = progress.copyWith(filesDone: received + failed);
+        onProgress?.call(progress);
+        continue;
+      }
+
       final landed = await _receiveOne(
         entry: entry,
         index: index,
@@ -284,12 +356,54 @@ class TransferExchangeService {
       onProgress?.call(progress);
     }
 
+    // The sender always ends a send with `complete`, even when nothing was
+    // wanted. When the loop stopped because every file had arrived, that
+    // frame has not been read yet. Read it here, so the next read on this
+    // connection is the start of the next send and not this one's ending.
+    if (!sawComplete && !remoteCancelled) {
+      try {
+        await _expect(FrameType.complete);
+      } on TransferSessionException catch (error) {
+        if (error.failure != TransferFailure.cancelled) rethrow;
+        remoteCancelled = true;
+      }
+    }
+
     return TransferOutcome(
       receivedCount: received,
       failedCount: failed,
       skippedCount: skipped,
       bytesTransferred: bytes,
+      failure: remoteCancelled
+          ? TransferFailure.cancelled
+          : (outOfSpace ? TransferFailure.noSpace : null),
     );
+  }
+
+  /// Reads past one file's chunks without keeping any of them.
+  ///
+  /// The sender has already started sending; the frames have to be read off
+  /// the connection before the next file can be.
+  Future<void> _discardOne(TransferEntry entry) async {
+    var seen = 0;
+    while (true) {
+      final frame = await _connection.nextFrame();
+      if (frame.type == FrameType.fileEnd) return;
+      if (frame.type != FrameType.fileChunk) {
+        throw TransferSessionException(
+          TransferFailure.unknown,
+          'Expected a file piece and got a ${frame.type.name} frame',
+        );
+      }
+      seen += frame.body.length;
+      // The same cap a kept file gets, so a peer cannot stream forever here.
+      if (seen > entry.sizeBytes + AppConstants.syncMaxFrameBytes) {
+        throw const TransferSessionException(
+          TransferFailure.unknown,
+          'The other device sent more than it promised',
+        );
+      }
+    }
   }
 
   /// Reads one file's chunks, checks it, and commits it.
@@ -303,7 +417,10 @@ class TransferExchangeService {
   }) async {
     final staged = await _sink.openStaging(entry);
     final sink = staged.openWrite();
-    final digest = <int>[];
+    // Hashed piece by piece as it arrives. Keeping every byte in a list to
+    // hash at the end would hold the whole file in memory, which for a
+    // large video is more than a phone has.
+    final digest = StreamingSha256();
     var written = 0;
     var ok = true;
 
@@ -328,7 +445,7 @@ class TransferExchangeService {
         }
 
         sink.add(chunk);
-        digest.addAll(chunk);
+        digest.add(chunk);
         onBytes(chunk.length);
       }
     } catch (error) {
@@ -344,10 +461,9 @@ class TransferExchangeService {
     // Both checks, every time. The length alone would let a truncated file
     // through if it happened to stop on a boundary, and the digest alone
     // would mean hashing a file that was obviously the wrong size.
+    final actualDigest = digest.close();
     if (ok && written != entry.sizeBytes) ok = false;
-    if (ok &&
-        entry.sha256.isNotEmpty &&
-        TransferCryptoService.hexDigest(digest) != entry.sha256) {
+    if (ok && entry.sha256.isNotEmpty && actualDigest != entry.sha256) {
       ok = false;
     }
 
@@ -369,10 +485,12 @@ class TransferExchangeService {
     }
   }
 
-  Future<void> _sendAck(int index, bool ok) => _connection.sendJson(
-    FrameType.fileAck,
-    <String, dynamic>{'index': index, 'ok': ok},
-  );
+  Future<void> _sendAck(int index, bool ok, {bool noSpace = false}) =>
+      _connection.sendJson(FrameType.fileAck, <String, dynamic>{
+        'index': index,
+        'ok': ok,
+        if (noSpace) 'noSpace': true,
+      });
 
   Future<TransferFrame> _expect(FrameType type) async {
     final frame = await _connection.nextFrame();

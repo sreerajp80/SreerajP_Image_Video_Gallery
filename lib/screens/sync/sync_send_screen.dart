@@ -7,11 +7,12 @@ import 'package:in_sreerajp_imgvidgal/l10n/generated/app_localizations.dart';
 import 'package:in_sreerajp_imgvidgal/models/sync/pairing_payload.dart';
 import 'package:in_sreerajp_imgvidgal/models/sync/sync_role.dart';
 import 'package:in_sreerajp_imgvidgal/providers/sync_providers.dart';
+import 'package:in_sreerajp_imgvidgal/providers/viewer_providers.dart';
 import 'package:in_sreerajp_imgvidgal/screens/sync/sync_receive_screen.dart';
 import 'package:in_sreerajp_imgvidgal/core/domain/sync/pairing_codec.dart';
 import 'package:in_sreerajp_imgvidgal/models/sync/transfer_session_state.dart';
-import 'package:in_sreerajp_imgvidgal/widgets/sync/transfer_progress_view.dart';
 import 'package:in_sreerajp_imgvidgal/widgets/sync/pairing_qr_scanner.dart';
+import 'package:in_sreerajp_imgvidgal/widgets/sync/transfer_session_body.dart';
 
 /// Reads the other phone's pairing code and connects to it.
 ///
@@ -43,13 +44,22 @@ class _SyncSendScreenState extends ConsumerState<SyncSendScreen>
 
   /// Read once in `initState`: Riverpod 3 does not allow `ref` in `dispose`,
   /// and the connection must still be closed there (hard rule 2).
-  late final Future<void> Function() _stopSession;
+  late final Future<void> Function() _resetSession;
+  late final Future<void> Function(bool keepOn) _setKeepScreenOn;
 
   @override
   void initState() {
     super.initState();
-    _stopSession = ref.read(transferSessionProvider).stop;
+    _resetSession = ref.read(transferSessionProvider).reset;
+    _setKeepScreenOn = ref.read(screenSettingsServiceProvider).setKeepScreenOn;
     WidgetsBinding.instance.addObserver(this);
+    // The session outlives this screen. If an old result is still in it,
+    // the camera would never show: it shows only while nothing has started.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final phase = ref.read(transferSessionProvider).state.phase;
+      if (phase != SyncPhase.idle) _resetSession();
+    });
   }
 
   @override
@@ -57,8 +67,9 @@ class _SyncSendScreenState extends ConsumerState<SyncSendScreen>
     WidgetsBinding.instance.removeObserver(this);
     _manual.dispose();
     // The connection goes with the screen, the same rule the receive side
-    // follows for its listener.
-    _stopSession();
+    // follows for its listener. The old result goes too.
+    _resetSession();
+    _setKeepScreenOn(false);
     super.dispose();
   }
 
@@ -83,6 +94,18 @@ class _SyncSendScreenState extends ConsumerState<SyncSendScreen>
     _handled = true;
     _connect(pairing);
     return true;
+  }
+
+  /// Clears the ended session and goes back to the camera, or to typing
+  /// the code when [typing] is true.
+  Future<void> _startOver({bool typing = false}) async {
+    await _resetSession();
+    if (!mounted) return;
+    setState(() {
+      _handled = false;
+      _typing = typing;
+      _manualError = null;
+    });
   }
 
   /// Takes a typed code and connects on it.
@@ -120,14 +143,11 @@ class _SyncSendScreenState extends ConsumerState<SyncSendScreen>
   Future<void> _connect(PairingPayload pairing) async {
     ref.read(scannedPairingProvider.notifier).state = pairing;
 
-    final outbox = ref.read(transferOutboxProvider);
+    // What to send is picked after pairing, once the other phone has said
+    // how much room it has.
     await ref
         .read(transferSessionProvider)
-        .join(
-          pairing: pairing,
-          deviceName: 'Gallery',
-          toOffer: pairing.scannerRole == SyncRole.send ? outbox : const [],
-        );
+        .join(pairing: pairing, deviceName: 'Gallery');
   }
 
   @override
@@ -135,6 +155,8 @@ class _SyncSendScreenState extends ConsumerState<SyncSendScreen>
     final l10n = AppLocalizations.of(context)!;
     final session = ref.watch(transferSessionProvider);
     final state = ref.watch(transferStateProvider).value ?? session.state;
+
+    listenToTransfer(ref, _setKeepScreenOn);
 
     return Scaffold(
       appBar: AppBar(
@@ -172,100 +194,28 @@ class _SyncSendScreenState extends ConsumerState<SyncSendScreen>
     AppLocalizations l10n,
     TransferSessionState state,
   ) {
-    final theme = Theme.of(context);
-
-    switch (state.phase) {
-      case SyncPhase.idle:
-        return _typing ? _manualEntry(l10n) : _cameraView(l10n);
-
-      case SyncPhase.waiting:
-      case SyncPhase.paired:
-      case SyncPhase.transferring:
-        return Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              if (state.peerName.isNotEmpty)
-                Text(
-                  l10n.bodySyncPairedWith(state.peerName),
-                  style: theme.textTheme.titleMedium,
-                ),
-              const SizedBox(height: 24),
-              TransferProgressView(progress: state.progress),
-            ],
-          ),
-        );
-
-      case SyncPhase.done:
-        return Center(
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  Icons.check_circle_outline,
-                  size: 48,
-                  color: theme.colorScheme.primary,
-                ),
-                const SizedBox(height: 16),
-                Text(l10n.labelSyncDone, style: theme.textTheme.titleMedium),
-                const SizedBox(height: 12),
-                if (state.outcome != null) ...[
-                  if (state.outcome!.sentCount > 0)
-                    Text(l10n.bodySyncResultSent(state.outcome!.sentCount)),
-                  if (state.outcome!.receivedCount > 0)
-                    Text(
-                      l10n.bodySyncResultReceived(state.outcome!.receivedCount),
-                    ),
-                  if (state.outcome!.skippedCount > 0)
-                    Text(
-                      l10n.bodySyncResultSkipped(state.outcome!.skippedCount),
-                    ),
-                  if (state.outcome!.failedCount > 0)
-                    Text(
-                      l10n.errorSyncResultFailed(state.outcome!.failedCount),
-                      style: TextStyle(color: theme.colorScheme.error),
-                    ),
-                ],
-              ],
-            ),
-          ),
-        );
-
-      case SyncPhase.failed:
-        return Center(
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  Icons.error_outline,
-                  size: 48,
-                  color: theme.colorScheme.error,
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  failureMessage(l10n, state.failure),
-                  textAlign: TextAlign.center,
-                  style: theme.textTheme.bodyLarge,
-                ),
-                const SizedBox(height: 24),
-                // Always a way back that does not need the camera.
-                OutlinedButton(
-                  onPressed: () => setState(() {
-                    _handled = false;
-                    _typing = true;
-                  }),
-                  child: Text(l10n.actionSyncTypeCodeInstead),
-                ),
-              ],
-            ),
-          ),
-        );
+    if (state.phase == SyncPhase.idle) {
+      return _typing ? _manualEntry(l10n) : _cameraView(l10n);
     }
+    return TransferSessionBody(
+      state: state,
+      // Always a way back that does not need the camera. The session is
+      // cleared first: the typing view shows only while nothing has started.
+      failureAction: OutlinedButton(
+        onPressed: () => _startOver(typing: true),
+        child: Text(l10n.actionSyncTypeCodeInstead),
+      ),
+      endActions: [
+        FilledButton(
+          onPressed: _startOver,
+          child: Text(l10n.actionSyncScanAnother),
+        ),
+        TextButton(
+          onPressed: () => Navigator.of(context).maybePop(),
+          child: Text(l10n.actionSyncClose),
+        ),
+      ],
+    );
   }
 
   Widget _cameraView(AppLocalizations l10n) {

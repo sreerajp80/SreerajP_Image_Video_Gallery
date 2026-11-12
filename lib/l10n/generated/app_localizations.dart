@@ -3751,13 +3751,13 @@ abstract class AppLocalizations {
   /// Menu entry that opens the transfer screen
   ///
   /// In en, this message translates to:
-  /// **'Transfer to a device'**
+  /// **'Receive from device'**
   String get titleSyncOpen;
 
   /// Explains what the transfer feature does
   ///
   /// In en, this message translates to:
-  /// **'Send photos straight to another phone on the same Wi-Fi. Nothing goes to the internet, and no account is needed.'**
+  /// **'Get photos from another phone on the same Wi-Fi. Nothing goes to the internet, and no account is needed.'**
   String get bodySyncIntro;
 
   /// Explains the local-network-only guarantee
@@ -3778,17 +3778,191 @@ abstract class AppLocalizations {
   /// **'Receive'**
   String get labelSyncReceive;
 
-  /// Explains the sending flow
-  ///
-  /// In en, this message translates to:
-  /// **'Show a code on this phone, or scan the other one'**
-  String get bodySyncSend;
-
   /// Explains the receiving flow
   ///
   /// In en, this message translates to:
-  /// **'Show a code for the other phone to scan'**
+  /// **'The sending phone scans it'**
   String get bodySyncReceive;
+
+  /// Title of the quick send screen, with how many items are being sent
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Send 1 item} other{Send {count} items}}'**
+  String titleSyncQuickSend(int count);
+
+  /// Intro text on the quick send screen
+  ///
+  /// In en, this message translates to:
+  /// **'Send the selected photos and videos straight to another phone on the same Wi-Fi. Nothing goes to the internet.'**
+  String get bodySyncQuickIntro;
+
+  /// Intro text on the Move to a new phone screen
+  ///
+  /// In en, this message translates to:
+  /// **'Copy this app to your new phone. Pick folders and albums after pairing. All app data and settings go when you tap Finish. Nothing is deleted on either phone.'**
+  String get bodySyncPhoneMoveIntro;
+
+  /// Choice: this phone shows the pairing code
+  ///
+  /// In en, this message translates to:
+  /// **'Show a code'**
+  String get labelSyncShowCode;
+
+  /// Subtitle of Show a code when this phone sends
+  ///
+  /// In en, this message translates to:
+  /// **'The receiving phone scans it'**
+  String get bodySyncShowCodeToReceiver;
+
+  /// Choice: this phone scans the other phone's pairing code
+  ///
+  /// In en, this message translates to:
+  /// **'Scan their code'**
+  String get labelSyncScanOther;
+
+  /// Subtitle of Scan when this phone sends
+  ///
+  /// In en, this message translates to:
+  /// **'When the receiving phone shows the code'**
+  String get bodySyncScanReceiverCode;
+
+  /// Subtitle of Scan when this phone receives
+  ///
+  /// In en, this message translates to:
+  /// **'When the sending phone shows the code'**
+  String get bodySyncScanSenderCode;
+
+  /// Hint on the receive screen saying where sending starts
+  ///
+  /// In en, this message translates to:
+  /// **'To send, select photos in the gallery and tap Send to a device. To move to a new phone, use Settings › Device Sync.'**
+  String get bodySyncHowToSend;
+
+  /// Subtitle of Get from your old phone in Device Sync
+  ///
+  /// In en, this message translates to:
+  /// **'On the new phone: get folders, albums, app data and settings from the old one'**
+  String get bodyDeviceSyncWifiReceive;
+
+  /// Shown while the app data and settings are sent
+  ///
+  /// In en, this message translates to:
+  /// **'Sending app data and settings'**
+  String get bodySyncAppDataSending;
+
+  /// Shown while the app data and settings arrive
+  ///
+  /// In en, this message translates to:
+  /// **'Getting app data and settings'**
+  String get bodySyncAppDataReceiving;
+
+  /// Result line: the app data and settings reached the other phone
+  ///
+  /// In en, this message translates to:
+  /// **'App data and settings sent'**
+  String get bodySyncAppDataSent;
+
+  /// Result line: how many received files went into the private vault
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 file put in the private vault} other{{count} files put in the private vault}}'**
+  String bodySyncVaultReceived(int count);
+
+  /// Button: open the preview of the app data that arrived
+  ///
+  /// In en, this message translates to:
+  /// **'Review app data'**
+  String get actionSyncReviewAppData;
+
+  /// Result line: the arrived app data was added
+  ///
+  /// In en, this message translates to:
+  /// **'App data added'**
+  String get bodySyncAppDataApplied;
+
+  /// Error: the arrived app data could not be added
+  ///
+  /// In en, this message translates to:
+  /// **'The app data could not be added. Try again.'**
+  String get errorSyncAppDataApply;
+
+  /// Dialog title: take the old phone's settings
+  ///
+  /// In en, this message translates to:
+  /// **'Use old settings?'**
+  String get titleSyncUseSettings;
+
+  /// Dialog body: what taking the old phone's settings replaces
+  ///
+  /// In en, this message translates to:
+  /// **'Theme, language, grid size and the safety switches on this phone will be replaced with the ones from the other phone.'**
+  String get bodySyncUseSettings;
+
+  /// Dialog button: keep this phone's settings
+  ///
+  /// In en, this message translates to:
+  /// **'Keep mine'**
+  String get actionSyncKeepMySettings;
+
+  /// Dialog button: take the old phone's settings
+  ///
+  /// In en, this message translates to:
+  /// **'Use theirs'**
+  String get actionSyncUseTheirSettings;
+
+  /// Error: files went but the app data and settings did not
+  ///
+  /// In en, this message translates to:
+  /// **'The files were sent, but the app data and settings were not. Run the move again to send them.'**
+  String get bodySyncErrorAppData;
+
+  /// Row title in the phone move picker
+  ///
+  /// In en, this message translates to:
+  /// **'App data & settings'**
+  String get labelSyncAppDataAndSettings;
+
+  /// Row subtitle: what the app data is and when it goes
+  ///
+  /// In en, this message translates to:
+  /// **'Tags, albums, favourites, notes, places and settings. They go when you tap Finish.'**
+  String get bodySyncAppDataOnFinish;
+
+  /// Switch title: include the private vault in a phone move
+  ///
+  /// In en, this message translates to:
+  /// **'Private vault'**
+  String get labelSyncIncludeVault;
+
+  /// Switch subtitle when the vault is not included
+  ///
+  /// In en, this message translates to:
+  /// **'Off. Turn on to copy the vault too. You unlock it first.'**
+  String get bodySyncIncludeVaultOff;
+
+  /// Switch subtitle when the vault is included
+  ///
+  /// In en, this message translates to:
+  /// **'On. Vault items go when you tap Finish, and stay in this phone\'s vault too.'**
+  String get bodySyncIncludeVaultOn;
+
+  /// The receiving phone has no vault, so the vault will not be sent
+  ///
+  /// In en, this message translates to:
+  /// **'The other phone has no vault set up, so the vault will not be sent. Set it up there and run the move again.'**
+  String get bodySyncVaultPeerNotReady;
+
+  /// Message: this phone has no vault to send
+  ///
+  /// In en, this message translates to:
+  /// **'There is no vault on this phone.'**
+  String get bodySyncVaultNotSetUp;
+
+  /// Message: unlock the vault before including it
+  ///
+  /// In en, this message translates to:
+  /// **'Unlock the vault, then come back here.'**
+  String get bodySyncVaultUnlockFirst;
 
   /// Opens the camera to read a pairing code
   ///
@@ -3849,18 +4023,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{done} of {total} files'**
   String bodySyncProgressFiles(int done, int total);
-
-  /// Shown when the sending role has an empty outbox
-  ///
-  /// In en, this message translates to:
-  /// **'Choose some photos to send first'**
-  String get bodySyncNothingSelected;
-
-  /// How many files the peer is offering
-  ///
-  /// In en, this message translates to:
-  /// **'{count, plural, =1{1 file offered} other{{count} files offered}}'**
-  String bodySyncOfferHeading(int count);
 
   /// Shown when a transfer completes
   ///
@@ -6706,6 +6868,54 @@ abstract class AppLocalizations {
   /// **'Android 9 and older only. Lets you delete photos for good, or securely. Asked together with photos access.'**
   String get descPermWriteStorage;
 
+  /// Permissions screen heading: special access the user turns on in Android settings
+  ///
+  /// In en, this message translates to:
+  /// **'You turn these on'**
+  String get labelPermissionsSpecial;
+
+  /// Permissions screen: explains the special-access section
+  ///
+  /// In en, this message translates to:
+  /// **'Android never asks for these. They stay off until you turn them on yourself in Android settings.'**
+  String get descPermissionsSpecial;
+
+  /// Name of the MANAGE_MEDIA special access (Android 12+), on the Permissions screen and the Safety settings card
+  ///
+  /// In en, this message translates to:
+  /// **'Manage media'**
+  String get labelPermManageMedia;
+
+  /// Why MANAGE_MEDIA is declared, on the Permissions screen
+  ///
+  /// In en, this message translates to:
+  /// **'Android 12 and up. Off unless you turn it on. Lets the app delete photos without Android\'s own prompt; the app then asks you once itself.'**
+  String get descPermManageMedia;
+
+  /// Safety settings card subtitle: what Manage media does; tapping opens Android settings
+  ///
+  /// In en, this message translates to:
+  /// **'Android 12 and up. When on, Android stops asking before each permanent delete, and the app asks you once instead. Tap to change it in Android settings.'**
+  String get descManageMediaSubtitle;
+
+  /// Title of the dialog shown on app start asking the user to turn on Manage media (Android 12+)
+  ///
+  /// In en, this message translates to:
+  /// **'Allow Manage media?'**
+  String get titleManageMediaPrompt;
+
+  /// Body of the Manage media prompt: why it helps and where to change it later
+  ///
+  /// In en, this message translates to:
+  /// **'Android asks you again before every permanent delete. Turn on \"Manage media\" for this app, and the app asks you once itself instead. You can change this later in Settings → Safety.'**
+  String get bodyManageMediaPrompt;
+
+  /// Button that closes a prompt without doing anything
+  ///
+  /// In en, this message translates to:
+  /// **'Not now'**
+  String get actionNotNow;
+
   /// Live state of the photos and videos permission: full access
   ///
   /// In en, this message translates to:
@@ -6861,6 +7071,300 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{count, plural, =1{1 item moved to trash} other{{count} items moved to trash}}'**
   String bodyBatchTrashSuccess(int count);
+
+  /// Settings entry and title of the Device Sync screen
+  ///
+  /// In en, this message translates to:
+  /// **'Device Sync'**
+  String get titleDeviceSync;
+
+  /// Subtitle of the Device Sync entry in Settings
+  ///
+  /// In en, this message translates to:
+  /// **'Copy app data or photos to another phone'**
+  String get descDeviceSyncSubtitle;
+
+  /// Explains the Device Sync screen
+  ///
+  /// In en, this message translates to:
+  /// **'Copy this app\'s data, or your photos with it, to another phone that has this app. Nothing goes to the internet, and nothing is deleted on either phone.'**
+  String get bodyDeviceSyncIntro;
+
+  /// Card that starts sending app data by QR codes
+  ///
+  /// In en, this message translates to:
+  /// **'Send app data by QR'**
+  String get labelDeviceSyncQrSend;
+
+  /// Explains what QR sync carries
+  ///
+  /// In en, this message translates to:
+  /// **'Tags, albums, favourites, notes and places. No photos, and no Wi-Fi needed. The other phone must already have the same photos.'**
+  String get bodyDeviceSyncQrSend;
+
+  /// Card that starts sending photos over Wi-Fi
+  ///
+  /// In en, this message translates to:
+  /// **'Move to a new phone'**
+  String get labelDeviceSyncWifiSend;
+
+  /// Explains what Wi-Fi sync carries
+  ///
+  /// In en, this message translates to:
+  /// **'Folders and albums you pick, with all app data and settings. The vault too, if you choose. Both phones on the same Wi-Fi.'**
+  String get bodyDeviceSyncWifiSend;
+
+  /// Card that starts receiving app data by QR codes
+  ///
+  /// In en, this message translates to:
+  /// **'Get app data by QR'**
+  String get labelDeviceSyncQrReceive;
+
+  /// Explains the QR receiving steps
+  ///
+  /// In en, this message translates to:
+  /// **'Show a code, then scan the other phone\'s codes'**
+  String get bodyDeviceSyncQrReceive;
+
+  /// Card that starts receiving photos over Wi-Fi
+  ///
+  /// In en, this message translates to:
+  /// **'Get from old phone'**
+  String get labelDeviceSyncWifiReceive;
+
+  /// Heading of the folder and album picker
+  ///
+  /// In en, this message translates to:
+  /// **'Choose what to send'**
+  String get titleSyncPick;
+
+  /// Picker row for the photos selected before opening Transfer
+  ///
+  /// In en, this message translates to:
+  /// **'Selected photos'**
+  String get labelSyncSelectionSource;
+
+  /// Picker section of device folders
+  ///
+  /// In en, this message translates to:
+  /// **'Folders'**
+  String get labelSyncFoldersSection;
+
+  /// Picker section of albums
+  ///
+  /// In en, this message translates to:
+  /// **'Albums'**
+  String get labelSyncAlbumsSection;
+
+  /// Size of a folder and how many of its files were sent
+  ///
+  /// In en, this message translates to:
+  /// **'{size} · sent {sent} of {count}'**
+  String bodySyncSourceStats(String size, int sent, int count);
+
+  /// Free space on the receiving phone
+  ///
+  /// In en, this message translates to:
+  /// **'Free space on {name}: {size}'**
+  String bodySyncPeerFreeSpace(String name, String size);
+
+  /// How much the next send carries
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{This send: 1 file, {size}} other{This send: {count} files, {size}}}'**
+  String bodySyncPlanThisSend(int count, String size);
+
+  /// How much waits for a later send
+  ///
+  /// In en, this message translates to:
+  /// **'Left for the next send: {count} files, {size}'**
+  String bodySyncPlanLeft(int count, String size);
+
+  /// How many picked files were sent before
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Already on the other phone: 1 file} other{Already on the other phone: {count} files}}'**
+  String bodySyncPlanAlreadySent(int count);
+
+  /// Warning on a manual send: how many picked files were sent to this phone before and will go again
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Sent to this phone before: 1 file. It will be sent again.} other{Sent to this phone before: {count} files. They will be sent again.}}'**
+  String bodySyncPlanResend(int count);
+
+  /// Why a send was cut at the size cap
+  ///
+  /// In en, this message translates to:
+  /// **'One send carries up to {size}. Send the rest next.'**
+  String bodySyncLimitCap(String size);
+
+  /// Why a send was cut by the free space
+  ///
+  /// In en, this message translates to:
+  /// **'The other phone is short of space. Free some space on it to send more.'**
+  String get bodySyncLimitSpace;
+
+  /// Why a send was cut at the file count
+  ///
+  /// In en, this message translates to:
+  /// **'One send carries up to {count} files.'**
+  String bodySyncLimitCount(int count);
+
+  /// Shown when nothing picked is left to send
+  ///
+  /// In en, this message translates to:
+  /// **'All sent. Pick more to send, or tap Finish.'**
+  String get bodySyncAllSent;
+
+  /// Shown when nothing is ticked yet
+  ///
+  /// In en, this message translates to:
+  /// **'Tick folders or albums to send.'**
+  String get bodySyncPickSomething;
+
+  /// Sends what is left of the selection
+  ///
+  /// In en, this message translates to:
+  /// **'Send the rest'**
+  String get actionSyncSendRest;
+
+  /// Ends the pairing after the last send
+  ///
+  /// In en, this message translates to:
+  /// **'Finish'**
+  String get actionSyncFinish;
+
+  /// Shown while files are read and checked before sending
+  ///
+  /// In en, this message translates to:
+  /// **'Getting files ready'**
+  String get labelSyncPreparing;
+
+  /// Heading after one send finishes
+  ///
+  /// In en, this message translates to:
+  /// **'This send is done'**
+  String get labelSyncBatchDone;
+
+  /// Receiver waiting between sends
+  ///
+  /// In en, this message translates to:
+  /// **'Connected. Waiting for the other phone to send.'**
+  String get bodySyncWaitingForSend;
+
+  /// Shown when the receiver runs out of space
+  ///
+  /// In en, this message translates to:
+  /// **'A phone ran out of free space. Files that arrived are kept.'**
+  String get bodySyncErrorNoSpace;
+
+  /// Where received files went
+  ///
+  /// In en, this message translates to:
+  /// **'Received files are in Pictures › Drishya Sync.'**
+  String get bodySyncSavedToFolder;
+
+  /// Shown when the picker cannot load
+  ///
+  /// In en, this message translates to:
+  /// **'Could not read your folders and albums.'**
+  String get errorSyncSourcesLoad;
+
+  /// Title of the QR send screen
+  ///
+  /// In en, this message translates to:
+  /// **'Send by QR'**
+  String get titleQrSyncSend;
+
+  /// Title of the QR receive screen
+  ///
+  /// In en, this message translates to:
+  /// **'Receive by QR'**
+  String get titleQrSyncReceive;
+
+  /// Sender step 1: scan the key code
+  ///
+  /// In en, this message translates to:
+  /// **'Scan the code on the other phone'**
+  String get bodyQrSyncScanKey;
+
+  /// Receiver step 1: show the key code
+  ///
+  /// In en, this message translates to:
+  /// **'Step 1: scan this code on the other phone. Then tap Next.'**
+  String get bodyQrSyncShowKey;
+
+  /// Moves to the next QR step
+  ///
+  /// In en, this message translates to:
+  /// **'Next'**
+  String get actionQrSyncNext;
+
+  /// Receiver step 2: scan the moving codes
+  ///
+  /// In en, this message translates to:
+  /// **'Step 2: point the camera at the changing codes on the other phone.'**
+  String get bodyQrSyncScanFrames;
+
+  /// How many QR codes were read
+  ///
+  /// In en, this message translates to:
+  /// **'{done} of {total} codes read'**
+  String bodyQrSyncFramesProgress(int done, int total);
+
+  /// Sender: keep showing the codes
+  ///
+  /// In en, this message translates to:
+  /// **'Hold this screen in front of the other phone\'s camera until it says done.'**
+  String get bodyQrSyncShowFrames;
+
+  /// How many codes the sender plays
+  ///
+  /// In en, this message translates to:
+  /// **'Showing {count} codes in a loop'**
+  String bodyQrSyncFrameCount(int count);
+
+  /// Shown when the data needs too many codes
+  ///
+  /// In en, this message translates to:
+  /// **'There is too much data for QR ({count} codes). Use Wi-Fi instead.'**
+  String errorQrSyncTooBig(int count);
+
+  /// Shown when there is nothing to send by QR
+  ///
+  /// In en, this message translates to:
+  /// **'There is no app data to send yet.'**
+  String get bodyQrSyncNothing;
+
+  /// Shown when QR data fails to open
+  ///
+  /// In en, this message translates to:
+  /// **'The data could not be read. Start again on both phones.'**
+  String get errorQrSyncFailed;
+
+  /// Shown while the QR data is built
+  ///
+  /// In en, this message translates to:
+  /// **'Preparing the data'**
+  String get labelQrSyncPreparing;
+
+  /// Scan screen, after a transfer ends: opens the camera to scan a new pairing code
+  ///
+  /// In en, this message translates to:
+  /// **'Scan another code'**
+  String get actionSyncScanAnother;
+
+  /// Show-code screen, after a transfer ends: makes and shows a fresh pairing code
+  ///
+  /// In en, this message translates to:
+  /// **'Show a new code'**
+  String get actionSyncShowNewCode;
+
+  /// Leaves the transfer screen after the transfer has ended
+  ///
+  /// In en, this message translates to:
+  /// **'Close'**
+  String get actionSyncClose;
 }
 
 class _AppLocalizationsDelegate

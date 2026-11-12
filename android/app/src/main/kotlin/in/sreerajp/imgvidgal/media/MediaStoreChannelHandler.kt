@@ -10,6 +10,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.database.Cursor
 import android.graphics.Bitmap
+import android.media.MediaScannerConnection
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -25,7 +26,9 @@ import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.PluginRegistry
 import java.io.ByteArrayOutputStream
+import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
 
 /**
  * Reads images and videos from the Android MediaStore for the Flutter layer.
@@ -61,6 +64,12 @@ class MediaStoreChannelHandler(
 
         private const val ERROR_QUERY_FAILED = "query_failed"
         private const val ERROR_INVALID_ARGUMENTS = "invalid_arguments"
+
+        /** How many numbered names a refused save tries before giving up. */
+        private const val GHOST_RENAME_TRIES = 5
+
+        /** Below this many missing files the safety stop never triggers. */
+        private const val STALE_SAFETY_MIN = 20
 
         private const val JPEG_QUALITY = 85
         private const val DEFAULT_MAX_BYTES = 24 * 1024 * 1024
@@ -143,10 +152,17 @@ class MediaStoreChannelHandler(
             "loadThumbnail" -> handleLoadThumbnail(call, result)
             "readBytes" -> handleReadBytes(call, result)
             "publishFile" -> handlePublishFile(call, result)
+            "freeSpaceBytes" -> runInBackground(result) { freeSpaceBytes() }
+            "cleanStaleEntries" -> runInBackground(result) { cleanStaleEntries() }
             "deleteMedia" -> handleDeleteMedia(call, result)
             "secureDeleteMedia" -> handleSecureDeleteMedia(call, result)
             "openAppSettings" -> {
                 openAppSettings()
+                result.success(null)
+            }
+            "deleteConfirmInfo" -> result.success(deleteConfirmInfo())
+            "openManageMediaSettings" -> {
+                openManageMediaSettings()
                 result.success(null)
             }
             else -> result.notImplemented()
@@ -258,6 +274,55 @@ class MediaStoreChannelHandler(
         } catch (e: Exception) {
             // Opening settings is a convenience; failure must not crash the app.
         }
+    }
+
+    // ------------------------------------------------------------- manage media
+
+    /**
+     * Says whether Android itself will ask before this app deletes or writes
+     * over a photo it did not create.
+     *
+     * Android 11+ always asks through createDeleteRequest / createWriteRequest.
+     * Android 10 does not count: it asks only for files the app did not
+     * create (RecoverableSecurityException) and deletes the app's own files,
+     * such as edited copies, with no prompt. On Android 12+ the "Manage media"
+     * special access turns the prompt off. The Flutter side shows its own
+     * confirmation only when Android will ask for sure, so the user is always
+     * asked at least once after choosing "Delete permanently".
+     */
+    private fun deleteConfirmInfo(): Map<String, Boolean> {
+        val supported = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
+        val granted = supported && try {
+            MediaStore.canManageMedia(activity)
+        } catch (_: Exception) {
+            false
+        }
+        val systemConfirms = Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && !granted
+        return mapOf(
+            "systemConfirmsDelete" to systemConfirms,
+            "manageMediaSupported" to supported,
+            "manageMediaGranted" to granted
+        )
+    }
+
+    /**
+     * Opens Android's "Media management apps" screen for this app, where the
+     * user can turn "Manage media" on or off. Android never shows a runtime
+     * prompt for it. Falls back to the app's own settings page.
+     */
+    private fun openManageMediaSettings() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            try {
+                val intent = Intent(Settings.ACTION_REQUEST_MANAGE_MEDIA).apply {
+                    data = Uri.fromParts("package", activity.packageName, null)
+                }
+                activity.startActivity(intent)
+                return
+            } catch (_: Exception) {
+                // Some phones hide this screen; the app page is the next best.
+            }
+        }
+        openAppSettings()
     }
 
     // ---------------------------------------------------------------------- query
@@ -372,7 +437,10 @@ class MediaStoreChannelHandler(
                 "height" to cursor.getIntOrNull(MediaStore.Files.FileColumns.HEIGHT),
                 "orientation" to (
                     cursor.getIntOrNull(MediaStoreQueryBuilder.COLUMN_ORIENTATION) ?: 0
-                    )
+                    ),
+                "fileMissing" to isGhostPath(
+                    cursor.getStringOrNull(MediaStore.Files.FileColumns.DATA)
+                )
             )
         } catch (e: Exception) {
             // Skip this single unreadable row.
@@ -568,8 +636,17 @@ class MediaStoreChannelHandler(
         val sourcePath = call.argument<String>("sourcePath")
         val displayName = call.argument<String>("displayName")
         val mimeType = call.argument<String>("mimeType") ?: "application/octet-stream"
-        val relativeDir = call.argument<String>("relativeDir") ?: "Gallery Transfers"
+        val requestedDir = call.argument<String>("relativeDir") ?: "Drishya Sync"
         val isVideo = call.argument<Boolean>("isVideo") ?: false
+        val underPictures = call.argument<Boolean>("underPictures") ?: false
+
+        // Checked again here, not only in Dart: the folder name may have come
+        // from another phone. One or two plain folder levels, nothing else.
+        val relativeDir = safeRelativeDir(requestedDir)
+        if (relativeDir == null) {
+            result.error(ERROR_INVALID_ARGUMENTS, "That folder name is not allowed", null)
+            return
+        }
 
         if (sourcePath.isNullOrEmpty() || displayName.isNullOrEmpty()) {
             result.error(
@@ -596,7 +673,8 @@ class MediaStoreChannelHandler(
                         displayName,
                         mimeType,
                         relativeDir,
-                        isVideo
+                        isVideo,
+                        underPictures
                     )
                 } else {
                     publishToAppDirectory(source, displayName, relativeDir)
@@ -616,14 +694,17 @@ class MediaStoreChannelHandler(
         displayName: String,
         mimeType: String,
         relativeDir: String,
-        isVideo: Boolean
+        isVideo: Boolean,
+        underPictures: Boolean
     ): Map<String, Any?> {
         val collection = if (isVideo) {
             MediaStore.Video.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY)
         } else {
             MediaStore.Images.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY)
         }
-        val base = if (isVideo) {
+        // Android allows a video under Pictures. Putting it there keeps a
+        // sender folder with photos and videos as one folder on this phone.
+        val base = if (isVideo && !underPictures) {
             android.os.Environment.DIRECTORY_MOVIES
         } else {
             android.os.Environment.DIRECTORY_PICTURES
@@ -639,8 +720,7 @@ class MediaStoreChannelHandler(
         }
 
         val resolver = activity.contentResolver
-        val uri = resolver.insert(collection, values)
-            ?: throw IllegalStateException("MediaStore refused the insert")
+        val uri = insertWithGhostRecovery(collection, values, "$base/$relativeDir", displayName)
 
         try {
             resolver.openOutputStream(uri, "w").use { output ->
@@ -664,6 +744,184 @@ class MediaStoreChannelHandler(
             "path" to resolvePath(uri),
             "usedMediaStore" to true
         )
+    }
+
+    /**
+     * Inserts a new MediaStore row, getting past a ghost entry on Android 10.
+     *
+     * A ghost is a row whose file was deleted behind MediaStore's back, for
+     * example by a file manager. Android 10 picks the new file's path by
+     * looking only at the disk, so it picks the ghost's path, and then its
+     * database refuses the duplicate path. Asking the scanner to look at that
+     * missing path drops the ghost; if the insert is still refused, a
+     * numbered name is tried, as Android itself does for a real clash.
+     */
+    private fun insertWithGhostRecovery(
+        collection: Uri,
+        values: android.content.ContentValues,
+        relativePath: String,
+        displayName: String
+    ): Uri {
+        val resolver = activity.contentResolver
+        tryInsert(resolver, collection, values)?.let { return it }
+        if (Build.VERSION.SDK_INT != Build.VERSION_CODES.Q) {
+            throw IllegalStateException("MediaStore refused the insert")
+        }
+
+        @Suppress("DEPRECATION")
+        val root = android.os.Environment.getExternalStorageDirectory()
+        val target = java.io.File(java.io.File(root, relativePath), displayName)
+        val missing = try {
+            !target.exists()
+        } catch (_: Exception) {
+            false
+        }
+        if (missing) {
+            rescanMissing(listOf(target.absolutePath))
+            tryInsert(resolver, collection, values)?.let { return it }
+        }
+
+        val dot = displayName.lastIndexOf('.')
+        val stem = if (dot > 0) displayName.substring(0, dot) else displayName
+        val extension = if (dot > 0) displayName.substring(dot) else ""
+        for (n in 1..GHOST_RENAME_TRIES) {
+            values.put(MediaStore.MediaColumns.DISPLAY_NAME, "$stem ($n)$extension")
+            tryInsert(resolver, collection, values)?.let { return it }
+        }
+        throw IllegalStateException("MediaStore refused the insert")
+    }
+
+    private fun tryInsert(
+        resolver: ContentResolver,
+        collection: Uri,
+        values: android.content.ContentValues
+    ): Uri? = try {
+        resolver.insert(collection, values)
+    } catch (e: SecurityException) {
+        throw e
+    } catch (_: Exception) {
+        null
+    }
+
+    /**
+     * Asks Android's scanner to look at [paths], each a file that is gone.
+     *
+     * For a missing single file, Android 10's scanner removes that path's
+     * row (it never touches a file). Single files only, never a folder: a
+     * folder scan matches rows by path prefix, so scanning `Camera` would
+     * also drop rows in a sibling `Camera2` that it did not walk.
+     *
+     * Blocks until the scanner reports back or a timeout passes, so it must
+     * run on the worker thread.
+     */
+    private fun rescanMissing(paths: List<String>) {
+        if (paths.isEmpty()) return
+        val latch = CountDownLatch(paths.size)
+        MediaScannerConnection.scanFile(activity, paths.toTypedArray(), null) { _, _ ->
+            latch.countDown()
+        }
+        val seconds = (10L + paths.size / 10L).coerceAtMost(120L)
+        latch.await(seconds, TimeUnit.SECONDS)
+    }
+
+    /**
+     * Whether [path] names a file that is gone, on Android 10 only.
+     *
+     * There a file manager can delete a file without telling MediaStore, and
+     * the row ("ghost") stays. Checking one known path works on Android 10;
+     * only listing a folder is refused. Any doubt counts as "not missing",
+     * and other Android versions always say "not missing".
+     */
+    private fun isGhostPath(path: String?): Boolean {
+        if (Build.VERSION.SDK_INT != Build.VERSION_CODES.Q) return false
+        if (path.isNullOrEmpty()) return false
+        return try {
+            !java.io.File(path).exists()
+        } catch (_: Exception) {
+            false
+        }
+    }
+
+    /**
+     * Deletes this app's own ghost rows (Android 10 only).
+     *
+     * Android 10 lets an app delete MediaStore rows it owns without asking;
+     * another app's row would need a prompt for each file, so those are left
+     * alone (the Dart scanner hides them instead, from `fileMissing`). On the
+     * test phone, asking the scanner to rescan a missing path did not remove
+     * its row, so the row is deleted directly. The file is already gone.
+     *
+     * If more than half the rows look missing, nothing is done: that points
+     * to a storage problem, such as a removed SD card, not to ghosts.
+     */
+    private fun cleanStaleEntries(): Map<String, Any> {
+        fun report(checked: Int, missing: Int, cleaned: Int, stopped: Boolean) =
+            mapOf(
+                "checked" to checked,
+                "missing" to missing,
+                "cleaned" to cleaned,
+                "stopped" to stopped
+            )
+
+        if (Build.VERSION.SDK_INT != Build.VERSION_CODES.Q) return report(0, 0, 0, false)
+
+        val resolver = activity.contentResolver
+        val ownPackage = activity.packageName
+        val ownMissing = mutableListOf<Uri>()
+        var missing = 0
+        var checked = 0
+        val collections = listOf(
+            MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+            MediaStore.Video.Media.EXTERNAL_CONTENT_URI
+        )
+        for (collection in collections) {
+            resolver.query(
+                collection,
+                arrayOf(
+                    MediaStore.MediaColumns._ID,
+                    MediaStore.MediaColumns.DATA,
+                    MediaStore.MediaColumns.OWNER_PACKAGE_NAME
+                ),
+                null,
+                null,
+                null
+            )?.use { cursor ->
+                val idColumn = cursor.getColumnIndex(MediaStore.MediaColumns._ID)
+                val dataColumn = cursor.getColumnIndex(MediaStore.MediaColumns.DATA)
+                val ownerColumn =
+                    cursor.getColumnIndex(MediaStore.MediaColumns.OWNER_PACKAGE_NAME)
+                if (idColumn < 0 || dataColumn < 0) return@use
+                while (cursor.moveToNext()) {
+                    val path = cursor.getString(dataColumn)
+                    if (path.isNullOrEmpty()) continue
+                    checked++
+                    if (!isGhostPath(path)) continue
+                    missing++
+                    val owner = if (ownerColumn >= 0) cursor.getString(ownerColumn) else null
+                    if (owner == ownPackage) {
+                        ownMissing.add(
+                            ContentUris.withAppendedId(collection, cursor.getLong(idColumn))
+                        )
+                    }
+                }
+            }
+        }
+
+        if (missing == 0) return report(checked, 0, 0, false)
+        if (missing > STALE_SAFETY_MIN && missing * 2 > checked) {
+            return report(checked, missing, 0, true)
+        }
+
+        var cleaned = 0
+        for (uri in ownMissing) {
+            try {
+                cleaned += resolver.delete(uri, null, null).coerceAtLeast(0)
+            } catch (_: Exception) {
+                // Not ours after all, or already gone. Left for the scanner
+                // in Dart to hide.
+            }
+        }
+        return report(checked, missing, cleaned, false)
     }
 
     private fun publishToAppDirectory(
@@ -699,6 +957,42 @@ class MediaStoreChannelHandler(
             "path" to target.absolutePath,
             "usedMediaStore" to false
         )
+    }
+
+    /**
+     * Free space on the shared storage, in bytes, or -1 when it cannot be read.
+     *
+     * Reads the file system's own numbers, which needs no permission.
+     */
+    private fun freeSpaceBytes(): Long {
+        return try {
+            val stat = android.os.StatFs(
+                android.os.Environment.getExternalStorageDirectory().path
+            )
+            stat.availableBytes
+        } catch (_: Exception) {
+            -1L
+        }
+    }
+
+    /**
+     * A folder path that is safe to publish into, or null.
+     *
+     * At most two plain parts (`Drishya Sync/Camera`). No empty part, no `.`
+     * or `..`, no leading dot, no control characters, and no characters
+     * Android's file systems refuse.
+     */
+    private fun safeRelativeDir(raw: String): String? {
+        val parts = raw.split('/')
+        if (parts.isEmpty() || parts.size > 2) return null
+        for (part in parts) {
+            if (part.isEmpty() || part.length > 100) return null
+            if (part.startsWith(".")) return null
+            if (part.any { it.code < 0x20 || it.code == 0x7F || it in "\\:*?\"<>|" }) {
+                return null
+            }
+        }
+        return parts.joinToString("/")
     }
 
     /** Reads back the on-disk path MediaStore gave a newly written file. */

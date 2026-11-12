@@ -5,6 +5,7 @@ import 'package:in_sreerajp_imgvidgal/repositories/database/database_helper.dart
 import 'package:in_sreerajp_imgvidgal/repositories/database/media_dao.dart';
 import 'package:in_sreerajp_imgvidgal/services/media/media_scanner_service.dart';
 import 'package:in_sreerajp_imgvidgal/services/media/media_store_channel.dart';
+import 'package:in_sreerajp_imgvidgal/services/media/stale_cleanup_store.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 import 'fake_media_store_channel.dart';
@@ -209,6 +210,117 @@ void main() {
       expect(result.removed, 1);
       expect(await mediaDao.getTotalCount(), 1);
       expect(await mediaDao.getMediaItemById('a'), isNull);
+    });
+
+    group('ghost entry cleanup', () {
+      late MemoryStaleCleanupStore store;
+      late DateTime now;
+
+      setUp(() {
+        store = MemoryStaleCleanupStore();
+        now = DateTime(2026, 11, 11, 12);
+        scanner = MediaScannerService(
+          channel: channel,
+          mediaDao: mediaDao,
+          batchSize: 2,
+          staleStore: store,
+          now: () => now,
+        );
+        channel.entries = <MediaStoreEntry>[
+          buildEntry(id: 'a', dateModifiedMs: 1000),
+          buildEntry(id: 'b', dateModifiedMs: 2000),
+        ];
+      });
+
+      test('runs on the first scan and records the time', () async {
+        await scanner.scan();
+
+        expect(channel.staleCleanCalls, 1);
+        expect(store.value, now);
+      });
+
+      test('runs at most once a day', () async {
+        await scanner.scan();
+        now = now.add(const Duration(hours: 23));
+        await scanner.scan(incremental: true);
+        expect(channel.staleCleanCalls, 1);
+
+        now = now.add(const Duration(hours: 2));
+        await scanner.scan(incremental: true);
+        expect(channel.staleCleanCalls, 2);
+      });
+
+      test('a ghost removed forces a full pass that drops it', () async {
+        await scanner.scan();
+        channel.receivedSinceValues.clear();
+
+        // Android dropped the ghost "a" during the cleanup.
+        now = now.add(const Duration(days: 1));
+        channel.staleCleaned = 1;
+        channel.entries = <MediaStoreEntry>[
+          buildEntry(id: 'b', dateModifiedMs: 2000),
+        ];
+        final result = await scanner.scan(incremental: true);
+
+        // Straight to a full pass: no quick pass first.
+        expect(channel.receivedSinceValues, <int?>[null]);
+        expect(result.removed, 1);
+        expect(await mediaDao.getMediaItemById('a'), isNull);
+      });
+
+      test('a ghost row is not indexed and an old copy is removed', () async {
+        await scanner.scan();
+        expect(await mediaDao.getMediaItemById('a'), isNotNull);
+
+        // The file of "a" was deleted behind MediaStore's back.
+        channel.entries = <MediaStoreEntry>[
+          buildEntry(id: 'a', dateModifiedMs: 1000, fileMissing: true),
+          buildEntry(id: 'b', dateModifiedMs: 2000),
+        ];
+        final result = await scanner.scan();
+
+        expect(await mediaDao.getMediaItemById('a'), isNull);
+        expect(await mediaDao.getMediaItemById('b'), isNotNull);
+        expect(result.removed, 1);
+        expect(result.skipped, 1);
+      });
+
+      test('safety stop: when most rows look missing, all are kept', () async {
+        channel.entries = <MediaStoreEntry>[
+          for (var i = 0; i < MediaScannerService.ghostSafetyMin + 5; i++)
+            buildEntry(id: 'g$i', dateModifiedMs: 1000 + i, fileMissing: true),
+          buildEntry(id: 'ok', dateModifiedMs: 5000),
+        ];
+
+        final result = await scanner.scan();
+
+        expect(result.skipped, 0);
+        expect(
+          await mediaDao.getTotalCount(),
+          MediaScannerService.ghostSafetyMin + 6,
+        );
+      });
+
+      test('a few ghosts below the safety limit are still hidden', () async {
+        channel.entries = <MediaStoreEntry>[
+          for (var i = 0; i < 5; i++)
+            buildEntry(id: 'g$i', dateModifiedMs: 1000 + i, fileMissing: true),
+          buildEntry(id: 'ok', dateModifiedMs: 5000),
+        ];
+
+        await scanner.scan();
+
+        expect(await mediaDao.getTotalCount(), 1);
+      });
+
+      test('is skipped with only limited access', () async {
+        channel.permissionStatus = MediaPermissionStatus.partial;
+
+        await scanner.scan();
+
+        expect(channel.staleCleanCalls, 0);
+        expect(store.value, isNull);
+      });
     });
 
     test('a quick scan picks up a file with an old date', () async {

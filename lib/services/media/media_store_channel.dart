@@ -2,12 +2,15 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:in_sreerajp_imgvidgal/core/constants/app_constants.dart';
 import 'package:in_sreerajp_imgvidgal/core/errors/app_exception.dart';
+import 'package:in_sreerajp_imgvidgal/core/logging/app_logger.dart';
+import 'package:in_sreerajp_imgvidgal/models/media/delete_confirm_info.dart';
 import 'package:in_sreerajp_imgvidgal/models/media/media_delete_result.dart';
 import 'package:in_sreerajp_imgvidgal/models/media/media_permission_status.dart';
 
 // Moved to models so the UI can use it without importing a service (G46).
 export 'package:in_sreerajp_imgvidgal/models/media/media_permission_status.dart';
 export 'package:in_sreerajp_imgvidgal/models/media/media_delete_result.dart';
+export 'package:in_sreerajp_imgvidgal/models/media/delete_confirm_info.dart';
 
 /// A single raw row read from the Android MediaStore.
 ///
@@ -45,6 +48,11 @@ class MediaStoreEntry {
   final int? height;
   final int orientation;
 
+  /// True when Android says the row exists but its file is gone (a "ghost",
+  /// Android 10 only: a file manager deleted the file without telling
+  /// MediaStore). Always false on other Android versions.
+  final bool fileMissing;
+
   const MediaStoreEntry({
     required this.id,
     required this.path,
@@ -59,6 +67,7 @@ class MediaStoreEntry {
     this.width,
     this.height,
     this.orientation = 0,
+    this.fileMissing = false,
   });
 
   /// Builds an entry from a platform channel map.
@@ -89,6 +98,7 @@ class MediaStoreEntry {
         width: _asInt(map['width']),
         height: _asInt(map['height']),
         orientation: _asInt(map['orientation']) ?? 0,
+        fileMissing: map['fileMissing'] == true,
       );
     } on MediaScanException {
       rethrow;
@@ -168,18 +178,48 @@ abstract class MediaStoreChannel {
   /// Opens the app's system settings page so the user can change permissions.
   Future<void> openAppSettings();
 
+  /// Whether Android will ask before a delete, and the "Manage media" state.
+  ///
+  /// Never throws: when the answer is unknown it returns
+  /// [DeleteConfirmInfo.fallback], so the app asks itself.
+  Future<DeleteConfirmInfo> deleteConfirmInfo();
+
+  /// Opens Android's "Media management apps" page for this app (Android 12+),
+  /// or the app's settings page when that is missing.
+  Future<void> openManageMediaSettings();
+
   /// Publishes a staged file into the shared gallery.
   ///
   /// Written through MediaStore, so the app can add one file to the user's
   /// pictures without ever holding a permission over the rest of their
   /// storage. Nothing is overwritten: a clashing name is given a new one.
+  ///
+  /// [relativeDir] may hold one subfolder (`Drishya Sync/Camera`). When
+  /// [underPictures] is true a video also goes under Pictures, so a folder
+  /// with photos and videos stays one folder.
   Future<PublishedMedia> publishFile({
     required String sourcePath,
     required String displayName,
     required String mimeType,
     required bool isVideo,
     String relativeDir,
+    bool underPictures,
   });
+
+  /// Free space on the shared storage, in bytes, or null when unknown.
+  ///
+  /// Needs no permission. Used before and during a Wi-Fi receive.
+  Future<int?> freeSpaceBytes();
+
+  /// Removes this app's own MediaStore entries whose file no longer exists
+  /// (Android 10).
+  ///
+  /// A file manager on Android 10 can delete a file without telling
+  /// MediaStore, which leaves a "ghost" entry behind. Only entries this app
+  /// saved are removed (no prompt needed); other apps' ghosts are hidden by
+  /// the scanner instead. Returns how many were removed; 0 on other Android
+  /// versions, when the safety stop triggered, or on any error.
+  Future<int> cleanStaleEntries();
 
   /// Permanently deletes media items from Android storage via MediaStore.
   ///
@@ -296,12 +336,28 @@ class PlatformMediaStoreChannel implements MediaStoreChannel {
   }
 
   @override
+  Future<DeleteConfirmInfo> deleteConfirmInfo() async {
+    try {
+      final raw = await _invoke<Object?>('deleteConfirmInfo');
+      return DeleteConfirmInfo.fromPlatform(raw);
+    } on AppException {
+      return DeleteConfirmInfo.fallback;
+    }
+  }
+
+  @override
+  Future<void> openManageMediaSettings() async {
+    await _invoke<void>('openManageMediaSettings');
+  }
+
+  @override
   Future<PublishedMedia> publishFile({
     required String sourcePath,
     required String displayName,
     required String mimeType,
     required bool isVideo,
     String relativeDir = AppConstants.syncReceiveDirectoryName,
+    bool underPictures = false,
   }) async {
     final result =
         await _invoke<Map<Object?, Object?>>('publishFile', <String, Object?>{
@@ -310,6 +366,7 @@ class PlatformMediaStoreChannel implements MediaStoreChannel {
           'mimeType': mimeType,
           'isVideo': isVideo,
           'relativeDir': relativeDir,
+          'underPictures': underPictures,
         });
 
     if (result == null) {
@@ -320,6 +377,32 @@ class PlatformMediaStoreChannel implements MediaStoreChannel {
       path: result['path'] as String?,
       usedMediaStore: result['usedMediaStore'] as bool? ?? false,
     );
+  }
+
+  @override
+  Future<int?> freeSpaceBytes() async {
+    final raw = await _invoke<Object?>('freeSpaceBytes');
+    if (raw is! num || raw < 0) return null;
+    return raw.toInt();
+  }
+
+  @override
+  Future<int> cleanStaleEntries() async {
+    try {
+      final raw = await _invoke<Map<Object?, Object?>>('cleanStaleEntries');
+      if (raw == null) return 0;
+      if (raw['stopped'] == true) {
+        AppLogger.warning(
+          'Ghost cleanup stopped: too many entries looked missing',
+        );
+        return 0;
+      }
+      final cleaned = raw['cleaned'];
+      return cleaned is num && cleaned > 0 ? cleaned.toInt() : 0;
+    } catch (error) {
+      AppLogger.warning('Ghost cleanup failed', error: error);
+      return 0;
+    }
   }
 
   @override
