@@ -26,7 +26,7 @@ class AlbumsTab extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(l10n.titleAlbums),
+        title: Text(l10n.titleApp),
         actions: <Widget>[
           IconButton(
             onPressed: () => context.push(kRouteSearch),

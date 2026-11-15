@@ -208,7 +208,7 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen> {
       appBar: selecting
           ? SelectionAppBar(visibleIds: visibleIds)
           : AppBar(
-              title: Text(l10n.titleTimeline),
+              title: Text(l10n.titleApp),
               actions: [
                 IconButton(
                   onPressed: () => context.push(kRouteSearch),

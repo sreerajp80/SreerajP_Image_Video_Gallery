@@ -23,7 +23,7 @@ class FoldersTab extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(l10n.titleFolders),
+        title: Text(l10n.titleApp),
         actions: <Widget>[
           IconButton(
             onPressed: () => context.push(kRouteSearch),
