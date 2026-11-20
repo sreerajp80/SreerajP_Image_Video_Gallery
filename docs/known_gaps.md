@@ -125,7 +125,7 @@ The plans [20261102_192913](../plans/20261102_192913_guideline-batch-4-build-dat
 | G13 | Sixteen new provider test files. `media_providers` and `media_intent_providers` were already tested under other names. |
 | G17, G18 | `PRIVACY.md`, and `privacyPolicy` and `email` rows in `app_config.json`, shown on the About screen. |
 | G19 | `targetSdk = 36`. Phone check still due (see §2). |
-| G21 | AGP 9.4.1, KGP 2.4.10, Gradle 9.8.0, Flutter 3.47.6 (the owner's versions). The OCR plugin comes from a commit that only replaces `jcenter()`. |
+| G21 | AGP 9.4.1, KGP 2.4.20, Gradle 9.8.0, Flutter 3.50.1 (the owner's versions). The OCR plugin comes from a commit that only replaces `jcenter()`. |
 | G23 | `.github/workflows/ci.yml`, checks only. |
 | G24 | Every native library in the arm64 release APK is aligned to 16 KB or more. |
 | G28 | A "Hide content" setting protects every screen; the vault is always protected. |

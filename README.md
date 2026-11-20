@@ -142,8 +142,8 @@ permission).
 
 | Component | Version |
 |---|---|
-| Flutter SDK | **3.47.6** (stable), the version the project and CI build with. Lowest allowed: 3.41.0 |
-| Dart SDK | **3.13.5** (ships with Flutter 3.47.6). Lowest allowed: 3.11.0 |
+| Flutter SDK | **3.50.1** (stable), the version the project and CI build with. Lowest allowed: 3.41.0 |
+| Dart SDK | **3.14.0** (ships with Flutter 3.50.1). Lowest allowed: 3.11.0 |
 | Platform | Android only |
 | Android `minSdk` / `targetSdk` / `compileSdk` | 24 / 36 / 36 |
 | JDK | 17 |

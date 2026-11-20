@@ -14,8 +14,8 @@ Read it before making any change. See the docs table below for full detail.
 | Type | Offline-first image and video gallery application for viewing, organizing, and managing local media |
 | Platform(s) | Android only (minSdk 24, targetSdk 36, compileSdk 36) |
 | Package / org id | in.sreerajp.imgvidgal |
-| Flutter SDK | **3.47.6** (stable) — the exact version this project builds with; CI uses the same (`.github/workflows/ci.yml`). Lowest allowed in `pubspec.yaml`: 3.41.0 |
-| Dart SDK | **3.13.5** (ships with Flutter 3.47.6). Lowest allowed in `pubspec.yaml`: 3.11.0 |
+| Flutter SDK | **3.50.1** (stable) — the exact version this project builds with; CI uses the same (`.github/workflows/ci.yml`). Lowest allowed in `pubspec.yaml`: 3.41.0 |
+| Dart SDK | **3.14.0** (ships with Flutter 3.50.1). Lowest allowed in `pubspec.yaml`: 3.11.0 |
 | State management | Riverpod |
 | Navigation | go_router |
 | Database | sqflite |

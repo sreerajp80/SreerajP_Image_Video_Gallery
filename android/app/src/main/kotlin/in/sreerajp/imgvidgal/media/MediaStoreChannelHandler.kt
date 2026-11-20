@@ -73,10 +73,23 @@ class MediaStoreChannelHandler(
 
         private const val JPEG_QUALITY = 85
         private const val DEFAULT_MAX_BYTES = 24 * 1024 * 1024
+
+        /**
+         * Threads that make thumbnails. Dart sends at most this many requests
+         * at once (AppConstants.nativeThumbnailThreads), newest first.
+         */
+        private const val THUMBNAIL_THREADS = 4
     }
 
     private val channel = MethodChannel(messenger, CHANNEL_NAME)
     private val worker = Executors.newSingleThreadExecutor()
+
+    /**
+     * Thumbnails and plain reads get their own small pool, so a library scan
+     * or a delete on [worker] never makes the grid wait, and grid tiles can be
+     * made in parallel. These jobs only read; they share no state.
+     */
+    private val thumbnailWorker = Executors.newFixedThreadPool(THUMBNAIL_THREADS)
     private val mainHandler = Handler(Looper.getMainLooper())
 
     private var pendingPermissionResult: MethodChannel.Result? = null
@@ -96,6 +109,7 @@ class MediaStoreChannelHandler(
         pendingSecureDelete = null
         pendingLegacyWrite = null
         worker.shutdown()
+        thumbnailWorker.shutdown()
     }
 
     fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?): Boolean {
@@ -474,7 +488,7 @@ class MediaStoreChannelHandler(
             return
         }
 
-        worker.execute {
+        thumbnailWorker.execute {
             val bytes = try {
                 val uri = Uri.parse(uriString)
                 if (IncomingUriRules.isAllowed(activity, uri)) {
@@ -548,7 +562,7 @@ class MediaStoreChannelHandler(
             return
         }
 
-        worker.execute {
+        thumbnailWorker.execute {
             val bytes = try {
                 val uri = Uri.parse(uriString)
                 if (IncomingUriRules.isAllowed(activity, uri)) {

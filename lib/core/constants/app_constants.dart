@@ -74,6 +74,17 @@ class AppConstants {
   static const int mediumTierDiskCacheBytes = 256 * 1024 * 1024;
   static const int highTierDiskCacheBytes = 512 * 1024 * 1024;
 
+  /// How many thumbnails may be made by Android at the same time. The
+  /// native side has a pool of [nativeThumbnailThreads] threads, so these
+  /// must never be larger than it.
+  static const int lowTierMaxConcurrentThumbnails = 3;
+  static const int mediumTierMaxConcurrentThumbnails = 4;
+  static const int highTierMaxConcurrentThumbnails = 4;
+
+  /// Size of the Android thread pool that makes thumbnails
+  /// (`MediaStoreChannelHandler.THUMBNAIL_THREADS`). Kept here for reference.
+  static const int nativeThumbnailThreads = 4;
+
   /// Folder inside the app cache directory holding generated thumbnails.
   static const String thumbnailCacheDirectoryName = 'thumbnails';
 

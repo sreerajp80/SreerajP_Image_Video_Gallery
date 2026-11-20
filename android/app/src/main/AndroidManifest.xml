@@ -72,6 +72,15 @@
          themselves. The app never silently joins anything. -->
     <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
 
+    <!-- Wi-Fi is a convenience, not a requirement. Without this line Google Play
+         treats the two Wi-Fi permissions above as "Wi-Fi hardware required" and
+         hides the app from devices that do not report it. The gallery never
+         needs Wi-Fi; the transfer screen shows its "no Wi-Fi" state when there
+         is no local address, and the scanner simply has no network to suggest. -->
+    <uses-feature
+        android:name="android.hardware.wifi"
+        android:required="false" />
+
     <!-- ExoPlayer declares a wake lock for streaming playback. This app only
          ever plays local files and holds the screen on with
          FLAG_KEEP_SCREEN_ON, so the permission is removed from the merge. -->

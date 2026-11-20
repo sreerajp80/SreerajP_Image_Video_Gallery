@@ -111,7 +111,7 @@ final timelineItemsProvider = StreamProvider<List<MediaItem>>((ref) async* {
       filter.sortBy == MediaSortField.dateTaken &&
       filter.sortDirection == SortDirection.descending;
   final alreadyLoaded =
-      ref.exists(fullProvider) && ref.read(fullProvider).hasValue;
+      ref.read(fullProvider.exists) && ref.read(fullProvider).hasValue;
 
   if (newestFirst && !alreadyLoaded) {
     // Asked before the full list so it is not queued behind it.

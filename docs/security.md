@@ -378,6 +378,10 @@ which the `camera` plugin asks for: the pairing scan only reads preview frames a
 sound. The plugin also asks for `WRITE_EXTERNAL_STORAGE`; the manifest caps it at
 `maxSdkVersion="28"` (`tools:replace`), where the app needs it itself (see the table). The plugin's `camera.any` feature is marked
 not required, so a phone with no camera can still install the app and pair by typing the code.
+`android.hardware.wifi` is also declared with `required="false"`. Without it, Google Play reads
+`ACCESS_WIFI_STATE` and `CHANGE_WIFI_STATE` as "Wi-Fi hardware required" and hides the app from
+devices that do not report Wi-Fi. The app works without Wi-Fi: only transfer and the scanner's Wi-Fi
+suggestion use it, and both handle "no local network" already.
 
 | Permission | Why It Is Needed | Requested When | Denial Handling |
 |---|---|---|---|

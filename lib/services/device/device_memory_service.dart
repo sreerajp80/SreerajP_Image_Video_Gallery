@@ -32,12 +32,16 @@ class ThumbnailCacheConfig {
   /// Maximum bytes of thumbnails kept on disk.
   final int diskCacheBytes;
 
+  /// Most thumbnails made by Android at the same time.
+  final int maxConcurrentThumbnails;
+
   const ThumbnailCacheConfig({
     required this.tier,
     required this.thumbnailSize,
     required this.memoryCacheItems,
     required this.memoryCacheBytes,
     required this.diskCacheBytes,
+    required this.maxConcurrentThumbnails,
   });
 
   /// Conservative settings for low-RAM devices, also used as the safe default
@@ -48,6 +52,7 @@ class ThumbnailCacheConfig {
     memoryCacheItems: AppConstants.lowTierMemoryCacheItems,
     memoryCacheBytes: AppConstants.lowTierMemoryCacheBytes,
     diskCacheBytes: AppConstants.lowTierDiskCacheBytes,
+    maxConcurrentThumbnails: AppConstants.lowTierMaxConcurrentThumbnails,
   );
 
   static const ThumbnailCacheConfig mediumTier = ThumbnailCacheConfig(
@@ -56,6 +61,7 @@ class ThumbnailCacheConfig {
     memoryCacheItems: AppConstants.mediumTierMemoryCacheItems,
     memoryCacheBytes: AppConstants.mediumTierMemoryCacheBytes,
     diskCacheBytes: AppConstants.mediumTierDiskCacheBytes,
+    maxConcurrentThumbnails: AppConstants.mediumTierMaxConcurrentThumbnails,
   );
 
   static const ThumbnailCacheConfig highTier = ThumbnailCacheConfig(
@@ -64,6 +70,7 @@ class ThumbnailCacheConfig {
     memoryCacheItems: AppConstants.highTierMemoryCacheItems,
     memoryCacheBytes: AppConstants.highTierMemoryCacheBytes,
     diskCacheBytes: AppConstants.highTierDiskCacheBytes,
+    maxConcurrentThumbnails: AppConstants.highTierMaxConcurrentThumbnails,
   );
 
   /// The configuration matching [tier].

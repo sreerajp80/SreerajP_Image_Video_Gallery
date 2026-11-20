@@ -20,7 +20,7 @@ jobs:
         with:
           channel: stable
           # The exact version recorded in CLAUDE.md / AGENTS.md.
-          flutter-version: 3.47.6
+          flutter-version: 3.50.1
       - run: flutter pub get
       - name: Generated localizations are up to date
         run: |

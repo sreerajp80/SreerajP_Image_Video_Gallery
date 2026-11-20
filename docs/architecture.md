@@ -512,7 +512,7 @@ app's own `barcode` channel),
 - **Runtime config mechanism:** native flavor. `FLUTTER_APP_FLAVOR` is set by `--flavor` and read
   by `AppFlavorConfig`. No `--dart-define` values are needed. About-screen data comes from
   `assets/config/app_config.json` through `ConfigService`.
-- **Toolchain:** Flutter 3.47.6 / Dart 3.13.5, AGP 9.4.1, Kotlin 2.4.10, Gradle 9.8.0,
+- **Toolchain:** Flutter 3.50.1 / Dart 3.14.0, AGP 9.4.1, Kotlin 2.4.20, Gradle 9.8.0,
   `compileSdk` and `targetSdk` 36. These are the owner's chosen versions and are newer than the
   standard's 2026-10-15 snapshot (AGP 9.1.0, KGP 2.4.0, Gradle 9.3.1); that is a deliberate
   choice, not a gap. `android.builtInKotlin=false` and `android.newDsl=false` stay set until

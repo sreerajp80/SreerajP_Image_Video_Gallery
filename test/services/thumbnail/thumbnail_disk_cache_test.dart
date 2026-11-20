@@ -148,6 +148,41 @@ void main() {
       expect(await cache.read('a', 256), isNull);
     });
 
+    test(
+      'does not scan the folder on every write while under budget',
+      () async {
+        // The first write measures the folder once.
+        await cache.write('a', 256, bytesOf(10));
+
+        // A file the cache does not know about. A full scan would see the
+        // folder is over budget and delete it; the running total does not.
+        final stranger = cache.fileFor('stranger', 256);
+        await stranger.writeAsBytes(bytesOf(2000));
+        await stranger.setLastModified(
+          DateTime.now().subtract(const Duration(hours: 1)),
+        );
+
+        await cache.write('b', 256, bytesOf(10));
+        expect(await stranger.exists(), isTrue);
+
+        // This write pushes the running total over 1000 bytes, so a real scan
+        // runs and trims the folder back inside the budget.
+        await cache.write('c', 256, bytesOf(990));
+        expect(await stranger.exists(), isFalse);
+        expect(await cache.currentBytes(), lessThanOrEqualTo(1000));
+        expect(await cache.read('c', 256), isNotNull);
+      },
+    );
+
+    test('clear resets the running total', () async {
+      await cache.write('a', 256, bytesOf(600));
+      await cache.clear();
+
+      // Had the old 600 bytes still been counted, this would evict.
+      await cache.write('b', 256, bytesOf(600));
+      expect(await cache.read('b', 256), isNotNull);
+    });
+
     test('currentBytes is zero before anything is written', () async {
       expect(await cache.currentBytes(), 0);
     });

@@ -254,10 +254,15 @@ final indexedMediaCountProvider = FutureProvider<int>((ref) async {
 });
 
 /// Thumbnail bytes for one media item, or null when none can be generated.
-final thumbnailProvider = FutureProvider.family<Uint8List?, MediaItem>((
-  ref,
-  item,
-) async {
-  final service = await ref.watch(thumbnailServiceProvider.future);
-  return service.getThumbnail(item);
-});
+///
+/// Auto-disposed: when the tile leaves the screen the provider goes away and
+/// cancels its request, so a fast fling does not leave hundreds of unneeded
+/// thumbnails queued ahead of the tiles now on screen. The bytes stay in the
+/// service's RAM cache, so scrolling back is still instant.
+final thumbnailProvider = FutureProvider.autoDispose
+    .family<Uint8List?, MediaItem>((ref, item) async {
+      final service = await ref.watch(thumbnailServiceProvider.future);
+      final request = service.requestThumbnail(item);
+      ref.onDispose(request.cancel);
+      return request.future;
+    });

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'dart:typed_data';
 
@@ -22,6 +23,19 @@ class ThumbnailDiskCache {
   /// Maximum total bytes kept on disk before eviction runs.
   final int maxBytes;
 
+  /// Running total of stored bytes, or null until it was first measured.
+  ///
+  /// Measuring means listing every file, which is slow with thousands of
+  /// thumbnails. So it is done once, then each write adds its own size, and
+  /// a full scan runs again only when the total goes over [maxBytes].
+  int? _knownBytes;
+
+  /// The first measurement, shared by writes that arrive while it runs.
+  Future<int>? _measuring;
+
+  /// The eviction now running, shared so only one runs at a time.
+  Future<int>? _evicting;
+
   ThumbnailDiskCache({required this.rootDirectory, required this.maxBytes});
 
   /// Builds the stable cache key for an item at a given thumbnail size.
@@ -43,11 +57,12 @@ class ThumbnailDiskCache {
   Future<Uint8List?> read(String key, int size) async {
     try {
       final file = fileFor(key, size);
-      if (!await file.exists()) return null;
+      // No separate exists() check: a missing file throws and is a miss.
       final bytes = await file.readAsBytes();
       if (bytes.isEmpty) return null;
       // Touch the file so least-recently-used eviction keeps hot entries.
-      await _touch(file);
+      // The caller does not need to wait for this.
+      unawaited(_touch(file));
       return bytes;
     } catch (_) {
       // Safe to ignore: a cache miss; the thumbnail is made again.
@@ -69,7 +84,7 @@ class ThumbnailDiskCache {
       await staging.writeAsBytes(bytes, flush: true);
       await staging.rename(file.path);
 
-      await evictIfOverBudget();
+      await _afterWrite(bytes.length);
       return true;
     } catch (error) {
       AppLogger.debug('Writing a thumbnail to the disk cache failed');
@@ -90,11 +105,36 @@ class ThumbnailDiskCache {
     return total;
   }
 
+  /// Updates the running total after a write, and evicts only when the
+  /// total goes over budget.
+  Future<void> _afterWrite(int addedBytes) async {
+    final known = _knownBytes;
+    if (known == null) {
+      // The first scan already counts the file just written.
+      final measured = await (_measuring ??= currentBytes());
+      _knownBytes ??= measured;
+    } else {
+      // A rewrite of an existing key is counted twice. That only makes the
+      // next real scan come a little early, which is harmless.
+      _knownBytes = known + addedBytes;
+    }
+    if ((_knownBytes ?? 0) > maxBytes) {
+      await (_evicting ??= evictIfOverBudget().whenComplete(() {
+        _evicting = null;
+      }));
+    }
+  }
+
   /// Deletes the oldest thumbnails until the cache fits inside [maxBytes].
+  ///
+  /// Also resets the running total to the real size on disk.
   Future<int> evictIfOverBudget() async {
     try {
       final files = await _cachedFiles();
-      if (files.isEmpty) return 0;
+      if (files.isEmpty) {
+        _knownBytes = 0;
+        return 0;
+      }
 
       final stats = <_CacheEntry>[];
       var total = 0;
@@ -108,7 +148,10 @@ class ThumbnailDiskCache {
           continue;
         }
       }
-      if (total <= maxBytes) return 0;
+      if (total <= maxBytes) {
+        _knownBytes = total;
+        return 0;
+      }
 
       stats.sort((a, b) => a.modified.compareTo(b.modified));
 
@@ -125,6 +168,7 @@ class ThumbnailDiskCache {
           continue;
         }
       }
+      _knownBytes = total;
       return removed;
     } catch (error) {
       AppLogger.warning('Thumbnail cache eviction failed', error: error);
@@ -138,6 +182,7 @@ class ThumbnailDiskCache {
       if (await rootDirectory.exists()) {
         await rootDirectory.delete(recursive: true);
       }
+      _knownBytes = 0;
     } catch (error) {
       AppLogger.warning('Clearing the thumbnail cache failed', error: error);
       // Clearing the cache is best effort only.

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:typed_data';
 
 import 'package:in_sreerajp_imgvidgal/core/errors/app_exception.dart';
@@ -19,6 +20,13 @@ class FakeMediaStoreChannel implements MediaStoreChannel {
 
   /// When true, [loadThumbnail] throws instead of returning null.
   bool throwOnThumbnail = false;
+
+  /// When set, [loadThumbnail] waits for this before answering, so a test
+  /// can hold device calls "in progress".
+  Completer<void>? thumbnailGate;
+
+  /// URIs passed to [loadThumbnail], in call order.
+  final List<String> thumbnailUris = <String>[];
 
   int queryCallCount = 0;
   int thumbnailCallCount = 0;
@@ -71,6 +79,9 @@ class FakeMediaStoreChannel implements MediaStoreChannel {
     required int height,
   }) async {
     thumbnailCallCount++;
+    thumbnailUris.add(uri);
+    final gate = thumbnailGate;
+    if (gate != null) await gate.future;
     if (throwOnThumbnail) {
       throw const MediaScanException('native thumbnail failed');
     }
