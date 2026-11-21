@@ -10,6 +10,7 @@ import 'package:in_sreerajp_imgvidgal/providers/media_providers.dart';
 import 'package:in_sreerajp_imgvidgal/providers/trash_providers.dart';
 import 'package:in_sreerajp_imgvidgal/services/device/screen_settings_service.dart';
 import 'package:in_sreerajp_imgvidgal/services/media/exif_reader_service.dart';
+import 'package:in_sreerajp_imgvidgal/services/platform/wallpaper_service.dart';
 import 'package:in_sreerajp_imgvidgal/services/video/frame_step_service.dart';
 import 'package:in_sreerajp_imgvidgal/core/domain/video/playback_speed_service.dart';
 import 'package:in_sreerajp_imgvidgal/core/domain/video/video_gesture_service.dart';
@@ -17,6 +18,11 @@ import 'package:in_sreerajp_imgvidgal/core/domain/viewer/viewer_transform_servic
 import 'package:video_player/video_player.dart';
 import 'package:in_sreerajp_imgvidgal/core/logging/app_logger.dart';
 import 'package:flutter_riverpod/legacy.dart';
+
+/// Hands a photo to Android's own wallpaper screen.
+final wallpaperServiceProvider = Provider<WallpaperService>((ref) {
+  return WallpaperService();
+});
 
 /// Zoom, rotation, and dismiss maths for the image viewer.
 final viewerTransformServiceProvider = Provider<ViewerTransformService>((ref) {

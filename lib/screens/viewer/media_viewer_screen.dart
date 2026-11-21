@@ -304,6 +304,24 @@ class _MediaViewerScreenState extends ConsumerState<MediaViewerScreen> {
   /// The vault has to be open first. Encrypting into a locked vault would put
   /// the photo somewhere the user cannot immediately check, so a locked vault
   /// sends them to the gate instead.
+  Future<void> _setAsWallpaper(MediaItem item) async {
+    final l10n = AppLocalizations.of(context)!;
+    final uri = item.uri;
+    if (uri == null) return;
+
+    final opened = await ref
+        .read(wallpaperServiceProvider)
+        .setAsWallpaper(
+          uri: uri,
+          mimeType: item.mimeType,
+          chooserTitle: l10n.titleSetAsChooser,
+        );
+    if (opened || !mounted) return;
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(l10n.errorSetWallpaperFailed)));
+  }
+
   Future<void> _moveToVault(MediaItem item) async {
     final l10n = AppLocalizations.of(context)!;
 
@@ -648,6 +666,7 @@ class _MediaViewerScreenState extends ConsumerState<MediaViewerScreen> {
                         context.push(mediaNotesPath(currentItem.id)),
                     onPrivacyScrubber: () =>
                         MediaPrivacySheet.show(context, currentItem),
+                    onSetAsWallpaper: () => _setAsWallpaper(currentItem),
                   ),
                 ),
               ),

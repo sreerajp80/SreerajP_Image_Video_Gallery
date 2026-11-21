@@ -352,6 +352,13 @@ every release ([release_process.md](release_process.md) §6).
   `readBytes` and `loadThumbnail`. It allows `content://` except this app's own file provider, and
   `file://` only outside the app's data folders, using the canonical path. Everything else is
   refused. `file://` stays allowed because `publishFile` returns it on Android 9 and below.
+- **Set as wallpaper:** the viewer hands one photo to Android's own wallpaper screen
+  (`WallpaperManager.getCropAndSetWallpaperIntent`), or to the "Set as" list
+  (`ACTION_ATTACH_DATA`) when the phone does not support that screen. What leaves the app is a read
+  grant for that one URI. Only a MediaStore address (`content://media/...`) is accepted, checked in
+  Dart (`canSetAsWallpaper`) and again in Kotlin (`IntentChannelHandler.setAsWallpaper`), so vault,
+  cache or file-provider files can never be handed out this way. The app never writes the wallpaper
+  itself, so it does not need, and does not declare, `SET_WALLPAPER`.
 - **Randomness:** GPS blurring uses `Random.secure()` by default, because the offset is what hides
   a home address.
 - **Root detection:** none. Rooted devices are out of scope (§3).

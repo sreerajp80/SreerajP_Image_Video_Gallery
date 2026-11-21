@@ -105,12 +105,6 @@ class AppLocalizationsMl extends AppLocalizations {
   String get titleFlashback => 'ഈ ദിവസം';
 
   @override
-  String get tooltipExpandFlashback => 'ഓർമ്മകൾ കാണിക്കുക';
-
-  @override
-  String get tooltipCollapseFlashback => 'ഓർമ്മകൾ മറയ്ക്കുക';
-
-  @override
   String get labelFlashbackOneYearAgo => '1 വർഷം മുമ്പ്';
 
   @override
@@ -1411,6 +1405,15 @@ class AppLocalizationsMl extends AppLocalizations {
 
   @override
   String get titleAlbumPicker => 'ആൽബത്തിൽ ചേർക്കുക';
+
+  @override
+  String get labelSetAsWallpaper => 'വാൾപേപ്പറാക്കുക';
+
+  @override
+  String get titleSetAsChooser => 'ഇങ്ങനെ ഉപയോഗിക്കുക';
+
+  @override
+  String get errorSetWallpaperFailed => 'വാൾപേപ്പർ സ്ക്രീൻ തുറക്കാനായില്ല.';
 
   @override
   String get emptyAlbumPicker => 'നിങ്ങൾക്ക് ഇതുവരെ ആൽബങ്ങളില്ല';
@@ -2850,13 +2853,6 @@ class AppLocalizationsMl extends AppLocalizations {
   }
 
   @override
-  String get titleShowFlashbacks => 'ഓർമ്മകൾ കാണിക്കുക';
-
-  @override
-  String get descShowFlashbacksSubtitle =>
-      'കഴിഞ്ഞ വർഷങ്ങളിൽ ഇന്നത്തെ ദിവസം എടുത്ത ചിത്രങ്ങൾ, ടൈംലൈനിന്റെ മുകളിൽ.';
-
-  @override
   String get titleConfirmDestructive => 'മായ്ക്കുന്നതിനു മുമ്പ് ചോദിക്കുക';
 
   @override
@@ -2944,11 +2940,11 @@ class AppLocalizationsMl extends AppLocalizations {
 
   @override
   String get helpTopicTimelineSummary =>
-      'തീയതി അടിസ്ഥാനത്തിൽ ചിത്രങ്ങൾ കാണുക, ഗ്രിഡ് വലിപ്പം മാറ്റുക, പഴയ ഓർമ്മകൾ ആസ്വദിക്കുക.';
+      'തീയതി അടിസ്ഥാനത്തിൽ ചിത്രങ്ങൾ കാണുക, ഗ്രിഡ് വലിപ്പം മാറ്റുക.';
 
   @override
   String get helpTopicTimelineOverview =>
-      'നിങ്ങളുടെ എല്ലാ ചിത്രങ്ങളും വീഡിയോകളും തീയതി തലക്കെട്ടുകളോടെ കാലഗണനാക്രമത്തിൽ ടൈംലൈൻ കാണിക്കുന്നു. കഴിഞ്ഞ വർഷങ്ങളിലെ ഇന്നത്തെ ദിവസത്തെ ചിത്രങ്ങൾ കാണിക്കുന്ന \'ഈ ദിവസം\' ഓർമ്മപ്പട്ടികയും ഇതിലുണ്ട്.';
+      'നിങ്ങളുടെ എല്ലാ ചിത്രങ്ങളും വീഡിയോകളും തീയതി തലക്കെട്ടുകളോടെ കാലഗണനാക്രമത്തിൽ ടൈംലൈൻ കാണിക്കുന്നു. കഴിഞ്ഞ വർഷങ്ങളിലെ ഇന്നത്തെ ദിവസത്തെ ചിത്രങ്ങൾ \'ഓർമ്മകൾ\' വിഭാഗത്തിൽ കാണാം.';
 
   @override
   String get helpTopicTimelineSteps =>
@@ -2956,7 +2952,7 @@ class AppLocalizationsMl extends AppLocalizations {
 
   @override
   String get helpTopicTimelineTips =>
-      '• ഒന്നിലധികം ചിത്രങ്ങൾ ഒരുമിച്ച് തിരഞ്ഞെടുക്കാൻ ഏതെങ്കിലും ഫോട്ടോയിൽ അമർത്തിപ്പിടിക്കുക.\n• ഓർമ്മപ്പട്ടിക വേണമെങ്കിൽ ക്രമീകരണങ്ങളിൽ ഓഫ് ചെയ്യാം.';
+      '• ഒന്നിലധികം ചിത്രങ്ങൾ ഒരുമിച്ച് തിരഞ്ഞെടുക്കാൻ ഏതെങ്കിലും ഫോട്ടോയിൽ അമർത്തിപ്പിടിക്കുക.\n• കഴിഞ്ഞ വർഷങ്ങളിലെ ഈ ദിവസത്തെ ചിത്രങ്ങൾ കാണാൻ \'ഓർമ്മകൾ\' വിഭാഗം തുറക്കുക.';
 
   @override
   String get helpTopicTimelinePrivacy =>
@@ -3418,6 +3414,25 @@ class AppLocalizationsMl extends AppLocalizations {
 
   @override
   String get tabAlbums => 'ആൽബങ്ങൾ';
+
+  @override
+  String get tabMemories => 'ഓർമ്മകൾ';
+
+  @override
+  String get titleMemories => 'ഓർമ്മകൾ';
+
+  @override
+  String get bodyMemoriesWeekFallback =>
+      'ഇന്നത്തെ തീയതിയിൽ ഒന്നുമില്ല. കഴിഞ്ഞ വർഷങ്ങളിലെ ഈ ആഴ്ച കാണിക്കുന്നു.';
+
+  @override
+  String get emptyMemories =>
+      'ഇതുവരെ ഓർമ്മകളില്ല. കഴിഞ്ഞ വർഷങ്ങളിലെ ഈ സമയത്തെ ഫോട്ടോകൾ ഇവിടെ കാണാം.';
+
+  @override
+  String labelMemoryDateRange(String start, String end) {
+    return '$start – $end';
+  }
 
   @override
   String get titleFolders => 'ഫോൾഡറുകൾ';

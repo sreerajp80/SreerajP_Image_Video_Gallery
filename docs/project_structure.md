@@ -59,7 +59,8 @@ lib/
 |   |-- storage/          # AtomicSaver
 |   `-- text/             # Text direction detection
 |-- models/               # Immutable entities. Top level: album, album_summary, exif_data,
-|   |                     # filter_options, flashback_memory, media_item, playback_state,
+|   |                     # filter_options, flashback_memory, media_item, memories_page,
+|   |                     # playback_state,
 |   |                     # smart_album, tag, timeline_group, vault_item, viewer_transform
 |   `-- backup/ batch/ convert/ duplicate/ editor/ help/ notes/ ocr/ pdf/ privacy/
 |       scan/ search/ settings/ sync/ vault/ video/
@@ -76,12 +77,12 @@ lib/
 |                         # search, selection, settings, sync, tag, theme, timeline, trash,
 |                         # vault, video_tools, viewer
 |-- screens/              # Route destinations
-|   `-- albums/ backup/ cleaner/ compare/ convert/ editor/ help/ home/ notes/ ocr/ pdf/
-|       scan/ search/ settings/ sync/ tags/ timeline/ trash/ vault/ video/ viewer/
+|   `-- albums/ backup/ cleaner/ compare/ convert/ editor/ help/ home/ memories/ notes/ ocr/
+|       pdf/ scan/ search/ settings/ sync/ tags/ timeline/ trash/ vault/ video/ viewer/
 |-- widgets/              # Reusable UI
 |   |-- made_with_love.dart  # The fixed About-screen badge (guideline.md §1.7)
 |   `-- albums/ backup/ batch/ cleaner/ common/ compare/ convert/ dev/ editor/ help/ media/
-|       notes/ pdf/ privacy/ scan/ search/ sync/ tags/ timeline/ vault/ video/ viewer/
+|       memories/ notes/ pdf/ privacy/ scan/ search/ sync/ tags/ timeline/ vault/ video/ viewer/
 |                         # (common/ holds AdaptiveDirectionality, SafeErrorFallback and
 |                         # AppScreenProtection)
 |-- theme/

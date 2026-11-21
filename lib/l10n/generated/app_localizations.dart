@@ -274,18 +274,6 @@ abstract class AppLocalizations {
   /// **'On This Day'**
   String get titleFlashback;
 
-  /// Tooltip on the arrow that opens the collapsed On This Day section on the timeline
-  ///
-  /// In en, this message translates to:
-  /// **'Show memories'**
-  String get tooltipExpandFlashback;
-
-  /// Tooltip on the arrow that closes the open On This Day section on the timeline
-  ///
-  /// In en, this message translates to:
-  /// **'Hide memories'**
-  String get tooltipCollapseFlashback;
-
   /// Caption for a flashback memory from exactly one year ago
   ///
   /// In en, this message translates to:
@@ -2734,6 +2722,24 @@ abstract class AppLocalizations {
   /// **'Add to album'**
   String get titleAlbumPicker;
 
+  /// Viewer menu item that opens Android's own wallpaper screen for this photo
+  ///
+  /// In en, this message translates to:
+  /// **'Set as wallpaper'**
+  String get labelSetAsWallpaper;
+
+  /// Title of Android's app list shown when the phone's wallpaper screen cannot take the photo
+  ///
+  /// In en, this message translates to:
+  /// **'Set as'**
+  String get titleSetAsChooser;
+
+  /// Shown when neither Android's wallpaper screen nor any app could take the photo
+  ///
+  /// In en, this message translates to:
+  /// **'Could not open the wallpaper screen.'**
+  String get errorSetWallpaperFailed;
+
   /// Shown when there is nothing to tick
   ///
   /// In en, this message translates to:
@@ -4876,18 +4882,6 @@ abstract class AppLocalizations {
   /// **'{count} per row'**
   String labelGridDensityValue(int count);
 
-  /// Label of the switch that shows the flashback memories row
-  ///
-  /// In en, this message translates to:
-  /// **'Show memories'**
-  String get titleShowFlashbacks;
-
-  /// Note under the show memories switch
-  ///
-  /// In en, this message translates to:
-  /// **'A row of photos from this day in past years, at the top of the timeline.'**
-  String get descShowFlashbacksSubtitle;
-
   /// Label of the switch that asks again before a destructive action
   ///
   /// In en, this message translates to:
@@ -5047,13 +5041,13 @@ abstract class AppLocalizations {
   /// Summary of timeline help topic
   ///
   /// In en, this message translates to:
-  /// **'Browse photos by date, pinch to change grid size, and view flashbacks.'**
+  /// **'Browse photos by date and pinch to change grid size.'**
   String get helpTopicTimelineSummary;
 
   /// Overview of timeline help topic
   ///
   /// In en, this message translates to:
-  /// **'The timeline organizes all your indexed photos and videos in reverse chronological order with date headers. It includes an \'On This Day\' flashback carousel showing photos from today in past years.'**
+  /// **'The timeline organizes all your indexed photos and videos in reverse chronological order with date headers. Photos from this day in past years are on the Memories tab.'**
   String get helpTopicTimelineOverview;
 
   /// Steps for timeline help topic
@@ -5065,7 +5059,7 @@ abstract class AppLocalizations {
   /// Tips for timeline help topic
   ///
   /// In en, this message translates to:
-  /// **'• Long-press any photo to enter multi-selection mode for batch actions.\n• You can toggle flashback memories on or off in Settings.'**
+  /// **'• Long-press any photo to enter multi-selection mode for batch actions.\n• Open the Memories tab to see photos from this day in past years.'**
   String get helpTopicTimelineTips;
 
   /// Privacy note for timeline help topic
@@ -5829,6 +5823,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Albums'**
   String get tabAlbums;
+
+  /// Label of the Memories tab in bottom navigation
+  ///
+  /// In en, this message translates to:
+  /// **'Memories'**
+  String get tabMemories;
+
+  /// Title of the Memories tab, which shows photos from this day in past years
+  ///
+  /// In en, this message translates to:
+  /// **'Memories'**
+  String get titleMemories;
+
+  /// Note at the top of the Memories tab when today's date has no memories and the week around it is shown instead
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing from today. Showing this week in past years.'**
+  String get bodyMemoriesWeekFallback;
+
+  /// Shown on the Memories tab when there is nothing from this day or week in past years
+  ///
+  /// In en, this message translates to:
+  /// **'No memories yet. Photos from this time in past years will show here.'**
+  String get emptyMemories;
+
+  /// Date range under a memory year header, for example 17 Nov – 23 Nov 2023
+  ///
+  /// In en, this message translates to:
+  /// **'{start} – {end}'**
+  String labelMemoryDateRange(String start, String end);
 
   /// Title of the folders tab screen
   ///

@@ -95,7 +95,6 @@ void main() {
           theme: ThemePreference.amoled,
           localeCode: 'ml',
           gridColumns: 5,
-          showFlashbacks: false,
           confirmDestructive: false,
         ),
       );
@@ -167,18 +166,15 @@ void main() {
       expect(container.read(localeProvider), const Locale('ml'));
     });
 
-    test('the two switches are exposed on their own', () async {
+    test('the confirm switch is exposed on its own', () async {
       final container = containerWith();
 
       expect(container.read(confirmDestructiveProvider), isTrue);
-      expect(container.read(showFlashbacksProvider), isTrue);
 
       final notifier = container.read(appSettingsProvider.notifier);
       await notifier.setConfirmDestructive(false);
-      await notifier.setShowFlashbacks(false);
 
       expect(container.read(confirmDestructiveProvider), isFalse);
-      expect(container.read(showFlashbacksProvider), isFalse);
     });
   });
 

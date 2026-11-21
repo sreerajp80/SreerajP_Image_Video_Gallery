@@ -104,12 +104,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get titleFlashback => 'On This Day';
 
   @override
-  String get tooltipExpandFlashback => 'Show memories';
-
-  @override
-  String get tooltipCollapseFlashback => 'Hide memories';
-
-  @override
   String get labelFlashbackOneYearAgo => '1 year ago';
 
   @override
@@ -1409,6 +1403,15 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get titleAlbumPicker => 'Add to album';
+
+  @override
+  String get labelSetAsWallpaper => 'Set as wallpaper';
+
+  @override
+  String get titleSetAsChooser => 'Set as';
+
+  @override
+  String get errorSetWallpaperFailed => 'Could not open the wallpaper screen.';
 
   @override
   String get emptyAlbumPicker => 'You have no albums yet';
@@ -2838,13 +2841,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get titleShowFlashbacks => 'Show memories';
-
-  @override
-  String get descShowFlashbacksSubtitle =>
-      'A row of photos from this day in past years, at the top of the timeline.';
-
-  @override
   String get titleConfirmDestructive => 'Ask before deleting';
 
   @override
@@ -2931,11 +2927,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get helpTopicTimelineSummary =>
-      'Browse photos by date, pinch to change grid size, and view flashbacks.';
+      'Browse photos by date and pinch to change grid size.';
 
   @override
   String get helpTopicTimelineOverview =>
-      'The timeline organizes all your indexed photos and videos in reverse chronological order with date headers. It includes an \'On This Day\' flashback carousel showing photos from today in past years.';
+      'The timeline organizes all your indexed photos and videos in reverse chronological order with date headers. Photos from this day in past years are on the Memories tab.';
 
   @override
   String get helpTopicTimelineSteps =>
@@ -2943,7 +2939,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get helpTopicTimelineTips =>
-      '• Long-press any photo to enter multi-selection mode for batch actions.\n• You can toggle flashback memories on or off in Settings.';
+      '• Long-press any photo to enter multi-selection mode for batch actions.\n• Open the Memories tab to see photos from this day in past years.';
 
   @override
   String get helpTopicTimelinePrivacy =>
@@ -3399,6 +3395,25 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tabAlbums => 'Albums';
+
+  @override
+  String get tabMemories => 'Memories';
+
+  @override
+  String get titleMemories => 'Memories';
+
+  @override
+  String get bodyMemoriesWeekFallback =>
+      'Nothing from today. Showing this week in past years.';
+
+  @override
+  String get emptyMemories =>
+      'No memories yet. Photos from this time in past years will show here.';
+
+  @override
+  String labelMemoryDateRange(String start, String end) {
+    return '$start – $end';
+  }
 
   @override
   String get titleFolders => 'Folders';

@@ -74,7 +74,6 @@ void main() {
           'theme',
           'localeCode',
           'gridColumns',
-          'showFlashbacks',
           'confirmDestructive',
           'protectAllScreens',
           'secureDelete',

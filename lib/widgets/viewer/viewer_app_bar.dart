@@ -1,5 +1,6 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
+import 'package:in_sreerajp_imgvidgal/core/domain/viewer/wallpaper_rules.dart';
 import 'package:in_sreerajp_imgvidgal/l10n/generated/app_localizations.dart';
 import 'package:in_sreerajp_imgvidgal/widgets/common/adaptive_directionality.dart';
 import 'package:in_sreerajp_imgvidgal/models/media_item.dart';
@@ -22,6 +23,10 @@ class ViewerAppBar extends StatelessWidget {
   final VoidCallback onOpenNotes;
   final VoidCallback onPrivacyScrubber;
 
+  /// Opens Android's wallpaper screen. The menu item shows only when this is
+  /// given and [canSetAsWallpaper] allows the item.
+  final VoidCallback? onSetAsWallpaper;
+
   const ViewerAppBar({
     super.key,
     required this.item,
@@ -39,6 +44,7 @@ class ViewerAppBar extends StatelessWidget {
     required this.onExtractText,
     required this.onOpenNotes,
     required this.onPrivacyScrubber,
+    this.onSetAsWallpaper,
   });
 
   @override
@@ -144,6 +150,8 @@ class ViewerAppBar extends StatelessWidget {
                             onAddToAlbum();
                           case _ViewerMenuAction.moveToVault:
                             onMoveToVault();
+                          case _ViewerMenuAction.setAsWallpaper:
+                            onSetAsWallpaper?.call();
                           case _ViewerMenuAction.privacyScrubber:
                             onPrivacyScrubber();
                           case _ViewerMenuAction.details:
@@ -197,6 +205,16 @@ class ViewerAppBar extends StatelessWidget {
                                 title: Text(l10n.titleVaultMoveToVault),
                               ),
                             ),
+                            if (onSetAsWallpaper != null &&
+                                canSetAsWallpaper(item))
+                              PopupMenuItem<_ViewerMenuAction>(
+                                value: _ViewerMenuAction.setAsWallpaper,
+                                child: ListTile(
+                                  contentPadding: EdgeInsets.zero,
+                                  leading: const Icon(Icons.wallpaper_outlined),
+                                  title: Text(l10n.labelSetAsWallpaper),
+                                ),
+                              ),
                             if (item.isImage) ...<
                               PopupMenuEntry<_ViewerMenuAction>
                             >[
@@ -326,6 +344,7 @@ enum _ViewerMenuAction {
   editTags,
   addToAlbum,
   moveToVault,
+  setAsWallpaper,
   privacyScrubber,
   details,
   trash,

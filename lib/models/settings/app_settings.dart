@@ -21,9 +21,6 @@ class AppSettings {
   /// How many columns the timeline grid starts at, always 1 to 5.
   final int gridColumns;
 
-  /// Whether the timeline shows the flashback memories row.
-  final bool showFlashbacks;
-
   /// Whether an extra confirmation is asked before anything destructive.
   ///
   /// On by default. Turning it off never removes a confirmation that guards
@@ -50,7 +47,6 @@ class AppSettings {
     this.theme = ThemePreference.system,
     this.localeCode,
     this.gridColumns = AppConstants.defaultGridColumns,
-    this.showFlashbacks = true,
     this.confirmDestructive = true,
     this.protectAllScreens = false,
     this.secureDelete = false,
@@ -64,7 +60,6 @@ class AppSettings {
     String? localeCode,
     bool clearLocaleCode = false,
     int? gridColumns,
-    bool? showFlashbacks,
     bool? confirmDestructive,
     bool? protectAllScreens,
     bool? secureDelete,
@@ -75,7 +70,6 @@ class AppSettings {
       // needs its own flag rather than a null nobody can tell apart.
       localeCode: clearLocaleCode ? null : (localeCode ?? this.localeCode),
       gridColumns: _clampColumns(gridColumns ?? this.gridColumns),
-      showFlashbacks: showFlashbacks ?? this.showFlashbacks,
       confirmDestructive: confirmDestructive ?? this.confirmDestructive,
       protectAllScreens: protectAllScreens ?? this.protectAllScreens,
       secureDelete: secureDelete ?? this.secureDelete,
@@ -87,7 +81,6 @@ class AppSettings {
       'theme': theme.name,
       'localeCode': localeCode,
       'gridColumns': gridColumns,
-      'showFlashbacks': showFlashbacks,
       'confirmDestructive': confirmDestructive,
       'protectAllScreens': protectAllScreens,
       'secureDelete': secureDelete,
@@ -107,10 +100,6 @@ class AppSettings {
       theme: _parseTheme(raw['theme']),
       localeCode: _parseLocaleCode(raw['localeCode']),
       gridColumns: _parseColumns(raw['gridColumns']),
-      showFlashbacks: _parseBool(
-        raw['showFlashbacks'],
-        defaults.showFlashbacks,
-      ),
       confirmDestructive: _parseBool(
         raw['confirmDestructive'],
         defaults.confirmDestructive,
@@ -157,7 +146,6 @@ class AppSettings {
         other.theme == theme &&
         other.localeCode == localeCode &&
         other.gridColumns == gridColumns &&
-        other.showFlashbacks == showFlashbacks &&
         other.confirmDestructive == confirmDestructive &&
         other.protectAllScreens == protectAllScreens &&
         other.secureDelete == secureDelete;
@@ -168,7 +156,6 @@ class AppSettings {
     theme,
     localeCode,
     gridColumns,
-    showFlashbacks,
     confirmDestructive,
     protectAllScreens,
     secureDelete,

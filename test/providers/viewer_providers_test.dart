@@ -12,6 +12,7 @@ import 'package:in_sreerajp_imgvidgal/repositories/media_repository.dart';
 import 'package:in_sreerajp_imgvidgal/services/device/screen_settings_service.dart';
 import 'package:in_sreerajp_imgvidgal/services/media/exif_reader_service.dart';
 import 'package:in_sreerajp_imgvidgal/services/media/media_scanner_service.dart';
+import 'package:in_sreerajp_imgvidgal/services/platform/wallpaper_service.dart';
 import 'package:in_sreerajp_imgvidgal/services/video/frame_step_service.dart';
 import 'package:in_sreerajp_imgvidgal/core/domain/video/playback_speed_service.dart';
 import 'package:in_sreerajp_imgvidgal/core/domain/video/video_gesture_service.dart';
@@ -69,6 +70,7 @@ void main() {
         container.read(viewerTransformServiceProvider),
         isA<ViewerTransformService>(),
       );
+      expect(container.read(wallpaperServiceProvider), isA<WallpaperService>());
       expect(
         container.read(playbackSpeedServiceProvider),
         isA<PlaybackSpeedService>(),

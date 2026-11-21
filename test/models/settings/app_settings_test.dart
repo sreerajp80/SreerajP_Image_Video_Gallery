@@ -13,7 +13,6 @@ void main() {
       expect(settings.theme, ThemePreference.system);
       expect(settings.localeCode, isNull);
       expect(settings.gridColumns, AppConstants.defaultGridColumns);
-      expect(settings.showFlashbacks, isTrue);
       // The confirmation before a delete is on unless someone turns it off.
       expect(settings.confirmDestructive, isTrue);
     });
@@ -25,7 +24,6 @@ void main() {
         theme: ThemePreference.dark,
         localeCode: 'ml',
         gridColumns: 4,
-        showFlashbacks: false,
         confirmDestructive: false,
       );
 
@@ -34,7 +32,6 @@ void main() {
       expect(updated.theme, ThemePreference.amoled);
       expect(updated.localeCode, 'ml');
       expect(updated.gridColumns, 4);
-      expect(updated.showFlashbacks, isFalse);
       expect(updated.confirmDestructive, isFalse);
     });
 
@@ -81,7 +78,6 @@ void main() {
         theme: ThemePreference.amoled,
         localeCode: 'ml',
         gridColumns: 5,
-        showFlashbacks: false,
         confirmDestructive: false,
       );
 
@@ -101,7 +97,22 @@ void main() {
       expect(decoded.theme, ThemePreference.dark);
       expect(decoded.gridColumns, 2);
       expect(decoded.localeCode, isNull);
-      expect(decoded.showFlashbacks, AppSettings.defaults.showFlashbacks);
+    });
+
+    test('a saved setting the app no longer has is ignored', () {
+      // Older versions saved a switch for the timeline's memories row. It was
+      // removed when memories moved to their own tab.
+      final decoded = AppSettings.fromJson(<String, Object?>{
+        'theme': 'dark',
+        'gridColumns': 4,
+        'showFlashbacks': false,
+        'confirmDestructive': false,
+      });
+
+      expect(decoded.theme, ThemePreference.dark);
+      expect(decoded.gridColumns, 4);
+      expect(decoded.confirmDestructive, isFalse);
+      expect(decoded.toJson().containsKey('showFlashbacks'), isFalse);
     });
 
     test('a wrong type falls back for that field only', () {
@@ -109,14 +120,12 @@ void main() {
         'theme': 42,
         'localeCode': <String>['ml'],
         'gridColumns': 'four',
-        'showFlashbacks': 'yes',
         'confirmDestructive': false,
       });
 
       expect(decoded.theme, AppSettings.defaults.theme);
       expect(decoded.localeCode, isNull);
       expect(decoded.gridColumns, AppSettings.defaults.gridColumns);
-      expect(decoded.showFlashbacks, AppSettings.defaults.showFlashbacks);
       // The one field that was valid still comes through.
       expect(decoded.confirmDestructive, isFalse);
     });

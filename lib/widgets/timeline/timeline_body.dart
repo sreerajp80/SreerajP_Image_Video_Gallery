@@ -3,11 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:in_sreerajp_imgvidgal/models/media_item.dart';
 import 'package:in_sreerajp_imgvidgal/models/timeline_group.dart';
 import 'package:in_sreerajp_imgvidgal/providers/selection_providers.dart';
-import 'package:in_sreerajp_imgvidgal/providers/settings_providers.dart';
-import 'package:in_sreerajp_imgvidgal/providers/timeline_providers.dart';
 import 'package:in_sreerajp_imgvidgal/core/domain/timeline/timeline_grouping_service.dart';
 import 'package:in_sreerajp_imgvidgal/widgets/media/fast_scroll_scrubber.dart';
-import 'package:in_sreerajp_imgvidgal/widgets/media/flashback_carousel.dart';
 import 'package:in_sreerajp_imgvidgal/widgets/media/media_grid_tile.dart';
 import 'package:in_sreerajp_imgvidgal/widgets/media/timeline_date_header.dart';
 
@@ -17,7 +14,7 @@ const double kTileSpacing = 2;
 /// Fixed height of a date header row.
 const double kTimelineHeaderHeight = 48;
 
-/// The scrolling part of the timeline: flashbacks, headers, tile rows, scrubber.
+/// The scrolling part of the timeline: headers, tile rows, scrubber.
 class TimelineBody extends ConsumerWidget {
   final TimelineData data;
   final ScrollController scrollController;
@@ -28,12 +25,6 @@ class TimelineBody extends ConsumerWidget {
   final GestureScaleUpdateCallback onScaleUpdate;
   final GestureScaleEndCallback onScaleEnd;
   final ValueChanged<TimelineMetrics> onMetrics;
-
-  /// Key used to measure the flashback carousel's height.
-  final GlobalKey flashbackKey;
-
-  /// Height of the slivers drawn above the first timeline row.
-  final double Function() leadingExtent;
 
   const TimelineBody({
     super.key,
@@ -46,20 +37,10 @@ class TimelineBody extends ConsumerWidget {
     required this.onScaleUpdate,
     required this.onScaleEnd,
     required this.onMetrics,
-    required this.flashbackKey,
-    required this.leadingExtent,
   });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Off in settings means the row is not built at all, rather than built
-    // and hidden: nothing should be read off disk for a row nobody wants.
-    final showFlashbacks = ref.watch(showFlashbacksProvider);
-    final flashbacks = showFlashbacks
-        ? ref.watch(flashbackMemoriesProvider).value
-        : null;
-    final flashbackExpanded = ref.watch(flashbackExpandedProvider);
-
     return LayoutBuilder(
       builder: (context, constraints) {
         final tileSize =
@@ -88,20 +69,6 @@ class TimelineBody extends ConsumerWidget {
                   // drag, or RefreshIndicator never sees an overscroll.
                   physics: const AlwaysScrollableScrollPhysics(),
                   slivers: [
-                    if (flashbacks != null && flashbacks.isNotEmpty)
-                      SliverToBoxAdapter(
-                        child: FlashbackCarousel(
-                          key: flashbackKey,
-                          memories: flashbacks,
-                          onItemTap: onItemTap,
-                          expanded: flashbackExpanded,
-                          onToggle: () =>
-                              ref
-                                      .read(flashbackExpandedProvider.notifier)
-                                      .state =
-                                  !flashbackExpanded,
-                        ),
-                      ),
                     SliverList.builder(
                       itemCount: data.rows.length,
                       itemBuilder: (context, index) {
@@ -134,11 +101,7 @@ class TimelineBody extends ConsumerWidget {
                 controller: scrollController,
                 labelForOffset: (offset) {
                   if (metrics.isEmpty) return null;
-                  // The flashback carousel sits above the rows, so subtract it
-                  // before mapping an offset onto a row.
-                  final rowIndex = metrics.rowIndexAtOffset(
-                    offset - leadingExtent(),
-                  );
+                  final rowIndex = metrics.rowIndexAtOffset(offset);
                   if (rowIndex >= data.rows.length) return null;
                   final row = data.rows[rowIndex];
                   return formatTimelineDate(context, row.headerKind, row.date);

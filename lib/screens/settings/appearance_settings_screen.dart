@@ -6,7 +6,7 @@ import 'package:in_sreerajp_imgvidgal/models/settings/app_settings.dart';
 import 'package:in_sreerajp_imgvidgal/providers/settings_providers.dart';
 import 'package:in_sreerajp_imgvidgal/theme/app_theme.dart';
 
-/// Screen for configuring theme, grid density, and flashback memories.
+/// Screen for configuring theme and grid density.
 class AppearanceSettingsScreen extends ConsumerWidget {
   const AppearanceSettingsScreen({super.key});
 
@@ -30,19 +30,6 @@ class AppearanceSettingsScreen extends ConsumerWidget {
                   _ThemeSection(settings: settings),
                   const Divider(height: 1, indent: 16, endIndent: 16),
                   _GridDensitySection(settings: settings),
-                  const Divider(height: 1, indent: 16, endIndent: 16),
-                  SwitchListTile(
-                    secondary: const Icon(Icons.auto_awesome_outlined),
-                    title: Text(
-                      l10n.titleShowFlashbacks,
-                      style: const TextStyle(fontWeight: FontWeight.w600),
-                    ),
-                    subtitle: Text(l10n.descShowFlashbacksSubtitle),
-                    value: settings.showFlashbacks,
-                    onChanged: (value) => ref
-                        .read(appSettingsProvider.notifier)
-                        .setShowFlashbacks(value),
-                  ),
                 ],
               ),
             ),

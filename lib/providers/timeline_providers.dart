@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:in_sreerajp_imgvidgal/models/filter_options.dart';
-import 'package:in_sreerajp_imgvidgal/models/flashback_memory.dart';
 import 'package:in_sreerajp_imgvidgal/models/media_item.dart';
+import 'package:in_sreerajp_imgvidgal/models/memories_page.dart';
 import 'package:in_sreerajp_imgvidgal/models/timeline_group.dart';
 import 'package:in_sreerajp_imgvidgal/providers/media_providers.dart';
 import 'package:in_sreerajp_imgvidgal/providers/settings_providers.dart';
@@ -141,19 +141,14 @@ final timelineDataProvider = FutureProvider<TimelineData>((ref) async {
       );
 });
 
-/// "On This Day" memories for today, or an empty list when there are none.
-final flashbackMemoriesProvider = FutureProvider<List<FlashbackMemory>>((
-  ref,
-) async {
+/// What the Memories tab shows: today's date in earlier years, or the week
+/// around it when today has nothing.
+///
+/// Built from the same list the viewer pages through, so a tapped memory is
+/// always found when the viewer opens.
+final memoriesPageProvider = FutureProvider<MemoriesPage>((ref) async {
   final items = await ref.watch(timelineItemsProvider.future);
   return ref
       .watch(flashbackServiceProvider)
-      .build(items, now: ref.watch(timelineNowProvider)());
+      .buildPage(items, now: ref.watch(timelineNowProvider)());
 });
-
-/// Whether the "On This Day" section is open.
-///
-/// Starts closed on every app start and is never saved to disk: the owner
-/// wants the section collapsed by default, so the timeline itself is what the
-/// user sees first.
-final flashbackExpandedProvider = StateProvider<bool>((ref) => false);

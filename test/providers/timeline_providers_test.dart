@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:in_sreerajp_imgvidgal/models/media_item.dart';
+import 'package:in_sreerajp_imgvidgal/models/memories_page.dart';
 import 'package:in_sreerajp_imgvidgal/models/timeline_group.dart';
 import 'package:in_sreerajp_imgvidgal/providers/timeline_providers.dart';
 import 'package:in_sreerajp_imgvidgal/core/domain/timeline/timeline_grouping_service.dart';
@@ -23,7 +24,7 @@ MediaItem itemAt(String id, DateTime taken) {
 final fixedNow = DateTime(2026, 8, 29, 14, 30);
 
 /// Builds a container whose timeline items and current date are both fixed, so
-/// the grouping and flashback providers can be tested without a database, a
+/// the grouping and memories providers can be tested without a database, a
 /// device, or the wall clock.
 ProviderContainer containerWith(List<MediaItem> items) {
   final container = ProviderContainer(
@@ -130,11 +131,13 @@ void main() {
     });
   });
 
-  group('flashbackMemoriesProvider', () {
-    test('is empty when nothing matches today', () async {
+  group('memoriesPageProvider', () {
+    test('is empty when nothing matches today or this week', () async {
       final container = containerWith([itemAt('a', DateTime(2026, 8, 29, 9))]);
 
-      expect(await container.read(flashbackMemoriesProvider.future), isEmpty);
+      final page = await container.read(memoriesPageProvider.future);
+
+      expect(page.isEmpty, isTrue);
     });
 
     test('picks up media from the same day in an earlier year', () async {
@@ -142,11 +145,22 @@ void main() {
         itemAt('memory', DateTime(2025, 8, 29, 9)),
       ]);
 
-      final memories = await container.read(flashbackMemoriesProvider.future);
+      final page = await container.read(memoriesPageProvider.future);
 
-      expect(memories, hasLength(1));
-      expect(memories.single.yearsAgo, 1);
-      expect(memories.single.items.single.id, 'memory');
+      expect(page.range, MemoriesRange.sameDay);
+      expect(page.memories.single.yearsAgo, 1);
+      expect(page.memories.single.items.single.id, 'memory');
+    });
+
+    test('falls back to the week around today', () async {
+      final container = containerWith([
+        itemAt('near', DateTime(2025, 8, 31, 9)),
+      ]);
+
+      final page = await container.read(memoriesPageProvider.future);
+
+      expect(page.range, MemoriesRange.sameWeek);
+      expect(page.memories.single.items.single.id, 'near');
     });
   });
 

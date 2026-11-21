@@ -1,6 +1,7 @@
 package `in`.sreerajp.imgvidgal.tools
 
 import android.app.Activity
+import android.app.WallpaperManager
 import android.content.ActivityNotFoundException
 import android.content.ClipData
 import android.content.ClipDescription
@@ -12,6 +13,7 @@ import android.net.Uri
 import android.net.wifi.WifiManager
 import android.net.wifi.WifiNetworkSuggestion
 import android.os.Build
+import android.provider.MediaStore
 import android.provider.OpenableColumns
 import android.provider.Settings
 import android.webkit.MimeTypeMap
@@ -62,6 +64,7 @@ class IntentChannelHandler(
             "copyToClipboard" -> copyToClipboard(call, result)
             "getInitialMediaIntent" -> getInitialMediaIntent(result)
             "shareFile" -> shareFile(call, result)
+            "setAsWallpaper" -> setAsWallpaper(call, result)
             else -> result.notImplemented()
         }
     }
@@ -311,6 +314,68 @@ class IntentChannelHandler(
             result.success(true)
         } catch (e: Exception) {
             result.error("share_failed", e.message ?: "Failed to share file", null)
+        }
+    }
+
+    /**
+     * Opens Android's own wallpaper screen for one photo.
+     *
+     * The app never sets the wallpaper itself, so it needs no SET_WALLPAPER
+     * permission: the system screen (or the app the user picks) does that.
+     * The only thing handed out is a read grant for this one URI.
+     *
+     * Only a MediaStore address (`content://media/...`) is accepted. Dart
+     * checks this too (`canSetAsWallpaper`); this second check means a bug
+     * there can never hand out the app's own private files.
+     */
+    private fun setAsWallpaper(call: MethodCall, result: MethodChannel.Result) {
+        val uriString = call.argument<String>("uri")
+        val uri = uriString?.let { Uri.parse(it) }
+        if (uri == null ||
+            uri.scheme != ContentResolver.SCHEME_CONTENT ||
+            uri.authority != MediaStore.AUTHORITY
+        ) {
+            result.error("bad_uri", "Only a MediaStore photo can be set as wallpaper", null)
+            return
+        }
+
+        val mimeType = call.argument<String>("mimeType")
+            ?.takeIf { it.startsWith("image/") } ?: "image/*"
+        val chooserTitle = call.argument<String>("chooserTitle") ?: ""
+
+        // First choice: the system crop-and-set screen. Some phone makers do
+        // not support it and throw, so the "Set as" list is the fallback.
+        val wallpaperIntent = try {
+            WallpaperManager.getInstance(activity)
+                .getCropAndSetWallpaperIntent(uri)
+                .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        } catch (e: Exception) {
+            null
+        }
+        if (wallpaperIntent != null) {
+            try {
+                activity.startActivity(wallpaperIntent)
+                result.success(true)
+                return
+            } catch (e: ActivityNotFoundException) {
+                // Fall through to the "Set as" list.
+            } catch (e: SecurityException) {
+                // Fall through to the "Set as" list.
+            }
+        }
+
+        val attachIntent = Intent(Intent.ACTION_ATTACH_DATA).apply {
+            setDataAndType(uri, mimeType)
+            putExtra("mimeType", mimeType)
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        }
+        try {
+            activity.startActivity(Intent.createChooser(attachIntent, chooserTitle))
+            result.success(true)
+        } catch (e: ActivityNotFoundException) {
+            result.error("no_app", "No app can set a wallpaper", null)
+        } catch (e: SecurityException) {
+            result.error("no_app", "No app can set a wallpaper", null)
         }
     }
 

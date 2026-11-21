@@ -149,6 +149,8 @@ void main() {
         year: 2025,
         yearsAgo: 1,
         date: DateTime(2025, 8, 29),
+        rangeStart: DateTime(2025, 8, 29),
+        rangeEnd: DateTime(2025, 8, 29),
         items: [itemA],
       );
 
@@ -156,6 +158,8 @@ void main() {
       expect(memory.copyWith().hashCode, memory.hashCode);
       expect(memory.copyWith(yearsAgo: 2), isNot(memory));
       expect(memory.copyWith(year: 2024).year, 2024);
+      expect(memory.isRange, isFalse);
+      expect(memory.copyWith(rangeEnd: DateTime(2025, 9)).isRange, isTrue);
     });
   });
 }

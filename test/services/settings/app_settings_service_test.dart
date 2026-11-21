@@ -51,7 +51,6 @@ void main() {
         theme: ThemePreference.amoled,
         localeCode: 'ml',
         gridColumns: 5,
-        showFlashbacks: false,
         confirmDestructive: false,
       );
 

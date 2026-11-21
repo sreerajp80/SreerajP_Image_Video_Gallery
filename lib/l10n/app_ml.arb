@@ -29,8 +29,6 @@
   "bodyNoMediaInTimeline": "നിങ്ങളുടെ ഗാലറി ശൂന്യമാണ്",
   "bodyPullToScan": "പുതിയ ഫോട്ടോകളും വീഡിയോകളും തിരയാൻ താഴേക്ക് വലിക്കുക.",
   "titleFlashback": "ഈ ദിവസം",
-  "tooltipExpandFlashback": "ഓർമ്മകൾ കാണിക്കുക",
-  "tooltipCollapseFlashback": "ഓർമ്മകൾ മറയ്ക്കുക",
   "labelFlashbackOneYearAgo": "1 വർഷം മുമ്പ്",
   "bodyFlashbackYearsAgo": "{years} വർഷം മുമ്പ്",
   "bodyGridColumns": "ഒരു വരിയിൽ {count}",
@@ -1644,6 +1642,9 @@
     "description": "Clears the chosen cover"
   },
   "titleAlbumPicker": "ആൽബത്തിൽ ചേർക്കുക",
+  "labelSetAsWallpaper": "വാൾപേപ്പറാക്കുക",
+  "titleSetAsChooser": "ഇങ്ങനെ ഉപയോഗിക്കുക",
+  "errorSetWallpaperFailed": "വാൾപേപ്പർ സ്ക്രീൻ തുറക്കാനായില്ല.",
   "@titleAlbumPicker": {
     "description": "Title of the add-to-album sheet"
   },
@@ -3225,14 +3226,6 @@
       }
     }
   },
-  "titleShowFlashbacks": "ഓർമ്മകൾ കാണിക്കുക",
-  "@titleShowFlashbacks": {
-    "description": "Label of the switch that shows the flashback memories row"
-  },
-  "descShowFlashbacksSubtitle": "കഴിഞ്ഞ വർഷങ്ങളിൽ ഇന്നത്തെ ദിവസം എടുത്ത ചിത്രങ്ങൾ, ടൈംലൈനിന്റെ മുകളിൽ.",
-  "@descShowFlashbacksSubtitle": {
-    "description": "Note under the show memories switch"
-  },
   "titleConfirmDestructive": "മായ്ക്കുന്നതിനു മുമ്പ് ചോദിക്കുക",
   "@titleConfirmDestructive": {
     "description": "Label of the switch that asks again before a destructive action"
@@ -3342,11 +3335,11 @@
   "@helpTopicTimelineTitle": {
     "description": "Title of the timeline help topic"
   },
-  "helpTopicTimelineSummary": "തീയതി അടിസ്ഥാനത്തിൽ ചിത്രങ്ങൾ കാണുക, ഗ്രിഡ് വലിപ്പം മാറ്റുക, പഴയ ഓർമ്മകൾ ആസ്വദിക്കുക.",
+  "helpTopicTimelineSummary": "തീയതി അടിസ്ഥാനത്തിൽ ചിത്രങ്ങൾ കാണുക, ഗ്രിഡ് വലിപ്പം മാറ്റുക.",
   "@helpTopicTimelineSummary": {
     "description": "Summary of timeline help topic"
   },
-  "helpTopicTimelineOverview": "നിങ്ങളുടെ എല്ലാ ചിത്രങ്ങളും വീഡിയോകളും തീയതി തലക്കെട്ടുകളോടെ കാലഗണനാക്രമത്തിൽ ടൈംലൈൻ കാണിക്കുന്നു. കഴിഞ്ഞ വർഷങ്ങളിലെ ഇന്നത്തെ ദിവസത്തെ ചിത്രങ്ങൾ കാണിക്കുന്ന 'ഈ ദിവസം' ഓർമ്മപ്പട്ടികയും ഇതിലുണ്ട്.",
+  "helpTopicTimelineOverview": "നിങ്ങളുടെ എല്ലാ ചിത്രങ്ങളും വീഡിയോകളും തീയതി തലക്കെട്ടുകളോടെ കാലഗണനാക്രമത്തിൽ ടൈംലൈൻ കാണിക്കുന്നു. കഴിഞ്ഞ വർഷങ്ങളിലെ ഇന്നത്തെ ദിവസത്തെ ചിത്രങ്ങൾ 'ഓർമ്മകൾ' വിഭാഗത്തിൽ കാണാം.",
   "@helpTopicTimelineOverview": {
     "description": "Overview of timeline help topic"
   },
@@ -3354,7 +3347,7 @@
   "@helpTopicTimelineSteps": {
     "description": "Steps for timeline help topic"
   },
-  "helpTopicTimelineTips": "• ഒന്നിലധികം ചിത്രങ്ങൾ ഒരുമിച്ച് തിരഞ്ഞെടുക്കാൻ ഏതെങ്കിലും ഫോട്ടോയിൽ അമർത്തിപ്പിടിക്കുക.\n• ഓർമ്മപ്പട്ടിക വേണമെങ്കിൽ ക്രമീകരണങ്ങളിൽ ഓഫ് ചെയ്യാം.",
+  "helpTopicTimelineTips": "• ഒന്നിലധികം ചിത്രങ്ങൾ ഒരുമിച്ച് തിരഞ്ഞെടുക്കാൻ ഏതെങ്കിലും ഫോട്ടോയിൽ അമർത്തിപ്പിടിക്കുക.\n• കഴിഞ്ഞ വർഷങ്ങളിലെ ഈ ദിവസത്തെ ചിത്രങ്ങൾ കാണാൻ 'ഓർമ്മകൾ' വിഭാഗം തുറക്കുക.",
   "@helpTopicTimelineTips": {
     "description": "Tips for timeline help topic"
   },
@@ -3870,6 +3863,11 @@
   "tabTimeline": "ടൈംലൈൻ",
   "tabFolders": "ഫോൾഡറുകൾ",
   "tabAlbums": "ആൽബങ്ങൾ",
+  "tabMemories": "ഓർമ്മകൾ",
+  "titleMemories": "ഓർമ്മകൾ",
+  "bodyMemoriesWeekFallback": "ഇന്നത്തെ തീയതിയിൽ ഒന്നുമില്ല. കഴിഞ്ഞ വർഷങ്ങളിലെ ഈ ആഴ്ച കാണിക്കുന്നു.",
+  "emptyMemories": "ഇതുവരെ ഓർമ്മകളില്ല. കഴിഞ്ഞ വർഷങ്ങളിലെ ഈ സമയത്തെ ഫോട്ടോകൾ ഇവിടെ കാണാം.",
+  "labelMemoryDateRange": "{start} – {end}",
   "titleFolders": "ഫോൾഡറുകൾ",
   "emptyFolders": "ഫോൾഡറുകളൊന്നും കണ്ടെത്തിയില്ല",
   "bodyFoldersEmpty": "ഉപകരണത്തിലെ ചിത്രങ്ങളും വീഡിയോകളും തിരയാൻ താഴേക്ക് വലിക്കുക.",

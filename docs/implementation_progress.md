@@ -333,3 +333,13 @@ Plan: [20261102_201827_finish-all-pending-guideline-work.md](../plans/20261102_2
 - [x] Four long Malayalam labels shortened by the owner (G50).
 - [ ] Owner's phone checks listed in [known_gaps.md](known_gaps.md) §2.
 
+## Update — 2026-11-20: Memories tab
+
+Plan: [20261120_114942_memories-tab.md](../plans/20261120_114942_memories-tab.md).
+
+- [x] "On This Day" moved from a collapsed row on the Timeline to its own **Memories** tab
+      (second in the bottom bar), with every item from every earlier year.
+- [x] Falls back to ±3 days around today in earlier years when today has nothing.
+- [x] Removed the Timeline row (`FlashbackCarousel`) and the "Show memories" setting
+      (`showFlashbacksProvider`).
+- [ ] Owner's review of the new Sanskrit and Malayalam text, and a check on a real phone.

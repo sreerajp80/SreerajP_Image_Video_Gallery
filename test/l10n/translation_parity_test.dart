@@ -45,6 +45,7 @@ void main() {
     'bodyA11yPercentValue',
     // Placeholders only.
     'labelCompareBadge',
+    'labelMemoryDateRange',
     // Language picker endonyms (§8.4).
     'titleLanguageEnglish',
     'titleLanguageMalayalam',

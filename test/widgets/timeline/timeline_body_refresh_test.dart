@@ -4,7 +4,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:in_sreerajp_imgvidgal/core/l10n/sanskrit_fallback_delegates.dart';
 import 'package:in_sreerajp_imgvidgal/l10n/generated/app_localizations.dart';
 import 'package:in_sreerajp_imgvidgal/models/timeline_group.dart';
-import 'package:in_sreerajp_imgvidgal/providers/settings_providers.dart';
 import 'package:in_sreerajp_imgvidgal/widgets/timeline/timeline_body.dart';
 
 /// A timeline with one day header and nothing else: far shorter than the
@@ -41,7 +40,6 @@ void main() {
 
     await tester.pumpWidget(
       ProviderScope(
-        overrides: [showFlashbacksProvider.overrideWithValue(false)],
         child: MaterialApp(
           locale: const Locale('en'),
           localizationsDelegates: appLocalizationsDelegates,
@@ -57,8 +55,6 @@ void main() {
               onScaleUpdate: (_) {},
               onScaleEnd: (_) {},
               onMetrics: (_) {},
-              flashbackKey: GlobalKey(),
-              leadingExtent: () => 0,
             ),
           ),
         ),

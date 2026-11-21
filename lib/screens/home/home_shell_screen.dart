@@ -5,16 +5,18 @@ import 'package:in_sreerajp_imgvidgal/providers/media_providers.dart';
 import 'package:in_sreerajp_imgvidgal/providers/selection_providers.dart';
 import 'package:in_sreerajp_imgvidgal/screens/home/albums_tab.dart';
 import 'package:in_sreerajp_imgvidgal/screens/home/folders_tab.dart';
+import 'package:in_sreerajp_imgvidgal/screens/memories/memories_screen.dart';
 import 'package:in_sreerajp_imgvidgal/screens/timeline/timeline_screen.dart';
 import 'package:in_sreerajp_imgvidgal/models/media/media_permission_status.dart';
 import 'package:in_sreerajp_imgvidgal/widgets/home/manage_media_prompt_dialog.dart';
 
-/// The top-level home screen with three tabs: Timeline, Folders, Albums.
+/// The top-level home screen with four tabs: Timeline, Memories, Folders,
+/// Albums.
 ///
 /// Uses a [NavigationBar] (Material 3) at the bottom and an [IndexedStack]
 /// to keep each tab's scroll position and state alive when switching.
 ///
-/// Permission handling lives here because it applies to all three tabs:
+/// Permission handling lives here because it applies to all the tabs:
 /// none of them can show media without it.
 class HomeShellScreen extends ConsumerStatefulWidget {
   const HomeShellScreen({super.key});
@@ -103,6 +105,7 @@ class _HomeShellScreenState extends ConsumerState<HomeShellScreen> {
             index: _tabIndex,
             children: const <Widget>[
               TimelineScreen(),
+              MemoriesScreen(),
               FoldersTab(),
               AlbumsTab(),
             ],
@@ -129,6 +132,11 @@ class _HomeShellScreenState extends ConsumerState<HomeShellScreen> {
                   icon: const Icon(Icons.photo_library_outlined),
                   selectedIcon: const Icon(Icons.photo_library),
                   label: l10n.tabTimeline,
+                ),
+                NavigationDestination(
+                  icon: const Icon(Icons.auto_awesome_outlined),
+                  selectedIcon: const Icon(Icons.auto_awesome),
+                  label: l10n.tabMemories,
                 ),
                 NavigationDestination(
                   icon: const Icon(Icons.folder_outlined),

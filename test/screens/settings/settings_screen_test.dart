@@ -146,7 +146,6 @@ void main() {
           theme: ThemePreference.amoled,
           localeCode: 'ml',
           gridColumns: 5,
-          showFlashbacks: false,
         ),
       );
 
@@ -162,9 +161,7 @@ void main() {
   });
 
   group('AppearanceSettingsScreen', () {
-    testWidgets('shows theme options, grid density, and flashbacks', (
-      tester,
-    ) async {
+    testWidgets('shows theme options and grid density', (tester) async {
       await pumpTestWidget(
         tester,
         child: const AppearanceSettingsScreen(),
@@ -174,7 +171,6 @@ void main() {
       expect(find.text('Theme'), findsOneWidget);
       expect(find.text('Grid density'), findsOneWidget);
       expect(find.text('4 per row'), findsWidgets);
-      expect(find.text('Show memories'), findsOneWidget);
     });
 
     testWidgets('picking a theme stores it', (tester) async {
@@ -190,16 +186,11 @@ void main() {
       expect(service.saved.last.theme, ThemePreference.dark);
     });
 
-    testWidgets('turning memories off stores it', (tester) async {
-      final container = await pumpTestWidget(
-        tester,
-        child: const AppearanceSettingsScreen(),
-      );
+    testWidgets('no longer offers the memories switch', (tester) async {
+      await pumpTestWidget(tester, child: const AppearanceSettingsScreen());
 
-      await tester.tap(find.text('Show memories'));
-      await tester.pumpAndSettle();
-
-      expect(container.read(appSettingsProvider).showFlashbacks, isFalse);
+      // Memories moved to their own tab, so the switch is gone.
+      expect(find.text('Show memories'), findsNothing);
     });
   });
 

@@ -105,12 +105,6 @@ class AppLocalizationsSa extends AppLocalizations {
   String get titleFlashback => 'अस्मिन् दिने';
 
   @override
-  String get tooltipExpandFlashback => 'स्मृतीः दर्शय';
-
-  @override
-  String get tooltipCollapseFlashback => 'स्मृतीः गोपय';
-
-  @override
   String get labelFlashbackOneYearAgo => 'एकवर्षात् पूर्वम्';
 
   @override
@@ -1413,6 +1407,15 @@ class AppLocalizationsSa extends AppLocalizations {
 
   @override
   String get titleAlbumPicker => 'सङ्कलने योज्यताम्';
+
+  @override
+  String get labelSetAsWallpaper => 'पृष्ठचित्रं क्रियताम्';
+
+  @override
+  String get titleSetAsChooser => 'एवं प्रयुज्यताम्';
+
+  @override
+  String get errorSetWallpaperFailed => 'पृष्ठचित्रपटलम् उद्घाटयितुं न शक्यते।';
 
   @override
   String get emptyAlbumPicker => 'भवतः अद्यापि सङ्कलनानि न सन्ति';
@@ -2844,13 +2847,6 @@ class AppLocalizationsSa extends AppLocalizations {
   }
 
   @override
-  String get titleShowFlashbacks => 'स्मृतयः दर्श्यन्ताम्';
-
-  @override
-  String get descShowFlashbacksSubtitle =>
-      'गतवर्षेषु अस्य दिनस्य चित्राणां पङ्क्तिः, कालक्रमस्य शीर्षे।';
-
-  @override
   String get titleConfirmDestructive => 'लोपात्पूर्वं प्रश्नः';
 
   @override
@@ -2939,11 +2935,11 @@ class AppLocalizationsSa extends AppLocalizations {
 
   @override
   String get helpTopicTimelineSummary =>
-      'दिनाङ्कानुसारं चित्राणि अवलोक्यन्ताम्, जालपरिमाणं परिवर्तयितुम् अङ्गुलिभ्यां सङ्कोच्यताम्, स्मृतयः दृश्यन्ताम्।';
+      'दिनाङ्कानुसारं चित्राणि अवलोक्यन्ताम्, जालपरिमाणं परिवर्तयितुम् अङ्गुलिभ्यां सङ्कोच्यताम्।';
 
   @override
   String get helpTopicTimelineOverview =>
-      'कालक्रमः भवतः सर्वाणि सूचीकृतानि चित्राणि दृश्यानि च दिनाङ्कशीर्षकैः सह विपरीतकालक्रमेण व्यवस्थापयति। तस्मिन् \'अस्मिन् दिने\' इति स्मृतिपङ्क्तिः अपि अस्ति, या गतवर्षेषु अद्यतनदिनस्य चित्राणि दर्शयति।';
+      'कालक्रमः भवतः सर्वाणि सूचीकृतानि चित्राणि दृश्यानि च दिनाङ्कशीर्षकैः सह विपरीतकालक्रमेण व्यवस्थापयति। गतवर्षेषु अद्यतनदिनस्य चित्राणि \'स्मृतयः\' इति विभागे दृश्यन्ते।';
 
   @override
   String get helpTopicTimelineSteps =>
@@ -2951,7 +2947,7 @@ class AppLocalizationsSa extends AppLocalizations {
 
   @override
   String get helpTopicTimelineTips =>
-      '• समूहक्रियाणां कृते बहुचयनं प्रवेष्टुं किमपि चित्रं दीर्घं निपीड्यताम्।\n• विन्यासे स्मृतयः सक्रियाः निष्क्रियाः वा कर्तुं शक्यन्ते।';
+      '• समूहक्रियाणां कृते बहुचयनं प्रवेष्टुं किमपि चित्रं दीर्घं निपीड्यताम्।\n• गतवर्षेषु अस्य दिनस्य चित्राणि द्रष्टुं \'स्मृतयः\' इति विभागः उद्घाट्यताम्।';
 
   @override
   String get helpTopicTimelinePrivacy =>
@@ -3409,6 +3405,25 @@ class AppLocalizationsSa extends AppLocalizations {
 
   @override
   String get tabAlbums => 'सङ्कलनानि';
+
+  @override
+  String get tabMemories => 'स्मृतयः';
+
+  @override
+  String get titleMemories => 'स्मृतयः';
+
+  @override
+  String get bodyMemoriesWeekFallback =>
+      'अद्य किमपि नास्ति। गतवर्षेषु अस्य सप्ताहस्य चित्राणि दर्श्यन्ते।';
+
+  @override
+  String get emptyMemories =>
+      'अधुना स्मृतयः न सन्ति। गतवर्षेषु अस्मिन् काले गृहीतानि चित्राणि अत्र दृश्यन्ते।';
+
+  @override
+  String labelMemoryDateRange(String start, String end) {
+    return '$start – $end';
+  }
 
   @override
   String get titleFolders => 'संपुटानि';

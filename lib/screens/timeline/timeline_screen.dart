@@ -17,7 +17,7 @@ import 'package:in_sreerajp_imgvidgal/widgets/timeline/timeline_messages.dart';
 
 /// The main gallery screen: media grouped by day, newest first.
 ///
-/// It reads only providers. Grouping, flashback selection, and scroll-offset
+/// It reads only providers. Grouping and scroll-offset
 /// maths all live in the service layer, so this widget stays presentation only.
 ///
 /// This screen lives inside [HomeShellScreen] as the first tab. Permission
@@ -33,9 +33,6 @@ class TimelineScreen extends ConsumerStatefulWidget {
 class _TimelineScreenState extends ConsumerState<TimelineScreen> {
   final ScrollController _scrollController = ScrollController();
   late final AppLifecycleListener _lifecycleListener;
-
-  /// Identifies the flashback carousel so its real height can be measured.
-  final GlobalKey _flashbackKey = GlobalKey();
 
   /// Cumulative row offsets for the currently drawn timeline.
   TimelineMetrics? _metrics;
@@ -82,17 +79,6 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen> {
     super.dispose();
   }
 
-  /// Height of everything drawn above the first timeline row.
-  ///
-  /// The flashback carousel is a separate sliver, so every scroll offset is
-  /// shifted by its height. Both the scrubber and the pinch anchor subtract
-  /// this before mapping an offset onto a row. It measures 0 when no carousel
-  /// is on screen.
-  double get _leadingExtent {
-    final box = _flashbackKey.currentContext?.findRenderObject() as RenderBox?;
-    return box?.size.height ?? 0;
-  }
-
   Future<void> _refresh() async {
     await ref
         .read(mediaScanControllerProvider.notifier)
@@ -105,9 +91,7 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen> {
 
     final metrics = _metrics;
     if (metrics != null && _scrollController.hasClients) {
-      final rowIndex = metrics.rowIndexAtOffset(
-        _scrollController.offset - _leadingExtent,
-      );
+      final rowIndex = metrics.rowIndexAtOffset(_scrollController.offset);
       final data = ref.read(timelineDataProvider).value;
       if (data != null && rowIndex < data.rows.length) {
         _anchorGroupIndex = data.rows[rowIndex].groupIndex;
@@ -142,7 +126,7 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen> {
       final data = ref.read(timelineDataProvider).value;
       if (metrics == null || data == null) return;
 
-      final target = _leadingExtent + metrics.offsetForGroup(data, groupIndex);
+      final target = metrics.offsetForGroup(data, groupIndex);
       final max = _scrollController.position.maxScrollExtent;
       _scrollController.jumpTo(target > max ? max : target);
     });
@@ -303,8 +287,6 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen> {
                         onScaleUpdate: _onScaleUpdate,
                         onScaleEnd: _onScaleEnd,
                         onMetrics: (metrics) => _metrics = metrics,
-                        flashbackKey: _flashbackKey,
-                        leadingExtent: () => _leadingExtent,
                       );
                     },
                   ),

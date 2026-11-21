@@ -312,7 +312,8 @@ How to add a migration is described in [../README.md](../README.md) §6.
 | `Tag` | A user tag | No | |
 | `VaultItem` | One encrypted file | No | |
 | `ExifData` | Camera metadata | No | |
-| `TimelineGroup` / `FlashbackMemory` | Timeline sections and "on this day" | No | |
+| `TimelineGroup` | Timeline sections | No | |
+| `FlashbackMemory` / `MemoriesPage` | The Memories tab: one earlier year's "on this day" media, and the page with its date window (same day, or the week around it) | No | Built by `FlashbackService`, never stored |
 | Feature models in `lib/models/<feature>/` | Backup, batch, convert, duplicates, editor, help, notes, OCR, PDF, privacy, scan, search, settings, sync, vault, video | No | All `const` + `copyWith` |
 
 ### Serialization Strategy

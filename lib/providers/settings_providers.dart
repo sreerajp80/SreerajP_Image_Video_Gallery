@@ -50,9 +50,6 @@ class AppSettingsNotifier extends StateNotifier<AppSettings> {
   Future<void> setGridColumns(int columns) =>
       _update(state.copyWith(gridColumns: columns));
 
-  Future<void> setShowFlashbacks(bool value) =>
-      _update(state.copyWith(showFlashbacks: value));
-
   Future<void> setConfirmDestructive(bool value) =>
       _update(state.copyWith(confirmDestructive: value));
 
@@ -109,11 +106,6 @@ final localeProvider = Provider<Locale?>((ref) {
 /// Whether the app asks again before anything it cannot undo.
 final confirmDestructiveProvider = Provider<bool>((ref) {
   return ref.watch(appSettingsProvider.select((s) => s.confirmDestructive));
-});
-
-/// Whether the timeline shows its flashback memories row.
-final showFlashbacksProvider = Provider<bool>((ref) {
-  return ref.watch(appSettingsProvider.select((s) => s.showFlashbacks));
 });
 
 /// The About screen's metadata, read from `assets/config/app_config.json`.
