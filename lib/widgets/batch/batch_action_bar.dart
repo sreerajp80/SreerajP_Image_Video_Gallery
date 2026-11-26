@@ -16,6 +16,7 @@ import 'package:in_sreerajp_imgvidgal/providers/selection_providers.dart';
 import 'package:in_sreerajp_imgvidgal/providers/settings_providers.dart';
 import 'package:in_sreerajp_imgvidgal/providers/sync_providers.dart';
 import 'package:in_sreerajp_imgvidgal/providers/tag_providers.dart';
+import 'package:in_sreerajp_imgvidgal/providers/vault_providers.dart';
 import 'package:in_sreerajp_imgvidgal/providers/trash_providers.dart';
 import 'package:in_sreerajp_imgvidgal/widgets/common/delete_choice_sheet.dart';
 import 'package:in_sreerajp_imgvidgal/core/domain/batch/batch_action_rules.dart';
@@ -178,6 +179,17 @@ class BatchActionBar extends ConsumerWidget {
           TransferPurpose.quickSend;
       if (context.mounted) context.push(kRouteSyncStartSend);
       return;
+    }
+
+    // The vault must exist and be open before anything goes into it, as the
+    // viewer already insists. Without this, photos were "moved" into a vault
+    // whose lock — and its "no way to recover a forgotten PIN" warning — the
+    // user had not even chosen yet.
+    if (action == BatchAction.moveToVault &&
+        !ref.read(vaultLockControllerProvider).isUnlocked) {
+      await context.push(kRouteVault);
+      if (!context.mounted) return;
+      if (!ref.read(vaultLockControllerProvider).isUnlocked) return;
     }
 
     // Delete asks first how: to the trash, or for good. Picking "Move to

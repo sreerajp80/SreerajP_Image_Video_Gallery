@@ -1,6 +1,7 @@
 import 'package:in_sreerajp_imgvidgal/core/constants/app_constants.dart';
 import 'package:in_sreerajp_imgvidgal/core/errors/app_exception.dart';
 import 'package:in_sreerajp_imgvidgal/models/vault/vault_auth_outcome.dart';
+import 'package:in_sreerajp_imgvidgal/models/vault/vault_lock_mode.dart';
 import 'package:in_sreerajp_imgvidgal/models/vault/vault_security_settings.dart';
 import 'package:in_sreerajp_imgvidgal/services/vault/vault_biometric_service.dart';
 import 'package:in_sreerajp_imgvidgal/services/vault/vault_credential_store.dart';
@@ -10,11 +11,16 @@ import 'package:in_sreerajp_imgvidgal/services/vault/vault_pin_service.dart';
 
 /// Decides who may open the vault.
 ///
-/// Two ways in, and they are not equal. The PIN is the one that always works:
-/// it is checked against a stored salt and PBKDF2 hash and nothing else can
-/// stand in for it. Biometrics are a shortcut over the top, offered only when
-/// the device has one enrolled and the user has left it switched on, and
-/// switching it off costs nothing because the PIN is still there.
+/// The vault has one of two locks ([VaultLockMode]):
+/// - **Phone lock:** Android's own prompt decides — a fingerprint, or the
+///   phone's PIN, pattern or password. Needs a secure lock screen.
+/// - **Vault PIN:** the app's own PIN, checked against a stored salt and
+///   PBKDF2 hash. A fingerprint may be a shortcut over the top, but only a
+///   fingerprint: the prompt is asked for with `biometricOnly: true`, so the
+///   phone's own PIN can never open a PIN vault.
+///
+/// Both are an app-level gate in front of the same Keystore key, which is not
+/// tied to either.
 ///
 /// The keystore is checked before either. A device with no usable keystore
 /// cannot hold the master key, so there is nothing to unlock and the vault
@@ -35,17 +41,25 @@ class VaultAuthService {
        _keyService = keyService,
        _pinService = pinService ?? VaultPinService();
 
-  /// Whether the vault has ever been set up.
-  Future<bool> isSetUp() => _store.hasCredential();
+  /// Whether the vault has ever been set up, in either mode.
+  Future<bool> isSetUp() async => await _store.readLockMode() != null;
+
+  /// How the vault opens, or null when it has not been set up.
+  Future<VaultLockMode?> lockMode() => _store.readLockMode();
+
+  /// Whether this phone has a secure lock screen, which phone lock needs.
+  Future<bool> canUsePhoneLock() => _biometricService.isDeviceSecure();
 
   /// Whether this device can hold the vault's master key.
   Future<bool> isKeystoreReady() => _keyService.isReady();
 
-  /// Whether a biometric prompt can be offered right now.
+  /// Whether the fingerprint shortcut can be offered right now.
   ///
-  /// Both halves matter: the device must have one enrolled, and the user must
-  /// not have turned the shortcut off in vault settings.
+  /// Only in vault-PIN mode (in phone-lock mode the fingerprint is already
+  /// part of the prompt), only when one is enrolled, and only when the user
+  /// has not turned the shortcut off in vault settings.
   Future<bool> canUseBiometrics() async {
+    if (await _store.readLockMode() != VaultLockMode.vaultPin) return false;
     final settings = await _store.readSettings();
     if (!settings.biometricEnabled) return false;
     return _biometricService.isAvailable();
@@ -70,12 +84,125 @@ class VaultAuthService {
       final salt = _pinService.generateSalt();
       await _store.writeCredential(
         salt: salt,
-        hash: _pinService.hashPin(pin, salt),
+        hash: await _pinService.hashPinInBackground(pin, salt),
         iterations: AppConstants.vaultPinIterations,
       );
+      await _store.writeLockMode(VaultLockMode.vaultPin);
       return VaultAuthOutcome.success;
     } on VaultException {
       return const VaultAuthOutcome(status: VaultAuthStatus.error);
+    }
+  }
+
+  /// Creates the vault with the phone's own lock.
+  ///
+  /// Runs Android's prompt once first, so a lock that does not work is found
+  /// now, while the vault is still empty. The master key is created here too,
+  /// for the same reason as in [setUpVault].
+  Future<VaultAuthOutcome> setUpWithPhoneLock({required String reason}) async {
+    try {
+      if (!await _keyService.isReady()) {
+        return const VaultAuthOutcome(status: VaultAuthStatus.error);
+      }
+      if (!await _biometricService.isDeviceSecure()) {
+        return const VaultAuthOutcome(
+          status: VaultAuthStatus.phoneLockUnavailable,
+        );
+      }
+      final outcome = await _runPhoneLockPrompt(reason);
+      if (!outcome.isSuccess) return outcome;
+
+      await _keyService.ensureKey();
+      await _store.writeLockMode(VaultLockMode.phoneLock);
+      return VaultAuthOutcome.success;
+    } on VaultException {
+      return const VaultAuthOutcome(status: VaultAuthStatus.error);
+    }
+  }
+
+  /// Opens a phone-lock vault with Android's prompt.
+  ///
+  /// Wrong tries are counted and locked out by Android itself, not by the
+  /// app's PIN back-off.
+  Future<VaultAuthOutcome> unlockWithPhoneLock({required String reason}) async {
+    try {
+      if (await _store.readLockMode() != VaultLockMode.phoneLock) {
+        return const VaultAuthOutcome(status: VaultAuthStatus.error);
+      }
+      if (!await _biometricService.isDeviceSecure()) {
+        return const VaultAuthOutcome(
+          status: VaultAuthStatus.phoneLockUnavailable,
+        );
+      }
+      return await _runPhoneLockPrompt(reason);
+    } on VaultException {
+      return const VaultAuthOutcome(status: VaultAuthStatus.error);
+    }
+  }
+
+  /// Moves a PIN vault to phone lock.
+  ///
+  /// Only for an open vault (the screen asking is behind the gate). Android's
+  /// prompt must pass first, so nobody ends up with a lock they cannot open.
+  /// The mode is written before the PIN is erased: an interruption leaves a
+  /// phone-lock vault with an unused PIN, never a vault with no way in.
+  Future<VaultAuthOutcome> switchToPhoneLock({required String reason}) async {
+    try {
+      if (!await _biometricService.isDeviceSecure()) {
+        return const VaultAuthOutcome(
+          status: VaultAuthStatus.phoneLockUnavailable,
+        );
+      }
+      final outcome = await _runPhoneLockPrompt(reason);
+      if (!outcome.isSuccess) return outcome;
+
+      await _store.writeLockMode(VaultLockMode.phoneLock);
+      await _store.clearPin();
+      return VaultAuthOutcome.success;
+    } on VaultException {
+      return const VaultAuthOutcome(status: VaultAuthStatus.error);
+    }
+  }
+
+  /// Moves a phone-lock vault to its own PIN.
+  ///
+  /// Only for an open vault. The PIN is stored before the mode changes, so an
+  /// interruption leaves the vault on phone lock, still openable.
+  Future<VaultAuthOutcome> switchToVaultPin(String newPin) async {
+    if (!VaultPinRules.isValid(newPin)) {
+      return const VaultAuthOutcome(status: VaultAuthStatus.invalidPin);
+    }
+    try {
+      final salt = _pinService.generateSalt();
+      await _store.writeCredential(
+        salt: salt,
+        hash: await _pinService.hashPinInBackground(newPin, salt),
+        iterations: AppConstants.vaultPinIterations,
+      );
+      await _store.writeLockMode(VaultLockMode.vaultPin);
+      return VaultAuthOutcome.success;
+    } on VaultException {
+      return const VaultAuthOutcome(status: VaultAuthStatus.error);
+    }
+  }
+
+  /// Android's prompt with the phone's PIN, pattern or password allowed.
+  Future<VaultAuthOutcome> _runPhoneLockPrompt(String reason) async {
+    final result = await _biometricService.authenticate(
+      reason: reason,
+      biometricOnly: false,
+    );
+    switch (result) {
+      case VaultBiometricResult.success:
+        return VaultAuthOutcome.success;
+      case VaultBiometricResult.failed:
+        return const VaultAuthOutcome(status: VaultAuthStatus.biometricFailed);
+      case VaultBiometricResult.cancelled:
+        return const VaultAuthOutcome(status: VaultAuthStatus.cancelled);
+      case VaultBiometricResult.unavailable:
+        return const VaultAuthOutcome(
+          status: VaultAuthStatus.phoneLockUnavailable,
+        );
     }
   }
 
@@ -107,7 +234,12 @@ class VaultAuthService {
       final iterations =
           await _store.readIterations() ?? AppConstants.vaultPinIterations;
 
-      if (_pinService.verifyPin(pin, salt, hash, iterations: iterations)) {
+      if (await _pinService.verifyPinInBackground(
+        pin,
+        salt,
+        hash,
+        iterations: iterations,
+      )) {
         return VaultAuthOutcome.success;
       }
 
@@ -144,7 +276,12 @@ class VaultAuthService {
       );
     }
 
-    final result = await _biometricService.authenticate(reason: reason);
+    // Fingerprint only. Allowing the device credential here would let the
+    // phone's own PIN open a vault that has its own PIN.
+    final result = await _biometricService.authenticate(
+      reason: reason,
+      biometricOnly: true,
+    );
     switch (result) {
       case VaultBiometricResult.success:
         return VaultAuthOutcome.success;
@@ -178,7 +315,7 @@ class VaultAuthService {
       final salt = _pinService.generateSalt();
       await _store.writeCredential(
         salt: salt,
-        hash: _pinService.hashPin(newPin, salt),
+        hash: await _pinService.hashPinInBackground(newPin, salt),
         iterations: AppConstants.vaultPinIterations,
       );
       return VaultAuthOutcome.success;

@@ -401,6 +401,48 @@ void main() {
         expect(result.shreddedCount, 0);
       });
 
+      test('a payload that does not read back is never trusted', () async {
+        // Written and reported as fine, but damaged on disk. The original
+        // must stay visible and unshredded, and nothing must be left behind.
+        final item = await addMedia('photo.jpg');
+        channel.corruptNextWrites = 1;
+
+        final result = await service.importItems(<MediaItem>[
+          item,
+        ], shredOriginals: true);
+
+        expect(result.failedCount, 1);
+        expect(result.shreddedCount, 0);
+        expect(await File(item.path).exists(), isTrue);
+        expect(await vaultDao.getVaultItemsCount(), 0);
+        expect((await mediaDao.getMediaItemById(item.id))!.isVaulted, isFalse);
+        final payloads = (await storage.vaultDirectory())
+            .listSync()
+            .whereType<File>()
+            .where((f) => !p.basename(f.path).startsWith('.'))
+            .toList();
+        expect(payloads, isEmpty);
+      });
+
+      test('a preview that does not read back is dropped, not fatal', () async {
+        preview.preview = Uint8List.fromList(<int>[1, 2, 3]);
+        final second = await addMedia('second.jpg');
+        // Write 1 is the payload (fine), write 2 the preview (damaged).
+        var writes = 0;
+        channel.onWrite = () {
+          writes++;
+          if (writes == 2) channel.corruptNextWrites = 1;
+        };
+        final result = await service.importItems(<MediaItem>[second]);
+
+        expect(result.succeededCount, 1);
+        final stored = await vaultDao.getVaultItemById(
+          result.succeededIds.first,
+        );
+        expect(stored!.encryptedThumbnailFilename, isNull);
+        expect(stored.thumbnailIv, isNull);
+      });
+
       test('a failed import writes no vault row', () async {
         final item = await addMedia('photo.jpg');
         channel.failEncrypt = true;

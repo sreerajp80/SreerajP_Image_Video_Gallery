@@ -6,7 +6,7 @@ class DatabaseConstants {
   static const String databaseName = 'gallery_database.db';
 
   /// Current SQLite database schema version.
-  static const int schemaVersion = 9;
+  static const int schemaVersion = 10;
 
   // Table Names
   static const String tableMedia = 'media_items';
@@ -98,6 +98,13 @@ class DatabaseConstants {
   /// IV, so the payload's cannot decrypt the preview beside it.
   static const String colVaultThumbnailIv = 'thumbnail_iv';
   static const String colVaultAuthTag = 'auth_tag';
+
+  /// How the payload is encrypted: `AppConstants.vaultPayloadFormat*`.
+  /// Rows from before schema 10 read as 1, the old format.
+  static const String colVaultPayloadFormat = 'payload_format';
+
+  /// The same, for the encrypted preview.
+  static const String colVaultThumbnailFormat = 'thumbnail_format';
   static const String colVaultDateVaulted = 'date_vaulted';
   static const String colVaultDateTaken = 'date_taken';
   static const String colVaultWidth = 'width';

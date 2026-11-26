@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:in_sreerajp_imgvidgal/core/logging/app_logger.dart';
 import 'package:in_sreerajp_imgvidgal/models/vault/vault_auth_outcome.dart';
 import 'package:in_sreerajp_imgvidgal/models/vault/vault_import_result.dart';
+import 'package:in_sreerajp_imgvidgal/models/vault/vault_lock_mode.dart';
 import 'package:in_sreerajp_imgvidgal/models/vault/vault_lock_state.dart';
 import 'package:in_sreerajp_imgvidgal/models/vault/vault_security_settings.dart';
 import 'package:in_sreerajp_imgvidgal/models/media_item.dart';
@@ -26,10 +27,12 @@ import 'package:in_sreerajp_imgvidgal/services/vault/vault_export_service.dart';
 import 'package:in_sreerajp_imgvidgal/services/vault/vault_import_service.dart';
 import 'package:in_sreerajp_imgvidgal/services/vault/vault_key_service.dart';
 import 'package:in_sreerajp_imgvidgal/core/domain/vault/vault_lock_policy.dart';
+import 'package:in_sreerajp_imgvidgal/services/vault/vault_preview_backfill_service.dart';
 import 'package:in_sreerajp_imgvidgal/services/vault/vault_preview_service.dart';
 import 'package:in_sreerajp_imgvidgal/services/vault/vault_shredder_service.dart';
 import 'package:in_sreerajp_imgvidgal/services/vault/vault_storage_service.dart';
 import 'package:in_sreerajp_imgvidgal/services/vault/vault_transfer_service.dart';
+import 'package:in_sreerajp_imgvidgal/services/vault/vault_upgrade_service.dart';
 import 'package:flutter_riverpod/legacy.dart';
 
 // ------------------------------------------------------------------ plumbing
@@ -64,7 +67,12 @@ final vaultShredderServiceProvider = Provider<VaultShredderService>((ref) {
 
 /// Builds vault previews in memory, never through the disk cache.
 final vaultPreviewServiceProvider = Provider<VaultPreviewService>((ref) {
-  return VaultPreviewService(videoTools: ref.watch(videoToolsChannelProvider));
+  return VaultPreviewService(
+    videoTools: ref.watch(videoToolsChannelProvider),
+    // Previews come from MediaStore's thumbnail when the item has a URI;
+    // Android 10 does not let this app read shared photos by path.
+    mediaStore: ref.watch(mediaStoreChannelProvider),
+  );
 });
 
 /// Where the PIN salt and hash are kept.
@@ -137,6 +145,31 @@ final vaultTransferServiceProvider = Provider<VaultTransferService>((ref) {
   );
 });
 
+/// Converts old-format items to the fast format after unlock.
+///
+/// One instance for the app, so "is a run going on" means the same thing to
+/// the lock controller and to the batch controller.
+final vaultUpgradeServiceProvider = Provider<VaultUpgradeService>((ref) {
+  return VaultUpgradeService(
+    vaultDao: ref.watch(vaultDaoProvider),
+    crypto: ref.watch(vaultCryptoServiceProvider),
+    storage: ref.watch(vaultStorageServiceProvider),
+    shredder: ref.watch(vaultShredderServiceProvider),
+  );
+});
+
+/// Makes previews for vault items that have none, after unlock.
+final vaultPreviewBackfillServiceProvider =
+    Provider<VaultPreviewBackfillService>((ref) {
+      return VaultPreviewBackfillService(
+        vaultDao: ref.watch(vaultDaoProvider),
+        crypto: ref.watch(vaultCryptoServiceProvider),
+        storage: ref.watch(vaultStorageServiceProvider),
+        shredder: ref.watch(vaultShredderServiceProvider),
+        videoTools: ref.watch(videoToolsChannelProvider),
+      );
+    });
+
 /// The only way the screens reach the vault.
 final vaultRepositoryProvider = Provider<VaultRepository>((ref) {
   return VaultRepository(
@@ -160,13 +193,28 @@ final vaultRepositoryProvider = Provider<VaultRepository>((ref) {
 class VaultLockController extends StateNotifier<VaultLockState> {
   final VaultAuthService _authService;
   final VaultRepository _repository;
+  final VaultUpgradeService? _upgradeService;
+  final VaultPreviewBackfillService? _previewBackfill;
+  final bool Function() _isBatchRunning;
+  final void Function() _onItemsConverted;
 
   VaultLockController({
     required VaultAuthService authService,
     required VaultRepository repository,
+    VaultUpgradeService? upgradeService,
+    VaultPreviewBackfillService? previewBackfill,
+    bool Function()? isBatchRunning,
+    void Function()? onItemsConverted,
   }) : _authService = authService,
        _repository = repository,
+       _upgradeService = upgradeService,
+       _previewBackfill = previewBackfill,
+       _isBatchRunning = isBatchRunning ?? _never,
+       _onItemsConverted = onItemsConverted ?? _nothing,
        super(VaultLockState.initial);
+
+  static bool _never() => false;
+  static void _nothing() {}
 
   /// Reads whether the vault has been set up, without opening it.
   Future<void> refreshStatus() async {
@@ -215,6 +263,23 @@ class VaultLockController extends StateNotifier<VaultLockState> {
     return outcome;
   }
 
+  /// Creates the vault with the phone's own lock and opens it.
+  Future<VaultAuthOutcome> setUpWithPhoneLock(String reason) async {
+    final outcome = await _authService.setUpWithPhoneLock(reason: reason);
+    if (outcome.isSuccess) await _open();
+    return outcome;
+  }
+
+  /// Opens a phone-lock vault with Android's prompt.
+  ///
+  /// Android counts wrong tries and locks out on its own, so the app's PIN
+  /// back-off is not involved.
+  Future<VaultAuthOutcome> unlockWithPhoneLock(String reason) async {
+    final outcome = await _authService.unlockWithPhoneLock(reason: reason);
+    if (outcome.isSuccess) await _open();
+    return outcome;
+  }
+
   /// Tries the biometric prompt. [reason] is the localised line Android shows.
   Future<VaultAuthOutcome> unlockWithBiometrics(String reason) async {
     if (state.isLockedOutAt(DateTime.now())) {
@@ -235,6 +300,9 @@ class VaultLockController extends StateNotifier<VaultLockState> {
       status: VaultLockStatus.locked,
       clearLastActivity: true,
     );
+    // The data keyset leaves memory with the vault. Not awaited: the lock has
+    // already happened, and this call never throws.
+    _repository.forgetDataKey();
   }
 
   /// Records that the user did something, restarting the idle countdown.
@@ -272,6 +340,30 @@ class VaultLockController extends StateNotifier<VaultLockState> {
       failedAttempts: 0,
       clearLockout: true,
     );
+    _startUpgrade();
+  }
+
+  /// Converts old-format items in the background. Not awaited: the grid
+  /// shows at once, and old items still open while they wait their turn.
+  void _startUpgrade() {
+    final upgrade = _upgradeService;
+    final backfill = _previewBackfill;
+    if (upgrade == null && backfill == null) return;
+    bool keepGoing() => mounted && state.isUnlocked && !_isBatchRunning();
+
+    Future<void> run() async {
+      final converted = upgrade == null
+          ? 0
+          : await upgrade.upgradeAll(shouldContinue: keepGoing);
+      // Previews second: a converted item's preview is then made from its
+      // new, fast payload.
+      final added = backfill == null || !keepGoing()
+          ? 0
+          : await backfill.fillAll(shouldContinue: keepGoing);
+      if ((converted > 0 || added > 0) && mounted) _onItemsConverted();
+    }
+
+    run();
   }
 }
 
@@ -281,6 +373,12 @@ final vaultLockControllerProvider =
       return VaultLockController(
         authService: ref.watch(vaultAuthServiceProvider),
         repository: ref.watch(vaultRepositoryProvider),
+        upgradeService: ref.watch(vaultUpgradeServiceProvider),
+        previewBackfill: ref.watch(vaultPreviewBackfillServiceProvider),
+        isBatchRunning: () => ref.read(vaultBatchProgressProvider) != null,
+        // Rows now point at new files; every view reloads them.
+        onItemsConverted: () =>
+            ref.read(vaultRevisionProvider.notifier).state++,
       );
     });
 
@@ -362,7 +460,7 @@ class VaultBatchController
   /// The items in [items] whose original folder no longer exists.
   ///
   /// The screen asks the user for a folder for these before [restore].
-  List<VaultItem> findItemsWithMissingFolder(List<VaultItem> items) =>
+  Future<List<VaultItem>> findItemsWithMissingFolder(List<VaultItem> items) =>
       _repository.itemsWithMissingFolder(items);
 
   /// Asks the user to pick a folder, or returns null if they backed out.
@@ -388,8 +486,8 @@ class VaultBatchController
   }) async {
     await _run(
       items.length,
-      (settings, report) => _repository.exportToGallery(
-        items,
+      (settings, report) async => _repository.exportToGallery(
+        await _fresh(items),
         shredPasses: settings.shredPasses,
         fallbackFolderUri: fallbackFolderUri,
         onProgress: report,
@@ -401,10 +499,21 @@ class VaultBatchController
   Future<void> deleteForever(List<VaultItem> items) async {
     await _run(
       items.length,
-      (settings, _) =>
-          _repository.deleteForever(items, shredPasses: settings.shredPasses),
+      (settings, _) async => _repository.deleteForever(
+        await _fresh(items),
+        shredPasses: settings.shredPasses,
+      ),
     );
   }
+
+  /// The current rows for [items].
+  ///
+  /// The screen's list can be older than the background format upgrade,
+  /// which gives a converted item new file names. Reading the rows again
+  /// (after [_run] has waited for the upgrade to pause) means the batch works
+  /// on the files that are really there.
+  Future<List<VaultItem>> _fresh(List<VaultItem> items) =>
+      _repository.getItemsByIds(items.map((i) => i.id).toList());
 
   /// Clears the last result, so a message is not shown twice.
   void clearResult() {
@@ -427,6 +536,10 @@ class VaultBatchController
     );
 
     try {
+      // The progress value above already tells the upgrade to stop; this
+      // waits for the item it is converting right now to finish.
+      await _ref.read(vaultUpgradeServiceProvider).waitUntilIdle();
+      await _ref.read(vaultPreviewBackfillServiceProvider).waitUntilIdle();
       final settings = await _ref.read(vaultAuthServiceProvider).readSettings();
       final result = await action(settings, (done, batchTotal) {
         _ref.read(vaultBatchProgressProvider.notifier).state =
@@ -469,9 +582,41 @@ final vaultBiometricAvailableProvider = FutureProvider<bool>((ref) async {
   return ref.watch(vaultAuthServiceProvider).canUseBiometrics();
 });
 
+/// How the vault opens, or null when it has not been set up.
+final vaultLockModeProvider = FutureProvider<VaultLockMode?>((ref) async {
+  ref.watch(vaultRevisionProvider);
+  // Only whether it is open matters here, not every touch.
+  ref.watch(vaultLockControllerProvider.select((s) => s.status));
+  return ref.watch(vaultAuthServiceProvider).lockMode();
+});
+
+/// Whether this phone has a secure lock screen, which phone lock needs.
+///
+/// Read fresh each time the vault screens ask (autoDispose), because the user
+/// can turn the screen lock on or off in Android settings at any moment.
+final vaultPhoneLockAvailableProvider = FutureProvider.autoDispose<bool>((
+  ref,
+) async {
+  return ref.watch(vaultAuthServiceProvider).canUsePhoneLock();
+});
+
 /// Whether this device can hold the vault's master key.
 final vaultKeystoreReadyProvider = FutureProvider<bool>((ref) async {
   return ref.watch(vaultAuthServiceProvider).isKeystoreReady();
+});
+
+/// Whether the vault is open, and nothing else.
+///
+/// The lock state also carries the time of the last touch, which changes on
+/// every pointer event for the auto-lock timer. The content providers below
+/// watch this instead, so a touch reloads nothing: before, each tap and each
+/// scroll step re-read the rows and decrypted every visible preview again,
+/// and the grid swapped to a spinner mid-press, which cancelled long-press.
+/// Locking still flips this, so a shut vault still holds nothing.
+final _vaultOpenProvider = Provider<bool>((ref) {
+  return ref.watch(
+    vaultLockControllerProvider.select((lock) => lock.isUnlocked),
+  );
 });
 
 /// Everything in the vault, newest first.
@@ -480,8 +625,7 @@ final vaultKeystoreReadyProvider = FutureProvider<bool>((ref) async {
 /// locked vault has nothing in memory to leak.
 final vaultItemsProvider = FutureProvider<List<VaultItem>>((ref) async {
   ref.watch(vaultRevisionProvider);
-  final lock = ref.watch(vaultLockControllerProvider);
-  if (!lock.isUnlocked) return const <VaultItem>[];
+  if (!ref.watch(_vaultOpenProvider)) return const <VaultItem>[];
   return ref.watch(vaultRepositoryProvider).getItems();
 });
 
@@ -544,8 +688,7 @@ final vaultItemProvider = FutureProvider.family<VaultItem?, String>((
   id,
 ) async {
   ref.watch(vaultRevisionProvider);
-  final lock = ref.watch(vaultLockControllerProvider);
-  if (!lock.isUnlocked) return null;
+  if (!ref.watch(_vaultOpenProvider)) return null;
   return ref.watch(vaultRepositoryProvider).getItem(id);
 });
 
@@ -557,8 +700,10 @@ final vaultThumbnailProvider = FutureProvider.family<Uint8List?, String>((
   ref,
   itemId,
 ) async {
-  final lock = ref.watch(vaultLockControllerProvider);
-  if (!lock.isUnlocked) return null;
+  // A batch or the preview backfill bumps the revision, so a tile that had
+  // no preview picks up a new one without reopening the vault.
+  ref.watch(vaultRevisionProvider);
+  if (!ref.watch(_vaultOpenProvider)) return null;
   final repository = ref.watch(vaultRepositoryProvider);
   final item = await repository.getItem(itemId);
   if (item == null) return null;

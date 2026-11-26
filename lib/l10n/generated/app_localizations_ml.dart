@@ -4462,4 +4462,105 @@ class AppLocalizationsMl extends AppLocalizations {
 
   @override
   String get actionSyncClose => 'അടയ്ക്കുക';
+
+  @override
+  String get titleVaultLockChoice => 'ലോക്ക് തിരഞ്ഞെടുക്കുക';
+
+  @override
+  String get labelVaultLockPhone => 'ഫോണ്‍ ലോക്ക്';
+
+  @override
+  String get descVaultLockPhone =>
+      'നിങ്ങളുടെ വിരലടയാളമോ ഫോണിന്റെ സ്ക്രീന്‍ ലോക്കോ വോള്‍ട്ട് തുറക്കും. ഈ ഫോണ്‍ തുറക്കാന്‍ കഴിയുന്ന ആര്‍ക്കും ഇതും തുറക്കാം.';
+
+  @override
+  String get descVaultLockPhoneUnavailable =>
+      'ഈ ഫോണില്‍ സ്ക്രീന്‍ ലോക്ക് ഇല്ല. ഇത് ഉപയോഗിക്കാന്‍ ആന്‍ഡ്രോയിഡ് ക്രമീകരണങ്ങളില്‍ ഒന്ന് ഓണ്‍ ചെയ്യുക.';
+
+  @override
+  String get labelVaultLockPin => 'വോള്‍ട്ട് പിന്‍';
+
+  @override
+  String get descVaultLockPin =>
+      'വോള്‍ട്ടിനു മാത്രമായി 4 മുതല്‍ 8 വരെ അക്കങ്ങളുള്ള വേറൊരു പിന്‍. ഫോണ്‍ തുറക്കാന്‍ മറ്റുള്ളവര്‍ക്ക് അറിയാമെങ്കില്‍ ഇതാണ് കൂടുതല്‍ സുരക്ഷിതം.';
+
+  @override
+  String get labelVaultUnlockWithPhoneLock => 'ഫോണ്‍ ലോക്ക് ഉപയോഗിക്കുക';
+
+  @override
+  String get bodyVaultPhoneLockPrompt =>
+      'ഈ വോള്‍ട്ട് നിങ്ങളുടെ ഫോണ്‍ ലോക്ക് കൊണ്ടാണ് തുറക്കുന്നത്.';
+
+  @override
+  String get errorVaultPhoneLockUnavailable =>
+      'ഈ ഫോണില്‍ ഇപ്പോള്‍ സ്ക്രീന്‍ ലോക്ക് ഇല്ല. വോള്‍ട്ട് തുറക്കാന്‍ ആന്‍ഡ്രോയിഡ് ക്രമീകരണങ്ങളില്‍ ഒന്ന് ഓണ്‍ ചെയ്യുക.';
+
+  @override
+  String get labelVaultNext => 'അടുത്തത്';
+
+  @override
+  String get tooltipVaultPinDelete => 'അക്കം മായ്ക്കുക';
+
+  @override
+  String get titleVaultLockHeading => 'വോള്‍ട്ട് ലോക്ക്';
+
+  @override
+  String get bodyVaultSwitchedToPhoneLock =>
+      'ഇനി വോള്‍ട്ട് ഫോണ്‍ ലോക്ക് കൊണ്ട് തുറക്കും.';
+
+  @override
+  String get bodyVaultSwitchedToPin =>
+      'ഇനി വോള്‍ട്ട് സ്വന്തം പിന്‍ കൊണ്ട് തുറക്കും.';
+
+  @override
+  String get titleVaultSetPin => 'വോള്‍ട്ട് പിന്‍ സജ്ജമാക്കുക';
+
+  @override
+  String bodyVaultRestoreDone(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count ഇനങ്ങള്‍ ഗാലറിയിലേക്ക് തിരികെ വച്ചു',
+      one: '1 ഇനം ഗാലറിയിലേക്ക് തിരികെ വച്ചു',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String bodyVaultRestorePartial(int done, int failed) {
+    return '$done എണ്ണം തിരികെ വച്ചു, $failed എണ്ണം തിരികെ വയ്ക്കാനായില്ല';
+  }
+
+  @override
+  String get errorVaultRestoreFailed => 'ഒന്നും തിരികെ വയ്ക്കാനായില്ല';
+
+  @override
+  String bodyVaultRestoredElsewhere(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count എണ്ണം Pictures/Drishya Restored എന്ന ഫോള്‍ഡറിലേക്ക് പോയി.',
+      one: '1 എണ്ണം Pictures/Drishya Restored എന്ന ഫോള്‍ഡറിലേക്ക് പോയി.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String bodyVaultDeleteDone(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count ഇനങ്ങള്‍ എന്നേക്കുമായി മായ്ച്ചു',
+      one: '1 ഇനം എന്നേക്കുമായി മായ്ച്ചു',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String bodyVaultDeletePartial(int done, int failed) {
+    return '$done എണ്ണം മായ്ച്ചു, $failed എണ്ണം മായ്ക്കാനായില്ല';
+  }
+
+  @override
+  String get errorVaultDeleteFailed => 'ഒന്നും മായ്ക്കാനായില്ല';
 }

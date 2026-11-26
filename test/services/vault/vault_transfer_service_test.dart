@@ -140,6 +140,31 @@ void main() {
       },
     );
 
+    test('a payload that does not read back adds nothing', () async {
+      final staged = await stage('v.jpg');
+      channel.corruptNextWrites = 1;
+
+      await expectLater(
+        serviceWith(vaultDao).importReceived(
+          staged: staged,
+          displayName: 'v.jpg',
+          mimeType: 'image/jpeg',
+          mediaType: MediaType.image,
+        ),
+        throwsA(
+          isA<VaultException>().having((e) => e.code, 'code', 'verify_failed'),
+        ),
+      );
+      expect(await vaultDao.getVaultItemsCount(), 0);
+      expect(await staged.exists(), isFalse);
+      final payloads = (await storage.vaultDirectory())
+          .listSync()
+          .whereType<File>()
+          .where((f) => !p.basename(f.path).startsWith('.'))
+          .toList();
+      expect(payloads, isEmpty);
+    });
+
     test('a failed record write leaves no payload and no plain copy', () async {
       final staged = await stage('c.jpg');
 

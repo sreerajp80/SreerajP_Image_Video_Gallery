@@ -27,11 +27,17 @@ class VaultBatchResult {
   /// the user can restore it again later.
   final int skippedCount;
 
+  /// How many restored items went to the fallback gallery folder
+  /// (`Pictures/Drishya Restored`) because their own folder cannot hold
+  /// them. Counted inside [succeededIds] too; the screen says where they went.
+  final int fallbackCount;
+
   const VaultBatchResult({
     this.succeededIds = const <String>[],
     this.failedCount = 0,
     this.shreddedCount = 0,
     this.skippedCount = 0,
+    this.fallbackCount = 0,
   });
 
   /// An empty batch.
@@ -54,7 +60,8 @@ class VaultBatchResult {
           listEquals(succeededIds, other.succeededIds) &&
           failedCount == other.failedCount &&
           shreddedCount == other.shreddedCount &&
-          skippedCount == other.skippedCount;
+          skippedCount == other.skippedCount &&
+          fallbackCount == other.fallbackCount;
 
   @override
   int get hashCode => Object.hash(
@@ -62,5 +69,6 @@ class VaultBatchResult {
     failedCount,
     shreddedCount,
     skippedCount,
+    fallbackCount,
   );
 }

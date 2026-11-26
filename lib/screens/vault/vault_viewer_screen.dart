@@ -147,16 +147,22 @@ class _VaultViewerScreenState extends ConsumerState<VaultViewerScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final lock = ref.watch(vaultLockControllerProvider);
+    // Only open or shut matters here; every touch also changes the lock
+    // state, and the viewer must not rebuild for that.
+    final unlocked = ref.watch(
+      vaultLockControllerProvider.select((lock) => lock.isUnlocked),
+    );
 
     // The vault locked underneath this screen. Everything decrypted goes with
-    // it, and the gate is what the user is left looking at.
-    if (!lock.isUnlocked) {
+    // it, and the gate is what the user is left looking at. Nothing is drawn
+    // in the frame before the pop, so the photo is never shown while shut.
+    if (!unlocked) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted && Navigator.of(context).canPop()) {
           Navigator.of(context).pop();
         }
       });
+      return const SecureScreen(child: Scaffold(backgroundColor: Colors.black));
     }
 
     return SecureScreen(

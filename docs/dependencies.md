@@ -59,6 +59,7 @@ add, remove or upgrade any package.
 | Library | Purpose | License |
 |---|---|---|
 | `com.google.zxing:core` 3.5.3 | Reads barcodes and QR codes, in still photos and camera frames (`BarcodeChannelHandler`). The original ZXing library: plain Java, no dependencies, no network code | Apache-2.0 |
+| `com.google.crypto.tink:tink-android` 1.24.0 | Vault bulk encryption (`VaultChannelHandler`): streaming AEAD (`AES256_GCM_HKDF_1MB`) under a data keyset that the Keystore master key seals. Chosen over a home-made chunked AES-GCM format because it is reviewed crypto code. Its POM lists only `androidx.annotation`, `jsr305`, `errorprone` annotations and `gson`; no network code. Ships its own protobuf R8 rules. Never add the `tink-gcpkms` / `tink-awskms` modules, which talk to cloud key services | Apache-2.0 |
 
 ### 2.2 Dev dependencies
 

@@ -3,6 +3,7 @@ import 'dart:math';
 
 import 'package:in_sreerajp_imgvidgal/core/constants/app_constants.dart';
 import 'package:in_sreerajp_imgvidgal/models/media_item.dart';
+import 'package:in_sreerajp_imgvidgal/models/vault/vault_crypto_result.dart';
 import 'package:in_sreerajp_imgvidgal/models/vault/vault_import_result.dart';
 import 'package:in_sreerajp_imgvidgal/models/vault_item.dart';
 import 'package:in_sreerajp_imgvidgal/repositories/database/media_dao.dart';
@@ -164,19 +165,33 @@ class VaultImportService {
       sourcePath: item.path,
     );
 
+    // 1b. Read it back. Only a payload that gives back exactly what went in
+    // may stand in for the original, which is about to be hidden and may be
+    // shredded. A failure leaves the original as it was.
+    try {
+      await _crypto.verifyWritten(payload);
+    } catch (error) {
+      await _deleteQuietly(payload.fileName);
+      rethrow;
+    }
+
     String? thumbnailName;
     String? thumbnailIv;
+    int? thumbnailFormat;
     try {
       // 2. The preview, built in memory and encrypted without ever being
       // written out in the clear. A preview that cannot be made is not fatal.
       final previewBytes = await _preview.buildPreview(item);
       if (previewBytes != null && previewBytes.isNotEmpty) {
         final thumbnail = await _crypto.encryptThumbnailBytes(previewBytes);
-        thumbnailName = thumbnail.fileName;
-        // Its own IV, kept beside its own file. The payload's would not
-        // decrypt it, and handing the cipher the wrong one would fail the
-        // authentication tag rather than quietly returning rubbish.
-        thumbnailIv = thumbnail.iv;
+        if (await _readsBack(thumbnail)) {
+          thumbnailName = thumbnail.fileName;
+          // Its own IV, kept beside its own file. The payload's would not
+          // decrypt it, and handing the cipher the wrong one would fail the
+          // authentication tag rather than quietly returning rubbish.
+          thumbnailIv = thumbnail.iv;
+          thumbnailFormat = thumbnail.format;
+        }
       }
 
       // 3. The record. The IV is stored beside the payload because decryption
@@ -192,6 +207,8 @@ class VaultImportService {
         sizeBytes: payload.cipherSizeBytes,
         iv: payload.iv,
         thumbnailIv: thumbnailIv,
+        payloadFormat: payload.format,
+        thumbnailFormat: thumbnailFormat ?? payload.format,
         dateVaulted: DateTime.now(),
         dateTaken: item.dateTaken,
         width: item.width,
@@ -214,6 +231,19 @@ class VaultImportService {
       await _deleteQuietly(payload.fileName);
       if (thumbnailName != null) await _deleteQuietly(thumbnailName);
       rethrow;
+    }
+  }
+
+  /// Whether a preview reads back. One that does not is deleted and the item
+  /// goes in without a preview: a cosmetic loss, never a failed import.
+  Future<bool> _readsBack(VaultCryptoResult preview) async {
+    try {
+      await _crypto.verifyWritten(preview);
+      return true;
+    } catch (error) {
+      AppLogger.debug('A vault preview failed its read-back');
+      await _deleteQuietly(preview.fileName);
+      return false;
     }
   }
 

@@ -85,6 +85,20 @@ class ColumnValueRule {
     flag,
   );
 
+  /// Vault payload format: 1 (old, Keystore only) or 2 (data keyset).
+  static const ColumnValueRule vaultPayloadFormat = ColumnValueRule(
+    DatabaseConstants.tableVault,
+    DatabaseConstants.colVaultPayloadFormat,
+    '1,2',
+  );
+
+  /// Vault preview format, same values.
+  static const ColumnValueRule vaultThumbnailFormat = ColumnValueRule(
+    DatabaseConstants.tableVault,
+    DatabaseConstants.colVaultThumbnailFormat,
+    '1,2',
+  );
+
   /// Every rule, in a fixed order.
   static final List<ColumnValueRule> all = <ColumnValueRule>[
     mediaType,
@@ -95,6 +109,8 @@ class ColumnValueRule {
     albumType,
     albumIsPinned,
     vaultMediaType,
+    vaultPayloadFormat,
+    vaultThumbnailFormat,
   ];
 
   /// Rules for columns added after schema 5. The v5 upgrade step must skip
@@ -102,6 +118,8 @@ class ColumnValueRule {
   /// adds each column also adds its triggers.
   static final List<ColumnValueRule> addedAfterV5 = <ColumnValueRule>[
     mediaIsOutOfReach,
+    vaultPayloadFormat,
+    vaultThumbnailFormat,
   ];
 
   /// The two triggers that enforce this rule on a database that has no

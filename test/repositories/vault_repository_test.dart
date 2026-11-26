@@ -178,7 +178,7 @@ void main() {
         // What a row written before the preview IV existed looks like. Showing
         // an icon is right; handing the cipher the payload's IV is not.
         final item = await importOne('photo.jpg');
-        await vaultDao.updateVaultItem(
+        await vaultDao.updateEncryption(
           VaultItem(
             id: item.id,
             originalPath: item.originalPath,
@@ -189,6 +189,7 @@ void main() {
             mimeType: item.mimeType,
             sizeBytes: item.sizeBytes,
             iv: item.iv,
+            payloadFormat: item.payloadFormat,
             dateVaulted: item.dateVaulted,
           ),
         );
@@ -211,7 +212,7 @@ void main() {
 
       test('an item with no preview reads as null', () async {
         final item = await importOne('photo.jpg');
-        await vaultDao.updateVaultItem(
+        await vaultDao.updateEncryption(
           VaultItem(
             id: item.id,
             originalPath: item.originalPath,
@@ -221,6 +222,7 @@ void main() {
             mimeType: item.mimeType,
             sizeBytes: item.sizeBytes,
             iv: item.iv,
+            payloadFormat: item.payloadFormat,
             dateVaulted: item.dateVaulted,
           ),
         );

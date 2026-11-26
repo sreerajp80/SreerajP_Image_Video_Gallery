@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:in_sreerajp_imgvidgal/core/errors/app_exception.dart';
 import 'package:in_sreerajp_imgvidgal/models/media_item.dart';
 import 'package:in_sreerajp_imgvidgal/models/vault/vault_import_result.dart';
+import 'package:in_sreerajp_imgvidgal/models/vault/vault_lock_state.dart';
 import 'package:in_sreerajp_imgvidgal/models/vault/vault_security_settings.dart';
 import 'package:in_sreerajp_imgvidgal/models/vault_item.dart';
 import 'package:in_sreerajp_imgvidgal/providers/backup_providers.dart';
@@ -35,8 +36,36 @@ class _FakeVaultRepository implements VaultRepository {
   Set<String> missingFolderIds = <String>{};
   String? lastFallbackFolderUri;
 
+  int getItemsCalls = 0;
+  int getItemCalls = 0;
+  int thumbnailReads = 0;
+
   @override
-  Future<VaultItem?> getItem(String id) async => items[id];
+  Future<List<VaultItem>> getItems({int? limit, int? offset}) async {
+    getItemsCalls++;
+    return items.values.toList();
+  }
+
+  @override
+  Future<VaultItem?> getItem(String id) async {
+    getItemCalls++;
+    return items[id];
+  }
+
+  @override
+  Future<Uint8List?> readThumbnailBytes(VaultItem item) async {
+    thumbnailReads++;
+    return Uint8List.fromList(<int>[7]);
+  }
+
+  @override
+  Future<List<VaultItem>> getItemsByIds(List<String> ids) async => <VaultItem>[
+    for (final id in ids)
+      if (items[id] != null) items[id]!,
+  ];
+
+  @override
+  Future<void> forgetDataKey() async {}
 
   @override
   Future<Uint8List> readImageBytes(VaultItem item) async {
@@ -58,7 +87,7 @@ class _FakeVaultRepository implements VaultRepository {
   }
 
   @override
-  List<VaultItem> itemsWithMissingFolder(List<VaultItem> items) =>
+  Future<List<VaultItem>> itemsWithMissingFolder(List<VaultItem> items) async =>
       items.where((item) => missingFolderIds.contains(item.id)).toList();
 
   @override
@@ -76,6 +105,21 @@ class _FakeVaultRepository implements VaultRepository {
 
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+/// A lock controller a test can open directly, without a PIN or a prompt.
+class _OpenableLockController extends VaultLockController {
+  _OpenableLockController({
+    required super.authService,
+    required super.repository,
+  });
+
+  void openForTest() {
+    state = state.copyWith(
+      status: VaultLockStatus.unlocked,
+      lastActivityAt: DateTime.now(),
+    );
+  }
 }
 
 class _FakeAuthService implements VaultAuthService {
@@ -172,10 +216,10 @@ void main() {
     VaultBatchController controller() =>
         container.read(vaultBatchControllerProvider.notifier);
 
-    test('finds only the items whose folder is gone', () {
+    test('finds only the items whose folder is gone', () async {
       repository.missingFolderIds = <String>{'v'};
 
-      final missing = controller().findItemsWithMissingFolder(<VaultItem>[
+      final missing = await controller().findItemsWithMissingFolder(<VaultItem>[
         repository.items['p']!,
         repository.items['v']!,
       ]);
@@ -201,6 +245,83 @@ void main() {
       picker.throwsNoPicker = true;
 
       expect(await controller().pickRestoreFolder(), isNull);
+    });
+  });
+
+  group('a touch reloads nothing', () {
+    late ProviderContainer box;
+    late _OpenableLockController lock;
+
+    setUp(() {
+      box = ProviderContainer(
+        overrides: <Override>[
+          vaultRepositoryProvider.overrideWithValue(repository),
+          vaultAuthServiceProvider.overrideWithValue(_FakeAuthService()),
+          vaultLockControllerProvider.overrideWith(
+            (ref) => lock = _OpenableLockController(
+              authService: _FakeAuthService(),
+              repository: repository,
+            ),
+          ),
+        ],
+      );
+      addTearDown(box.dispose);
+      box.read(vaultLockControllerProvider.notifier);
+      lock.openForTest();
+    });
+
+    /// Several touches, the way a tap and a scroll would send them.
+    Future<void> touch() async {
+      for (var i = 0; i < 5; i++) {
+        lock.noteActivity();
+        await Future<void>.delayed(Duration.zero);
+      }
+    }
+
+    test('the item list is not read again', () async {
+      box.listen(vaultItemsProvider, (_, _) {});
+      await box.read(vaultItemsProvider.future);
+      final before = repository.getItemsCalls;
+
+      await touch();
+      await box.read(vaultItemsProvider.future);
+
+      expect(repository.getItemsCalls, before);
+    });
+
+    test('one item is not read again', () async {
+      box.listen(vaultItemProvider('p'), (_, _) {});
+      await box.read(vaultItemProvider('p').future);
+      final before = repository.getItemCalls;
+
+      await touch();
+      await box.read(vaultItemProvider('p').future);
+
+      expect(repository.getItemCalls, before);
+    });
+
+    test('previews are not decrypted again', () async {
+      box.listen(vaultThumbnailProvider('p'), (_, _) {});
+      await box.read(vaultThumbnailProvider('p').future);
+      final before = repository.thumbnailReads;
+
+      await touch();
+      await box.read(vaultThumbnailProvider('p').future);
+
+      expect(repository.thumbnailReads, before);
+    });
+
+    test('locking still empties the list and drops the previews', () async {
+      box.listen(vaultItemsProvider, (_, _) {});
+      box.listen(vaultThumbnailProvider('p'), (_, _) {});
+      expect(await box.read(vaultItemsProvider.future), isNotEmpty);
+      expect(await box.read(vaultThumbnailProvider('p').future), isNotNull);
+
+      lock.lock();
+      await Future<void>.delayed(Duration.zero);
+
+      expect(await box.read(vaultItemsProvider.future), isEmpty);
+      expect(await box.read(vaultThumbnailProvider('p').future), isNull);
     });
   });
 }

@@ -5597,5 +5597,124 @@
   "actionSyncClose": "Close",
   "@actionSyncClose": {
     "description": "Leaves the transfer screen after the transfer has ended"
+  },
+  "titleVaultLockChoice": "Choose a lock",
+  "@titleVaultLockChoice": {
+    "description": "Heading above the choice between phone lock and a vault PIN"
+  },
+  "labelVaultLockPhone": "Phone lock",
+  "@labelVaultLockPhone": {
+    "description": "Option: the vault opens with the phone's own lock (fingerprint, PIN, pattern or password)"
+  },
+  "descVaultLockPhone": "Your fingerprint or the phone's screen lock opens the vault. Anyone who can unlock this phone can open it too.",
+  "@descVaultLockPhone": {
+    "description": "Explains the phone-lock option and its risk"
+  },
+  "descVaultLockPhoneUnavailable": "This phone has no screen lock. Turn one on in Android settings to use this.",
+  "@descVaultLockPhoneUnavailable": {
+    "description": "Shown under the phone-lock option when the phone has no screen lock"
+  },
+  "labelVaultLockPin": "Vault PIN",
+  "@labelVaultLockPin": {
+    "description": "Option: the vault opens with its own PIN"
+  },
+  "descVaultLockPin": "A separate 4 to 8 digit PIN, only for the vault. Safer if others know how to unlock your phone.",
+  "@descVaultLockPin": {
+    "description": "Explains the vault-PIN option"
+  },
+  "labelVaultUnlockWithPhoneLock": "Use phone lock",
+  "@labelVaultUnlockWithPhoneLock": {
+    "description": "Button that shows Android's prompt to open a phone-lock vault"
+  },
+  "bodyVaultPhoneLockPrompt": "This vault opens with your phone's lock.",
+  "@bodyVaultPhoneLockPrompt": {
+    "description": "Line on the locked screen of a phone-lock vault"
+  },
+  "errorVaultPhoneLockUnavailable": "This phone has no screen lock now. Turn one on in Android settings to open the vault.",
+  "@errorVaultPhoneLockUnavailable": {
+    "description": "A phone-lock vault cannot open because the phone's screen lock was turned off"
+  },
+  "labelVaultNext": "Next",
+  "@labelVaultNext": {
+    "description": "Button after the first PIN entry, before it is typed again"
+  },
+  "tooltipVaultPinDelete": "Delete digit",
+  "@tooltipVaultPinDelete": {
+    "description": "Tooltip of the PIN pad key that removes the last digit"
+  },
+  "titleVaultLockHeading": "Vault lock",
+  "@titleVaultLockHeading": {
+    "description": "Vault settings heading for choosing phone lock or a vault PIN"
+  },
+  "bodyVaultSwitchedToPhoneLock": "The vault now opens with your phone lock.",
+  "@bodyVaultSwitchedToPhoneLock": {
+    "description": "Confirmation after moving the vault to phone lock"
+  },
+  "bodyVaultSwitchedToPin": "The vault now opens with its own PIN.",
+  "@bodyVaultSwitchedToPin": {
+    "description": "Confirmation after moving the vault to its own PIN"
+  },
+  "titleVaultSetPin": "Set a vault PIN",
+  "@titleVaultSetPin": {
+    "description": "Title of the screen where a phone-lock vault gets its own PIN"
+  },
+  "bodyVaultRestoreDone": "{count, plural, =1{1 item restored to the gallery} other{{count} items restored to the gallery}}",
+  "@bodyVaultRestoreDone": {
+    "description": "After a restore from the vault",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "bodyVaultRestorePartial": "{done} restored, {failed} could not be restored",
+  "@bodyVaultRestorePartial": {
+    "description": "A restore where some items failed and stayed in the vault",
+    "placeholders": {
+      "done": {
+        "type": "int"
+      },
+      "failed": {
+        "type": "int"
+      }
+    }
+  },
+  "errorVaultRestoreFailed": "Nothing could be restored",
+  "@errorVaultRestoreFailed": {
+    "description": "Every item of a restore failed; all stay in the vault"
+  },
+  "bodyVaultRestoredElsewhere": "{count, plural, =1{1 went to Pictures/Drishya Restored.} other{{count} went to Pictures/Drishya Restored.}}",
+  "@bodyVaultRestoredElsewhere": {
+    "description": "Added after a restore when some items could not go back to their own folder",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "bodyVaultDeleteDone": "{count, plural, =1{1 item deleted for good} other{{count} items deleted for good}}",
+  "@bodyVaultDeleteDone": {
+    "description": "After deleting vault items for good",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "bodyVaultDeletePartial": "{done} deleted, {failed} could not be deleted",
+  "@bodyVaultDeletePartial": {
+    "description": "A delete-for-good where some items failed",
+    "placeholders": {
+      "done": {
+        "type": "int"
+      },
+      "failed": {
+        "type": "int"
+      }
+    }
+  },
+  "errorVaultDeleteFailed": "Nothing could be deleted",
+  "@errorVaultDeleteFailed": {
+    "description": "Every item of a delete-for-good failed"
   }
 }

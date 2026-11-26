@@ -17,3 +17,9 @@
 # missing classes is the whole fix. Do not "solve" this by adding the
 # dependency.
 -dontwarn com.google.android.play.core.**
+
+# Tink (vault bulk encryption). Its jar ships the protobuf-lite rules it
+# needs (META-INF/proguard/protobuf.pro). These two only silence warnings
+# about compile-time annotations that are not needed at runtime.
+-dontwarn com.google.errorprone.annotations.**
+-dontwarn javax.annotation.**

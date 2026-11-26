@@ -4453,4 +4453,105 @@ class AppLocalizationsSa extends AppLocalizations {
 
   @override
   String get actionSyncClose => 'पिधीयताम्';
+
+  @override
+  String get titleVaultLockChoice => 'पिधानं चीयताम्';
+
+  @override
+  String get labelVaultLockPhone => 'दूरवाणीपिधानम्';
+
+  @override
+  String get descVaultLockPhone =>
+      'भवतः अङ्गुलिमुद्रा दूरवाण्याः पटलपिधानं वा गुप्तकोशम् उद्घाटयति। यः कोऽपि इमां दूरवाणीम् उद्घाटयितुं शक्नोति, सः एनम् अपि उद्घाटयितुं शक्नोति।';
+
+  @override
+  String get descVaultLockPhoneUnavailable =>
+      'अस्यां दूरवाण्यां पटलपिधानं नास्ति। एतस्य उपयोगाय Android-विन्यासे तत् सक्रियं क्रियताम्।';
+
+  @override
+  String get labelVaultLockPin => 'गुप्तकोशगूढाङ्कः';
+
+  @override
+  String get descVaultLockPin =>
+      'केवलं गुप्तकोशाय पृथक् चतुरङ्कात् अष्टाङ्कपर्यन्तं गूढाङ्कः। अन्ये भवतः दूरवाणीम् उद्घाटयितुं जानन्ति चेत् एतत् सुरक्षिततरम्।';
+
+  @override
+  String get labelVaultUnlockWithPhoneLock => 'दूरवाणीपिधानप्रयोगः';
+
+  @override
+  String get bodyVaultPhoneLockPrompt =>
+      'अयं गुप्तकोशः भवतः दूरवाणीपिधानेन उद्घाट्यते।';
+
+  @override
+  String get errorVaultPhoneLockUnavailable =>
+      'अस्यां दूरवाण्याम् इदानीं पटलपिधानं नास्ति। गुप्तकोशम् उद्घाटयितुं Android-विन्यासे तत् सक्रियं क्रियताम्।';
+
+  @override
+  String get labelVaultNext => 'अग्रे';
+
+  @override
+  String get tooltipVaultPinDelete => 'अङ्कः अपनीयताम्';
+
+  @override
+  String get titleVaultLockHeading => 'गुप्तकोशपिधानम्';
+
+  @override
+  String get bodyVaultSwitchedToPhoneLock =>
+      'इतः परं गुप्तकोशः दूरवाणीपिधानेन उद्घाट्यते।';
+
+  @override
+  String get bodyVaultSwitchedToPin =>
+      'इतः परं गुप्तकोशः स्वगूढाङ्केन उद्घाट्यते।';
+
+  @override
+  String get titleVaultSetPin => 'गुप्तकोशगूढाङ्कः स्थाप्यताम्';
+
+  @override
+  String bodyVaultRestoreDone(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count वस्तूनि चित्रशालां प्रत्यानीतानि',
+      one: '1 वस्तु चित्रशालां प्रत्यानीता',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String bodyVaultRestorePartial(int done, int failed) {
+    return '$done प्रत्यानीतानि, $failed प्रत्यानेतुं न शक्तानि';
+  }
+
+  @override
+  String get errorVaultRestoreFailed => 'किमपि प्रत्यानेतुं न शक्तम्';
+
+  @override
+  String bodyVaultRestoredElsewhere(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count वस्तूनि Pictures/Drishya Restored इति कोष्ठं गतानि।',
+      one: '1 वस्तु Pictures/Drishya Restored इति कोष्ठं गता।',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String bodyVaultDeleteDone(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count वस्तूनि सर्वथा अपनीतानि',
+      one: '1 वस्तु सर्वथा अपनीता',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String bodyVaultDeletePartial(int done, int failed) {
+    return '$done अपनीतानि, $failed अपनेतुं न शक्तानि';
+  }
+
+  @override
+  String get errorVaultDeleteFailed => 'किमपि अपनेतुं न शक्तम्';
 }

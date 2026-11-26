@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/services.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:in_sreerajp_imgvidgal/core/errors/app_exception.dart';
+import 'package:in_sreerajp_imgvidgal/models/vault/vault_lock_mode.dart';
 import 'package:in_sreerajp_imgvidgal/models/vault/vault_security_settings.dart';
 import 'package:in_sreerajp_imgvidgal/core/logging/app_logger.dart';
 
@@ -39,6 +40,22 @@ abstract class VaultCredentialStore {
 
   /// Whether a PIN has been set at all.
   Future<bool> hasCredential();
+
+  /// How the vault opens, or null when it has not been set up.
+  ///
+  /// A stored PIN with no stored mode is [VaultLockMode.vaultPin]: that is
+  /// every vault made before the choice existed.
+  Future<VaultLockMode?> readLockMode();
+
+  /// Records how the vault opens.
+  Future<void> writeLockMode(VaultLockMode mode);
+
+  /// Erases only the PIN, leaving the mode and the settings.
+  ///
+  /// Used when the vault moves to phone lock. The mode is written first, so
+  /// an interruption leaves a phone-lock vault with a stale PIN that nothing
+  /// reads, never a vault with no way in.
+  Future<void> clearPin();
 
   /// Erases the credential and the settings.
   ///
@@ -78,6 +95,7 @@ class SecureVaultCredentialStore implements VaultCredentialStore {
   static const String _keyHash = 'vault_pin_hash';
   static const String _keyIterations = 'vault_pin_iterations';
   static const String _keySettings = 'vault_settings';
+  static const String _keyLockMode = 'vault_lock_mode';
 
   @override
   Future<String?> readSalt() => _read(_keySalt);
@@ -137,11 +155,32 @@ class SecureVaultCredentialStore implements VaultCredentialStore {
   }
 
   @override
+  Future<VaultLockMode?> readLockMode() async {
+    final stored = VaultLockMode.fromStorageName(await _read(_keyLockMode));
+    if (stored == VaultLockMode.phoneLock) return VaultLockMode.phoneLock;
+    // A PIN vault, whether the mode was written or not (older vaults never
+    // wrote one). "vaultPin" with no PIN left is not a usable vault.
+    return await hasCredential() ? VaultLockMode.vaultPin : null;
+  }
+
+  @override
+  Future<void> writeLockMode(VaultLockMode mode) =>
+      _write(_keyLockMode, mode.storageName);
+
+  @override
+  Future<void> clearPin() async {
+    await _delete(_keyHash);
+    await _delete(_keySalt);
+    await _delete(_keyIterations);
+  }
+
+  @override
   Future<void> clear() async {
     await _delete(_keyHash);
     await _delete(_keySalt);
     await _delete(_keyIterations);
     await _delete(_keySettings);
+    await _delete(_keyLockMode);
   }
 
   Future<String?> _read(String key) async {
@@ -184,6 +223,7 @@ class InMemoryVaultCredentialStore implements VaultCredentialStore {
   String? _salt;
   String? _hash;
   int? _iterations;
+  VaultLockMode? _lockMode;
   VaultSecuritySettings _settings = VaultSecuritySettings.defaults;
 
   @override
@@ -219,10 +259,29 @@ class InMemoryVaultCredentialStore implements VaultCredentialStore {
       (_salt?.isNotEmpty ?? false) && (_hash?.isNotEmpty ?? false);
 
   @override
+  Future<VaultLockMode?> readLockMode() async {
+    if (_lockMode == VaultLockMode.phoneLock) return VaultLockMode.phoneLock;
+    return await hasCredential() ? VaultLockMode.vaultPin : null;
+  }
+
+  @override
+  Future<void> writeLockMode(VaultLockMode mode) async {
+    _lockMode = mode;
+  }
+
+  @override
+  Future<void> clearPin() async {
+    _salt = null;
+    _hash = null;
+    _iterations = null;
+  }
+
+  @override
   Future<void> clear() async {
     _salt = null;
     _hash = null;
     _iterations = null;
+    _lockMode = null;
     _settings = VaultSecuritySettings.defaults;
   }
 }

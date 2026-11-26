@@ -24,8 +24,14 @@ class VaultScreen extends ConsumerStatefulWidget {
   ConsumerState<VaultScreen> createState() => _VaultScreenState();
 }
 
+/// Which vault batch this screen started last, so its result gets that
+/// action's message (a restore must not say "moved to the vault").
+enum _BatchKind { import, restore, delete }
+
 class _VaultScreenState extends ConsumerState<VaultScreen> {
   final Set<String> _selectedIds = <String>{};
+
+  _BatchKind _lastBatch = _BatchKind.import;
 
   bool get _selectionMode => _selectedIds.isNotEmpty;
 
@@ -52,6 +58,7 @@ class _VaultScreenState extends ConsumerState<VaultScreen> {
     );
     if (choice == null || choice.items.isEmpty || !mounted) return;
 
+    _lastBatch = _BatchKind.import;
     await ref
         .read(vaultBatchControllerProvider.notifier)
         .import(choice.items, shredOriginals: choice.shredOriginals);
@@ -71,11 +78,13 @@ class _VaultScreenState extends ConsumerState<VaultScreen> {
     if (!agreed || !mounted) return;
 
     final controller = ref.read(vaultBatchControllerProvider.notifier);
-    final fallbackFolderUri = await _askForFallbackFolder(
-      controller.findItemsWithMissingFolder(chosen).length,
-    );
+    // Android 9 and older only; on Android 10+ nothing is ever missing.
+    final missing = await controller.findItemsWithMissingFolder(chosen);
+    if (!mounted) return;
+    final fallbackFolderUri = await _askForFallbackFolder(missing.length);
     if (!mounted) return;
 
+    _lastBatch = _BatchKind.restore;
     await controller.restore(chosen, fallbackFolderUri: fallbackFolderUri);
     if (mounted) _clearSelection();
   }
@@ -124,6 +133,7 @@ class _VaultScreenState extends ConsumerState<VaultScreen> {
     );
     if (!agreed || !mounted) return;
 
+    _lastBatch = _BatchKind.delete;
     await ref.read(vaultBatchControllerProvider.notifier).deleteForever(chosen);
     if (mounted) _clearSelection();
   }
@@ -205,6 +215,10 @@ class _VaultScreenState extends ConsumerState<VaultScreen> {
                 ),
           body: SafeArea(
             child: items.when(
+              // A refresh (after a batch, or a format upgrade) keeps the
+              // current grid on screen; only the very first load shows the
+              // spinner. Taking the grid away mid-gesture cancels it.
+              skipLoadingOnReload: true,
               loading: () => const Center(child: CircularProgressIndicator()),
               error: (_, _) => Center(child: Text(l10n.errorVaultAuth)),
               data: (list) =>
@@ -293,14 +307,45 @@ class _VaultScreenState extends ConsumerState<VaultScreen> {
         error: (_, _) {
           ScaffoldMessenger.of(
             context,
-          ).showSnackBar(SnackBar(content: Text(l10n.errorVaultImportFailed)));
+          ).showSnackBar(SnackBar(content: Text(_failureMessage(l10n))));
           ref.read(vaultBatchControllerProvider.notifier).clearResult();
         },
       );
     });
   }
 
+  /// The "nothing worked" line for the batch that just ran.
+  String _failureMessage(AppLocalizations l10n) {
+    switch (_lastBatch) {
+      case _BatchKind.import:
+        return l10n.errorVaultImportFailed;
+      case _BatchKind.restore:
+        return l10n.errorVaultRestoreFailed;
+      case _BatchKind.delete:
+        return l10n.errorVaultDeleteFailed;
+    }
+  }
+
   String _messageForResult(VaultBatchResult result, AppLocalizations l10n) {
+    if (result.isTotalFailure) return _failureMessage(l10n);
+    switch (_lastBatch) {
+      case _BatchKind.import:
+        return _importMessage(result, l10n);
+      case _BatchKind.delete:
+        return result.isPartial
+            ? l10n.bodyVaultDeletePartial(
+                result.succeededCount,
+                result.failedCount,
+              )
+            : l10n.bodyVaultDeleteDone(result.succeededCount);
+      case _BatchKind.restore:
+        final main = _restoreMessage(result, l10n);
+        if (result.fallbackCount <= 0) return main;
+        return '$main ${l10n.bodyVaultRestoredElsewhere(result.fallbackCount)}';
+    }
+  }
+
+  String _restoreMessage(VaultBatchResult result, AppLocalizations l10n) {
     if (result.skippedCount > 0) {
       return result.failedCount > 0
           ? l10n.bodyVaultRestoreSkippedFailed(
@@ -313,7 +358,16 @@ class _VaultScreenState extends ConsumerState<VaultScreen> {
               result.skippedCount,
             );
     }
-    if (result.isTotalFailure) return l10n.errorVaultImportFailed;
+    if (result.isPartial) {
+      return l10n.bodyVaultRestorePartial(
+        result.succeededCount,
+        result.failedCount,
+      );
+    }
+    return l10n.bodyVaultRestoreDone(result.succeededCount);
+  }
+
+  String _importMessage(VaultBatchResult result, AppLocalizations l10n) {
     if (result.isPartial) {
       return l10n.bodyVaultImportPartial(
         result.succeededCount,

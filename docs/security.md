@@ -56,8 +56,9 @@ release may ship while a line is `open` (store readiness §1).
    the peer-to-peer transfer feature alone, which opens a socket only to another device on the
    same Wi-Fi. No media, metadata or diagnostics ever reach anywhere the user did not pair with
    by hand. See §19.
-2. **Hardware-backed private vault.** Vault files are AES-256-GCM encrypted under a key held in
-   the Android Keystore.
+2. **Hardware-backed private vault.** Vault files are AES-256-GCM encrypted (Tink streaming
+   AEAD) under a data keyset that a key held in the Android Keystore seals (envelope
+   encryption, §6).
 3. **Anti-forensic shredding.** Files leaving for the vault are overwritten before deletion.
 4. **Screen protection.** `FLAG_SECURE` blocks screenshots, screen recording and the recent-apps
    preview on vault screens always, and on every screen when the user turns on "Hide content".
@@ -116,9 +117,11 @@ standard §15.1, "Input from outside the app").
 
 | Data Type | Example | Where It Exists | Protection |
 |---|---|---|---|
-| Vault media | Private photos and videos | App-private files (`.enc`) | AES-256-GCM, Keystore key |
-| Vault encryption key | 256-bit AES key | Android Keystore | Hardware-backed; never leaves the Keystore |
-| Vault PIN | User PIN | Memory only, briefly | Stored as a PBKDF2 hash + salt + iteration count in `flutter_secure_storage`; the PIN itself is never stored |
+| Vault media | Private photos and videos | App-private files (`.enc`, `.thm`) | AES-256-GCM: Tink streaming AEAD under the data keyset (format 2); old items AES-GCM under the master key (format 1) until converted |
+| Vault master key | 256-bit AES key | Android Keystore (StrongBox when present) | Hardware-backed; never leaves the Keystore. Seals only the data keyset (and old format-1 items) |
+| Vault data keyset | Tink `AES256_GCM_HKDF_1MB` keyset | `vault_data_key.bin` in the vault folder, sealed by the master key; in memory only while the vault is open | Useless without the master key. Dropped from memory on lock (`forgetDataKey`). Never swept, shredded or replaced while the vault has items — losing it loses every format-2 item |
+| Vault PIN | User PIN (PIN mode only) | Memory only, briefly | Stored as a PBKDF2 hash + salt + iteration count in `flutter_secure_storage`; the PIN itself is never stored. Erased when the vault moves to phone lock |
+| Vault lock mode | `phoneLock` or `vaultPin` | `flutter_secure_storage` (`vault_lock_mode`) | Not secret, but kept beside the PIN so both change together |
 | Vault metadata | Original file name, size, tags, notes | `vault_items` table in the app database | App-private storage, `allowBackup="false"`. **Stored as plain text** — see §17 |
 | Biometric state | Fingerprint / face | Android OS | Handled by `local_auth` / BiometricPrompt; the app never sees it |
 | Media notes | Private markdown notes | `media_items.user_notes` | App-private storage; never logged |
@@ -172,24 +175,60 @@ standard §15.1, "Input from outside the app").
 User Biometric / PIN Auth
        │ (Success)
        ▼
-Android Keystore Master Key (AES-256)
-       │
+Android Keystore Master Key (AES-256-GCM, StrongBox when present)
+       │  opens (only a few hundred bytes go through the secure hardware)
        ▼
-AES-256-GCM Cipher (Random 96-bit IV + 128-bit Auth Tag)
-       │
+Data keyset (Tink AES256_GCM_HKDF_1MB), in memory while the vault is open
+       │  bulk encryption on the normal CPU, 1 MB segments, each with its own tag
        ▼
-Encrypted Media Stream (.enc) in App-Private Storage
+Encrypted Media Stream (.enc / .thm) in App-Private Storage
 ```
 
-- **Encryption algorithm:** AES-256-GCM everywhere (vault, backup, transfer).
+**Envelope encryption (schema v10).** Sending every byte of a photo through the Keystore was
+very slow (each byte went into the secure hardware and back, in 512-byte pieces), and StrongBox
+is slower still. Now the master key seals only the data keyset, and the data keyset does the
+bulk work. Each payload has a random 128-bit file id, stored in the `iv` column and bound to the
+ciphertext as associated data, so two payload files swapped on disk fail their check. Tink's
+streaming format checks each 1 MB segment on its own, so a large video is never held in memory
+whole, and cut, swapped or reordered segments are refused.
+
+**Read-back before trust.** No vault payload counts as written until it has been read back.
+While encrypting, Kotlin runs the plaintext through SHA-256 and returns the digest and length.
+`VaultCryptoService.verifyWritten` then calls `digestPayload`, which decrypts the new file as a
+stream and returns only its digest and length; nothing decrypted crosses the channel or
+touches disk. If they differ, or the read fails, the new file is deleted and the readable copy
+is kept:
+
+- **Format upgrade:** before the row moves and the old file is deleted. On failure the whole
+  run stops, because it most likely means a device problem; the next unlock tries again.
+- **Import:** before the row is inserted, so a bad payload never hides or shreds an original.
+- **Phone-move receive:** before the row is inserted.
+
+A preview that fails is dropped (or kept in its old format) and never fails the item. The
+digest is held only for the check: it is never stored or logged.
+
+**Formats.** `vault_items.payload_format` / `thumbnail_format`: 1 = old (AES-GCM straight
+under the master key, IV in `iv`), 2 = current. Every write is format 2. Format 1 is only read,
+and `VaultUpgradeService` converts it in the background after unlock: new file under a new
+name, then one row update (`VaultDao.updateEncryption`), then the old ciphertext file is
+deleted. A crash leaves a file no row points at, which the orphan sweep removes.
+`VaultDao.updateVaultItem` (rename, notes, tags) never writes the crypto columns, so a screen
+holding an old copy of a row cannot point it back at a deleted file.
+
+- **Encryption algorithm:** AES-256-GCM everywhere (vault, backup, transfer). The vault uses
+  Google Tink (`tink-android`, Apache-2.0) for its streaming format.
 - **Key derivation:** PBKDF2-HMAC-SHA256 — 120 000 iterations for the vault PIN hash, 210 000
   for backup passwords. Transfer keys use HMAC-SHA256 over the pairing secret (§19.2).
 - **Nonce / IV strategy:** a fresh random 96-bit IV for every file, thumbnail and frame. An IV is
-  never reused under a key.
+  never reused under a key. Vault format 2: Tink derives a fresh key and nonce prefix per file
+  from a random salt in the file header; the stored value is the file id described above.
 - **Format versioning:** the backup header has a version byte; the transfer handshake carries a
   protocol version; the PIN iteration count is stored so it can be raised later.
 - **Legacy format support:** schema v2 added a separate IV for vault thumbnails. Older rows have
-  none and are shown with no preview, never with wrong bytes.
+  none and are shown with no preview, never with wrong bytes. Schema v10 added the payload
+  format; rows from before it are format 1 and are converted after unlock.
+- **PIN hashing** runs on a background isolate (`VaultPinService.hashPinInBackground` /
+  `verifyPinInBackground`), so the 120 000 rounds no longer freeze the screen. Same hash.
 
 ### 6.1 Android Keystore master key
 
@@ -233,8 +272,41 @@ defeats undelete tools and casual recovery, not a laboratory. The settings text 
 ### 6.3 Zero cache leaks
 
 - Vault thumbnails are decrypted into memory only.
+- **How a vault preview is made.** For a gallery item, from MediaStore's own thumbnail
+  (`loadThumbnail(uri)`), straight into memory and then the encryptor. Android 10 does not let
+  this app read shared photos by path; until 2026-11-25 previews were decoded from the path,
+  so every one failed there. For a staged phone-move file (app-private), it is decoded from its
+  path on a background isolate.
+- **Previews for items that have none** (`VaultPreviewBackfillService`, after unlock, after the
+  format upgrade). A photo is decrypted and decoded in memory on the Android side
+  (`previewFromPayload`: sampled decode, EXIF rotation, 320 px JPEG, the plaintext buffer wiped
+  after). A video uses the app-private playback working file, shredded at once. Each preview is
+  read back (`verifyWritten`) before it is recorded.
+- **Known, outside the app's control:** Android's MediaStore keeps its own cached thumbnail of
+  every gallery photo in its private storage. The gallery grid had one made before any photo
+  was vaulted. It goes when the original's MediaStore entry is deleted (shredding the original
+  does that); while an original is only hidden, Android's thumbnail stays. The vault adds no
+  copy of its own: `loadThumbnail` reuses Android's.
 - No decrypted vault frame or thumbnail is ever written to shared storage or
   `getTemporaryDirectory()`.
+
+### 6.4 Restoring out of the vault
+
+- **Android 10 and later:** `VaultChannelHandler.restoreToGallery` makes a pending MediaStore
+  entry (`IS_PENDING = 1`, invisible to other apps) and decrypts the payload straight into it.
+  The plaintext never lands in app storage, not even as a working file. It then reads the new
+  file back and compares SHA-256 and length with what it wrote. Only on a match is the entry
+  made visible; on any failure it is deleted. The vault copy is shredded only after this
+  succeeds. Before 2026-11-25 restores wrote with plain file paths, which scoped storage
+  refuses on Android 10, so every restore failed there.
+- **Where it goes:** `RestoreTargetRules` (checked again in Kotlin by
+  `MediaStoreWriter.isAllowedRelativePath`) keeps the original folder when MediaStore allows it
+  (photos: `DCIM/…`, `Pictures/…`; videos: also `Movies/…`; at most 4 plain levels) and
+  re-creates it if needed. Anything else goes to `Pictures/Drishya Restored`, and the result
+  message says so. A stored path can never make a restore write outside those folders.
+- **Android 9 and older:** the path route stays (decrypt to memory or an app-private working
+  file, then write beside the original; a folder picker when the folder is gone).
+- No broad storage permission is involved; MediaStore lets an app add its own files.
 
 ### Rules
 
@@ -247,13 +319,37 @@ defeats undelete tools and casual recovery, not a laboratory. The settings text 
 ## 7. Authentication And Access Control
 
 - **App-lock strategy:** the vault only (the rest of the gallery shows the phone's own public
-  media). Android BiometricPrompt with a PIN fallback.
-- **Fallback behavior:** the PIN, checked against the PBKDF2 hash.
+  media). The user chooses one of two locks (`VaultLockMode`), on the create-vault screen and
+  later in Vault settings:
+  - **Phone lock** (default for a new vault, when the phone has a secure lock screen):
+    Android's prompt with `biometricOnly: false`, so a fingerprint or the phone's PIN,
+    pattern or password opens it. **Weaker against anyone who knows the phone's unlock**
+    (family, a partner, anyone who has watched it). The create screen says so. Android counts
+    and locks out wrong tries. If the phone loses its screen lock later, the vault stays shut
+    until one is turned on again; there is no bypass.
+  - **Vault PIN** (pre-selected, and the only choice, when the phone has no screen lock): the
+    app's own 4–8 digit PIN, checked against the PBKDF2 hash, with the app's back-off. The
+    optional fingerprint shortcut uses `biometricOnly: **true**`. Before 2026-11-25 it used
+    the `local_auth` default (`false`), which let the phone's own PIN open a PIN vault through
+    the prompt's "Use PIN" button.
+- **Which mode a vault is in** is its own secure-storage value (`vault_lock_mode`), not part
+  of the settings JSON. A stored PIN with no mode is always a PIN vault, so vaults made before
+  the choice existed never move to the new default.
+- **Switching** happens only inside an open vault. To phone lock: the prompt must pass, then
+  the mode is written, then the PIN is erased. To a PIN: the new PIN is stored, then the mode
+  is written. An interruption leaves a vault that still opens.
+- **Fallback behavior:** none between modes. Each mode has exactly one way in (plus the
+  fingerprint shortcut in PIN mode).
 - **Session-expiry rule:** idle auto-lock after 30 s, 60 s (default) or 5 min, chosen by the user.
 - **Background lock rule:** the vault locks at once on `inactive`, `hidden`, `paused` or
   `detached` (`VaultLockPolicy`, applied by `VaultAutoLockScope`).
 - **Protected-route strategy:** `/vault` opens `VaultGateScreen`; nothing inside is shown until
-  the user unlocks.
+  the user unlocks. go_router builds only the target page of a pushed child route, so
+  `/vault/settings` (also reachable from Settings → Privacy) shows the gate itself while the
+  vault is shut, and `/vault/viewer` draws nothing and closes. "Move to vault" from the
+  multi-select bar opens the gate first, as the viewer does, so nothing enters a vault whose
+  lock has not been chosen. (Before 2026-11-25 vault settings opened without unlocking, and
+  the batch move skipped set-up.)
 - **Lock screen implementation:** `lib/screens/vault/vault_gate_screen.dart`.
 
 ---

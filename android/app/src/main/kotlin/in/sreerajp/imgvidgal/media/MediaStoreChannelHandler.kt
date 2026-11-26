@@ -42,6 +42,10 @@ class MediaStoreChannelHandler(
     messenger: BinaryMessenger
 ) : MethodChannel.MethodCallHandler, PluginRegistry.RequestPermissionsResultListener {
 
+    /** The pending-row writer, shared with the vault restore. */
+    private val mediaWriter = MediaStoreWriter(activity)
+
+
     companion object {
         const val CHANNEL_NAME = "in.sreerajp.imgvidgal/mediastore"
         private const val PERMISSION_REQUEST_CODE = 4711
@@ -66,7 +70,6 @@ class MediaStoreChannelHandler(
         private const val ERROR_INVALID_ARGUMENTS = "invalid_arguments"
 
         /** How many numbered names a refused save tries before giving up. */
-        private const val GHOST_RENAME_TRIES = 5
 
         /** Below this many missing files the safety stop never triggers. */
         private const val STALE_SAFETY_MIN = 20
@@ -770,73 +773,16 @@ class MediaStoreChannelHandler(
      * missing path drops the ghost; if the insert is still refused, a
      * numbered name is tried, as Android itself does for a real clash.
      */
+    /** See [MediaStoreWriter.insertWithGhostRecovery]; shared with the vault. */
     private fun insertWithGhostRecovery(
         collection: Uri,
         values: android.content.ContentValues,
         relativePath: String,
         displayName: String
-    ): Uri {
-        val resolver = activity.contentResolver
-        tryInsert(resolver, collection, values)?.let { return it }
-        if (Build.VERSION.SDK_INT != Build.VERSION_CODES.Q) {
-            throw IllegalStateException("MediaStore refused the insert")
-        }
+    ): Uri = mediaWriter.insertWithGhostRecovery(collection, values, relativePath, displayName)
 
-        @Suppress("DEPRECATION")
-        val root = android.os.Environment.getExternalStorageDirectory()
-        val target = java.io.File(java.io.File(root, relativePath), displayName)
-        val missing = try {
-            !target.exists()
-        } catch (_: Exception) {
-            false
-        }
-        if (missing) {
-            rescanMissing(listOf(target.absolutePath))
-            tryInsert(resolver, collection, values)?.let { return it }
-        }
-
-        val dot = displayName.lastIndexOf('.')
-        val stem = if (dot > 0) displayName.substring(0, dot) else displayName
-        val extension = if (dot > 0) displayName.substring(dot) else ""
-        for (n in 1..GHOST_RENAME_TRIES) {
-            values.put(MediaStore.MediaColumns.DISPLAY_NAME, "$stem ($n)$extension")
-            tryInsert(resolver, collection, values)?.let { return it }
-        }
-        throw IllegalStateException("MediaStore refused the insert")
-    }
-
-    private fun tryInsert(
-        resolver: ContentResolver,
-        collection: Uri,
-        values: android.content.ContentValues
-    ): Uri? = try {
-        resolver.insert(collection, values)
-    } catch (e: SecurityException) {
-        throw e
-    } catch (_: Exception) {
-        null
-    }
-
-    /**
-     * Asks Android's scanner to look at [paths], each a file that is gone.
-     *
-     * For a missing single file, Android 10's scanner removes that path's
-     * row (it never touches a file). Single files only, never a folder: a
-     * folder scan matches rows by path prefix, so scanning `Camera` would
-     * also drop rows in a sibling `Camera2` that it did not walk.
-     *
-     * Blocks until the scanner reports back or a timeout passes, so it must
-     * run on the worker thread.
-     */
-    private fun rescanMissing(paths: List<String>) {
-        if (paths.isEmpty()) return
-        val latch = CountDownLatch(paths.size)
-        MediaScannerConnection.scanFile(activity, paths.toTypedArray(), null) { _, _ ->
-            latch.countDown()
-        }
-        val seconds = (10L + paths.size / 10L).coerceAtMost(120L)
-        latch.await(seconds, TimeUnit.SECONDS)
-    }
+    /** See [MediaStoreWriter.rescanMissing]. Blocks; worker thread only. */
+    private fun rescanMissing(paths: List<String>) = mediaWriter.rescanMissing(paths)
 
     /**
      * Whether [path] names a file that is gone, on Android 10 only.
@@ -1010,25 +956,7 @@ class MediaStoreChannelHandler(
     }
 
     /** Reads back the on-disk path MediaStore gave a newly written file. */
-    private fun resolvePath(uri: Uri): String? {
-        return try {
-            activity.contentResolver.query(
-                uri,
-                arrayOf(MediaStore.MediaColumns.DATA),
-                null,
-                null,
-                null
-            )?.use { cursor ->
-                if (cursor.moveToFirst()) {
-                    cursor.getStringOrNull(MediaStore.MediaColumns.DATA)
-                } else {
-                    null
-                }
-            }
-        } catch (_: Exception) {
-            null
-        }
-    }
+    private fun resolvePath(uri: Uri): String? = mediaWriter.resolvePath(uri)
 
     private fun secondsToMillis(seconds: Long?): Long =
         if (seconds == null || seconds <= 0L) 0L else seconds * 1000L

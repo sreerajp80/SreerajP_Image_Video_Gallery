@@ -122,6 +122,111 @@ void main() {
         expect(retrieved!.thumbnailIv, isNull);
       });
 
+      group('payload formats', () {
+        test('a new record is the old format unless told otherwise', () async {
+          await vaultDao.insertVaultItem(testVaultItem);
+
+          final read = await vaultDao.getVaultItemById(testVaultItem.id);
+          expect(read!.payloadFormat, 1);
+          expect(read.thumbnailFormat, 1);
+        });
+
+        test('updateVaultItem never writes the crypto columns', () async {
+          // A notes screen that loaded the row before the upgrade converted
+          // it must not point the row back at the deleted old file.
+          await vaultDao.insertVaultItem(testVaultItem);
+          final converted = testVaultItem.copyWith(
+            encryptedFilename: 'new.enc',
+            iv: 'bmV3',
+            payloadFormat: 2,
+            thumbnailFormat: 2,
+          );
+          await vaultDao.updateEncryption(converted);
+
+          await vaultDao.updateVaultItem(
+            testVaultItem.copyWith(notes: 'edited later'),
+          );
+
+          final read = await vaultDao.getVaultItemById(testVaultItem.id);
+          expect(read!.notes, 'edited later');
+          expect(read.encryptedFilename, 'new.enc');
+          expect(read.iv, 'bmV3');
+          expect(read.payloadFormat, 2);
+        });
+
+        test('updateEncryption changes only the crypto columns', () async {
+          await vaultDao.insertVaultItem(testVaultItem);
+
+          final rows = await vaultDao.updateEncryption(
+            testVaultItem.copyWith(
+              encryptedFilename: 'new.enc',
+              notes: 'must not be written',
+              payloadFormat: 2,
+            ),
+          );
+
+          expect(rows, 1);
+          final read = await vaultDao.getVaultItemById(testVaultItem.id);
+          expect(read!.encryptedFilename, 'new.enc');
+          expect(read.notes, testVaultItem.notes);
+        });
+
+        test('updateEncryption on a deleted record changes nothing', () async {
+          expect(await vaultDao.updateEncryption(testVaultItem), 0);
+        });
+
+        test('getLegacyFormatIds lists only rows left to convert', () async {
+          await vaultDao.insertVaultItem(testVaultItem);
+          await vaultDao.insertVaultItem(
+            testVaultItem.copyWith(
+              id: 'done',
+              payloadFormat: 2,
+              thumbnailFormat: 2,
+            ),
+          );
+          // Payload done, preview still old and readable: still listed.
+          await vaultDao.insertVaultItem(
+            testVaultItem.copyWith(
+              id: 'preview_left',
+              payloadFormat: 2,
+              thumbnailIv: 'dGg=',
+            ),
+          );
+
+          final ids = await vaultDao.getLegacyFormatIds();
+          expect(
+            ids,
+            unorderedEquals(<String>[testVaultItem.id, 'preview_left']),
+          );
+        });
+      });
+
+      test('getIdsWithoutPreview lists rows with no usable preview', () async {
+        await vaultDao.insertVaultItem(
+          testVaultItem.copyWith(id: 'has', thumbnailIv: 'dGg='),
+        );
+        // A preview file but no IV (before schema 2) cannot be opened.
+        await vaultDao.insertVaultItem(testVaultItem.copyWith(id: 'no_iv'));
+        await vaultDao.insertVaultItem(
+          VaultItem(
+            id: 'none',
+            originalPath: '/storage/DCIM/x.jpg',
+            originalFilename: 'x.jpg',
+            encryptedFilename: 'x.enc',
+            mediaType: MediaType.image,
+            mimeType: 'image/jpeg',
+            sizeBytes: 1,
+            iv: 'aXY=',
+            dateVaulted: now,
+          ),
+        );
+
+        expect(
+          await vaultDao.getIdsWithoutPreview(),
+          unorderedEquals(<String>['no_iv', 'none']),
+        );
+      });
+
       group('getVaultItemsByIds', () {
         test('returns the records asked for, newest first', () async {
           await vaultDao.insertVaultItem(testVaultItem);

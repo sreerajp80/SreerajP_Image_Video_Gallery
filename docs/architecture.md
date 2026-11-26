@@ -144,7 +144,13 @@ A new file over 500 lines needs a split or a row here.
 - **Database open and migration** happen on first use through the repository providers, not in
   `main()`. This keeps the first frame fast. `DatabaseHelper` runs `_onUpgrade` when it opens.
 - **Secure storage** (`flutter_secure_storage`) is read only when the vault is opened.
-- **Vault key** is created in the Android Keystore the first time the vault is set up.
+- **Vault lock** is chosen on the create-vault screen: phone lock (default when the phone has a
+  screen lock) or a vault PIN (`VaultLockMode`, stored by `VaultCredentialStore`). It can be
+  switched in Vault settings, which shows the gate while the vault is shut.
+- **Vault key** is created in the Android Keystore the first time the vault is set up. The
+  data keyset it seals is created on the first vault write and loaded on the first read after
+  unlock; it is dropped on lock. After unlock, `VaultUpgradeService` converts old-format items
+  in the background, one at a time, and pauses while a vault batch runs.
 - **Lifecycle observers** are registered per screen (vault, transfer), not globally. See §6.
 
 ---
@@ -287,6 +293,7 @@ Migration history:
 | 7 | `media_items.is_out_of_reach` (0/1, default 0) with its value triggers. Marks rows Android does not currently let the app see, so lists hide them without losing their data |
 | 8 | Triggers keep `albums.item_count` and `tags.item_count` equal to the number of visible linked photos, plus an index on `album_media_entries.media_id`. The upgrade recounts every album and tag once |
 | 9 | New `sync_marks` table (media id, other phone's install id, SHA-256, size, time; deleted with its media row) for Device Sync "sent to that phone" marks. A new, empty table |
+| 10 | `vault_items.payload_format` and `thumbnail_format` (1 or 2, default 1) with their value triggers. Envelope encryption: every old row is format 1 and is converted after unlock by `VaultUpgradeService` |
 
 Upgrade paths are tested in `test/repositories/database/database_migration_test.dart`.
 

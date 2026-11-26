@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:isolate';
 import 'dart:math';
 import 'dart:typed_data';
 
@@ -52,6 +53,46 @@ class VaultPinService {
     );
     return base64Encode(derived);
   }
+
+  /// [hashPin] on a background isolate.
+  ///
+  /// The hash is deliberately slow (many thousand HMAC rounds). Run on the UI
+  /// isolate it froze the screen at unlock; here the PIN pad stays responsive.
+  /// Same inputs, same result.
+  Future<String> hashPinInBackground(
+    String pin,
+    String saltBase64, {
+    int iterations = AppConstants.vaultPinIterations,
+  }) => _runHash(pin, saltBase64, iterations);
+
+  /// [verifyPin] on a background isolate. See [hashPinInBackground].
+  Future<bool> verifyPinInBackground(
+    String pin,
+    String saltBase64,
+    String expectedHashBase64, {
+    int iterations = AppConstants.vaultPinIterations,
+  }) => _runVerify(pin, saltBase64, expectedHashBase64, iterations);
+
+  // Static, so the closure sent to the isolate captures only the strings and
+  // the count, never this object or its random source.
+  static Future<String> _runHash(String pin, String salt, int iterations) =>
+      Isolate.run(
+        () => VaultPinService().hashPin(pin, salt, iterations: iterations),
+      );
+
+  static Future<bool> _runVerify(
+    String pin,
+    String salt,
+    String expected,
+    int iterations,
+  ) => Isolate.run(
+    () => VaultPinService().verifyPin(
+      pin,
+      salt,
+      expected,
+      iterations: iterations,
+    ),
+  );
 
   /// Whether [pin] derives to [expectedHashBase64] under [saltBase64].
   ///

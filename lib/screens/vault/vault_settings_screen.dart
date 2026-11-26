@@ -3,8 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:in_sreerajp_imgvidgal/core/constants/app_constants.dart';
 import 'package:in_sreerajp_imgvidgal/l10n/generated/app_localizations.dart';
 import 'package:in_sreerajp_imgvidgal/models/vault/vault_auth_outcome.dart';
+import 'package:in_sreerajp_imgvidgal/models/vault/vault_lock_mode.dart';
 import 'package:in_sreerajp_imgvidgal/models/vault/vault_security_settings.dart';
 import 'package:in_sreerajp_imgvidgal/providers/vault_providers.dart';
+import 'package:in_sreerajp_imgvidgal/screens/vault/vault_gate_screen.dart';
 import 'package:in_sreerajp_imgvidgal/core/domain/vault/vault_pin_rules.dart';
 import 'package:in_sreerajp_imgvidgal/widgets/vault/secure_screen.dart';
 import 'package:in_sreerajp_imgvidgal/widgets/vault/vault_auto_lock_scope.dart';
@@ -23,6 +25,17 @@ class VaultSettingsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
+
+    // This page is reachable from app Settings as well as from inside the
+    // vault, and go_router builds only this page, not the gate in front of
+    // it. So it guards itself: a shut vault shows the gate here, and the
+    // settings appear once it is opened. Only the open/shut flag is watched,
+    // not every touch.
+    final unlocked = ref.watch(
+      vaultLockControllerProvider.select((lock) => lock.isUnlocked),
+    );
+    if (!unlocked) return const VaultGateScreen();
+
     final settings = ref.watch(vaultSettingsProvider);
 
     return SecureScreen(
@@ -58,8 +71,51 @@ class _SettingsList extends ConsumerWidget {
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
 
+    final mode = ref.watch(vaultLockModeProvider).value;
+    final phoneLockAvailable =
+        ref.watch(vaultPhoneLockAvailableProvider).value ?? false;
+    final isPin = mode == VaultLockMode.vaultPin;
+
     return ListView(
       children: <Widget>[
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+          child: Text(
+            l10n.titleVaultLockHeading,
+            style: theme.textTheme.titleMedium,
+          ),
+        ),
+        if (mode != null)
+          RadioGroup<VaultLockMode>(
+            groupValue: mode,
+            onChanged: (value) {
+              if (value == null || value == mode) return;
+              _switchLock(context, ref, value);
+            },
+            child: Column(
+              children: <Widget>[
+                RadioListTile<VaultLockMode>(
+                  value: VaultLockMode.phoneLock,
+                  // Always selectable when it is the current lock, so it is
+                  // never shown greyed out as if it were not chosen.
+                  enabled: phoneLockAvailable || !isPin,
+                  title: Text(l10n.labelVaultLockPhone),
+                  subtitle: Text(
+                    phoneLockAvailable || !isPin
+                        ? l10n.descVaultLockPhone
+                        : l10n.descVaultLockPhoneUnavailable,
+                  ),
+                ),
+                RadioListTile<VaultLockMode>(
+                  value: VaultLockMode.vaultPin,
+                  title: Text(l10n.labelVaultLockPin),
+                  subtitle: Text(l10n.descVaultLockPin),
+                ),
+              ],
+            ),
+          ),
+        const Divider(),
+
         _SectionHeader(
           title: l10n.titleVaultAutoLockHeading,
           body: l10n.bodyVaultAutoLock,
@@ -87,14 +143,18 @@ class _SettingsList extends ConsumerWidget {
         ),
         const Divider(),
 
-        SwitchListTile(
-          value: settings.biometricEnabled,
-          onChanged: (value) =>
-              _save(ref, settings.copyWith(biometricEnabled: value)),
-          title: Text(l10n.titleVaultBiometricHeading),
-          subtitle: Text(l10n.bodyVaultBiometric),
-        ),
-        const Divider(),
+        // A shortcut over the vault PIN only. In phone-lock mode the
+        // fingerprint is already part of Android's prompt.
+        if (isPin) ...<Widget>[
+          SwitchListTile(
+            value: settings.biometricEnabled,
+            onChanged: (value) =>
+                _save(ref, settings.copyWith(biometricEnabled: value)),
+            title: Text(l10n.titleVaultBiometricHeading),
+            subtitle: Text(l10n.bodyVaultBiometric),
+          ),
+          const Divider(),
+        ],
 
         _SectionHeader(
           title: l10n.titleVaultShredHeading,
@@ -130,12 +190,14 @@ class _SettingsList extends ConsumerWidget {
         ),
         const Divider(),
 
-        ListTile(
-          leading: const Icon(Icons.password_outlined),
-          title: Text(l10n.titleVaultChangePin),
-          onTap: () => _openChangePin(context, ref),
-        ),
-        const Divider(),
+        if (isPin) ...<Widget>[
+          ListTile(
+            leading: const Icon(Icons.password_outlined),
+            title: Text(l10n.titleVaultChangePin),
+            onTap: () => _openChangePin(context, ref),
+          ),
+          const Divider(),
+        ],
 
         Padding(
           padding: const EdgeInsets.all(16),
@@ -155,6 +217,51 @@ class _SettingsList extends ConsumerWidget {
           ),
         ),
       ],
+    );
+  }
+
+  /// Moves the vault to the other lock.
+  ///
+  /// To phone lock: Android's prompt must pass first, then the PIN is erased.
+  /// To a PIN: a new PIN is chosen and typed twice. The vault is already open
+  /// here (this page shows the gate otherwise), so no old secret is asked
+  /// for again.
+  Future<void> _switchLock(
+    BuildContext context,
+    WidgetRef ref,
+    VaultLockMode target,
+  ) async {
+    final l10n = AppLocalizations.of(context)!;
+    final messenger = ScaffoldMessenger.of(context);
+    final bool switched;
+    if (target == VaultLockMode.phoneLock) {
+      final outcome = await ref
+          .read(vaultAuthServiceProvider)
+          .switchToPhoneLock(reason: l10n.bodyVaultUnlockReason);
+      switched = outcome.isSuccess;
+      if (!switched && outcome.status == VaultAuthStatus.phoneLockUnavailable) {
+        messenger.showSnackBar(
+          SnackBar(content: Text(l10n.errorVaultPhoneLockUnavailable)),
+        );
+      }
+    } else {
+      switched =
+          await Navigator.of(context).push<bool>(
+            MaterialPageRoute<bool>(builder: (_) => const _SetPinPage()),
+          ) ==
+          true;
+    }
+    if (!switched) return;
+
+    ref.read(vaultRevisionProvider.notifier).state++;
+    messenger.showSnackBar(
+      SnackBar(
+        content: Text(
+          target == VaultLockMode.phoneLock
+              ? l10n.bodyVaultSwitchedToPhoneLock
+              : l10n.bodyVaultSwitchedToPin,
+        ),
+      ),
     );
   }
 
@@ -254,6 +361,109 @@ class _ChangePinPageState extends ConsumerState<_ChangePinPage> {
               enabled: !_busy,
               busy: _busy,
               onSubmit: _onSubmit,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Chooses a new vault PIN (typed twice) for a vault moving off phone lock.
+class _SetPinPage extends ConsumerStatefulWidget {
+  const _SetPinPage();
+
+  @override
+  ConsumerState<_SetPinPage> createState() => _SetPinPageState();
+}
+
+class _SetPinPageState extends ConsumerState<_SetPinPage> {
+  final GlobalKey<VaultPinPadState> _padKey = GlobalKey<VaultPinPadState>();
+
+  String? _firstPin;
+  String? _errorText;
+  bool _busy = false;
+
+  Future<void> _onSubmit(String pin) async {
+    final l10n = AppLocalizations.of(context)!;
+
+    if (!VaultPinRules.isValid(pin)) {
+      setState(
+        () => _errorText = l10n.bodyVaultPinTooShort(
+          AppConstants.vaultPinMinLength,
+        ),
+      );
+      _padKey.currentState?.clear();
+      return;
+    }
+
+    if (_firstPin == null) {
+      setState(() {
+        _firstPin = pin;
+        _errorText = null;
+      });
+      _padKey.currentState?.clear();
+      return;
+    }
+
+    if (_firstPin != pin) {
+      setState(() {
+        _firstPin = null;
+        _errorText = l10n.bodyVaultPinMismatch;
+      });
+      _padKey.currentState?.clear();
+      return;
+    }
+
+    setState(() => _busy = true);
+    final outcome = await ref
+        .read(vaultAuthServiceProvider)
+        .switchToVaultPin(pin);
+    if (!mounted) return;
+
+    if (outcome.isSuccess) {
+      Navigator.of(context).pop(true);
+      return;
+    }
+    setState(() {
+      _busy = false;
+      _firstPin = null;
+      _errorText = l10n.errorVaultAuth;
+    });
+    _padKey.currentState?.clear();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return SecureScreen(
+      child: Scaffold(
+        appBar: AppBar(title: Text(l10n.titleVaultSetPin)),
+        body: SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              children: <Widget>[
+                Text(
+                  l10n.bodyVaultNoRecoveryWarning,
+                  style: Theme.of(context).textTheme.bodySmall,
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 16),
+                VaultPinPad(
+                  key: _padKey,
+                  prompt: _firstPin == null
+                      ? l10n.labelVaultChoosePin
+                      : l10n.bodyVaultConfirmPin,
+                  submitLabel: _firstPin == null
+                      ? l10n.labelVaultNext
+                      : l10n.titleVaultSetPin,
+                  errorText: _errorText,
+                  enabled: !_busy,
+                  busy: _busy,
+                  onSubmit: _onSubmit,
+                ),
+              ],
             ),
           ),
         ),

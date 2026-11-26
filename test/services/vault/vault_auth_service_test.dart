@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:in_sreerajp_imgvidgal/core/constants/app_constants.dart';
 import 'package:in_sreerajp_imgvidgal/models/vault/vault_auth_outcome.dart';
+import 'package:in_sreerajp_imgvidgal/models/vault/vault_lock_mode.dart';
 import 'package:in_sreerajp_imgvidgal/models/vault/vault_security_settings.dart';
 import 'package:in_sreerajp_imgvidgal/services/vault/vault_auth_service.dart';
 import 'package:in_sreerajp_imgvidgal/services/vault/vault_biometric_service.dart';
@@ -15,9 +16,11 @@ import 'fake_vault_channel.dart';
 /// A biometric service that answers however the test tells it to.
 class _FakeBiometricService implements VaultBiometricService {
   bool available = true;
+  bool deviceSecure = true;
   VaultBiometricResult result = VaultBiometricResult.success;
   int authenticateCalls = 0;
   String? lastReason;
+  bool? lastBiometricOnly;
 
   _FakeBiometricService();
 
@@ -25,9 +28,16 @@ class _FakeBiometricService implements VaultBiometricService {
   Future<bool> isAvailable() async => available;
 
   @override
-  Future<VaultBiometricResult> authenticate({required String reason}) async {
+  Future<bool> isDeviceSecure() async => deviceSecure;
+
+  @override
+  Future<VaultBiometricResult> authenticate({
+    required String reason,
+    required bool biometricOnly,
+  }) async {
     authenticateCalls++;
     lastReason = reason;
+    lastBiometricOnly = biometricOnly;
     return result;
   }
 }
@@ -178,7 +188,25 @@ void main() {
       });
     });
 
+    /// Makes the store look like a PIN vault without running the slow hash.
+    Future<void> markPinVault() => store.writeCredential(
+      salt: 'c2FsdA==',
+      hash: 'aGFzaA==',
+      iterations: 1,
+    );
+
     group('canUseBiometrics', () {
+      setUp(markPinVault);
+
+      test(
+        'is false for a phone-lock vault, whose prompt has it already',
+        () async {
+          await store.clearPin();
+          await store.writeLockMode(VaultLockMode.phoneLock);
+          expect(await service.canUseBiometrics(), isFalse);
+        },
+      );
+
       test('is true when the device has one and the user left it on', () async {
         expect(await service.canUseBiometrics(), isTrue);
       });
@@ -198,6 +226,15 @@ void main() {
     });
 
     group('unlockWithBiometrics', () {
+      setUp(markPinVault);
+
+      test('asks for a fingerprint only, never the phone PIN', () async {
+        // With the device credential allowed, the phone's own PIN would
+        // open a vault that has its own PIN.
+        await service.unlockWithBiometrics(reason: 'x');
+        expect(biometrics.lastBiometricOnly, isTrue);
+      });
+
       test('opens on a successful prompt and passes the reason on', () async {
         final outcome = await service.unlockWithBiometrics(reason: 'Open up');
 
@@ -247,6 +284,125 @@ void main() {
         // A sensor that keeps misreading a wet finger must not be able to shut
         // the door that does work.
         expect((await service.unlockWithPin('194627')).isSuccess, isTrue);
+      });
+    });
+
+    group('lock modes', () {
+      test('a stored PIN with no mode reads as a PIN vault', () async {
+        // Every vault made before the choice existed looks like this.
+        await markPinVault();
+        expect(await service.lockMode(), VaultLockMode.vaultPin);
+        expect(await service.isSetUp(), isTrue);
+      });
+
+      test('setUpVault records the PIN mode', () async {
+        await service.setUpVault('194627');
+        expect(await service.lockMode(), VaultLockMode.vaultPin);
+      });
+
+      test('phone-lock set-up prompts with the device credential allowed, '
+          'then records the mode and makes the key', () async {
+        final outcome = await service.setUpWithPhoneLock(reason: 'Set up');
+
+        expect(outcome.isSuccess, isTrue);
+        expect(biometrics.lastBiometricOnly, isFalse);
+        expect(await service.lockMode(), VaultLockMode.phoneLock);
+        expect(await service.isSetUp(), isTrue);
+        expect(channel.ensureKeyCalls, greaterThan(0));
+        expect(await store.hasCredential(), isFalse);
+      });
+
+      test('phone-lock set-up is refused without a screen lock', () async {
+        biometrics.deviceSecure = false;
+
+        final outcome = await service.setUpWithPhoneLock(reason: 'x');
+
+        expect(outcome.status, VaultAuthStatus.phoneLockUnavailable);
+        expect(biometrics.authenticateCalls, 0);
+        expect(await service.isSetUp(), isFalse);
+      });
+
+      test('a cancelled set-up prompt leaves no vault', () async {
+        biometrics.result = VaultBiometricResult.cancelled;
+
+        final outcome = await service.setUpWithPhoneLock(reason: 'x');
+
+        expect(outcome.status, VaultAuthStatus.cancelled);
+        expect(await service.isSetUp(), isFalse);
+      });
+
+      test('unlockWithPhoneLock opens a phone-lock vault', () async {
+        await store.writeLockMode(VaultLockMode.phoneLock);
+
+        final outcome = await service.unlockWithPhoneLock(reason: 'x');
+
+        expect(outcome.isSuccess, isTrue);
+        expect(biometrics.lastBiometricOnly, isFalse);
+      });
+
+      test('unlockWithPhoneLock never opens a PIN vault', () async {
+        await markPinVault();
+
+        final outcome = await service.unlockWithPhoneLock(reason: 'x');
+
+        expect(outcome.isSuccess, isFalse);
+        expect(biometrics.authenticateCalls, 0);
+      });
+
+      test(
+        'a phone-lock vault on a phone with no screen lock stays shut',
+        () async {
+          await store.writeLockMode(VaultLockMode.phoneLock);
+          biometrics.deviceSecure = false;
+
+          final outcome = await service.unlockWithPhoneLock(reason: 'x');
+
+          expect(outcome.status, VaultAuthStatus.phoneLockUnavailable);
+          expect(biometrics.authenticateCalls, 0);
+        },
+      );
+
+      test(
+        'switching to phone lock needs the prompt, then erases the PIN',
+        () async {
+          await markPinVault();
+
+          final outcome = await service.switchToPhoneLock(reason: 'x');
+
+          expect(outcome.isSuccess, isTrue);
+          expect(await service.lockMode(), VaultLockMode.phoneLock);
+          expect(await store.hasCredential(), isFalse);
+        },
+      );
+
+      test('a failed prompt keeps the PIN vault as it was', () async {
+        await markPinVault();
+        biometrics.result = VaultBiometricResult.failed;
+
+        final outcome = await service.switchToPhoneLock(reason: 'x');
+
+        expect(outcome.isSuccess, isFalse);
+        expect(await service.lockMode(), VaultLockMode.vaultPin);
+        expect(await store.hasCredential(), isTrue);
+      });
+
+      test('switching to a PIN stores it, and the PIN then opens', () async {
+        await store.writeLockMode(VaultLockMode.phoneLock);
+
+        final outcome = await service.switchToVaultPin('194627');
+
+        expect(outcome.isSuccess, isTrue);
+        expect(await service.lockMode(), VaultLockMode.vaultPin);
+        expect((await service.unlockWithPin('194627')).isSuccess, isTrue);
+      });
+
+      test('switching to a PIN refuses a PIN the rules reject', () async {
+        await store.writeLockMode(VaultLockMode.phoneLock);
+
+        final outcome = await service.switchToVaultPin('1111');
+
+        expect(outcome.status, VaultAuthStatus.invalidPin);
+        expect(await service.lockMode(), VaultLockMode.phoneLock);
       });
     });
 

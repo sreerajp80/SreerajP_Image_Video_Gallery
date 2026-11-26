@@ -2,6 +2,7 @@ import 'package:flutter/services.dart';
 import 'package:in_sreerajp_imgvidgal/core/constants/app_constants.dart';
 import 'package:in_sreerajp_imgvidgal/core/errors/app_exception.dart';
 import 'package:in_sreerajp_imgvidgal/models/vault/vault_crypto_result.dart';
+import 'package:in_sreerajp_imgvidgal/models/vault/vault_payload_digest.dart';
 
 /// Everything the vault needs from Android.
 ///
@@ -9,6 +10,11 @@ import 'package:in_sreerajp_imgvidgal/models/vault/vault_crypto_result.dart';
 /// boundary: there is no method here that returns a key, and there must never
 /// be one. Dart hands over a file and gets back ciphertext, plaintext, or an
 /// error.
+///
+/// Bulk data is encrypted under a data keyset that the master key seals
+/// (envelope encryption). `keysetPath` on each call says where that sealed
+/// keyset lives; Android loads it on first use and keeps it in memory until
+/// [forgetDataKey].
 ///
 /// Abstract so every service above it can be tested with a fake, on a host
 /// machine, with no keystore in sight.
@@ -30,6 +36,7 @@ abstract class VaultChannel {
     String? sourcePath,
     required String destPath,
     required String destName,
+    required String keysetPath,
   });
 
   /// Encrypts bytes already in memory into [destPath].
@@ -41,16 +48,20 @@ abstract class VaultChannel {
     required Uint8List bytes,
     required String destPath,
     required String destName,
+    required String keysetPath,
   });
 
   /// Decrypts a payload straight into memory.
   ///
   /// Used for photos and previews, so nothing decrypted ever lands on disk.
-  /// Refuses anything larger than [maxBytes].
+  /// Refuses anything larger than [maxBytes]. [format] is one of
+  /// `AppConstants.vaultPayloadFormat*`.
   Future<Uint8List> decryptToBytes({
     required String sourcePath,
     required String iv,
     required int maxBytes,
+    required int format,
+    required String keysetPath,
   });
 
   /// Decrypts a payload into a working file, returning its byte count.
@@ -62,7 +73,54 @@ abstract class VaultChannel {
     required String sourcePath,
     required String iv,
     required String destPath,
+    required int format,
+    required String keysetPath,
   });
+
+  /// Decrypts a payload as a stream and returns only the SHA-256 and length
+  /// of its plaintext. Nothing decrypted crosses the channel.
+  Future<VaultPayloadDigest> digestPayload({
+    required String sourcePath,
+    required String iv,
+    required int format,
+    required String keysetPath,
+  });
+
+  /// Whether restores can go through MediaStore (Android 10 and later).
+  Future<bool> canRestoreToGallery();
+
+  /// A small JPEG preview (longest side [maxSide]) made from an encrypted
+  /// photo entirely in memory, or null when the bytes are not a picture.
+  /// Refuses payloads over [maxBytes].
+  Future<Uint8List?> previewFromPayload({
+    required String sourcePath,
+    required String iv,
+    required int format,
+    required String keysetPath,
+    required int maxSide,
+    required int maxBytes,
+  });
+
+  /// Decrypts a payload straight into a new gallery file in [relativePath]
+  /// (e.g. `DCIM/Camera`), reads it back, and only then makes it visible.
+  ///
+  /// Returns the new file's uri and path, or null on Android 9 and older,
+  /// where nothing is written and the caller uses its path-based route.
+  /// Throws `VaultException` when the restore fails; nothing is left behind.
+  Future<({String uri, String? path})?> restoreToGallery({
+    required String sourcePath,
+    required String iv,
+    required int format,
+    required String keysetPath,
+    required String displayName,
+    required String mimeType,
+    required bool isVideo,
+    required String relativePath,
+  });
+
+  /// Drops the data keyset from Android's memory. Called when the vault
+  /// locks. Never throws: a lock must always go through.
+  Future<void> forgetDataKey();
 
   /// Overwrites the file at [path] [passes] times, then deletes it.
   ///
@@ -107,6 +165,7 @@ class PlatformVaultChannel implements VaultChannel {
     String? sourcePath,
     required String destPath,
     required String destName,
+    required String keysetPath,
   }) async {
     if ((sourceUri == null || sourceUri.isEmpty) &&
         (sourcePath == null || sourcePath.isEmpty)) {
@@ -116,18 +175,23 @@ class PlatformVaultChannel implements VaultChannel {
       );
     }
 
-    final map = await _invoke<Map<Object?, Object?>>(
-      'encryptFile',
-      <String, Object?>{
-        'sourceUri': sourceUri,
-        'sourcePath': sourcePath,
-        'destPath': destPath,
-      },
-    );
+    final map =
+        await _invoke<Map<Object?, Object?>>('encryptFile', <String, Object?>{
+          'sourceUri': sourceUri,
+          'sourcePath': sourcePath,
+          'destPath': destPath,
+          'keysetPath': keysetPath,
+        });
 
     final iv = map?['iv'];
     final size = map?['sizeBytes'];
-    if (iv is! String || iv.isEmpty || size is! num) {
+    final format = map?['format'];
+    final digest = _digestFrom(map);
+    if (iv is! String ||
+        iv.isEmpty ||
+        size is! num ||
+        format is! int ||
+        digest == null) {
       throw const VaultException(
         'The file could not be encrypted',
         code: 'bad_encrypt_result',
@@ -138,6 +202,8 @@ class PlatformVaultChannel implements VaultChannel {
       fileName: destName,
       iv: iv,
       cipherSizeBytes: size.toInt(),
+      format: format,
+      plain: digest,
     );
   }
 
@@ -146,6 +212,7 @@ class PlatformVaultChannel implements VaultChannel {
     required Uint8List bytes,
     required String destPath,
     required String destName,
+    required String keysetPath,
   }) async {
     if (bytes.isEmpty) {
       throw const VaultException(
@@ -156,12 +223,22 @@ class PlatformVaultChannel implements VaultChannel {
 
     final map = await _invoke<Map<Object?, Object?>>(
       'encryptBytes',
-      <String, Object?>{'bytes': bytes, 'destPath': destPath},
+      <String, Object?>{
+        'bytes': bytes,
+        'destPath': destPath,
+        'keysetPath': keysetPath,
+      },
     );
 
     final iv = map?['iv'];
     final size = map?['sizeBytes'];
-    if (iv is! String || iv.isEmpty || size is! num) {
+    final format = map?['format'];
+    final digest = _digestFrom(map);
+    if (iv is! String ||
+        iv.isEmpty ||
+        size is! num ||
+        format is! int ||
+        digest == null) {
       throw const VaultException(
         'The preview could not be encrypted',
         code: 'bad_encrypt_result',
@@ -172,6 +249,8 @@ class PlatformVaultChannel implements VaultChannel {
       fileName: destName,
       iv: iv,
       cipherSizeBytes: size.toInt(),
+      format: format,
+      plain: digest,
     );
   }
 
@@ -180,11 +259,15 @@ class PlatformVaultChannel implements VaultChannel {
     required String sourcePath,
     required String iv,
     required int maxBytes,
+    required int format,
+    required String keysetPath,
   }) async {
     final bytes = await _invoke<Uint8List>('decryptToBytes', <String, Object?>{
       'sourcePath': sourcePath,
       'iv': iv,
       'maxBytes': maxBytes,
+      'format': format,
+      'keysetPath': keysetPath,
     });
     if (bytes == null || bytes.isEmpty) {
       throw const VaultException(
@@ -200,11 +283,15 @@ class PlatformVaultChannel implements VaultChannel {
     required String sourcePath,
     required String iv,
     required String destPath,
+    required int format,
+    required String keysetPath,
   }) async {
     final written = await _invoke<int>('decryptToFile', <String, Object?>{
       'sourcePath': sourcePath,
       'iv': iv,
       'destPath': destPath,
+      'format': format,
+      'keysetPath': keysetPath,
     });
     if (written == null || written <= 0) {
       throw const VaultException(
@@ -213,6 +300,119 @@ class PlatformVaultChannel implements VaultChannel {
       );
     }
     return written;
+  }
+
+  @override
+  Future<VaultPayloadDigest> digestPayload({
+    required String sourcePath,
+    required String iv,
+    required int format,
+    required String keysetPath,
+  }) async {
+    final map = await _invoke<Map<Object?, Object?>>(
+      'digestPayload',
+      <String, Object?>{
+        'sourcePath': sourcePath,
+        'iv': iv,
+        'format': format,
+        'keysetPath': keysetPath,
+      },
+    );
+    final digest = _digestFrom(map);
+    if (digest == null) {
+      throw const VaultException(
+        'The item could not be checked',
+        code: 'verify_failed',
+      );
+    }
+    return digest;
+  }
+
+  /// The plaintext digest in a channel answer, or null when it is missing.
+  static VaultPayloadDigest? _digestFrom(Map<Object?, Object?>? map) {
+    final sha = map?['sha256'];
+    final bytes = map?['plainBytes'];
+    if (sha is! String || sha.length != 64 || bytes is! num) return null;
+    return VaultPayloadDigest(sha256: sha, plainBytes: bytes.toInt());
+  }
+
+  @override
+  Future<Uint8List?> previewFromPayload({
+    required String sourcePath,
+    required String iv,
+    required int format,
+    required String keysetPath,
+    required int maxSide,
+    required int maxBytes,
+  }) async {
+    final bytes =
+        await _invoke<Uint8List>('previewFromPayload', <String, Object?>{
+          'sourcePath': sourcePath,
+          'iv': iv,
+          'format': format,
+          'keysetPath': keysetPath,
+          'maxSide': maxSide,
+          'maxBytes': maxBytes,
+        });
+    return bytes == null || bytes.isEmpty ? null : bytes;
+  }
+
+  @override
+  Future<bool> canRestoreToGallery() async {
+    try {
+      return await _channel.invokeMethod<bool>('canRestoreToGallery') ?? false;
+    } on PlatformException {
+      return false;
+    } on MissingPluginException {
+      return false;
+    }
+  }
+
+  @override
+  Future<({String uri, String? path})?> restoreToGallery({
+    required String sourcePath,
+    required String iv,
+    required int format,
+    required String keysetPath,
+    required String displayName,
+    required String mimeType,
+    required bool isVideo,
+    required String relativePath,
+  }) async {
+    final map = await _invoke<Map<Object?, Object?>>(
+      'restoreToGallery',
+      <String, Object?>{
+        'sourcePath': sourcePath,
+        'iv': iv,
+        'format': format,
+        'keysetPath': keysetPath,
+        'displayName': displayName,
+        'mimeType': mimeType,
+        'isVideo': isVideo,
+        'relativePath': relativePath,
+      },
+    );
+    if (map?['supported'] == false) return null;
+    final uri = map?['uri'];
+    if (uri is! String || uri.isEmpty) {
+      throw const VaultException(
+        'The item could not be restored',
+        code: 'restore_failed',
+      );
+    }
+    final path = map?['path'];
+    return (uri: uri, path: path is String ? path : null);
+  }
+
+  @override
+  Future<void> forgetDataKey() async {
+    try {
+      await _channel.invokeMethod<bool>('forgetDataKey');
+    } on PlatformException {
+      // Nothing to report; the lock itself has already happened in Dart.
+    } on MissingPluginException {
+      // A host machine or a test with no Android side attached.
+    }
   }
 
   @override

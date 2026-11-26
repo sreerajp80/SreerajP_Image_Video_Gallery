@@ -68,7 +68,11 @@ class VaultRepository {
     // used on these bytes.
     if (name == null || name.isEmpty || iv == null || iv.isEmpty) return null;
     try {
-      return await _crypto.decryptToMemory(fileName: name, iv: iv);
+      return await _crypto.decryptToMemory(
+        fileName: name,
+        iv: iv,
+        format: item.thumbnailFormat,
+      );
     } catch (error) {
       AppLogger.debug('Decrypting a vault preview failed');
       // A preview that will not decrypt is a cosmetic loss; the tile falls
@@ -81,8 +85,11 @@ class VaultRepository {
   ///
   /// Only for pictures. Video goes through [openVideoForPlayback], because the
   /// platform player cannot read from memory.
-  Future<Uint8List> readImageBytes(VaultItem item) =>
-      _crypto.decryptToMemory(fileName: item.encryptedFilename, iv: item.iv);
+  Future<Uint8List> readImageBytes(VaultItem item) => _crypto.decryptToMemory(
+    fileName: item.encryptedFilename,
+    iv: item.iv,
+    format: item.payloadFormat,
+  );
 
   /// Decrypts a clip into a working file and returns its path.
   ///
@@ -90,8 +97,12 @@ class VaultRepository {
   /// the player closes. The file sits inside the app-private vault directory —
   /// not the public cache, not the temporary directory — and the sweep in
   /// [prepareForUnlock] shreds any that a crash left behind.
-  Future<String> openVideoForPlayback(VaultItem item) => _crypto
-      .decryptToWorkingFile(fileName: item.encryptedFilename, iv: item.iv);
+  Future<String> openVideoForPlayback(VaultItem item) =>
+      _crypto.decryptToWorkingFile(
+        fileName: item.encryptedFilename,
+        iv: item.iv,
+        format: item.payloadFormat,
+      );
 
   /// Shreds the working file a video playback was reading from.
   Future<void> closeVideoPlayback(String workingPath, {int? shredPasses}) =>
@@ -116,7 +127,7 @@ class VaultRepository {
   );
 
   /// The items whose original folder no longer exists.
-  List<VaultItem> itemsWithMissingFolder(List<VaultItem> items) =>
+  Future<List<VaultItem>> itemsWithMissingFolder(List<VaultItem> items) =>
       _exportService.itemsWithMissingFolder(items);
 
   /// Restores items to public storage and takes them out of the vault.
@@ -160,6 +171,9 @@ class VaultRepository {
       _vaultDao.updateVaultItem(item.copyWith(tags: tags));
 
   // ----------------------------------------------------------------- hygiene
+
+  /// Drops the data keyset from memory. Called when the vault locks.
+  Future<void> forgetDataKey() => _crypto.forgetDataKey();
 
   /// Sweeps the vault directory before it is shown.
   ///

@@ -125,6 +125,7 @@ void main() {
         final plain = await crypto.decryptToMemory(
           fileName: result.fileName,
           iv: result.iv,
+          format: result.format,
         );
 
         expect(plain, List<int>.generate(256, (i) => i));
@@ -132,11 +133,11 @@ void main() {
 
       test('refuses a record with no file name or no IV', () async {
         expect(
-          () => crypto.decryptToMemory(fileName: '', iv: 'abc'),
+          () => crypto.decryptToMemory(fileName: '', iv: 'abc', format: 2),
           throwsA(isA<VaultException>()),
         );
         expect(
-          () => crypto.decryptToMemory(fileName: 'a.enc', iv: ''),
+          () => crypto.decryptToMemory(fileName: 'a.enc', iv: '', format: 2),
           throwsA(isA<VaultException>()),
         );
       });
@@ -147,8 +148,11 @@ void main() {
         channel.failDecrypt = true;
 
         expect(
-          () =>
-              crypto.decryptToMemory(fileName: result.fileName, iv: result.iv),
+          () => crypto.decryptToMemory(
+            fileName: result.fileName,
+            iv: result.iv,
+            format: result.format,
+          ),
           throwsA(isA<VaultException>()),
         );
       });
@@ -162,6 +166,7 @@ void main() {
         final workingPath = await crypto.decryptToWorkingFile(
           fileName: result.fileName,
           iv: result.iv,
+          format: result.format,
         );
 
         // Not the public cache, not the temporary directory. App-private
@@ -177,6 +182,7 @@ void main() {
         final workingPath = await crypto.decryptToWorkingFile(
           fileName: result.fileName,
           iv: result.iv,
+          format: result.format,
         );
 
         // Derived rather than random, so the sweep on the next unlock can find
@@ -193,8 +199,123 @@ void main() {
 
       test('refuses an incomplete record', () async {
         expect(
-          () => crypto.decryptToWorkingFile(fileName: '', iv: 'abc'),
+          () => crypto.decryptToWorkingFile(fileName: '', iv: 'abc', format: 2),
           throwsA(isA<VaultException>()),
+        );
+      });
+    });
+  });
+
+  group('VaultCryptoService formats and the data key', () {
+    late Directory root;
+    late FakeVaultChannel channel;
+    late VaultStorageService storage;
+    late VaultCryptoService crypto;
+
+    setUp(() async {
+      root = await Directory.systemTemp.createTemp('vault_crypto_format_');
+      channel = FakeVaultChannel();
+      storage = VaultStorageService(rootOverride: root);
+      crypto = VaultCryptoService(channel: channel, storage: storage);
+    });
+
+    tearDown(() async {
+      if (await root.exists()) await root.delete(recursive: true);
+    });
+
+    test('every write uses the fast format', () async {
+      final result = await crypto.encryptBytesToPayload(
+        Uint8List.fromList(<int>[1, 2, 3]),
+      );
+
+      expect(result.format, AppConstants.vaultPayloadFormatStreaming);
+      expect(result.fileName, endsWith(AppConstants.vaultPayloadExtension));
+    });
+
+    test('hands Android the keyset file inside the vault directory', () async {
+      await crypto.encryptThumbnailBytes(Uint8List.fromList(<int>[1]));
+
+      expect(channel.keysetPaths, <String>{
+        await storage.pathFor(AppConstants.vaultDataKeyFileName),
+      });
+    });
+
+    test('an old-format payload is read with the old format', () async {
+      channel.writeFormat = AppConstants.vaultPayloadFormatLegacy;
+      final result = await crypto.encryptBytesToPayload(
+        Uint8List.fromList(<int>[5, 6]),
+      );
+
+      final plain = await crypto.decryptToMemory(
+        fileName: result.fileName,
+        iv: result.iv,
+        format: AppConstants.vaultPayloadFormatLegacy,
+      );
+      expect(plain, <int>[5, 6]);
+    });
+
+    test('forgetDataKey reaches Android', () async {
+      await crypto.forgetDataKey();
+
+      expect(channel.forgetDataKeyCalls, 1);
+    });
+
+    test('the keyset file is never taken for an orphan payload', () async {
+      final keyset = File(
+        await storage.pathFor(AppConstants.vaultDataKeyFileName),
+      );
+      await keyset.writeAsBytes(<int>[1, 2, 3], flush: true);
+
+      final orphans = await storage.findOrphanPayloads(<String>{});
+      final working = await storage.findWorkingFiles();
+
+      expect(orphans, isNot(contains(keyset.path)));
+      expect(working, isNot(contains(keyset.path)));
+    });
+
+    group('verifyWritten', () {
+      test('passes for a file that reads back the same', () async {
+        final result = await crypto.encryptBytesToPayload(
+          Uint8List.fromList(<int>[1, 2, 3, 4]),
+        );
+
+        await crypto.verifyWritten(result);
+        expect(channel.digested, hasLength(1));
+      });
+
+      test('fails for a file that changed on disk', () async {
+        channel.corruptNextWrites = 1;
+        final result = await crypto.encryptBytesToPayload(
+          Uint8List.fromList(<int>[1, 2, 3, 4]),
+        );
+
+        await expectLater(
+          crypto.verifyWritten(result),
+          throwsA(
+            isA<VaultException>().having(
+              (e) => e.code,
+              'code',
+              'verify_failed',
+            ),
+          ),
+        );
+      });
+
+      test('fails when the file is gone', () async {
+        final result = await crypto.encryptBytesToPayload(
+          Uint8List.fromList(<int>[1, 2, 3, 4]),
+        );
+        await File(await storage.pathFor(result.fileName)).delete();
+
+        await expectLater(
+          crypto.verifyWritten(result),
+          throwsA(
+            isA<VaultException>().having(
+              (e) => e.code,
+              'code',
+              'verify_failed',
+            ),
+          ),
         );
       });
     });

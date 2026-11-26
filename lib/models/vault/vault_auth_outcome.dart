@@ -25,6 +25,11 @@ enum VaultAuthStatus {
 
   /// The keystore or the store underneath failed.
   error,
+
+  /// The vault opens with the phone lock, but the phone has no screen lock
+  /// any more. The user has to turn one back on in Android settings; there
+  /// is no way round it.
+  phoneLockUnavailable,
 }
 
 /// Immutable result of one unlock attempt.

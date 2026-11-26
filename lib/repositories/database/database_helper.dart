@@ -351,6 +351,8 @@ class DatabaseHelper {
         ${DatabaseConstants.colVaultIv} TEXT NOT NULL,
         ${DatabaseConstants.colVaultThumbnailIv} TEXT,
         ${DatabaseConstants.colVaultAuthTag} TEXT,
+        ${DatabaseConstants.colVaultPayloadFormat} INTEGER NOT NULL DEFAULT 1 ${ColumnValueRule.vaultPayloadFormat.check},
+        ${DatabaseConstants.colVaultThumbnailFormat} INTEGER NOT NULL DEFAULT 1 ${ColumnValueRule.vaultThumbnailFormat.check},
         ${DatabaseConstants.colVaultDateVaulted} INTEGER NOT NULL,
         ${DatabaseConstants.colVaultDateTaken} INTEGER,
         ${DatabaseConstants.colVaultWidth} INTEGER,
@@ -725,6 +727,30 @@ class DatabaseHelper {
       // the next send can carry only the rest. A new, empty table.
       if (oldVersion < 9) {
         await _createSyncMarksTable(db);
+      }
+
+      // v10: the vault moved to envelope encryption, which is much faster.
+      // Each row records which format its payload and preview are in, so old
+      // ones (1) still open until the upgrade job converts them to 2. Every
+      // existing row is format 1, which is what the default gives it.
+      if (oldVersion < 10) {
+        for (final column in <String>[
+          DatabaseConstants.colVaultPayloadFormat,
+          DatabaseConstants.colVaultThumbnailFormat,
+        ]) {
+          await db.execute(
+            'ALTER TABLE ${DatabaseConstants.tableVault} '
+            'ADD COLUMN $column INTEGER NOT NULL DEFAULT 1;',
+          );
+        }
+        for (final rule in <ColumnValueRule>[
+          ColumnValueRule.vaultPayloadFormat,
+          ColumnValueRule.vaultThumbnailFormat,
+        ]) {
+          for (final sql in rule.triggerSql) {
+            await db.execute(sql);
+          }
+        }
       }
     } catch (e, st) {
       throw DatabaseMigrationException(

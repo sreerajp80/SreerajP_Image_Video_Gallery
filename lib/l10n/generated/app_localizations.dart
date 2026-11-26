@@ -7389,6 +7389,138 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Close'**
   String get actionSyncClose;
+
+  /// Heading above the choice between phone lock and a vault PIN
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a lock'**
+  String get titleVaultLockChoice;
+
+  /// Option: the vault opens with the phone's own lock (fingerprint, PIN, pattern or password)
+  ///
+  /// In en, this message translates to:
+  /// **'Phone lock'**
+  String get labelVaultLockPhone;
+
+  /// Explains the phone-lock option and its risk
+  ///
+  /// In en, this message translates to:
+  /// **'Your fingerprint or the phone\'s screen lock opens the vault. Anyone who can unlock this phone can open it too.'**
+  String get descVaultLockPhone;
+
+  /// Shown under the phone-lock option when the phone has no screen lock
+  ///
+  /// In en, this message translates to:
+  /// **'This phone has no screen lock. Turn one on in Android settings to use this.'**
+  String get descVaultLockPhoneUnavailable;
+
+  /// Option: the vault opens with its own PIN
+  ///
+  /// In en, this message translates to:
+  /// **'Vault PIN'**
+  String get labelVaultLockPin;
+
+  /// Explains the vault-PIN option
+  ///
+  /// In en, this message translates to:
+  /// **'A separate 4 to 8 digit PIN, only for the vault. Safer if others know how to unlock your phone.'**
+  String get descVaultLockPin;
+
+  /// Button that shows Android's prompt to open a phone-lock vault
+  ///
+  /// In en, this message translates to:
+  /// **'Use phone lock'**
+  String get labelVaultUnlockWithPhoneLock;
+
+  /// Line on the locked screen of a phone-lock vault
+  ///
+  /// In en, this message translates to:
+  /// **'This vault opens with your phone\'s lock.'**
+  String get bodyVaultPhoneLockPrompt;
+
+  /// A phone-lock vault cannot open because the phone's screen lock was turned off
+  ///
+  /// In en, this message translates to:
+  /// **'This phone has no screen lock now. Turn one on in Android settings to open the vault.'**
+  String get errorVaultPhoneLockUnavailable;
+
+  /// Button after the first PIN entry, before it is typed again
+  ///
+  /// In en, this message translates to:
+  /// **'Next'**
+  String get labelVaultNext;
+
+  /// Tooltip of the PIN pad key that removes the last digit
+  ///
+  /// In en, this message translates to:
+  /// **'Delete digit'**
+  String get tooltipVaultPinDelete;
+
+  /// Vault settings heading for choosing phone lock or a vault PIN
+  ///
+  /// In en, this message translates to:
+  /// **'Vault lock'**
+  String get titleVaultLockHeading;
+
+  /// Confirmation after moving the vault to phone lock
+  ///
+  /// In en, this message translates to:
+  /// **'The vault now opens with your phone lock.'**
+  String get bodyVaultSwitchedToPhoneLock;
+
+  /// Confirmation after moving the vault to its own PIN
+  ///
+  /// In en, this message translates to:
+  /// **'The vault now opens with its own PIN.'**
+  String get bodyVaultSwitchedToPin;
+
+  /// Title of the screen where a phone-lock vault gets its own PIN
+  ///
+  /// In en, this message translates to:
+  /// **'Set a vault PIN'**
+  String get titleVaultSetPin;
+
+  /// After a restore from the vault
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 item restored to the gallery} other{{count} items restored to the gallery}}'**
+  String bodyVaultRestoreDone(int count);
+
+  /// A restore where some items failed and stayed in the vault
+  ///
+  /// In en, this message translates to:
+  /// **'{done} restored, {failed} could not be restored'**
+  String bodyVaultRestorePartial(int done, int failed);
+
+  /// Every item of a restore failed; all stay in the vault
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing could be restored'**
+  String get errorVaultRestoreFailed;
+
+  /// Added after a restore when some items could not go back to their own folder
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 went to Pictures/Drishya Restored.} other{{count} went to Pictures/Drishya Restored.}}'**
+  String bodyVaultRestoredElsewhere(int count);
+
+  /// After deleting vault items for good
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 item deleted for good} other{{count} items deleted for good}}'**
+  String bodyVaultDeleteDone(int count);
+
+  /// A delete-for-good where some items failed
+  ///
+  /// In en, this message translates to:
+  /// **'{done} deleted, {failed} could not be deleted'**
+  String bodyVaultDeletePartial(int done, int failed);
+
+  /// Every item of a delete-for-good failed
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing could be deleted'**
+  String get errorVaultDeleteFailed;
 }
 
 class _AppLocalizationsDelegate

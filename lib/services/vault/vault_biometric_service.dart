@@ -23,14 +23,28 @@ enum VaultBiometricResult {
 /// never reach a real fingerprint sensor, and the auth service above needs to
 /// be exercised against every one of the outcomes above.
 ///
-/// This is a convenience over the PIN, never a replacement for it. Whatever
-/// this returns, the PIN still opens the vault, and nothing else does.
+/// Two uses, and the difference matters:
+/// - **Vault PIN mode:** a fingerprint shortcut. [authenticate] is called
+///   with `biometricOnly: true`, so the prompt has no "use PIN" button and
+///   the phone's own PIN can never stand in for the vault PIN.
+/// - **Phone lock mode:** Android's prompt is the lock itself, so
+///   `biometricOnly: false` lets the phone's PIN, pattern or password in too.
 abstract class VaultBiometricService {
-  /// Whether this device can run a biometric prompt right now.
+  /// Whether a fingerprint (or other biometric) is enrolled and usable now.
   Future<bool> isAvailable();
 
+  /// Whether the phone has a secure lock screen (PIN, pattern, password or
+  /// biometric), which phone-lock mode needs.
+  Future<bool> isDeviceSecure();
+
   /// Shows the prompt. [reason] is the localised line Android displays.
-  Future<VaultBiometricResult> authenticate({required String reason});
+  ///
+  /// [biometricOnly] true allows only a biometric; false also allows the
+  /// phone's PIN, pattern or password.
+  Future<VaultBiometricResult> authenticate({
+    required String reason,
+    required bool biometricOnly,
+  });
 }
 
 /// The real service, over `local_auth`.
@@ -56,9 +70,31 @@ class LocalAuthBiometricService implements VaultBiometricService {
   }
 
   @override
-  Future<VaultBiometricResult> authenticate({required String reason}) async {
+  Future<bool> isDeviceSecure() async {
     try {
-      final ok = await _auth.authenticate(localizedReason: reason);
+      // On Android this is "the phone has a secure lock screen, or a
+      // biometric". A biometric cannot be enrolled without a secure lock
+      // screen, so both mean a lock that Android's prompt can check.
+      return await _auth.isDeviceSupported();
+    } on LocalAuthException {
+      return false;
+    } on PlatformException {
+      return false;
+    } on MissingPluginException {
+      return false;
+    }
+  }
+
+  @override
+  Future<VaultBiometricResult> authenticate({
+    required String reason,
+    required bool biometricOnly,
+  }) async {
+    try {
+      final ok = await _auth.authenticate(
+        localizedReason: reason,
+        biometricOnly: biometricOnly,
+      );
       return ok ? VaultBiometricResult.success : VaultBiometricResult.failed;
     } on LocalAuthException catch (error) {
       // local_auth 3 shows no error dialogs of its own. The gate screen shows

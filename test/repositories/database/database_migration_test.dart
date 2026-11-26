@@ -423,6 +423,47 @@ void main() {
     expect(await db.query(DatabaseConstants.tableSyncMarks), hasLength(1));
   });
 
+  test('v9 to v10 marks old vault rows as the old format', () async {
+    await seedOldDatabase(
+      version: 9,
+      withSearchTable: true,
+      seed: (db) async {
+        await db.execute(
+          'ALTER TABLE media_items '
+          'ADD COLUMN is_out_of_reach INTEGER NOT NULL DEFAULT 0;',
+        );
+        await db.execute(
+          'CREATE TABLE sync_marks (media_id TEXT NOT NULL, '
+          'peer_id TEXT NOT NULL, sha256 TEXT NOT NULL, '
+          'size_bytes INTEGER NOT NULL, sent_at INTEGER NOT NULL, '
+          'PRIMARY KEY (media_id, peer_id));',
+        );
+      },
+    );
+
+    final db = await openWithHelper(dbPath);
+
+    expect(await db.getVersion(), DatabaseConstants.schemaVersion);
+    final row = (await db.query(DatabaseConstants.tableVault)).single;
+    // Every row that existed before is in the old format, so it is read the
+    // old way until the upgrade job converts it.
+    expect(row[DatabaseConstants.colVaultPayloadFormat], 1);
+    expect(row[DatabaseConstants.colVaultThumbnailFormat], 1);
+
+    await db.update(DatabaseConstants.tableVault, <String, Object?>{
+      DatabaseConstants.colVaultPayloadFormat: 2,
+    });
+    for (final column in <String>[
+      DatabaseConstants.colVaultPayloadFormat,
+      DatabaseConstants.colVaultThumbnailFormat,
+    ]) {
+      await expectLater(
+        db.update(DatabaseConstants.tableVault, <String, Object?>{column: 3}),
+        throwsA(isA<DatabaseException>()),
+      );
+    }
+  });
+
   test(
     'an upgraded database has the same count triggers as a fresh one',
     () async {

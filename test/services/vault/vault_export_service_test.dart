@@ -4,6 +4,7 @@ import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:in_sreerajp_imgvidgal/core/constants/app_constants.dart';
+import 'package:in_sreerajp_imgvidgal/core/domain/vault/restore_target_rules.dart';
 import 'package:in_sreerajp_imgvidgal/models/media_item.dart';
 import 'package:in_sreerajp_imgvidgal/models/vault_item.dart';
 import 'package:in_sreerajp_imgvidgal/repositories/database/database_helper.dart';
@@ -79,7 +80,12 @@ void main() {
       bool withThumbnail = true,
       String? originalDirectory,
     }) async {
-      final originalPath = p.join(originalDirectory ?? gallery.path, name);
+      // An Android-style directory is joined with '/', as on a phone; the
+      // host's own temp folders use the host's separator.
+      final originalPath =
+          originalDirectory != null && originalDirectory.startsWith('/')
+          ? p.posix.join(originalDirectory, name)
+          : p.join(originalDirectory ?? gallery.path, name);
       final source = File(p.join(root.path, 'staging_$name'));
       await source.writeAsBytes(bytes, flush: true);
 
@@ -87,10 +93,13 @@ void main() {
       await source.delete();
 
       String? thumbnailName;
+      String? thumbnailIv;
       if (withThumbnail) {
-        thumbnailName = (await crypto.encryptThumbnailBytes(
+        final thumbnail = await crypto.encryptThumbnailBytes(
           Uint8List.fromList(<int>[9, 9]),
-        )).fileName;
+        );
+        thumbnailName = thumbnail.fileName;
+        thumbnailIv = thumbnail.iv;
       }
 
       final item = VaultItem(
@@ -103,6 +112,9 @@ void main() {
         mimeType: 'image/jpeg',
         sizeBytes: payload.cipherSizeBytes,
         iv: payload.iv,
+        thumbnailIv: thumbnailIv,
+        payloadFormat: payload.format,
+        thumbnailFormat: payload.format,
         dateVaulted: DateTime(2026, 8, 30),
       );
       await vaultDao.insertVaultItem(item);
@@ -220,7 +232,7 @@ void main() {
           final kept = await addVaultItem(name: 'kept.jpg');
 
           expect(
-            service.itemsWithMissingFolder(<VaultItem>[item, kept]),
+            await service.itemsWithMissingFolder(<VaultItem>[item, kept]),
             <VaultItem>[item],
           );
         });
@@ -422,6 +434,79 @@ void main() {
 
         expect(result.succeededCount, 1);
         expect(await vaultDao.getVaultItemById(item.id), isNull);
+      });
+    });
+    group('on Android 10+ (through MediaStore)', () {
+      setUp(() => channel.galleryRestore = true);
+
+      test('goes back to its own DCIM folder with the same bytes', () async {
+        final item = await addVaultItem(
+          originalDirectory: '/storage/emulated/0/DCIM/Camera',
+        );
+        final payloadPath = await storage.pathFor(item.encryptedFilename);
+
+        final result = await service.exportItems(<VaultItem>[item]);
+
+        expect(result.succeededCount, 1);
+        expect(result.fallbackCount, 0);
+        final written = channel.galleryRestores.single;
+        expect(written.relativePath, 'DCIM/Camera');
+        expect(written.displayName, 'photo_vault.jpg');
+        expect(written.bytes, <int>[1, 2, 3, 4, 5]);
+        // Only after the gallery copy exists is the vault copy gone.
+        expect(await File(payloadPath).exists(), isFalse);
+        expect(await vaultDao.getVaultItemById(item.id), isNull);
+        // No plain file was written by path.
+        expect(folderWriter.writes, isEmpty);
+      });
+
+      test(
+        'a folder MediaStore cannot hold goes to the fallback, counted',
+        () async {
+          final item = await addVaultItem(
+            originalDirectory: '/storage/emulated/0/Download',
+          );
+
+          final result = await service.exportItems(<VaultItem>[item]);
+
+          expect(result.succeededCount, 1);
+          expect(result.fallbackCount, 1);
+          expect(
+            channel.galleryRestores.single.relativePath,
+            RestoreTargetRules.fallback,
+          );
+        },
+      );
+
+      test(
+        'a failed restore keeps the item and its payload in the vault',
+        () async {
+          final item = await addVaultItem(
+            originalDirectory: '/storage/emulated/0/DCIM/Camera',
+          );
+          channel.failGalleryRestore = true;
+
+          final result = await service.exportItems(<VaultItem>[item]);
+
+          expect(result.failedCount, 1);
+          expect(result.succeededCount, 0);
+          expect(await vaultDao.getVaultItemById(item.id), isNotNull);
+          expect(
+            await File(await storage.pathFor(item.encryptedFilename)).exists(),
+            isTrue,
+          );
+        },
+      );
+
+      test('never asks for a folder', () async {
+        final item = await addVaultItem(
+          originalDirectory: p.join(root.path, 'gone'),
+        );
+
+        expect(
+          await service.itemsWithMissingFolder(<VaultItem>[item]),
+          isEmpty,
+        );
       });
     });
   });

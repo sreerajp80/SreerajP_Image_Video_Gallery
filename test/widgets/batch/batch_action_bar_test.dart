@@ -1,6 +1,8 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
+import 'package:in_sreerajp_imgvidgal/core/routing/app_router.dart';
 import 'package:in_sreerajp_imgvidgal/l10n/generated/app_localizations.dart';
 import 'package:in_sreerajp_imgvidgal/models/album_summary.dart';
 import 'package:in_sreerajp_imgvidgal/models/media_item.dart';
@@ -75,6 +77,23 @@ class _FakeBatchController extends BatchController {
     required List<MediaItem> items,
     BatchOptions options = const BatchOptions(),
   }) async => outcome;
+}
+
+/// Counts how many batches were started.
+class _CountingBatchController extends BatchController {
+  int runs = 0;
+
+  _CountingBatchController(super.ref);
+
+  @override
+  Future<BatchOutcome?> run({
+    required BatchAction action,
+    required List<MediaItem> items,
+    BatchOptions options = const BatchOptions(),
+  }) async {
+    runs++;
+    return BatchOutcome(action: action);
+  }
 }
 
 /// Records what Undo asked to restore.
@@ -406,5 +425,57 @@ void main() {
         reason: label,
       );
     }
+  });
+
+  testWidgets('Move to vault opens the vault first when it is not unlocked, '
+      'and moves nothing if the user backs out', (tester) async {
+    final item = _sampleItem('photo1');
+    _CountingBatchController? controller;
+    final router = GoRouter(
+      routes: <RouteBase>[
+        GoRoute(
+          path: '/',
+          builder: (_, _) =>
+              const Scaffold(bottomNavigationBar: BatchActionBar()),
+        ),
+        GoRoute(
+          path: kRouteVault,
+          builder: (_, _) => const Scaffold(body: Text('vault gate')),
+        ),
+      ],
+    );
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          selectedMediaProvider.overrideWith((ref) async => [item]),
+          batchControllerProvider.overrideWith(
+            (ref) => controller = _CountingBatchController(ref),
+          ),
+        ],
+        child: MaterialApp.router(
+          localizationsDelegates: appLocalizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          routerConfig: router,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.widgetWithText(InkWell, 'More'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Move to vault'));
+    await tester.pumpAndSettle();
+
+    // The vault gate, not the "are you sure?" dialog: nothing can go in
+    // before the vault exists and is open.
+    expect(find.text('vault gate'), findsOneWidget);
+    expect(find.text('Are you sure?'), findsNothing);
+
+    router.pop();
+    await tester.pumpAndSettle();
+
+    expect(find.text('Are you sure?'), findsNothing);
+    // No batch ran (the controller was never even needed).
+    expect(controller?.runs ?? 0, 0);
   });
 }

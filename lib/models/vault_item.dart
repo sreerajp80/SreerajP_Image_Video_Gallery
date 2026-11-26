@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
+import 'package:in_sreerajp_imgvidgal/core/constants/app_constants.dart';
 import 'package:in_sreerajp_imgvidgal/models/media_item.dart';
 
 /// Immutable domain model representing an encrypted media record inside the Private Vault.
@@ -44,6 +45,15 @@ class VaultItem {
   /// Base64-encoded authentication tag for AES-GCM integrity.
   final String? authTag;
 
+  /// How the payload is encrypted: `AppConstants.vaultPayloadFormat*`.
+  ///
+  /// Defaults to the old format, which is what a row from before the column
+  /// existed holds. Every new write sets it from the crypto result.
+  final int payloadFormat;
+
+  /// How the preview is encrypted, same values as [payloadFormat].
+  final int thumbnailFormat;
+
   /// Timestamp when the item was imported into the vault.
   final DateTime dateVaulted;
 
@@ -77,6 +87,8 @@ class VaultItem {
     required this.iv,
     this.thumbnailIv,
     this.authTag,
+    this.payloadFormat = AppConstants.vaultPayloadFormatLegacy,
+    this.thumbnailFormat = AppConstants.vaultPayloadFormatLegacy,
     required this.dateVaulted,
     this.dateTaken,
     this.width,
@@ -99,6 +111,8 @@ class VaultItem {
     String? iv,
     String? thumbnailIv,
     String? authTag,
+    int? payloadFormat,
+    int? thumbnailFormat,
     DateTime? dateVaulted,
     DateTime? dateTaken,
     int? width,
@@ -120,6 +134,8 @@ class VaultItem {
       iv: iv ?? this.iv,
       thumbnailIv: thumbnailIv ?? this.thumbnailIv,
       authTag: authTag ?? this.authTag,
+      payloadFormat: payloadFormat ?? this.payloadFormat,
+      thumbnailFormat: thumbnailFormat ?? this.thumbnailFormat,
       dateVaulted: dateVaulted ?? this.dateVaulted,
       dateTaken: dateTaken ?? this.dateTaken,
       width: width ?? this.width,
@@ -144,6 +160,8 @@ class VaultItem {
       'iv': iv,
       'thumbnail_iv': thumbnailIv,
       'auth_tag': authTag,
+      'payload_format': payloadFormat,
+      'thumbnail_format': thumbnailFormat,
       'date_vaulted': dateVaulted.millisecondsSinceEpoch,
       'date_taken': dateTaken?.millisecondsSinceEpoch,
       'width': width,
@@ -191,6 +209,12 @@ class VaultItem {
       iv: map['iv'] as String,
       thumbnailIv: (map['thumbnail_iv'] ?? map['thumbnailIv']) as String?,
       authTag: (map['auth_tag'] ?? map['authTag']) as String?,
+      payloadFormat:
+          (map['payload_format'] ?? map['payloadFormat']) as int? ??
+          AppConstants.vaultPayloadFormatLegacy,
+      thumbnailFormat:
+          (map['thumbnail_format'] ?? map['thumbnailFormat']) as int? ??
+          AppConstants.vaultPayloadFormatLegacy,
       dateVaulted: map['date_vaulted'] is int
           ? DateTime.fromMillisecondsSinceEpoch(map['date_vaulted'] as int)
           : DateTime.parse(map['date_vaulted'].toString()),
@@ -223,6 +247,8 @@ class VaultItem {
           iv == other.iv &&
           thumbnailIv == other.thumbnailIv &&
           authTag == other.authTag &&
+          payloadFormat == other.payloadFormat &&
+          thumbnailFormat == other.thumbnailFormat &&
           dateVaulted == other.dateVaulted &&
           dateTaken == other.dateTaken &&
           width == other.width &&
@@ -244,6 +270,8 @@ class VaultItem {
     iv,
     thumbnailIv,
     authTag,
+    payloadFormat,
+    thumbnailFormat,
     dateVaulted,
     dateTaken,
     width,

@@ -87,6 +87,7 @@ class VaultTransferService {
     final path = await _crypto.decryptToWorkingFile(
       fileName: item.encryptedFilename,
       iv: item.iv,
+      format: item.payloadFormat,
     );
     return File(path);
   }
@@ -136,16 +137,30 @@ class VaultTransferService {
       // 1. The payload, encrypted with this phone's own key.
       final payload = await _crypto.encryptToPayload(sourcePath: staged.path);
       payloadName = payload.fileName;
+      // Read it back before it counts: the staged copy is shredded on the
+      // way out, and the other phone may be wiped after a phone move. A
+      // failure throws, and the catch below removes the payload.
+      await _crypto.verifyWritten(payload);
 
       // 2. The preview. One that cannot be made is not fatal.
       String? thumbnailIv;
+      int? thumbnailFormat;
       final previewBytes = await _preview.buildPreview(
         _asMediaItem(staged, displayName, mimeType, mediaType, length),
       );
       if (previewBytes != null && previewBytes.isNotEmpty) {
         final thumbnail = await _crypto.encryptThumbnailBytes(previewBytes);
-        thumbnailName = thumbnail.fileName;
-        thumbnailIv = thumbnail.iv;
+        try {
+          await _crypto.verifyWritten(thumbnail);
+          thumbnailName = thumbnail.fileName;
+          thumbnailIv = thumbnail.iv;
+          thumbnailFormat = thumbnail.format;
+        } catch (error) {
+          // A preview that does not read back is dropped; the item goes in
+          // without one, as when a preview cannot be made at all.
+          AppLogger.debug('A received vault preview failed its read-back');
+          await _deleteQuietly(thumbnail.fileName);
+        }
       }
 
       // 3. The record, last. There is no gallery row to hide: the file was
@@ -161,6 +176,8 @@ class VaultTransferService {
         sizeBytes: payload.cipherSizeBytes,
         iv: payload.iv,
         thumbnailIv: thumbnailIv,
+        payloadFormat: payload.format,
+        thumbnailFormat: thumbnailFormat ?? payload.format,
         dateVaulted: DateTime.now(),
         dateTaken: dateTaken,
         tags: tags,

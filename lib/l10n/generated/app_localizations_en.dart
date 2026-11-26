@@ -4439,4 +4439,104 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get actionSyncClose => 'Close';
+
+  @override
+  String get titleVaultLockChoice => 'Choose a lock';
+
+  @override
+  String get labelVaultLockPhone => 'Phone lock';
+
+  @override
+  String get descVaultLockPhone =>
+      'Your fingerprint or the phone\'s screen lock opens the vault. Anyone who can unlock this phone can open it too.';
+
+  @override
+  String get descVaultLockPhoneUnavailable =>
+      'This phone has no screen lock. Turn one on in Android settings to use this.';
+
+  @override
+  String get labelVaultLockPin => 'Vault PIN';
+
+  @override
+  String get descVaultLockPin =>
+      'A separate 4 to 8 digit PIN, only for the vault. Safer if others know how to unlock your phone.';
+
+  @override
+  String get labelVaultUnlockWithPhoneLock => 'Use phone lock';
+
+  @override
+  String get bodyVaultPhoneLockPrompt =>
+      'This vault opens with your phone\'s lock.';
+
+  @override
+  String get errorVaultPhoneLockUnavailable =>
+      'This phone has no screen lock now. Turn one on in Android settings to open the vault.';
+
+  @override
+  String get labelVaultNext => 'Next';
+
+  @override
+  String get tooltipVaultPinDelete => 'Delete digit';
+
+  @override
+  String get titleVaultLockHeading => 'Vault lock';
+
+  @override
+  String get bodyVaultSwitchedToPhoneLock =>
+      'The vault now opens with your phone lock.';
+
+  @override
+  String get bodyVaultSwitchedToPin => 'The vault now opens with its own PIN.';
+
+  @override
+  String get titleVaultSetPin => 'Set a vault PIN';
+
+  @override
+  String bodyVaultRestoreDone(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count items restored to the gallery',
+      one: '1 item restored to the gallery',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String bodyVaultRestorePartial(int done, int failed) {
+    return '$done restored, $failed could not be restored';
+  }
+
+  @override
+  String get errorVaultRestoreFailed => 'Nothing could be restored';
+
+  @override
+  String bodyVaultRestoredElsewhere(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count went to Pictures/Drishya Restored.',
+      one: '1 went to Pictures/Drishya Restored.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String bodyVaultDeleteDone(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count items deleted for good',
+      one: '1 item deleted for good',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String bodyVaultDeletePartial(int done, int failed) {
+    return '$done deleted, $failed could not be deleted';
+  }
+
+  @override
+  String get errorVaultDeleteFailed => 'Nothing could be deleted';
 }

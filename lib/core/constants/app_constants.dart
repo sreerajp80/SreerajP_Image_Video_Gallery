@@ -472,6 +472,23 @@ class AppConstants {
   /// Marker file that keeps other apps' media scanners out of the vault.
   static const String vaultNoMediaFileName = '.nomedia';
 
+  /// File, inside the vault directory, that holds the data keyset sealed by
+  /// the Keystore master key.
+  ///
+  /// Every format-2 payload needs it. It must never be swept, shredded or
+  /// replaced while the vault has items; losing it loses those items. Its
+  /// extension matches none of the payload, preview or working extensions,
+  /// which is what keeps the sweeps away from it.
+  static const String vaultDataKeyFileName = 'vault_data_key.bin';
+
+  /// Old payload format: AES-GCM straight under the Keystore key. Slow to
+  /// read, because every byte goes through the secure hardware. Only read,
+  /// never written, and converted by the upgrade job.
+  static const int vaultPayloadFormatLegacy = 1;
+
+  /// Current payload format: Tink streaming AEAD under the data keyset.
+  static const int vaultPayloadFormatStreaming = 2;
+
   /// Name suffix used for a file restored out of the vault.
   static const String vaultExportSuffix = '_vault';
 

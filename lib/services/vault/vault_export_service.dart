@@ -1,7 +1,9 @@
 import 'dart:io';
 
 import 'package:in_sreerajp_imgvidgal/core/constants/app_constants.dart';
+import 'package:in_sreerajp_imgvidgal/core/domain/vault/restore_target_rules.dart';
 import 'package:in_sreerajp_imgvidgal/core/errors/app_exception.dart';
+import 'package:in_sreerajp_imgvidgal/models/media_item.dart';
 import 'package:in_sreerajp_imgvidgal/models/vault/vault_import_result.dart';
 import 'package:in_sreerajp_imgvidgal/models/vault_item.dart';
 import 'package:in_sreerajp_imgvidgal/repositories/database/media_dao.dart';
@@ -65,12 +67,18 @@ class VaultExportService {
        _naming = naming,
        _folderWriter = folderWriter;
 
-  /// The items in [items] whose original folder no longer exists.
+  /// The items in [items] whose original folder no longer exists, on
+  /// Android 9 and older.
   ///
   /// Only checks; writes nothing. The screen uses it to ask the user for a
-  /// folder before the restore starts.
-  List<VaultItem> itemsWithMissingFolder(List<VaultItem> items) =>
-      items.where((item) => _restoreSeedPath(item) == null).toList();
+  /// folder before the restore starts. On Android 10 and later it is always
+  /// empty: restores go through MediaStore, which re-creates an allowed
+  /// folder and sends anything else to the fallback folder, so there is
+  /// nothing to ask.
+  Future<List<VaultItem>> itemsWithMissingFolder(List<VaultItem> items) async {
+    if (await _crypto.canRestoreToGallery()) return const <VaultItem>[];
+    return items.where((item) => _restoreSeedPath(item) == null).toList();
+  }
 
   /// Restores [items] to public storage and takes them out of the vault.
   ///
@@ -88,10 +96,30 @@ class VaultExportService {
     final restored = <String>[];
     var failed = 0;
     var skipped = 0;
+    var toFallback = 0;
+    final throughGallery = await _crypto.canRestoreToGallery();
 
     for (var index = 0; index < items.length; index++) {
       final item = items[index];
       try {
+        if (throughGallery) {
+          final folder = RestoreTargetRules.relativePathFor(
+            item.originalPath,
+            isVideo: item.mediaType == MediaType.video,
+          );
+          final written = await _restoreThroughGallery(
+            item,
+            folder,
+            shredPasses: shredPasses,
+          );
+          if (written) {
+            restored.add(item.id);
+            if (folder == RestoreTargetRules.fallback) toFallback++;
+            onProgress?.call(index + 1, items.length);
+            continue;
+          }
+          // Android said no MediaStore route after all: use the old one.
+        }
         final seed = _restoreSeedPath(item);
         if (seed != null) {
           await _exportOne(item, seed, shredPasses: shredPasses);
@@ -117,6 +145,7 @@ class VaultExportService {
       succeededIds: restored,
       failedCount: failed,
       skippedCount: skipped,
+      fallbackCount: toFallback,
     );
   }
 
@@ -151,7 +180,42 @@ class VaultExportService {
     );
   }
 
-  /// Restores one item beside where it came from.
+  /// Restores one item through MediaStore (Android 10+).
+  ///
+  /// The payload is decrypted straight into a hidden gallery entry, read
+  /// back, and only then made visible (all on the Android side). Only after
+  /// that is anything inside the vault disturbed. Returns false when Android
+  /// has no MediaStore route (nothing written).
+  Future<bool> _restoreThroughGallery(
+    VaultItem item,
+    String relativePath, {
+    int? shredPasses,
+  }) async {
+    final written = await _crypto.restoreToGallery(
+      fileName: item.encryptedFilename,
+      iv: item.iv,
+      format: item.payloadFormat,
+      displayName: restoreDisplayName(item),
+      mimeType: item.mimeType,
+      isVideo: item.mediaType == MediaType.video,
+      relativePath: relativePath,
+    );
+    if (written == null) return false;
+    await _finishRestore(item, shredPasses: shredPasses);
+    return true;
+  }
+
+  /// The name a restored file gets: the original name with the vault
+  /// suffix (`photo_vault.jpg`), so it never looks like the original if
+  /// that is still there. MediaStore adds a number if the name is taken.
+  static String restoreDisplayName(VaultItem item) {
+    final original = p.basename(item.originalFilename);
+    final stem = p.basenameWithoutExtension(original);
+    final safeStem = stem.isEmpty || stem.startsWith('.') ? 'restored' : stem;
+    return '$safeStem${AppConstants.vaultExportSuffix}${p.extension(original)}';
+  }
+
+  /// Restores one item beside where it came from (Android 9 and older).
   Future<File> _exportOne(
     VaultItem item,
     String destinationSeed, {
@@ -166,6 +230,7 @@ class VaultExportService {
       final bytes = await _crypto.decryptToMemory(
         fileName: item.encryptedFilename,
         iv: item.iv,
+        format: item.payloadFormat,
       );
       written = await _naming.saveBytes(
         sourcePath: destinationSeed,
@@ -180,6 +245,7 @@ class VaultExportService {
       final workingPath = await _crypto.decryptToWorkingFile(
         fileName: item.encryptedFilename,
         iv: item.iv,
+        format: item.payloadFormat,
       );
       final targetPath = _naming.reserveOutputPath(
         sourcePath: destinationSeed,
@@ -220,6 +286,7 @@ class VaultExportService {
     final workingPath = await _crypto.decryptToWorkingFile(
       fileName: item.encryptedFilename,
       iv: item.iv,
+      format: item.payloadFormat,
     );
     try {
       await writer.write(

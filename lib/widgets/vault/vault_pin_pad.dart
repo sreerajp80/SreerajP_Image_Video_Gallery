@@ -169,7 +169,7 @@ class VaultPinPadState extends State<VaultPinPad> {
               child: IconButton(
                 onPressed: widget.enabled ? _backspace : null,
                 icon: const Icon(Icons.backspace_outlined),
-                tooltip: l10n.tooltipVaultClearSelection,
+                tooltip: l10n.tooltipVaultPinDelete,
               ),
             ),
           ],

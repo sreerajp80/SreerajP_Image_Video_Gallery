@@ -200,6 +200,13 @@ dependencies {
     // It replaced Google's closed-source ML Kit (G47). Never add
     // com.google.mlkit or com.google.android.gms here.
     implementation("com.google.zxing:core:3.5.3")
+
+    // Vault bulk encryption (VaultChannelHandler): Tink's streaming AEAD,
+    // under a data keyset that the Keystore master key seals. Google's
+    // open-source crypto library, Apache-2.0. Its only dependencies are
+    // annotations (androidx.annotation, jsr305, errorprone) and gson; no
+    // network code. Never add the tink-gcpkms / tink-awskms modules.
+    implementation("com.google.crypto.tink:tink-android:1.24.0")
 }
 
 // The Kotlin JVM target. The old `kotlinOptions { }` inside `android { }` is
